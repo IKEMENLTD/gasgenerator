@@ -178,6 +178,30 @@ async function processWebhookEvent(
     // 1. ユーザー取得または作成
     const user = await UserQueries.createOrUpdate(lineUserId)
     
+    // 1.5. 利用制限チェック（無料ユーザーは月10回まで）
+    const canUse = await checkUserLimits(user, lineUserId)
+    if (!canUse) {
+      // Payment Link生成（LINE User IDをBase64エンコード）
+      const encoded = Buffer.from(lineUserId).toString('base64')
+      const paymentUrl = `https://buy.stripe.com/7sY3cv2So0v78ICbSz6oo09?client_reference_id=${encoded}`
+      
+      await lineClient.replyMessage(replyToken, [{
+        type: 'template',
+        altText: '利用制限に達しました',
+        template: {
+          type: 'buttons',
+          text: '📊 無料プランの月間利用回数（10回）に達しました。\n\n有料プラン（¥10,000/月）で無制限利用が可能です！',
+          actions: [{
+            type: 'uri',
+            label: '💳 今すぐ購入',
+            uri: paymentUrl
+          }]
+        }
+      } as any])
+      
+      return { replied: true, queued: false, sessionUpdated: false }
+    }
+    
     // 2. アクティブセッション確認
     let session = await SessionQueries.findActiveSession(user.id)
     
@@ -408,6 +432,31 @@ async function handleDetailInput(
   })
 
   return { replied: true, queued: true, sessionUpdated: true }
+}
+
+/**
+ * 利用制限チェック
+ */
+async function checkUserLimits(user: any, lineUserId: string): Promise<boolean> {
+  // プレミアムユーザーは無制限
+  if (user.subscription_status === 'premium') {
+    return true
+  }
+  
+  // 無料ユーザーは月10回まで
+  const today = new Date()
+  const lastReset = new Date(user.last_reset_date || today)
+  
+  // 月が変わったらリセット
+  if (today.getMonth() !== lastReset.getMonth() || today.getFullYear() !== lastReset.getFullYear()) {
+    await UserQueries.resetMonthlyUsage(user.id)
+    return true // リセット後なので利用可能
+  }
+  
+  // 使用回数をインクリメント
+  await UserQueries.incrementUsageCount(user.id)
+  
+  return (user.monthly_usage_count || 0) < 10
 }
 
 export async function GET() {

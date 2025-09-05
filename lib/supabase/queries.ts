@@ -57,6 +57,44 @@ export class UserQueries {
       }
     }
   }
+  
+  static async resetMonthlyUsage(userId: string) {
+    const { error } = await supabaseAdmin
+      .from('users')
+      .update({
+        monthly_usage_count: 0,
+        last_reset_date: new Date().toISOString()
+      })
+      .eq('id', userId)
+    
+    if (error) {
+      console.error('Failed to reset monthly usage:', error)
+    }
+  }
+  
+  static async incrementUsageCount(userId: string) {
+    const { data: user, error: fetchError } = await supabaseAdmin
+      .from('users')
+      .select('monthly_usage_count')
+      .eq('id', userId)
+      .maybeSingle()
+    
+    if (fetchError || !user) {
+      console.error('Failed to fetch usage count:', fetchError)
+      return
+    }
+    
+    const { error } = await supabaseAdmin
+      .from('users')
+      .update({
+        monthly_usage_count: (user.monthly_usage_count || 0) + 1
+      })
+      .eq('id', userId)
+    
+    if (error) {
+      console.error('Failed to increment usage count:', error)
+    }
+  }
 }
 
 export class SessionQueries {
