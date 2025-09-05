@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { LineWebhookValidator, recentEventCache } from '../../../lib/line/webhook-validator'
 import { LineApiClient } from '../../../lib/line/client'
 import { MessageTemplates } from '../../../lib/line/message-templates'
+import { FlexTemplates } from '../../../lib/line/flex-templates'
 import { UserQueries, SessionQueries, MetricsQueries } from '../../../lib/supabase/queries'
 import { QueueManager } from '../../../lib/queue/manager'
 import { createErrorResponse, createSuccessResponse, handleApiError, AppError, RateLimiter } from '../../../lib/utils/error-handler'
@@ -185,19 +186,10 @@ async function processWebhookEvent(
       const encoded = Buffer.from(lineUserId).toString('base64')
       const paymentUrl = `https://buy.stripe.com/7sY3cv2So0v78ICbSz6oo09?client_reference_id=${encoded}`
       
-      await lineClient.replyMessage(replyToken, [{
-        type: 'template',
-        altText: '利用制限に達しました',
-        template: {
-          type: 'buttons',
-          text: '📊 無料プランの月間利用回数（10回）に達しました。\n\n有料プラン（¥10,000/月）で無制限利用が可能です！',
-          actions: [{
-            type: 'uri',
-            label: '💳 今すぐ購入',
-            uri: paymentUrl
-          }]
-        }
-      } as any])
+      // Flexメッセージで利用制限を通知
+      await lineClient.replyMessage(replyToken, [
+        FlexTemplates.createLimitReachedFlexMessage(lineUserId)
+      ])
       
       return { replied: true, queued: false, sessionUpdated: false }
     }
@@ -214,7 +206,11 @@ async function processWebhookEvent(
       
       session = await SessionQueries.createSession(user.id, { status: 'active' })
       
-      await lineClient.replyMessage(replyToken, MessageTemplates.createWelcomeMessage())
+      // Flexメッセージでウェルカムメッセージ送信
+      await lineClient.replyMessage(replyToken, [
+        FlexTemplates.createWelcomeFlexMessage(),
+        FlexTemplates.createCategoryCarousel()
+      ])
       
       return { replied: true, queued: false, sessionUpdated: true }
     }

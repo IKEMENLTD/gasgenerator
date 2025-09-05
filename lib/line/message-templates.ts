@@ -33,29 +33,28 @@ export class MessageTemplates {
     return [
       {
         type: 'text',
-        text: '🎉 GAS Generator へようこそ！\n\nGoogle Apps Scriptのコードを自動生成するLINE Botです。\n\n✨ まずは無料トライアルでお試しください！'
+        text: '🎉 GAS Generator へようこそ！\n\nGoogle Apps Scriptのコードを自動生成するLINE Botです。'
       },
       {
         type: 'template',
-        altText: '決済リンク',
+        altText: '有料プランのご案内\n\n月額¥10,000で無制限利用が可能です！',
         template: {
           type: 'buttons',
-          title: '🚀 有料プランのご案内',
-          text: '無制限でコード生成が可能に！',
+          text: '月額¥10,000で無制限コード生成！\n今なら初月割引あり',
           actions: [
             {
               type: 'uri',
-              label: '💳 今すぐ購入（¥10,000/月）',
+              label: '購入する（¥10,000/月）',
               uri: 'https://buy.stripe.com/7sY3cv2So0v78ICbSz6oo09'
             },
             {
               type: 'message',
-              label: '🆓 無料で試す',
+              label: '無料で試す',
               text: 'コード生成を開始'
             }
           ]
         }
-      } as any,
+      },
       {
         type: 'text',
         text: '作りたいコードのカテゴリを選んでください：',
@@ -103,7 +102,7 @@ export class MessageTemplates {
             }
           ]
         }
-      } as TextMessage
+      }
     ]
   }
 
