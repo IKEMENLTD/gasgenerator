@@ -29,10 +29,88 @@ export class MessageTemplates {
       text
     }
   }
-  static createWelcomeMessage(): TextMessage {
+  static createWelcomeMessage(): Message[] {
+    return [
+      {
+        type: 'text',
+        text: '🎉 GAS Generator へようこそ！\n\nGoogle Apps Scriptのコードを自動生成するLINE Botです。\n\n✨ まずは無料トライアルでお試しください！'
+      },
+      {
+        type: 'template',
+        altText: '決済リンク',
+        template: {
+          type: 'buttons',
+          title: '🚀 有料プランのご案内',
+          text: '無制限でコード生成が可能に！',
+          actions: [
+            {
+              type: 'uri',
+              label: '💳 今すぐ購入（¥980/月）',
+              uri: 'https://buy.stripe.com/7sY3cv2So0v78ICbSz6oo09'
+            },
+            {
+              type: 'message',
+              label: '🆓 無料で試す',
+              text: 'コード生成を開始'
+            }
+          ]
+        }
+      } as any,
+      {
+        type: 'text',
+        text: '作りたいコードのカテゴリを選んでください：',
+        quickReply: {
+          items: [
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '📊 スプレッドシート',
+                text: 'スプレッドシート操作'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '📧 Gmail',
+                text: 'Gmail自動化'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '📅 カレンダー',
+                text: 'カレンダー連携'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '🔗 API',
+                text: 'API連携'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '✨ その他',
+                text: 'その他'
+              }
+            }
+          ]
+        }
+      } as TextMessage
+    ]
+  }
+
+  static createCategorySelection(): TextMessage {
     return {
       type: 'text',
-      text: PROMPT_MESSAGES.WELCOME,
+      text: '「カレンダー連携」を選択しました。\n具体的な内容を選んでください：',
       quickReply: {
         items: [
           {
@@ -78,10 +156,6 @@ export class MessageTemplates {
         ]
       }
     }
-  }
-
-  static createCategorySelection(): TextMessage {
-    return this.createWelcomeMessage()
   }
 
   static createSubcategorySelection(categoryId: string): Message {

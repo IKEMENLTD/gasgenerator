@@ -190,7 +190,7 @@ async function processWebhookEvent(
       
       session = await SessionQueries.createSession(user.id, { status: 'active' })
       
-      await lineClient.replyMessage(replyToken, [MessageTemplates.createWelcomeMessage()])
+      await lineClient.replyMessage(replyToken, MessageTemplates.createWelcomeMessage())
       
       return { replied: true, queued: false, sessionUpdated: true }
     }
@@ -237,8 +237,20 @@ async function handleCategorySelection(
   const categoryId = getCategoryIdByName(messageText)
   
   if (!categoryId) {
-    // 無効なカテゴリの場合は再度選択を促す
-    await lineClient.replyMessage(replyToken, [MessageTemplates.createCategorySelection()])
+    // 無効なカテゴリの場合は再度選択を促す  
+    await lineClient.replyMessage(replyToken, [{
+      type: 'text',
+      text: 'カテゴリをもう一度選択してください。',
+      quickReply: {
+        items: [
+          { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+          { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+          { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+          { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
+          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }}
+        ]
+      }
+    }])
     return { replied: true, queued: false, sessionUpdated: false }
   }
 
