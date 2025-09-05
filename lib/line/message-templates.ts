@@ -45,7 +45,7 @@ export class MessageTemplates {
           actions: [
             {
               type: 'uri',
-              label: '💳 今すぐ購入（¥980/月）',
+              label: '💳 今すぐ購入（¥10,000/月）',
               uri: 'https://buy.stripe.com/7sY3cv2So0v78ICbSz6oo09'
             },
             {
