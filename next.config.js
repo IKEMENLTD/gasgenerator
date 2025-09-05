@@ -12,6 +12,17 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@line/bot-sdk'],
   },
+  webpack: (config, { isServer }) => {
+    // Renderのビルド環境でのパス解決を修正
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': __dirname,
+      '@/lib': __dirname + '/lib',
+      '@/app': __dirname + '/app',
+      '@/types': __dirname + '/types',
+    }
+    return config
+  },
 }
 
 module.exports = nextConfig
