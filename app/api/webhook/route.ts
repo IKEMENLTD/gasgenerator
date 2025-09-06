@@ -453,29 +453,42 @@ async function handleFollowEvent(event: any): Promise<void> {
   
   try {
     // ユーザー作成・更新
-    await UserQueries.createOrUpdate(userId)
+    const user = await UserQueries.createOrUpdate(userId)
     
-    // 決済ボタン付きのウェルカムメッセージを送信
-    const welcomeMessages = MessageTemplates.createWelcomeMessage()
+    // 既にプレミアムユーザーかチェック
+    const isPremium = user?.subscription_status === 'premium' && 
+                     user?.subscription_end_date && 
+                     new Date(user.subscription_end_date) > new Date()
     
-    // LINE User IDをBase64エンコードしてStripeリンクに追加
-    const encodedUserId = Buffer.from(userId).toString('base64')
-    
-    // Stripeリンクにclient_reference_idを追加
-    const updatedMessages = welcomeMessages.map(msg => {
-      if (msg.type === 'template' && 'template' in msg && msg.template.type === 'buttons') {
-        msg.template.actions = msg.template.actions.map((action: any) => {
-          if (action.type === 'uri' && action.uri.includes('stripe.com')) {
-            // URLにclient_reference_idパラメータを追加
-            action.uri += `?client_reference_id=${encodedUserId}`
-          }
-          return action
-        })
-      }
-      return msg
-    })
-    
-    await lineClient.pushMessage(userId, updatedMessages)
+    if (isPremium) {
+      // プレミアムユーザーには通常のウェルカムメッセージ
+      await lineClient.pushMessage(userId, [{
+        type: 'text',
+        text: '🎉 おかえりなさい！\n\nプレミアムプランご利用中です。\n無制限でGASコードを生成できます。\n\n「スプレッドシート操作」「Gmail自動化」など、作りたいコードのカテゴリを送信してください。'
+      }])
+    } else {
+      // 無料ユーザーまたは期限切れユーザーには決済ボタン付きメッセージ
+      const welcomeMessages = MessageTemplates.createWelcomeMessage()
+      
+      // LINE User IDをBase64エンコードしてStripeリンクに追加
+      const encodedUserId = Buffer.from(userId).toString('base64')
+      
+      // Stripeリンクにclient_reference_idを追加
+      const updatedMessages = welcomeMessages.map(msg => {
+        if (msg.type === 'template' && 'template' in msg && msg.template.type === 'buttons') {
+          msg.template.actions = msg.template.actions.map((action: any) => {
+            if (action.type === 'uri' && action.uri.includes('stripe.com')) {
+              // URLにclient_reference_idパラメータを追加
+              action.uri += `?client_reference_id=${encodedUserId}`
+            }
+            return action
+          })
+        }
+        return msg
+      })
+      
+      await lineClient.pushMessage(userId, updatedMessages)
+    }
     
   } catch (error) {
     logger.error('Failed to send welcome message', { userId, error })
