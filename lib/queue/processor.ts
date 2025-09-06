@@ -180,7 +180,7 @@ export class QueueProcessor {
       try {
         await CodeQueries.saveGeneratedCode({
           user_id: job.user_id || job.line_user_id,
-          session_id: job.session_id || `job_${jobId}`,
+          session_id: typeof job.session_id === 'string' ? job.session_id : job.session_id?.toString() || `job_${jobId}`,
           requirements_summary: this.summarizeRequirements(job.requirements),
           generated_code: codeResponse.code,
           explanation: codeResponse.explanation,
@@ -271,29 +271,32 @@ export class QueueProcessor {
         })
       }
 
-      // 3. コード（4000文字を超える場合は分割）
+      // 3. コード（コピペしやすい形式で）
       if (codeResponse.code) {
         const code = codeResponse.code
-        const MAX_CODE_LENGTH = 4000
+        const MAX_CODE_LENGTH = 3500  // LINEの文字数制限を考慮
         
         if (code.length <= MAX_CODE_LENGTH) {
           messages.push({
             type: 'text',
-            text: `【コード】\n\`\`\`javascript\n${code}\n\`\`\``
+            text: `📝 【GASコード】\n\n以下のコードをコピーしてください：\n\n${code}\n\n✨ コピー後はGoogle Apps Scriptエディタに貼り付けてください`
           })
         } else {
-          // コードが長い場合は要約版を送信
-          const truncatedCode = code.substring(0, 1000)
+          // コードが長い場合は分割送信
+          const part1 = code.substring(0, MAX_CODE_LENGTH)
+          const part2 = code.substring(MAX_CODE_LENGTH)
+          
           messages.push({
             type: 'text',
-            text: `【コード（抜粋）】\n\`\`\`javascript\n${truncatedCode}\n...\n\n// コードが長いため省略されました\n// 全体は${code.length}文字です\n\`\`\``
+            text: `📝 【GASコード 前半】\n\n${part1}`
           })
           
-          // 完全版へのリンクや保存先を案内
-          messages.push({
-            type: 'text',
-            text: '💡 完全なコードはWebサイトからダウンロードできます。\n\nアカウントページにアクセスしてください。'
-          })
+          if (part2.length > 0) {
+            messages.push({
+              type: 'text',
+              text: `📝 【GASコード 後半】\n\n${part2}\n\n✨ 前半と後半をつなげてコピーしてください`
+            })
+          }
         }
       }
 
@@ -306,9 +309,18 @@ export class QueueProcessor {
           quickReply: {
             items: [
               { type: 'action', action: { type: 'message', label: '🆕 新しいコード', text: '新しいコードを作りたい' }},
-              { type: 'action', action: { type: 'message', label: '📝 修正', text: '修正したい' }}
+              { type: 'action', action: { type: 'message', label: '📝 修正', text: '修正したい' }},
+              { type: 'action', action: { type: 'message', label: '📷 エラースクリーンショット', text: 'エラーのスクリーンショットを送る' }}
             ]
           }
+        })
+      }
+
+      // 使い方説明を追加
+      if (messages.length >= 5) {
+        messages.push({
+          type: 'text',
+          text: '📚 使い方のヒント：\n\n✅ コードをコピペしたらGASエディタに貼り付け\n🔧 エラーが出たらスクリーンショットを送ってください\n🆕 新しいコードが必要な時は「新しいコードを作りたい」と送信'
         })
       }
 
