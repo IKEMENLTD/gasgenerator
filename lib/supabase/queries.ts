@@ -110,7 +110,7 @@ export class QueueQueries {
       return data
     } catch (error) {
       console.error('QueueQueries.addToQueue error:', error)
-      // 仮のレスポンス
+      // 仮のレスポンス（DBエラー時でも動作継続）
       return {
         id: `temp_${Date.now()}`,
         ...jobData,
@@ -120,30 +120,219 @@ export class QueueQueries {
   }
   
   static async getNextJobs(batchSize: number) {
-    return []
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('generation_queue')
+        .select('*')
+        .eq('status', 'pending')
+        .order('priority', { ascending: false })
+        .order('created_at', { ascending: true })
+        .limit(batchSize)
+      
+      if (error) {
+        console.error('Error getting next jobs:', error)
+        return []
+      }
+      
+      return data || []
+    } catch (error) {
+      console.error('QueueQueries.getNextJobs error:', error)
+      return []
+    }
   }
   
   static async markJobProcessing(jobId: string) {
-    return
+    try {
+      const { error } = await supabaseAdmin
+        .from('generation_queue')
+        .update({
+          status: 'processing',
+          processed_at: new Date().toISOString()
+        })
+        .eq('id', jobId)
+      
+      if (error) {
+        console.error('Error marking job as processing:', error)
+      }
+    } catch (error) {
+      console.error('QueueQueries.markJobProcessing error:', error)
+    }
   }
   
   static async markJobCompleted(jobId: string) {
-    return
+    try {
+      const { error } = await supabaseAdmin
+        .from('generation_queue')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', jobId)
+      
+      if (error) {
+        console.error('Error marking job as completed:', error)
+      }
+    } catch (error) {
+      console.error('QueueQueries.markJobCompleted error:', error)
+    }
   }
   
   static async markJobFailed(jobId: string, errorMessage: string) {
-    return
+    try {
+      // リトライカウントを増やす
+      const { data: job, error: fetchError } = await supabaseAdmin
+        .from('generation_queue')
+        .select('retry_count, max_retries')
+        .eq('id', jobId)
+        .single()
+      
+      if (fetchError || !job) {
+        console.error('Error fetching job for retry:', fetchError)
+        return
+      }
+      
+      const newRetryCount = (job.retry_count || 0) + 1
+      const status = newRetryCount >= (job.max_retries || 3) ? 'failed' : 'pending'
+      
+      const { error } = await supabaseAdmin
+        .from('generation_queue')
+        .update({
+          status,
+          retry_count: newRetryCount,
+          error_message: errorMessage,
+          processed_at: new Date().toISOString()
+        })
+        .eq('id', jobId)
+      
+      if (error) {
+        console.error('Error marking job as failed:', error)
+      }
+    } catch (error) {
+      console.error('QueueQueries.markJobFailed error:', error)
+    }
   }
   
   static async updateJobStatus(jobId: string, updates: any) {
-    return
+    try {
+      const { error } = await supabaseAdmin
+        .from('generation_queue')
+        .update(updates)
+        .eq('id', jobId)
+      
+      if (error) {
+        console.error('Error updating job status:', error)
+      }
+    } catch (error) {
+      console.error('QueueQueries.updateJobStatus error:', error)
+    }
+  }
+}
+
+export class UsageQueries {
+  static async getDailyUsage(userId: string) {
+    try {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      const { data, error } = await supabaseAdmin
+        .from('claude_usage')
+        .select('total_tokens, total_cost')
+        .eq('user_id', userId)
+        .gte('created_at', today.toISOString())
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('Error getting daily usage:', error)
+        return { tokens: 0, cost: 0 }
+      }
+      
+      const totalTokens = data?.reduce((sum, row) => sum + (row.total_tokens || 0), 0) || 0
+      const totalCost = data?.reduce((sum, row) => sum + (row.total_cost || 0), 0) || 0
+      
+      return { tokens: totalTokens, cost: totalCost }
+    } catch (error) {
+      console.error('UsageQueries.getDailyUsage error:', error)
+      return { tokens: 0, cost: 0 }
+    }
+  }
+  
+  static async logClaudeUsage(data: {
+    userId: string
+    sessionId?: string
+    model: string
+    promptTokens: number
+    completionTokens: number
+    totalTokens: number
+    cost: number
+  }) {
+    try {
+      const { error } = await supabaseAdmin
+        .from('claude_usage')
+        .insert({
+          user_id: data.userId,
+          session_id: data.sessionId,
+          model: data.model,
+          prompt_tokens: data.promptTokens,
+          completion_tokens: data.completionTokens,
+          total_tokens: data.totalTokens,
+          total_cost: data.cost,
+          created_at: new Date().toISOString()
+        })
+      
+      if (error) {
+        console.error('Error logging Claude usage:', error)
+      }
+    } catch (error) {
+      console.error('UsageQueries.logClaudeUsage error:', error)
+    }
+  }
+  
+  static async getMonthlyUsage(userId: string) {
+    try {
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+      
+      const { data, error } = await supabaseAdmin
+        .from('claude_usage')
+        .select('total_tokens, total_cost')
+        .eq('user_id', userId)
+        .gte('created_at', startOfMonth.toISOString())
+      
+      if (error) {
+        console.error('Error getting monthly usage:', error)
+        return { tokens: 0, cost: 0 }
+      }
+      
+      const totalTokens = data?.reduce((sum, row) => sum + (row.total_tokens || 0), 0) || 0
+      const totalCost = data?.reduce((sum, row) => sum + (row.total_cost || 0), 0) || 0
+      
+      return { tokens: totalTokens, cost: totalCost }
+    } catch (error) {
+      console.error('UsageQueries.getMonthlyUsage error:', error)
+      return { tokens: 0, cost: 0 }
+    }
   }
 }
 
 export class MetricsQueries {
   static async recordMetric(metric: any) {
-    // メトリクス記録（今は何もしない）
-    return
+    try {
+      const { error } = await supabaseAdmin
+        .from('metrics')
+        .insert({
+          metric_type: metric.metric_type,
+          metric_value: metric.metric_value,
+          metadata: metric.metadata,
+          created_at: new Date().toISOString()
+        })
+      
+      if (error) {
+        console.error('Error recording metric:', error)
+      }
+    } catch (error) {
+      console.error('MetricsQueries.recordMetric error:', error)
+    }
   }
 }
 

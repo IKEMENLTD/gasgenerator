@@ -107,7 +107,20 @@ CREATE TABLE IF NOT EXISTS generated_codes (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Step 9: metricsテーブル作成
+-- Step 9: claude_usageテーブル作成（使用量追跡用）
+CREATE TABLE IF NOT EXISTS claude_usage (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  session_id UUID REFERENCES conversation_sessions(id),
+  model VARCHAR(100),
+  prompt_tokens INTEGER,
+  completion_tokens INTEGER,
+  total_tokens INTEGER,
+  total_cost NUMERIC(10, 4),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Step 10: metricsテーブル作成
 CREATE TABLE IF NOT EXISTS metrics (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   metric_type VARCHAR(100) NOT NULL,
@@ -116,7 +129,11 @@ CREATE TABLE IF NOT EXISTS metrics (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Step 10: インデックス追加（追加分）
+-- Step 11: インデックス追加（追加分）
+CREATE INDEX IF NOT EXISTS idx_claude_usage_user_id ON claude_usage(user_id);
+CREATE INDEX IF NOT EXISTS idx_claude_usage_created_at ON claude_usage(created_at);
+
+-- Step 12: その他のインデックス
 CREATE INDEX IF NOT EXISTS idx_conversation_sessions_user_id ON conversation_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_conversation_sessions_status ON conversation_sessions(status);
 CREATE INDEX IF NOT EXISTS idx_generation_queue_status ON generation_queue(status);
