@@ -20,8 +20,8 @@ const imageHandler = new LineImageHandler()
 
 // 重複イベント検出用のメモリキャッシュ（メモリリーク対策付き）
 const recentEventKeys = new Map<string, number>()
-const MAX_CACHE_SIZE = 100 // 1000から100に削減
-const CACHE_TTL = 30000 // 30秒
+const MAX_CACHE_SIZE = 20 // メモリ節約のため20に制限
+const CACHE_TTL = 10000 // 10秒に短縮
 
 // キャッシュクリーンアップ関数（setIntervalは使わない）
 function cleanupCache() {
@@ -491,7 +491,11 @@ async function handleFollowEvent(event: any): Promise<void> {
     }
     
   } catch (error) {
-    logger.error('Failed to send welcome message', { userId, error })
+    logger.error('Failed to send welcome message', { 
+      userId, 
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    })
   }
 }
 

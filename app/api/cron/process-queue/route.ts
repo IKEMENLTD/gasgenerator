@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { QueueProcessor } from '@/lib/queue/processor'
 import { QueueManager } from '@/lib/queue/manager'
 import { logger } from '@/lib/utils/logger'
+import { MemoryMonitor } from '@/lib/utils/memory-monitor'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60 // 最大60秒
@@ -70,10 +71,8 @@ export async function GET(req: NextRequest) {
 
     logger.info('Queue processing started')
 
-    // メモリクリーンアップ（メモリリーク対策）
-    if (global.gc) {
-      global.gc()
-    }
+    // メモリチェックとクリーンアップ
+    MemoryMonitor.checkMemory()
 
     // シングルトンパターンでQueueProcessorを使って処理
     if (!processor) {
