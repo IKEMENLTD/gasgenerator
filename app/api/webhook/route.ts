@@ -10,9 +10,9 @@ import { ConversationSessionStore } from '../../../lib/conversation/session-stor
 import { LineImageHandler } from '../../../lib/line/image-handler'
 import { rateLimiters } from '../../../lib/middleware/rate-limiter'
 
-// エッジランタイム使用
-export const runtime = 'edge'
-export const maxDuration = 10
+// Node.jsランタイムを使用（AI処理のため）
+export const runtime = 'nodejs'
+export const maxDuration = 60
 
 const lineClient = new LineApiClient()
 const sessionStore = ConversationSessionStore.getInstance()

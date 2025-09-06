@@ -3,7 +3,7 @@ import { QueueProcessor } from '@/lib/queue/processor'
 import { QueueManager } from '@/lib/queue/manager'
 import { logger } from '@/lib/utils/logger'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 export const maxDuration = 60 // 最大60秒
 
 export async function GET(req: NextRequest) {

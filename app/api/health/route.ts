@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 export const maxDuration = 5
 
 interface HealthStatus {
