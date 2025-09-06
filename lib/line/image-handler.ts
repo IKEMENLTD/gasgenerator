@@ -1,6 +1,5 @@
 import { LineApiClient } from './client'
 import { logger } from '../utils/logger'
-import axios from 'axios'
 
 export class LineImageHandler {
   private lineClient: LineApiClient
@@ -70,14 +69,19 @@ export class LineImageHandler {
   private async downloadImage(messageId: string): Promise<Buffer> {
     const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`
     
-    const response = await axios.get(url, {
+    const response = await fetch(url, {
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}`
-      },
-      responseType: 'arraybuffer'
+      }
     })
     
-    return Buffer.from(response.data)
+    if (!response.ok) {
+      throw new Error(`Failed to download image: ${response.status}`)
+    }
+    
+    const arrayBuffer = await response.arrayBuffer()
+    return Buffer.from(arrayBuffer)
   }
   
   /**
