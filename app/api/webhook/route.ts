@@ -12,7 +12,7 @@ import { rateLimiters } from '../../../lib/middleware/rate-limiter'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
-export const maxDuration = 60
+export const maxDuration = 30  // Webhookは30秒で応答
 
 const lineClient = new LineApiClient()
 const sessionStore = ConversationSessionStore.getInstance()
@@ -401,7 +401,7 @@ async function startCodeGeneration(
 
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
-      text: '🚀 承知しました！\n\nコードを生成中です...\n1-2分ほどお待ちください。\n\n生成が完了したらお知らせします！'
+      text: '🚀 承知しました！\n\nコードを生成中です...\n\n✅ キューに追加済み\n⏰ 予想時間：2-3分\n\n生成が完了したら自動で通知します！\n\n※ しばらくお待ちください'
     }])
     
   } catch (error) {
