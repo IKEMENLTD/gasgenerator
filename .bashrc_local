@@ -1,0 +1,8 @@
+# Git push alias
+alias gp='git add -A && git commit -m "Auto commit $(date +%Y%m%d_%H%M%S)" && git push origin main'
+alias gpush='git push origin main'
+
+# Set GitHub token if available
+if [ -f ~/.github_token ]; then
+    export GITHUB_TOKEN=$(cat ~/.github_token)
+fi

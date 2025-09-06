@@ -144,19 +144,46 @@ ${conversationHistory}
 次の返答を生成してください。
 要件が十分に集まった場合は、最後に「requirement_complete: true」を追加してください。
 
-返答は以下の形式で：
+必ず以下のJSON形式で返答してください（日本語のメッセージ部分以外は英語で記述）：
 {
-  "reply": "ユーザーへの返信メッセージ",
+  "reply": "ユーザーへの返信メッセージ（日本語）",
   "requirements": {
     "収集した要件のキー": "値"
   },
-  "requirement_complete": false または true
-}`
+  "requirement_complete": false
+}
+
+重要：返答全体を有効なJSONとして返してください。JSONのみを返し、他のテキストは含めないでください。`
         }]
       })
 
       const responseText = (response as any).content[0].text
-      const aiResponse = JSON.parse(responseText)
+      
+      // JSONパースのエラーハンドリング
+      let aiResponse: any
+      try {
+        // レスポンスがJSONかチェック
+        const trimmedText = responseText.trim()
+        if (!trimmedText.startsWith('{')) {
+          // JSON形式でない場合は、デフォルトレスポンスを作成
+          console.warn('Non-JSON response from Claude:', trimmedText.substring(0, 100))
+          aiResponse = {
+            reply: trimmedText,
+            requirements: {},
+            requirement_complete: false
+          }
+        } else {
+          aiResponse = JSON.parse(trimmedText)
+        }
+      } catch (parseError) {
+        console.error('AI response parse error:', parseError)
+        // パースエラー時のフォールバック
+        aiResponse = {
+          reply: 'もう少し詳しく教えていただけますか？どのような処理を自動化したいですか？',
+          requirements: {},
+          requirement_complete: false
+        }
+      }
       
       // 要件を更新
       if (aiResponse.requirements) {
