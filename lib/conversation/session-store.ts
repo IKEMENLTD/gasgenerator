@@ -14,10 +14,27 @@ export class ConversationSessionStore {
   private readonly SESSION_TIMEOUT = 30 * 60 * 1000
   // 最大保持セッション数
   private readonly MAX_SESSIONS = 1000
+  // クリーンアップタイマーの参照を保持
+  private cleanupTimer?: NodeJS.Timeout
   
   private constructor() {
     // 定期的なクリーンアップ（10分ごと）
-    setInterval(() => this.cleanup(), 10 * 60 * 1000)
+    this.cleanupTimer = setInterval(() => this.cleanup(), 10 * 60 * 1000)
+  }
+  
+  // インスタンスの破棄メソッドを追加
+  destroy(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = undefined
+    }
+    // すべてのセッションタイマーをクリア
+    this.sessions.forEach((session) => {
+      if (session.timeoutTimer) {
+        clearTimeout(session.timeoutTimer)
+      }
+    })
+    this.sessions.clear()
   }
   
   static getInstance(): ConversationSessionStore {

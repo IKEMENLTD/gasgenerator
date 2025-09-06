@@ -93,14 +93,26 @@ function timingSafeEqual(a: string, b: string): boolean {
 // リクエストIDの生成（追跡用）
 export function generateRequestId(): string {
   const timestamp = Date.now().toString(36)
-  const randomPart = Math.random().toString(36).substring(2, 9)
+  // 暗号学的に安全な乱数を使用
+  const array = new Uint8Array(6)
+  crypto.getRandomValues(array)
+  const randomPart = Array.from(array)
+    .map(b => b.toString(36))
+    .join('')
+    .substring(0, 9)
   return `req_${timestamp}_${randomPart}`
 }
 
 // セッションIDの生成
 export function generateSessionId(): string {
   const timestamp = Date.now().toString(36)
-  const randomPart = Math.random().toString(36).substring(2, 9)
+  // 暗号学的に安全な乱数を使用
+  const array = new Uint8Array(6)
+  crypto.getRandomValues(array)
+  const randomPart = Array.from(array)
+    .map(b => b.toString(36))
+    .join('')
+    .substring(0, 9)
   return `session_${timestamp}_${randomPart}`
 }
 
