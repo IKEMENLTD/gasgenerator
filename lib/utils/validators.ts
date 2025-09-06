@@ -3,18 +3,73 @@ import { z } from 'zod'
 // LINE Webhook Event validation
 export const LineWebhookEventSchema = z.object({
   destination: z.string(),
-  events: z.array(z.object({
-    type: z.literal('message'),
-    message: z.object({
-      type: z.literal('text'),
-      text: z.string().min(1).max(2000)
+  events: z.array(z.union([
+    // メッセージイベント（テキスト）
+    z.object({
+      type: z.literal('message'),
+      message: z.object({
+        type: z.literal('text'),
+        text: z.string().min(1).max(2000)
+      }),
+      source: z.object({
+        userId: z.string().regex(/^U[0-9a-fA-F]{32}$/, 'Invalid LINE User ID format')
+      }),
+      replyToken: z.string(),
+      timestamp: z.number()
     }),
-    source: z.object({
-      userId: z.string().regex(/^U[0-9a-fA-F]{32}$/, 'Invalid LINE User ID format')
+    // メッセージイベント（画像）
+    z.object({
+      type: z.literal('message'),
+      message: z.object({
+        type: z.literal('image'),
+        id: z.string()
+      }),
+      source: z.object({
+        userId: z.string().regex(/^U[0-9a-fA-F]{32}$/, 'Invalid LINE User ID format')
+      }),
+      replyToken: z.string(),
+      timestamp: z.number()
     }),
-    replyToken: z.string(),
-    timestamp: z.number()
-  }))
+    // メッセージイベント（ファイル）
+    z.object({
+      type: z.literal('message'),
+      message: z.object({
+        type: z.literal('file'),
+        id: z.string(),
+        fileName: z.string().optional()
+      }),
+      source: z.object({
+        userId: z.string().regex(/^U[0-9a-fA-F]{32}$/, 'Invalid LINE User ID format')
+      }),
+      replyToken: z.string(),
+      timestamp: z.number()
+    }),
+    // フォローイベント
+    z.object({
+      type: z.literal('follow'),
+      source: z.object({
+        userId: z.string().regex(/^U[0-9a-fA-F]{32}$/, 'Invalid LINE User ID format')
+      }),
+      replyToken: z.string(),
+      timestamp: z.number()
+    }),
+    // アンフォローイベント
+    z.object({
+      type: z.literal('unfollow'),
+      source: z.object({
+        userId: z.string().regex(/^U[0-9a-fA-F]{32}$/, 'Invalid LINE User ID format')
+      }),
+      timestamp: z.number()
+    }),
+    // その他のイベント（無視する）
+    z.object({
+      type: z.string(),
+      source: z.object({
+        userId: z.string().optional()
+      }).optional(),
+      timestamp: z.number().optional()
+    })
+  ]))
 })
 
 // セッション更新リクエスト

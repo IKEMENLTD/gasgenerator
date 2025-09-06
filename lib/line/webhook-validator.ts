@@ -55,30 +55,18 @@ export class LineWebhookValidator {
         }
       }
 
-      // 4. イベントフィルタリング（テキストメッセージのみ）
-      const textEvents = validationResult.data.events.filter(event => 
-        event.type === 'message' && 
-        event.message.type === 'text' &&
-        event.replyToken
-      )
-
-      if (textEvents.length === 0) {
-        logger.debug('No text message events found', { requestId })
-        return {
-          isValid: true,
-          events: [],
-          errorMessage: 'No processable events'
-        }
-      }
+      // 4. すべてのイベントを返す（フィルタリングは呼び出し側で行う）
+      const allEvents = validationResult.data.events
 
       logger.info('Webhook validation successful', { 
         requestId, 
-        eventCount: textEvents.length 
+        eventCount: allEvents.length,
+        eventTypes: allEvents.map(e => e.type)
       })
 
       return {
         isValid: true,
-        events: textEvents as any
+        events: allEvents as any
       }
 
     } catch (error) {
