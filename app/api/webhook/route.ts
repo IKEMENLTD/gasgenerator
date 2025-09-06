@@ -213,16 +213,30 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     let context = sessionStore.get(userId)
 
     // エラースクリーンショット待ち受けモード
-    if (messageText === 'エラーのスクリーンショットを送る' || messageText.includes('スクショ')) {
+    if (messageText === 'エラーのスクリーンショットを送る' || 
+        messageText.includes('エラー') && messageText.includes('スクショ') ||
+        messageText === '📷 エラースクリーンショット') {
+      
+      // 既存のコンテキストを維持
+      const existingContext = context || {
+        messages: [],
+        category: null,
+        subcategory: null,
+        extractedRequirements: {},
+        currentStep: 1,
+        readyForCode: false
+      }
+      
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
-        text: '📸 エラーのスクリーンショットを送信してください。\n\n画像を確認後、エラーの原因と解決方法をお伝えします。'
+        text: '📸 エラーのスクリーンショットを送信してください。\n\n画像を確認後、エラーの原因と解決方法をお伝えします。\n\n※画像を送信するか、「キャンセル」と入力してください。'
       }])
       
-      // スクショ待ちモードをセット
+      // スクショ待ちモードをセット（既存コンテキストを保持）
       sessionStore.set(userId, {
-        ...context || ConversationalFlow.resetConversation('spreadsheet'),
-        waitingForScreenshot: true
+        ...existingContext,
+        waitingForScreenshot: true,
+        lastGeneratedCode: existingContext.lastGeneratedCode || null
       } as any)
       
       return true

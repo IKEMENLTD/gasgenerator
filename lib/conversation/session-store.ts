@@ -11,10 +11,10 @@ export class ConversationSessionStore {
     timeoutTimer?: NodeJS.Timeout
   }>
   
-  // 5分のタイムアウト（メモリ節約のため大幅短縮）
-  private readonly SESSION_TIMEOUT = 5 * 60 * 1000
-  // 最大保持セッション数（メモリ節約のため10に制限）
-  private readonly MAX_SESSIONS = 10
+  // 30分のタイムアウト（ユーザー体験を優先）
+  private readonly SESSION_TIMEOUT = 30 * 60 * 1000
+  // 最大保持セッション数（メモリとUXのバランス）
+  private readonly MAX_SESSIONS = 20
   // クリーンアップタイマーの参照を保持
   private cleanupTimer?: NodeJS.Timeout
   
