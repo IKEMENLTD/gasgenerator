@@ -1,6 +1,9 @@
 import { QueueQueries } from '@/lib/supabase/queries'
 import { logger } from '@/lib/utils/logger'
 import { QUEUE_CONFIG } from '@/lib/constants/config'
+import { RetryHandler } from '@/lib/utils/retry-handler'
+import { AppError } from '@/lib/errors/app-error'
+import { DatabaseTransaction } from '@/lib/database/transaction'
 import type { QueueJob, QueueJobInsert } from '@/types/database'
 import type { CodeGenerationRequest } from '@/types/claude'
 
@@ -17,40 +20,45 @@ export class QueueManager {
     request: CodeGenerationRequest,
     options: QueueAddOptions = {}
   ): Promise<QueueJob> {
-    try {
-      const jobData: QueueJobInsert = {
-        user_id: request.userId,
-        line_user_id: request.lineUserId,
-        session_id: request.sessionId,
-        requirements: {
+    return RetryHandler.execute(async () => {
+      try {
+        const jobData: QueueJobInsert = {
+          user_id: request.userId,
+          line_user_id: request.lineUserId,
+          session_id: request.sessionId,
+          requirements: {
+            category: request.category,
+            subcategory: request.subcategory,
+            requirements: request.requirements,
+            userHistory: request.userHistory
+          },
+          status: 'pending',
+          priority: options.priority || 0,
+          max_retries: options.maxRetries || QUEUE_CONFIG.MAX_CONCURRENT_JOBS
+        }
+
+        const job = await QueueQueries.addToQueue(jobData)
+
+        logger.info('Job added to queue', {
+          jobId: job.id,
+          userId: request.userId,
           category: request.category,
-          subcategory: request.subcategory,
-          requirements: request.requirements,
-          userHistory: request.userHistory
-        },
-        status: 'pending',
-        priority: options.priority || 0,
-        max_retries: options.maxRetries || QUEUE_CONFIG.MAX_CONCURRENT_JOBS
+          priority: job.priority
+        })
+
+        return job
+
+      } catch (error) {
+        logger.error('Failed to add job to queue', {
+          userId: request.userId,
+          error
+        })
+        throw AppError.databaseError('Queue job insertion', error)
       }
-
-      const job = await QueueQueries.addToQueue(jobData)
-
-      logger.info('Job added to queue', {
-        jobId: job.id,
-        userId: request.userId,
-        category: request.category,
-        priority: job.priority
-      })
-
-      return job
-
-    } catch (error) {
-      logger.error('Failed to add job to queue', {
-        userId: request.userId,
-        error
-      })
-      throw error
-    }
+    }, {
+      maxAttempts: 3,
+      initialDelay: 1000
+    })
   }
 
   /**
@@ -106,14 +114,41 @@ export class QueueManager {
   /**
    * ジョブを失敗状態にする（リトライ考慮）
    */
-  static async failJob(jobId: string, errorMessage: string): Promise<void> {
+  static async failJob(jobId: string, errorMessage: string, shouldRetry: boolean = true): Promise<void> {
     try {
-      await QueueQueries.markJobFailed(jobId, errorMessage)
-      
-      logger.warn('Job failed', { jobId, errorMessage })
+      // ジョブ情報を取得
+      const job = await QueueQueries.getJob(jobId)
+      if (!job) {
+        throw new Error('Job not found')
+      }
+
+      const retryCount = (job.retry_count || 0) + 1
+      const maxRetries = job.max_retries || 3
+
+      // リトライ可能かチェック
+      if (shouldRetry && retryCount < maxRetries) {
+        // リトライカウントを更新してpendingに戻す
+        await QueueQueries.retryJob(jobId, retryCount)
+        
+        logger.warn('Job marked for retry', { 
+          jobId, 
+          retryCount,
+          maxRetries,
+          errorMessage 
+        })
+      } else {
+        // 最終的に失敗
+        await QueueQueries.markJobFailed(jobId, errorMessage)
+        
+        logger.error('Job permanently failed', { 
+          jobId, 
+          errorMessage,
+          retryCount 
+        })
+      }
 
     } catch (error) {
-      logger.error('Failed to mark job as failed', { jobId, error })
+      logger.error('Failed to handle job failure', { jobId, error })
       throw error
     }
   }
@@ -129,16 +164,8 @@ export class QueueManager {
     totalToday: number
   }> {
     try {
-      // TODO: 実際のクエリ実装
-      // 現在は仮の値を返す
-      return {
-        pending: 0,
-        processing: 0,
-        completed: 0,
-        failed: 0,
-        totalToday: 0
-      }
-
+      const stats = await QueueQueries.getQueueStats()
+      return stats
     } catch (error) {
       logger.error('Failed to get queue stats', { error })
       return {
