@@ -26,6 +26,27 @@ export class ClaudeUsageTracker {
     retryAfter?: number
   }> {
     try {
+      // プレミアムユーザーのチェック
+      if (userId) {
+        const { supabaseAdmin } = await import('@/lib/supabase/client')
+        const { data: user, error } = await supabaseAdmin
+          .from('users')
+          .select('subscription_status, subscription_end_date')
+          .eq('line_user_id', userId)
+          .maybeSingle()
+        
+        if (!error && user && user.subscription_status === 'premium') {
+          // 有効期限チェック
+          if (user.subscription_end_date) {
+            const endDate = new Date(user.subscription_end_date)
+            if (endDate > new Date()) {
+              // プレミアムユーザーは制限なし
+              return { allowed: true }
+            }
+          }
+        }
+      }
+
       // 日次制限チェック
       const dailyCheck = await this.checkDailyLimits(userId)
       if (!dailyCheck.allowed) {

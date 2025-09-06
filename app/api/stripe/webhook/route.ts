@@ -97,8 +97,14 @@ export async function POST(req: NextRequest) {
     switch (eventType) {
       case 'checkout.session.completed':
         // 決済完了時の処理
-        const session = body.data.object
+        const session = event.data.object
         const lineUserId = session.client_reference_id // URLパラメータから取得
+        
+        logger.info('Payment completed', { 
+          sessionId: session.id, 
+          clientReferenceId: lineUserId,
+          customerId: session.customer 
+        })
         
         if (lineUserId) {
           // Base64デコード
@@ -118,13 +124,28 @@ export async function POST(req: NextRequest) {
             logger.error('Failed to update user subscription', { error, lineUserId: decodedLineUserId })
           } else {
             logger.info('User subscription activated', { lineUserId: decodedLineUserId })
+            
+            // 決済完了メッセージをLINEで送信
+            try {
+              const LineApiClient = (await import('@/lib/line/client')).LineApiClient
+              const lineClient = new LineApiClient()
+              
+              await lineClient.pushMessage(decodedLineUserId, [{
+                type: 'text',
+                text: '🎉 決済が完了しました！\n\n月額プランが有効化されました。\n無制限でGASコードを生成できます。\n\n「スプレッドシート操作」などのカテゴリを送信してお試しください！'
+              }])
+            } catch (lineError) {
+              logger.error('Failed to send payment confirmation', { lineError })
+            }
           }
+        } else {
+          logger.error('Missing client_reference_id in payment session', { sessionId: session.id })
         }
         break
       
       case 'customer.subscription.deleted':
         // サブスクリプションキャンセル時
-        const subscription = body.data.object
+        const subscription = event.data.object
         
         await supabaseAdmin
           .from('users')

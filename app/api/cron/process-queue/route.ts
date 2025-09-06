@@ -6,6 +6,9 @@ import { logger } from '@/lib/utils/logger'
 export const runtime = 'nodejs'
 export const maxDuration = 60 // 最大60秒
 
+// グローバルインスタンスを作成（メモリリーク対策）
+let processor: QueueProcessor | null = null
+
 export async function GET(req: NextRequest) {
   const startTime = Date.now()
   
@@ -67,8 +70,16 @@ export async function GET(req: NextRequest) {
 
     logger.info('Queue processing started')
 
-    // QueueProcessorを使って処理
-    const processor = new QueueProcessor()
+    // メモリクリーンアップ（メモリリーク対策）
+    if (global.gc) {
+      global.gc()
+    }
+
+    // シングルトンパターンでQueueProcessorを使って処理
+    if (!processor) {
+      processor = new QueueProcessor()
+    }
+    
     const result = await processor.startProcessing()
     
     logger.info('Queue processing completed', { 
@@ -76,6 +87,17 @@ export async function GET(req: NextRequest) {
       errors: result.errors,
       remaining: result.remaining
     })
+
+    // メモリ使用量をログ
+    const memUsage = process.memoryUsage()
+    const heapUsageRatio = Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100)
+    if (heapUsageRatio > 80) {
+      logger.warn('High memory usage after processing', {
+        heapUsageRatio,
+        heapUsed: memUsage.heapUsed,
+        heapTotal: memUsage.heapTotal
+      })
+    }
 
     const processingTime = Date.now() - startTime
 

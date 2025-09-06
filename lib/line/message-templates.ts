@@ -1,4 +1,11 @@
-import type { FlexMessage, TextMessage, Message } from '@line/bot-sdk'
+// LINE Message型定義（@line/bot-sdk依存を排除）
+type TextMessage = {
+  type: 'text'
+  text: string
+  quickReply?: any
+}
+
+type Message = TextMessage | any
 
 // プロンプトメッセージ定数
 const PROMPT_MESSAGES = {
@@ -45,7 +52,7 @@ export class MessageTemplates {
             {
               type: 'uri',
               label: '購入する（¥10,000/月）',
-              uri: 'https://buy.stripe.com/7sY3cv2So0v78ICbSz6oo09'
+              uri: process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/7sY3cv2So0v78ICbSz6oo09'
             },
             {
               type: 'message',

@@ -18,10 +18,33 @@ const lineClient = new LineApiClient()
 const sessionStore = ConversationSessionStore.getInstance()
 const imageHandler = new LineImageHandler()
 
-// 重複イベント検出用のメモリキャッシュ
+// 重複イベント検出用のメモリキャッシュ（メモリリーク対策付き）
 const recentEventKeys = new Map<string, number>()
-const MAX_CACHE_SIZE = 1000
+const MAX_CACHE_SIZE = 100 // 1000から100に削減
 const CACHE_TTL = 30000 // 30秒
+
+// キャッシュクリーンアップ関数（setIntervalは使わない）
+function cleanupCache() {
+  const now = Date.now()
+  const keysToDelete: string[] = []
+  
+  for (const [key, timestamp] of recentEventKeys.entries()) {
+    if (now - timestamp > CACHE_TTL) {
+      keysToDelete.push(key)
+    }
+  }
+  
+  keysToDelete.forEach(key => recentEventKeys.delete(key))
+  
+  // キャッシュサイズが大きすぎる場合は古いものから削除
+  if (recentEventKeys.size > MAX_CACHE_SIZE) {
+    const entries = Array.from(recentEventKeys.entries())
+      .sort((a, b) => a[1] - b[1])
+    
+    const toRemove = entries.slice(0, entries.length - MAX_CACHE_SIZE)
+    toRemove.forEach(([key]) => recentEventKeys.delete(key))
+  }
+}
 
 /**
  * LINE Webhook エンドポイント
@@ -428,12 +451,32 @@ async function handleFollowEvent(event: any): Promise<void> {
   
   logger.info('New follower', { userId })
   
-  // ウェルカムメッセージ送信
   try {
-    await lineClient.pushMessage(userId, [{
-      type: 'text',
-      text: '友だち追加ありがとうございます！🎉\n\nGASコード自動生成Botです。\n\n「スプレッドシート操作」「Gmail自動化」など、作りたいコードのカテゴリを送信してください。'
-    }])
+    // ユーザー作成・更新
+    await UserQueries.createOrUpdate(userId)
+    
+    // 決済ボタン付きのウェルカムメッセージを送信
+    const welcomeMessages = MessageTemplates.createWelcomeMessage()
+    
+    // LINE User IDをBase64エンコードしてStripeリンクに追加
+    const encodedUserId = Buffer.from(userId).toString('base64')
+    
+    // Stripeリンクにclient_reference_idを追加
+    const updatedMessages = welcomeMessages.map(msg => {
+      if (msg.type === 'template' && 'template' in msg && msg.template.type === 'buttons') {
+        msg.template.actions = msg.template.actions.map((action: any) => {
+          if (action.type === 'uri' && action.uri.includes('stripe.com')) {
+            // URLにclient_reference_idパラメータを追加
+            action.uri += `?client_reference_id=${encodedUserId}`
+          }
+          return action
+        })
+      }
+      return msg
+    })
+    
+    await lineClient.pushMessage(userId, updatedMessages)
+    
   } catch (error) {
     logger.error('Failed to send welcome message', { userId, error })
   }
