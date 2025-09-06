@@ -212,6 +212,22 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     // 会話コンテキスト取得
     let context = sessionStore.get(userId)
 
+    // エラースクリーンショット待ち受けモード
+    if (messageText === 'エラーのスクリーンショットを送る' || messageText.includes('スクショ')) {
+      await lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '📸 エラーのスクリーンショットを送信してください。\n\n画像を確認後、エラーの原因と解決方法をお伝えします。'
+      }])
+      
+      // スクショ待ちモードをセット
+      sessionStore.set(userId, {
+        ...context || ConversationalFlow.resetConversation('spreadsheet'),
+        waitingForScreenshot: true
+      } as any)
+      
+      return true
+    }
+
     // リセットコマンド
     if (isResetCommand(messageText)) {
       sessionStore.delete(userId)
