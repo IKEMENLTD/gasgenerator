@@ -7,6 +7,7 @@ import { generateRequestId } from '../../../lib/utils/crypto'
 import { getCategoryIdByName } from '../../../lib/conversation/category-definitions'
 import { ConversationalFlow, ConversationContext } from '../../../lib/conversation/conversational-flow'
 import { ConversationSessionStore } from '../../../lib/conversation/session-store'
+import { LineImageHandler } from '../../../lib/line/image-handler'
 
 // エッジランタイム使用
 export const runtime = 'edge'
@@ -14,6 +15,7 @@ export const maxDuration = 10
 
 const lineClient = new LineApiClient()
 const sessionStore = ConversationSessionStore.getInstance()
+const imageHandler = new LineImageHandler()
 
 // 重複イベント検出用のメモリキャッシュ
 const recentEventKeys = new Map<string, number>()
@@ -64,10 +66,22 @@ export async function POST(req: NextRequest) {
     for (const event of events) {
       try {
         // イベントタイプごとに処理
-        if (event.type === 'message' && event.message?.type === 'text') {
-          // テキストメッセージ処理
-          if (await processTextMessage(event, requestId)) {
-            processedCount++
+        if (event.type === 'message') {
+          if (event.message?.type === 'text') {
+            // テキストメッセージ処理
+            if (await processTextMessage(event, requestId)) {
+              processedCount++
+            }
+          } else if (event.message?.type === 'image') {
+            // 画像メッセージ処理
+            if (await processImageMessage(event, requestId)) {
+              processedCount++
+            }
+          } else if (event.message?.type === 'file') {
+            // ファイルメッセージ処理
+            if (await processFileMessage(event, requestId)) {
+              processedCount++
+            }
           }
         } else if (event.type === 'follow') {
           // フォローイベント処理
@@ -429,6 +443,76 @@ async function handleUnfollowEvent(event: any): Promise<void> {
 }
 
 /**
+ * 画像メッセージ処理
+ */
+async function processImageMessage(event: any, requestId: string): Promise<boolean> {
+  const userId = event.source?.userId
+  const messageId = event.message?.id
+  const replyToken = event.replyToken
+  
+  if (!userId || !messageId || !replyToken) {
+    logger.warn('Missing required fields for image', { userId, messageId })
+    return false
+  }
+
+  logger.info('Processing image message', { userId, messageId, requestId })
+
+  try {
+    const result = await imageHandler.handleImageMessage(messageId, replyToken, userId)
+    
+    if (result.success && result.description) {
+      // 画像の解析結果をコンテキストに保存
+      let context = sessionStore.get(userId) || ConversationalFlow.resetConversation('spreadsheet')
+      context.messages.push({
+        role: 'user',
+        content: `[画像アップロード] ${result.description}`
+      })
+      context.requirements.push(`画像の内容: ${result.description}`)
+      sessionStore.set(userId, context)
+    }
+    
+    return result.success
+  } catch (error) {
+    logger.error('Image processing error', { error })
+    return false
+  }
+}
+
+/**
+ * ファイルメッセージ処理
+ */
+async function processFileMessage(event: any, requestId: string): Promise<boolean> {
+  const userId = event.source?.userId
+  const messageId = event.message?.id
+  const fileName = event.message?.fileName
+  const replyToken = event.replyToken
+  
+  if (!userId || !messageId || !replyToken) {
+    logger.warn('Missing required fields for file', { userId, messageId })
+    return false
+  }
+
+  logger.info('Processing file message', { userId, fileName, requestId })
+
+  try {
+    await imageHandler.handleFileMessage(messageId, fileName || 'unknown', replyToken)
+    
+    // ファイル情報をコンテキストに保存
+    let context = sessionStore.get(userId) || ConversationalFlow.resetConversation('spreadsheet')
+    context.messages.push({
+      role: 'user',
+      content: `[ファイルアップロード] ${fileName}`
+    })
+    sessionStore.set(userId, context)
+    
+    return true
+  } catch (error) {
+    logger.error('File processing error', { error })
+    return false
+  }
+}
+
+/**
  * ヘルスチェック用GET
  */
 export async function GET() {
@@ -437,6 +521,7 @@ export async function GET() {
     service: 'GAS Generator Webhook',
     version: '2.0.0',
     mode: 'conversational',
+    features: ['text', 'image', 'file'],
     timestamp: new Date().toISOString()
   })
 }
