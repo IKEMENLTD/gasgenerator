@@ -180,7 +180,8 @@ async function processWebhookEvent(
     const user = await UserQueries.createOrUpdate(lineUserId)
     
     // 1.5. 利用制限チェック（無料ユーザーは月10回まで）
-    const canUse = await checkUserLimits(user, lineUserId)
+    // 注：ここではチェックのみ、インクリメントは実際の利用時
+    const canUse = await checkUserLimitsWithoutIncrement(user)
     if (!canUse) {
       // Payment Link生成（LINE User IDをBase64エンコード）
       const encoded = Buffer.from(lineUserId).toString('base64')
@@ -388,6 +389,9 @@ async function handleDetailInput(
     }
   })
 
+  // ここで使用回数をインクリメント（実際の利用時）
+  await UserQueries.incrementUsageCount(userId)
+  
   // キューに追加してバックグラウンド処理開始
   try {
     const job = await QueueManager.addJob({
@@ -440,9 +444,9 @@ async function handleDetailInput(
 }
 
 /**
- * 利用制限チェック
+ * 利用制限チェック（インクリメントなし）
  */
-async function checkUserLimits(user: any, lineUserId: string): Promise<boolean> {
+async function checkUserLimitsWithoutIncrement(user: any): Promise<boolean> {
   // プレミアムユーザーは無制限
   if (user.subscription_status === 'premium') {
     return true
@@ -457,9 +461,6 @@ async function checkUserLimits(user: any, lineUserId: string): Promise<boolean> 
     await UserQueries.resetMonthlyUsage(user.id)
     return true // リセット後なので利用可能
   }
-  
-  // 使用回数をインクリメント
-  await UserQueries.incrementUsageCount(user.id)
   
   return (user.monthly_usage_count || 0) < 10
 }

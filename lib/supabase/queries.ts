@@ -97,6 +97,56 @@ export class UserQueries {
   }
 }
 
+export class QueueQueries {
+  static async addToQueue(jobData: any) {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('generation_queue')
+        .insert(jobData)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('QueueQueries.addToQueue error:', error)
+      // 仮のレスポンス
+      return {
+        id: `temp_${Date.now()}`,
+        ...jobData,
+        created_at: new Date().toISOString()
+      }
+    }
+  }
+  
+  static async getNextJobs(batchSize: number) {
+    return []
+  }
+  
+  static async markJobProcessing(jobId: string) {
+    return
+  }
+  
+  static async markJobCompleted(jobId: string) {
+    return
+  }
+  
+  static async markJobFailed(jobId: string, errorMessage: string) {
+    return
+  }
+  
+  static async updateJobStatus(jobId: string, updates: any) {
+    return
+  }
+}
+
+export class MetricsQueries {
+  static async recordMetric(metric: any) {
+    // メトリクス記録（今は何もしない）
+    return
+  }
+}
+
 export class SessionQueries {
   static async findActiveSession(userId: string) {
     try {
