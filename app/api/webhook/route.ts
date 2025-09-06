@@ -218,6 +218,15 @@ async function processWebhookEvent(
     // 4. 会話ステップに応じた処理
     const currentStep = session.current_step
 
+    // デバッグログ追加
+    logger.info('Processing conversation step', {
+      sessionId: session.id,
+      currentStep,
+      messageText,
+      category: session.category,
+      subcategory: session.subcategory
+    })
+
     if (currentStep === 1) {
       // カテゴリ選択段階
       return await handleCategorySelection(user.id, session.id, messageText, replyToken)

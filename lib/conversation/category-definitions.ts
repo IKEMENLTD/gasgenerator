@@ -62,14 +62,31 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryDefinition> = {
 }
 
 /**
- * カテゴリ名からIDを取得
+ * カテゴリ名からIDを取得（部分一致も許可）
  */
 export function getCategoryIdByName(name: string): string | null {
+  // 完全一致チェック
   for (const [id, def] of Object.entries(CATEGORY_DEFINITIONS)) {
     if (def.name === name) {
       return id
     }
   }
+  
+  // 部分一致チェック（キーワードマッチング）
+  const keywords: Record<string, string> = {
+    'スプレッドシート': 'spreadsheet',
+    'Gmail': 'gmail',
+    'カレンダー': 'calendar',
+    'API': 'api',
+    'その他': 'custom'
+  }
+  
+  for (const [keyword, id] of Object.entries(keywords)) {
+    if (name.includes(keyword)) {
+      return id
+    }
+  }
+  
   return null
 }
 
