@@ -1,5 +1,6 @@
 import { ConversationContext } from './conversational-flow'
 import { logger } from '../utils/logger'
+import { memoryManager } from '../utils/memory-manager'
 
 // 会話セッションの永続化とタイムアウト管理
 export class ConversationSessionStore {
@@ -8,7 +9,7 @@ export class ConversationSessionStore {
     context: ConversationContext
     lastActivity: number
     timeoutTimer?: NodeJS.Timeout
-  }> = new Map()
+  }>
   
   // 30分のタイムアウト
   private readonly SESSION_TIMEOUT = 30 * 60 * 1000
@@ -18,6 +19,17 @@ export class ConversationSessionStore {
   private cleanupTimer?: NodeJS.Timeout
   
   private constructor() {
+    // MemoryManagerを使用してキャッシュを作成
+    this.sessions = memoryManager.createCache<{
+      context: ConversationContext
+      lastActivity: number
+      timeoutTimer?: NodeJS.Timeout
+    }>('conversation-sessions', {
+      maxSize: this.MAX_SESSIONS,
+      ttl: this.SESSION_TIMEOUT,
+      cleanupInterval: 10 * 60 * 1000
+    })
+    
     // 定期的なクリーンアップ（10分ごと）
     this.cleanupTimer = setInterval(() => this.cleanup(), 10 * 60 * 1000)
   }
@@ -34,7 +46,8 @@ export class ConversationSessionStore {
         clearTimeout(session.timeoutTimer)
       }
     })
-    this.sessions.clear()
+    memoryManager.clearCache('conversation-sessions')
+    ConversationSessionStore.instance = null as any
   }
   
   static getInstance(): ConversationSessionStore {
