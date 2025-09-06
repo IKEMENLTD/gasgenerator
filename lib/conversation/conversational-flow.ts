@@ -108,24 +108,22 @@ export class ConversationalFlow {
 
     // AIで会話を分析して次の質問を生成
     try {
-      const systemPrompt = `あなたはGoogle Apps Script (GAS)のコード生成アシスタントです。
-ユーザーが${context.category}の自動化を希望しています。
-会話を通じて必要な要件を収集してください。
+      const systemPrompt = `You are a GAS code assistant. Category: ${context.category}
 
-重要なポイント：
-1. 自然な会話で要件を引き出す
-2. 技術的な詳細は後で聞く
-3. まず「何を実現したいか」を明確にする
-4. 3-5回のやり取りで要件を収集する
-5. 十分な情報が集まったら「requirement_complete: true」を返す
+CRITICAL: Output ONLY valid JSON. No explanations, no text before/after.
 
-収集すべき情報：
-- 目的（何を自動化したいか）
-- 現在の課題
-- 期待する結果
-- 実行頻度
-- データの形式
-- 特別な条件や制約`
+Response format:
+{
+  "reply": "Your response in Japanese",
+  "requirements": {"key": "value"},
+  "requirement_complete": false
+}
+
+Guidelines:
+- Ask 1-2 questions in Japanese
+- Extract requirements from user messages
+- Set requirement_complete to true when ready
+- ONLY output JSON, nothing else`
 
       const conversationHistory = context.messages
         .map(m => `${m.role === 'user' ? 'ユーザー' : 'アシスタント'}: ${m.content}`)
