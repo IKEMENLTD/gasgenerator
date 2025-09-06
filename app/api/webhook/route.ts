@@ -3,7 +3,7 @@ import { LineApiClient } from '../../../lib/line/client'
 import { MessageTemplates } from '../../../lib/line/message-templates'
 import { QueueManager } from '../../../lib/queue/manager'
 import { logger } from '../../../lib/utils/logger'
-import { generateRequestId } from '../../../lib/utils/crypto'
+import { generateRequestId, generateUUID } from '../../../lib/utils/crypto'
 import { getCategoryIdByName } from '../../../lib/conversation/category-definitions'
 import { ConversationalFlow, ConversationContext } from '../../../lib/conversation/conversational-flow'
 import { ConversationSessionStore } from '../../../lib/conversation/session-store'
@@ -384,7 +384,7 @@ async function startCodeGeneration(
     await QueueManager.addJob({
       userId,
       lineUserId: userId,
-      sessionId: `conv_${Date.now()}`,
+      sessionId: generateUUID(),
       category: context.category,
       subcategory: 'conversational',
       requirements: {

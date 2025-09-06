@@ -104,6 +104,12 @@ export function generateSessionId(): string {
   return `session_${timestamp}_${randomPart}`
 }
 
+// UUID v4生成（RFC 4122準拠）
+export function generateUUID(): string {
+  // crypto.randomUUID()はEdge Runtimeでサポートされている
+  return crypto.randomUUID()
+}
+
 // 安全なランダム文字列生成（Web Crypto API使用）
 export async function generateSecureToken(length: number = 32): Promise<string> {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
