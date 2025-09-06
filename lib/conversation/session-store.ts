@@ -1,0 +1,195 @@
+import { ConversationContext } from './conversational-flow'
+import { logger } from '../utils/logger'
+
+// 会話セッションの永続化とタイムアウト管理
+export class ConversationSessionStore {
+  private static instance: ConversationSessionStore
+  private sessions: Map<string, {
+    context: ConversationContext
+    lastActivity: number
+    timeoutTimer?: NodeJS.Timeout
+  }> = new Map()
+  
+  // 30分のタイムアウト
+  private readonly SESSION_TIMEOUT = 30 * 60 * 1000
+  // 最大保持セッション数
+  private readonly MAX_SESSIONS = 1000
+  
+  private constructor() {
+    // 定期的なクリーンアップ（10分ごと）
+    setInterval(() => this.cleanup(), 10 * 60 * 1000)
+  }
+  
+  static getInstance(): ConversationSessionStore {
+    if (!this.instance) {
+      this.instance = new ConversationSessionStore()
+    }
+    return this.instance
+  }
+  
+  /**
+   * セッションの取得
+   */
+  get(userId: string): ConversationContext | null {
+    const session = this.sessions.get(userId)
+    
+    if (!session) {
+      return null
+    }
+    
+    // タイムアウトチェック
+    if (Date.now() - session.lastActivity > this.SESSION_TIMEOUT) {
+      this.delete(userId)
+      logger.info('Session timed out', { userId })
+      return null
+    }
+    
+    // アクティビティを更新
+    session.lastActivity = Date.now()
+    this.resetTimeout(userId)
+    
+    return session.context
+  }
+  
+  /**
+   * セッションの保存
+   */
+  set(userId: string, context: ConversationContext): void {
+    // セッション数制限チェック
+    if (this.sessions.size >= this.MAX_SESSIONS && !this.sessions.has(userId)) {
+      // 最も古いセッションを削除
+      const oldestUserId = this.findOldestSession()
+      if (oldestUserId) {
+        this.delete(oldestUserId)
+        logger.info('Deleted oldest session due to limit', { userId: oldestUserId })
+      }
+    }
+    
+    const existingSession = this.sessions.get(userId)
+    
+    // 既存のタイマーをクリア
+    if (existingSession?.timeoutTimer) {
+      clearTimeout(existingSession.timeoutTimer)
+    }
+    
+    // 新しいタイマーを設定
+    const timeoutTimer = setTimeout(() => {
+      this.delete(userId)
+      logger.info('Session auto-deleted after timeout', { userId })
+    }, this.SESSION_TIMEOUT)
+    
+    this.sessions.set(userId, {
+      context,
+      lastActivity: Date.now(),
+      timeoutTimer
+    })
+    
+    logger.debug('Session saved', { 
+      userId, 
+      messagesCount: context.messages.length,
+      category: context.category 
+    })
+  }
+  
+  /**
+   * セッションの削除
+   */
+  delete(userId: string): void {
+    const session = this.sessions.get(userId)
+    
+    if (session?.timeoutTimer) {
+      clearTimeout(session.timeoutTimer)
+    }
+    
+    this.sessions.delete(userId)
+    logger.debug('Session deleted', { userId })
+  }
+  
+  /**
+   * タイムアウトタイマーのリセット
+   */
+  private resetTimeout(userId: string): void {
+    const session = this.sessions.get(userId)
+    
+    if (!session) return
+    
+    // 既存のタイマーをクリア
+    if (session.timeoutTimer) {
+      clearTimeout(session.timeoutTimer)
+    }
+    
+    // 新しいタイマーを設定
+    session.timeoutTimer = setTimeout(() => {
+      this.delete(userId)
+      logger.info('Session auto-deleted after timeout', { userId })
+    }, this.SESSION_TIMEOUT)
+  }
+  
+  /**
+   * 最も古いセッションを見つける
+   */
+  private findOldestSession(): string | null {
+    let oldestUserId: string | null = null
+    let oldestTime = Date.now()
+    
+    for (const [userId, session] of this.sessions.entries()) {
+      if (session.lastActivity < oldestTime) {
+        oldestTime = session.lastActivity
+        oldestUserId = userId
+      }
+    }
+    
+    return oldestUserId
+  }
+  
+  /**
+   * 定期クリーンアップ
+   */
+  private cleanup(): void {
+    const now = Date.now()
+    const toDelete: string[] = []
+    
+    for (const [userId, session] of this.sessions.entries()) {
+      if (now - session.lastActivity > this.SESSION_TIMEOUT) {
+        toDelete.push(userId)
+      }
+    }
+    
+    for (const userId of toDelete) {
+      this.delete(userId)
+    }
+    
+    if (toDelete.length > 0) {
+      logger.info('Cleaned up expired sessions', { count: toDelete.length })
+    }
+  }
+  
+  /**
+   * セッション統計の取得
+   */
+  getStats(): {
+    totalSessions: number
+    activeSessions: number
+    oldestSession: number | null
+  } {
+    const now = Date.now()
+    let activeSessions = 0
+    let oldestTime: number | null = null
+    
+    for (const session of this.sessions.values()) {
+      if (now - session.lastActivity < 5 * 60 * 1000) { // 5分以内
+        activeSessions++
+      }
+      
+      if (oldestTime === null || session.lastActivity < oldestTime) {
+        oldestTime = session.lastActivity
+      }
+    }
+    
+    return {
+      totalSessions: this.sessions.size,
+      activeSessions,
+      oldestSession: oldestTime ? now - oldestTime : null
+    }
+  }
+}

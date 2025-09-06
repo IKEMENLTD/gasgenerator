@@ -7,6 +7,7 @@ import { logger } from '../../../lib/utils/logger'
 import { generateRequestId } from '../../../lib/utils/crypto'
 import { getCategoryIdByName } from '../../../lib/conversation/category-definitions'
 import { ConversationalFlow, ConversationContext } from '../../../lib/conversation/conversational-flow'
+import { ConversationSessionStore } from '../../../lib/conversation/session-store'
 import type { LineWebhookEvent } from '../../../types/line'
 
 // エッジランタイム使用
@@ -15,8 +16,8 @@ export const maxDuration = 10
 
 const lineClient = new LineApiClient()
 
-// 会話コンテキストをメモリに保持
-const conversationStore = new Map<string, ConversationContext>()
+// 会話セッションストア（永続化＆タイムアウト管理）
+const sessionStore = ConversationSessionStore.getInstance()
 
 export async function POST(req: NextRequest) {
   const requestId = generateRequestId()
@@ -66,12 +67,12 @@ async function processMessage(event: LineWebhookEvent, requestId: string) {
   logger.info('Processing message', { userId, messageText })
 
   try {
-    // 会話コンテキストを取得
-    let context = conversationStore.get(userId)
+    // 会話コンテキストを取得（タイムアウト管理付き）
+    let context = sessionStore.get(userId)
 
     // リセットコマンド
     if (messageText === 'リセット' || messageText === '最初から' || messageText === '新しいコードを作りたい') {
-      conversationStore.delete(userId)
+      sessionStore.delete(userId)
       context = undefined
     }
 
@@ -100,7 +101,7 @@ async function processMessage(event: LineWebhookEvent, requestId: string) {
 
       // 新しい会話コンテキストを作成
       context = ConversationalFlow.resetConversation(categoryId)
-      conversationStore.set(userId, context)
+      sessionStore.set(userId, context)
     }
 
     // コード生成確認段階
@@ -126,7 +127,7 @@ async function processMessage(event: LineWebhookEvent, requestId: string) {
         }])
 
         // コンテキストをリセット
-        conversationStore.delete(userId)
+        sessionStore.delete(userId)
         return
         
       } else if (messageText === '修正' || messageText === 'やり直し') {
@@ -136,7 +137,7 @@ async function processMessage(event: LineWebhookEvent, requestId: string) {
           type: 'text',
           text: 'どの部分を修正したいですか？詳しく教えてください。'
         }])
-        conversationStore.set(userId, context)
+        sessionStore.set(userId, context)
         return
       }
     }
@@ -145,7 +146,7 @@ async function processMessage(event: LineWebhookEvent, requestId: string) {
     const result = await ConversationalFlow.processConversation(context, messageText)
     
     // コンテキストを更新
-    conversationStore.set(userId, result.updatedContext)
+    sessionStore.set(userId, result.updatedContext)
 
     // 返信を送信
     if (result.isComplete) {
@@ -183,7 +184,7 @@ async function processMessage(event: LineWebhookEvent, requestId: string) {
     }])
     
     // エラー時はコンテキストをクリア
-    conversationStore.delete(userId)
+    sessionStore.delete(userId)
   }
 }
 
