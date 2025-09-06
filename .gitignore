@@ -39,6 +39,9 @@ set-vercel-env.bat
 *.tsbuildinfo
 next-env.d.ts
 
+# Sensitive files
+set-render-env.bat
+
 # IDE
 .vscode/
 .idea/
