@@ -12,12 +12,6 @@ services:
     healthCheckPath: /
     autoDeploy: true
   
-  - type: cron
-    name: gas-generator-queue-processor
-    runtime: node
-    schedule: "*/1 * * * *"  # 1分ごと
-    buildCommand: npm install && npm run build
-    startCommand: curl https://gasgenerator.onrender.com/api/cron/process-queue
-    envVars:
-      - key: NODE_ENV
-        value: production
+  # Renderでは外部のcronサービスを使用するか、
+  # または管理画面からCron Jobsを手動で設定する必要があります
+  # 参考: https://render.com/docs/cronjobs
