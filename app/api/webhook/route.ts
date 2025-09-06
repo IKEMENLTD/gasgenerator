@@ -146,19 +146,30 @@ export async function POST(req: NextRequest) {
     logger.error('Webhook error', {
       requestId,
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
       processingTime
     })
     
-    // LINEの再送を防ぐため、必ず200で返す
+    // メトリクス記録
+    MetricsQueries.recordMetric({
+      metric_type: 'webhook_error',
+      metric_value: 1,
+      metadata: { 
+        error: error instanceof Error ? error.message : 'unknown',
+        requestId 
+      }
+    }).catch(err => logger.error('Metric recording failed', { err }))
+    
+    // LINEの再送を防ぐため、必ず200で返す（重要）
     return NextResponse.json({
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: 'Processing failed'
+        message: 'Processing failed',
+        requestId
       },
-      timestamp: new Date().toISOString(),
-      requestId
-    })
+      timestamp: new Date().toISOString()
+    }, { status: 200 }) // 明示的に200を返す
   }
 }
 

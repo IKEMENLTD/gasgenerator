@@ -17,7 +17,7 @@ export class FlexTemplates {
         type: 'bubble',
         hero: {
           type: 'image',
-          url: 'https://placehold.co/600x400/4F46E5/white?text=GAS+Generator',
+          url: 'https://scdn.line-apps.com/n/channel_devcenter/img/fx/01_1_cafe.png',
           size: 'full',
           aspectRatio: '20:13',
           aspectMode: 'cover'

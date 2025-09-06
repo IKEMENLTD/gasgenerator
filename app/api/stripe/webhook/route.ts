@@ -2,15 +2,95 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 
-// Stripe SDK不要 - Render環境でのシンプルな実装
 export const runtime = 'edge'
+
+/**
+ * Stripe Webhook署名を検証
+ */
+async function verifyStripeSignature(
+  payload: string,
+  signature: string | null,
+  secret: string
+): Promise<boolean> {
+  if (!signature || !secret) {
+    logger.error('Missing signature or secret')
+    return false
+  }
+
+  try {
+    // Stripe-Signature format: t=timestamp,v1=signature
+    const elements = signature.split(',')
+    let timestamp = ''
+    let signatures: string[] = []
+
+    for (const element of elements) {
+      const [key, value] = element.split('=')
+      if (key === 't') {
+        timestamp = value
+      } else if (key === 'v1') {
+        signatures.push(value)
+      }
+    }
+
+    if (!timestamp || signatures.length === 0) {
+      return false
+    }
+
+    // タイムスタンプが5分以内かチェック（リプレイ攻撃防止）
+    const currentTime = Math.floor(Date.now() / 1000)
+    const webhookTime = parseInt(timestamp)
+    if (Math.abs(currentTime - webhookTime) > 300) {
+      logger.warn('Webhook timestamp too old', { currentTime, webhookTime })
+      return false
+    }
+
+    // 署名を計算
+    const signedPayload = `${timestamp}.${payload}`
+    const encoder = new TextEncoder()
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    )
+
+    const signature_bytes = await crypto.subtle.sign(
+      'HMAC',
+      key,
+      encoder.encode(signedPayload)
+    )
+
+    const computed = Array.from(new Uint8Array(signature_bytes))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+
+    // 計算した署名と比較
+    return signatures.some(sig => sig === computed)
+
+  } catch (error) {
+    logger.error('Signature verification error', { error })
+    return false
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    
-    // Stripeからのイベントタイプを確認
-    const eventType = body.type
+    const body = await req.text()
+    const signature = req.headers.get('stripe-signature')
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+
+    // 署名検証
+    if (webhookSecret) {
+      const isValid = await verifyStripeSignature(body, signature, webhookSecret)
+      if (!isValid) {
+        logger.error('Invalid Stripe signature')
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+      }
+    }
+
+    const event = JSON.parse(body)
+    const eventType = event.type
     
     logger.info('Stripe webhook received', { eventType })
     

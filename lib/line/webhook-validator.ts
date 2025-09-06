@@ -143,7 +143,61 @@ export class LineWebhookValidator {
   }
 }
 
-// 重複イベント検出用のキャッシュ
-const recentEventCache = new Set<string>()
+// 重複イベント検出用のキャッシュ（最大サイズ制限付き）
+class LimitedEventCache {
+  private cache = new Set<string>()
+  private readonly maxSize = 1000 // 最大1000イベントまで保持
+  private readonly ttl = 5 * 60 * 1000 // 5分間のTTL
+  
+  has(key: string): boolean {
+    return this.cache.has(key)
+  }
+  
+  add(key: string): void {
+    // サイズ制限チェック
+    if (this.cache.size >= this.maxSize) {
+      // 最も古いエントリを削除
+      const firstKey = this.cache.values().next().value
+      if (firstKey) {
+        this.cache.delete(firstKey)
+      }
+    }
+    
+    this.cache.add(key)
+    
+    // 定期的なクリーンアップ（100イベントごと）
+    if (this.cache.size % 100 === 0) {
+      this.cleanup()
+    }
+  }
+  
+  cleanup(): void {
+    const now = Date.now()
+    const expired: string[] = []
+    
+    for (const key of this.cache) {
+      const [, timestampStr] = key.split('_')
+      const timestamp = parseInt(timestampStr)
+      if (now - timestamp > this.ttl) {
+        expired.push(key)
+      }
+    }
+    
+    // 期限切れのエントリを削除
+    for (const key of expired) {
+      this.cache.delete(key)
+    }
+  }
+  
+  clear(): void {
+    this.cache.clear()
+  }
+  
+  get size(): number {
+    return this.cache.size
+  }
+}
+
+const recentEventCache = new LimitedEventCache()
 
 export { recentEventCache }
