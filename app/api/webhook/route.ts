@@ -8,6 +8,7 @@ import { getCategoryIdByName } from '../../../lib/conversation/category-definiti
 import { ConversationalFlow, ConversationContext } from '../../../lib/conversation/conversational-flow'
 import { ConversationSessionStore } from '../../../lib/conversation/session-store'
 import { LineImageHandler } from '../../../lib/line/image-handler'
+import { rateLimiters } from '../../../lib/middleware/rate-limiter'
 
 // エッジランタイム使用
 export const runtime = 'edge'
@@ -30,6 +31,10 @@ export async function POST(req: NextRequest) {
   const startTime = Date.now()
   
   try {
+    // レート制限チェック
+    const rateLimitResult = await rateLimiters.webhook.check(req)
+    if (rateLimitResult) return rateLimitResult
+    
     // 1. リクエスト取得と基本検証
     const body = await req.text()
     const signature = req.headers.get('x-line-signature')

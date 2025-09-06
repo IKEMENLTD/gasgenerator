@@ -17,9 +17,37 @@ interface LogEntry {
 
 class Logger {
   private logLevel: LogLevel
+  private static instance: Logger | null = null
 
   constructor() {
-    this.logLevel = (process.env.LOG_LEVEL as LogLevel) || 'info'
+    this.logLevel = this.getLogLevel()
+  }
+
+  static getInstance(): Logger {
+    if (!this.instance) {
+      this.instance = new Logger()
+    }
+    return this.instance
+  }
+
+  private getLogLevel(): LogLevel {
+    const level = process.env.LOG_LEVEL?.toLowerCase()
+    const validLevels: LogLevel[] = ['debug', 'info', 'warn', 'error']
+    
+    if (level && validLevels.includes(level as LogLevel)) {
+      return level as LogLevel
+    }
+    
+    // デフォルトは環境に応じて設定
+    return process.env.NODE_ENV === 'production' ? 'info' : 'debug'
+  }
+
+  setLogLevel(level: LogLevel): void {
+    this.logLevel = level
+  }
+
+  getLevel(): LogLevel {
+    return this.logLevel
   }
 
   private shouldLog(level: LogLevel): boolean {
@@ -47,8 +75,8 @@ class Logger {
 
   // 機密情報をマスキング
   private sanitizeContext(context: LogContext): LogContext {
-    const sensitiveKeys = ['password', 'token', 'secret', 'key', 'authorization']
-    const sanitized = { ...context }
+    const sensitiveKeys = ['password', 'token', 'secret', 'key', 'authorization', 'api_key', 'apikey', 'auth']
+    const sanitized = this.deepClone(context)
 
     for (const key of Object.keys(sanitized)) {
       const lowerKey = key.toLowerCase()
@@ -58,6 +86,18 @@ class Logger {
     }
 
     return sanitized
+  }
+
+  private deepClone(obj: any): any {
+    if (obj === null || typeof obj !== 'object') return obj
+    if (obj instanceof Date) return new Date(obj.getTime())
+    if (obj instanceof Array) return obj.map(item => this.deepClone(item))
+    
+    const cloned: any = {}
+    for (const key in obj) {
+      cloned[key] = this.deepClone(obj[key])
+    }
+    return cloned
   }
 
   debug(message: string, context?: LogContext): void {
@@ -95,7 +135,7 @@ class Logger {
   }
 }
 
-export const logger = new Logger()
+export const logger = Logger.getInstance()
 
 // Express/Next.js middleware用のログ関数
 export function logWebhookRequest(
