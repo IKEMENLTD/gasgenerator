@@ -229,30 +229,37 @@ export class QueueQueries {
 }
 
 export class UsageQueries {
-  static async getDailyUsage(userId: string) {
+  static async getDailyUsage(userId?: string) {
     try {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       
-      const { data, error } = await supabaseAdmin
+      // userIdがない場合は全体の使用量を取得
+      let query = supabaseAdmin
         .from('claude_usage')
         .select('total_tokens, total_cost')
-        .eq('user_id', userId)
         .gte('created_at', today.toISOString())
         .order('created_at', { ascending: false })
       
+      if (userId) {
+        query = query.eq('user_id', userId)
+      }
+      
+      const { data, error } = await query
+      
       if (error) {
         console.error('Error getting daily usage:', error)
-        return { tokens: 0, cost: 0 }
+        return { tokens: 0, cost: 0, requests: 0 }
       }
       
       const totalTokens = data?.reduce((sum, row) => sum + (row.total_tokens || 0), 0) || 0
       const totalCost = data?.reduce((sum, row) => sum + (row.total_cost || 0), 0) || 0
+      const totalRequests = data?.length || 0
       
-      return { tokens: totalTokens, cost: totalCost }
+      return { tokens: totalTokens, cost: totalCost, requests: totalRequests }
     } catch (error) {
       console.error('UsageQueries.getDailyUsage error:', error)
-      return { tokens: 0, cost: 0 }
+      return { tokens: 0, cost: 0, requests: 0 }
     }
   }
   
