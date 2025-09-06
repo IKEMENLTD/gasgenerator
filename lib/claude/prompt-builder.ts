@@ -18,7 +18,7 @@ export class PromptBuilder {
       logger.debug('Building code generation prompt', { 
         category: request.category,
         subcategory: request.subcategory,
-        detailsLength: request.requirements.details.length
+        detailsLength: request.requirements?.details?.length || 0
       })
 
       // 各コンポーネントを構築
@@ -200,7 +200,16 @@ SpreadsheetApp, GmailApp, CalendarApp, UrlFetchApp, DriveApp
    * リクエスト詳細構築（300トークン以内）
    */
   private static buildRequestDetails(request: CodeGenerationRequest): string {
-    const details = request.requirements.details.substring(0, 200) // 200文字に制限
+    // detailsまたはrequirementsの内容を取得（nullチェック付き）
+    const rawDetails = request.requirements?.details || 
+                      request.requirements?.requirements || 
+                      request.requirements || 
+                      '詳細なし'
+    
+    // 文字列に変換してから substring を実行
+    const details = typeof rawDetails === 'string' 
+      ? rawDetails.substring(0, 200) 
+      : JSON.stringify(rawDetails).substring(0, 200)
     
     let requestText = `【今回の要求】
 カテゴリ：${request.category}
@@ -210,12 +219,12 @@ SpreadsheetApp, GmailApp, CalendarApp, UrlFetchApp, DriveApp
       requestText += `\n種類：${request.subcategory}`
     }
 
-    // 追加の要件があれば含める
-    if (request.requirements.step1 && request.requirements.step1 !== request.category) {
+    // 追加の要件があれば含める（nullチェック付き）
+    if (request.requirements?.step1 && request.requirements.step1 !== request.category) {
       requestText += `\n選択：${request.requirements.step1}`
     }
 
-    if (request.requirements.step2 && request.requirements.step2 !== request.subcategory) {
+    if (request.requirements?.step2 && request.requirements.step2 !== request.subcategory) {
       requestText += `\nオプション：${request.requirements.step2}`
     }
 
