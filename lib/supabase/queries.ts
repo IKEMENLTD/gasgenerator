@@ -405,17 +405,6 @@ export class SessionQueries {
   }
 }
 
-export class MetricsQueries {
-  static async recordMetric(metric: any) {
-    try {
-      await supabaseAdmin
-        .from<any>('system_metrics')
-        .insert(metric)
-    } catch (error) {
-      console.error('MetricsQueries.recordMetric error:', error)
-    }
-  }
-}
 
 export class CodeQueries {
   static async getRecentCodes(userId: string, limit: number = 3) {
@@ -484,7 +473,7 @@ export class ClaudeUsageQueries {
   }
 }
 
-export class QueueQueries {
+export class ProcessingQueueQueries {
   static async addToQueue(jobData: any) {
     try {
       const { data, error } = await supabaseAdmin
@@ -501,7 +490,7 @@ export class QueueQueries {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('QueueQueries.addToQueue error:', error)
+      console.error('ProcessingQueueQueries.addToQueue error:', error)
       return null
     }
   }
@@ -531,7 +520,7 @@ export class QueueQueries {
       
       return data
     } catch (error) {
-      console.error('QueueQueries.getNextJob error:', error)
+      console.error('ProcessingQueueQueries.getNextJob error:', error)
       return null
     }
   }
@@ -556,7 +545,7 @@ export class QueueQueries {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('QueueQueries.updateJobStatus error:', error)
+      console.error('ProcessingQueueQueries.updateJobStatus error:', error)
       return null
     }
   }
@@ -569,5 +558,7 @@ export default {
   MetricsQueries,
   CodeQueries,
   ClaudeUsageQueries,
-  QueueQueries
+  QueueQueries,
+  ProcessingQueueQueries,
+  UsageQueries
 }
