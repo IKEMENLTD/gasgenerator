@@ -16,6 +16,41 @@ export class LineApiClient {
   }
 
   /**
+   * ローディングアニメーションを表示（最大60秒）
+   */
+  async showLoadingAnimation(userId: string, durationSeconds: number = 20): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/chat/loading/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.accessToken}`
+        },
+        body: JSON.stringify({
+          chatId: userId,
+          loadingSeconds: Math.min(durationSeconds, 60) // 最大60秒
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        logger.error('Loading animation API error', {
+          status: response.status,
+          error: errorText
+        })
+        return false
+      }
+
+      logger.info('Loading animation started', { userId, duration: durationSeconds })
+      return true
+
+    } catch (error) {
+      logger.error('Failed to show loading animation', { error })
+      return false
+    }
+  }
+
+  /**
    * Reply APIを使った返信（replyTokenが必要）
    */
   async replyMessage(replyToken: string, messages: any[]): Promise<boolean> {

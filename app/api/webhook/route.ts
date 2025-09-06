@@ -386,6 +386,10 @@ async function startCodeGeneration(
   replyToken: string
 ): Promise<void> {
   try {
+    // ローディングアニメーションを開始（30秒）
+    await lineClient.showLoadingAnimation(userId, 30)
+    
+    // キューに追加
     await QueueManager.addJob({
       userId: userId,  // LINE User IDを使用（外部キー制約を回避）
       lineUserId: userId,  // LINE User IDも保存
@@ -399,9 +403,10 @@ async function startCodeGeneration(
       }
     })
 
+    // 確認メッセージを送信
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
-      text: '🚀 承知しました！\n\nコードを生成中です...\n\n✅ キューに追加済み\n⏰ 予想時間：2-3分\n\n生成が完了したら自動で通知します！\n\n※ しばらくお待ちください'
+      text: '🚀 承知しました！\n\nコードを生成中です...\n\n✅ キューに追加済み\n⏰ 予想時間：2-3分\n\n生成が完了したら自動で通知します！\n\n※ 処理中はローディングが表示されます'
     }])
     
   } catch (error) {
