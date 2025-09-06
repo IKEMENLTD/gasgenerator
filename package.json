@@ -5,21 +5,20 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node --max-old-space-size=400 node_modules/.bin/next start -p ${PORT:-10000}",
     "lint": "next lint",
     "type-check": "tsc --noEmit || true"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",
-    "@line/bot-sdk": "^9.1.0",
     "@supabase/supabase-js": "^2.43.5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "next": "14.0.0",
     "react": "^18",
     "react-dom": "^18",
     "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
     "zod": "^3.23.8"
   },
   "devDependencies": {
