@@ -1,4 +1,9 @@
-import type { FlexMessage } from '@line/bot-sdk'
+// Flex message types
+type FlexMessage = {
+  type: 'flex'
+  altText: string
+  contents: any
+}
 
 export class FlexTemplates {
   /**
