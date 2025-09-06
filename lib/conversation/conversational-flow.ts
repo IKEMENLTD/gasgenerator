@@ -132,7 +132,7 @@ Guidelines:
       const response = await anthropic.messages.create({
         model: 'claude-3-haiku-20240307',
         max_tokens: 500,
-        temperature: 0.7,
+        temperature: 0.1,  // 低温度で一貫したJSON出力
         system: systemPrompt,
         messages: [{
           role: 'user',

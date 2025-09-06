@@ -382,8 +382,8 @@ async function startCodeGeneration(
 ): Promise<void> {
   try {
     await QueueManager.addJob({
-      userId: generateUUID(), // ユーザーIDもUUID形式で生成
-      lineUserId: userId,  // LINE User IDは別フィールドに保存
+      userId: userId,  // LINE User IDを使用（外部キー制約を回避）
+      lineUserId: userId,  // LINE User IDも保存
       sessionId: generateUUID(),
       category: context.category,
       subcategory: 'conversational',
