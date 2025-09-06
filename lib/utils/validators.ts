@@ -95,7 +95,7 @@ export const CodeGenerationRequestSchema = z.object({
 export const EnvironmentSchema = z.object({
   LINE_CHANNEL_ACCESS_TOKEN: z.string().min(1),
   LINE_CHANNEL_SECRET: z.string().min(1),
-  CLAUDE_API_KEY: z.string().min(1),
+  ANTHROPIC_API_KEY: z.string().min(1),
   SUPABASE_URL: z.string().url(),
   SUPABASE_ANON_KEY: z.string().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),

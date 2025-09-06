@@ -14,11 +14,11 @@ export class ClaudeApiClient {
   private config: ClaudeConfig
 
   constructor() {
-    this.apiKey = process.env.CLAUDE_API_KEY!
+    this.apiKey = process.env.ANTHROPIC_API_KEY!
     this.baseUrl = EXTERNAL_API_CONFIG.ANTHROPIC.API_BASE_URL
     
     if (!this.apiKey) {
-      throw new Error('CLAUDE_API_KEY is required')
+      throw new Error('ANTHROPIC_API_KEY is required')
     }
 
     this.config = {

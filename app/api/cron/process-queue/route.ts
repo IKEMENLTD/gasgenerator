@@ -50,11 +50,20 @@ export async function GET(req: NextRequest) {
     })
 
   } catch (error) {
-    logger.error('Queue processing error:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+    
+    logger.error('Queue processing error:', {
+      message: errorMessage,
+      stack: errorStack,
+      error: error
+    })
+    
     return NextResponse.json(
       { 
         error: 'Internal error',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: errorMessage,
+        details: process.env.NODE_ENV !== 'production' ? errorStack : undefined
       },
       { status: 500 }
     )
