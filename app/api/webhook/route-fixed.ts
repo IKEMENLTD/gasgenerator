@@ -180,14 +180,14 @@ async function processWebhookEvent(
       await lineClient.replyMessage(replyToken, [
         {
           type: 'text',
-          text: '👋 こんにちは！GASコードを自動生成します。\n\n作りたいコードのカテゴリを選んでください：',
+          text: '「スプレッドシート操作」を選択しました。\n具体的な内容を選んでください：',
           quickReply: {
             items: [
-              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-              { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-              { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }}
+              { type: 'action', action: { type: 'message', label: '📖 データ読み取り', text: 'データの読み取り' }},
+              { type: 'action', action: { type: 'message', label: '✏️ データ書き込み', text: 'データの書き込み' }},
+              { type: 'action', action: { type: 'message', label: '🔄 データ変換', text: 'データの変換・加工' }},
+              { type: 'action', action: { type: 'message', label: '📊 集計・分析', text: '集計・分析' }},
+              { type: 'action', action: { type: 'message', label: '📝 詳しく説明', text: '詳しく説明したい' }}
             ]
           }
         }
