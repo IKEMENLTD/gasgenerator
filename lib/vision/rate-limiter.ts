@@ -46,19 +46,28 @@ export class VisionRateLimiter {
   }> {
     try {
       // 1. 同じ画像の重複チェック（24時間以内）
-      const { data: duplicate } = await supabaseAdmin
+      const { data: duplicates } = await supabaseAdmin
         .from('vision_usage')
-        .select('id, analysis_result')
+        .select('id, analysis_result, status')
         .eq('image_hash', imageHash)
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .single()
+        .eq('status', 'completed') // 完了したもののみ重複として扱う
+        .limit(1)
       
-      if (duplicate) {
+      if (duplicates && duplicates.length > 0) {
+        const duplicate = duplicates[0]
         logger.info('Duplicate image detected', { userId, imageHash })
         return {
           allowed: false,
           reason: '同じ画像は24時間以内に既に解析済みです。\n\n前回の結果:\n' + duplicate.analysis_result
         }
+      }
+      
+      // 1.5. 定期的にクリーンアップ（10%の確率で実行）
+      if (Math.random() < 0.1) {
+        this.cleanupStaleProcessingRecords().catch(err => 
+          logger.error('Background cleanup failed', { err })
+        )
       }
       
       // 2. 本日の使用回数チェック（processing状態も含む）
@@ -168,25 +177,56 @@ export class VisionRateLimiter {
     userId: string,
     imageHash: string
   ): Promise<string> {
-    try {
-      const { data, error } = await supabaseAdmin
-        .from('vision_usage')
-        .insert({
-          user_id: userId,
-          image_hash: imageHash,
-          analysis_result: '[PROCESSING]', // プレースホルダー
-          status: 'processing',
-          created_at: new Date().toISOString()
+    const maxRetries = 3
+    let lastError: any
+    
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        // レースコンディション対策: 同じユーザーが同時にprocessingを作ろうとしていないか確認
+        const { data: existing } = await supabaseAdmin
+          .from('vision_usage')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('image_hash', imageHash)
+          .eq('status', 'processing')
+          .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // 5分以内
+          .limit(1)
+        
+        if (existing && existing.length > 0) {
+          logger.warn('Duplicate processing detected', { userId, imageHash, existingId: existing[0].id })
+          return existing[0].id // 既存のプレースホルダーを再利用
+        }
+        
+        const { data, error } = await supabaseAdmin
+          .from('vision_usage')
+          .insert({
+            user_id: userId,
+            image_hash: imageHash,
+            analysis_result: '[PROCESSING]',
+            status: 'processing',
+            created_at: new Date().toISOString()
+          })
+          .select('id')
+          .single()
+        
+        if (error) throw error
+        return data.id
+        
+      } catch (error: any) {
+        lastError = error
+        logger.error(`Placeholder creation attempt ${i + 1} failed`, { 
+          error: error.message,
+          userId,
+          imageHash 
         })
-        .select('id')
-        .single()
-      
-      if (error) throw error
-      return data.id
-    } catch (error) {
-      logger.error('Failed to create usage placeholder', { error })
-      throw error // プレースホルダー作成失敗は致命的
+        
+        if (i < maxRetries - 1) {
+          await new Promise(resolve => setTimeout(resolve, 100 * (i + 1))) // バックオフ
+        }
+      }
     }
+    
+    throw lastError
   }
   
   /**
@@ -201,7 +241,7 @@ export class VisionRateLimiter {
     }
   ): Promise<void> {
     try {
-      await supabaseAdmin
+      const { error } = await supabaseAdmin
         .from('vision_usage')
         .update({
           analysis_result: analysisResult.substring(0, 1000),
@@ -211,8 +251,24 @@ export class VisionRateLimiter {
           updated_at: new Date().toISOString()
         })
         .eq('id', placeholderId)
+        .eq('status', 'processing') // processing状態のもののみ更新
+      
+      if (error) {
+        logger.error('Failed to update usage with result', { 
+          error,
+          placeholderId,
+          willRollback: true 
+        })
+        // 更新失敗時はプレースホルダーを削除
+        await this.rollbackUsage(placeholderId)
+      }
     } catch (error) {
-      logger.error('Failed to update usage with result', { error })
+      logger.error('Critical error in updateUsageWithResult', { 
+        error,
+        placeholderId 
+      })
+      // クリティカルエラー時もロールバック
+      await this.rollbackUsage(placeholderId)
     }
   }
   
@@ -220,13 +276,65 @@ export class VisionRateLimiter {
    * エラー時にプレースホルダーを削除
    */
   async rollbackUsage(placeholderId: string): Promise<void> {
+    if (!placeholderId) {
+      logger.warn('Rollback called with empty placeholderId')
+      return
+    }
+    
     try {
-      await supabaseAdmin
+      const { error } = await supabaseAdmin
         .from('vision_usage')
         .delete()
         .eq('id', placeholderId)
+        .eq('status', 'processing') // processing状態のもののみ削除（安全対策）
+      
+      if (error) {
+        logger.error('Failed to rollback usage', { 
+          error,
+          placeholderId,
+          errorCode: error.code,
+          errorHint: error.hint 
+        })
+      } else {
+        logger.info('Successfully rolled back placeholder', { placeholderId })
+      }
     } catch (error) {
-      logger.error('Failed to rollback usage', { error })
+      logger.error('Critical error during rollback', { 
+        error,
+        placeholderId 
+      })
+    }
+  }
+  
+  /**
+   * 古いprocessing状態のレコードをクリーンアップ
+   */
+  async cleanupStaleProcessingRecords(): Promise<number> {
+    try {
+      // 5分以上前のprocessing状態のレコードを削除
+      const staleTime = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+      
+      const { data, error } = await supabaseAdmin
+        .from('vision_usage')
+        .delete()
+        .eq('status', 'processing')
+        .lt('created_at', staleTime)
+        .select('id')
+      
+      if (error) {
+        logger.error('Failed to cleanup stale records', { error })
+        return 0
+      }
+      
+      const count = data?.length || 0
+      if (count > 0) {
+        logger.info('Cleaned up stale processing records', { count })
+      }
+      
+      return count
+    } catch (error) {
+      logger.error('Critical error in cleanup', { error })
+      return 0
     }
   }
   

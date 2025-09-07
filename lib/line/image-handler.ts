@@ -319,15 +319,25 @@ export class LineImageHandler {
         base64DataSample: base64Image.substring(0, 50) + '...' + base64Image.substring(base64Image.length - 50)
       })
       
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify(requestPayload)
-      })
+      // タイムアウト設定（45秒）
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 45000)
+      
+      let response: Response
+      try {
+        response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify(requestPayload),
+          signal: controller.signal
+        })
+      } finally {
+        clearTimeout(timeoutId)
+      }
       
       if (!response.ok) {
         const errorData = await response.text()
