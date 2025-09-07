@@ -73,7 +73,10 @@ export class LineImageHandler {
         }
       }
       
-      // 5. 使用前確認（無料ユーザーのみ）
+      // 5. 使用前確認（無料ユーザーのみ）- 現在は無効化
+      // 理由: 画像データの一時保存機能が未実装のため、確認フローを無効化
+      // TODO: セッションストアに画像を保存する機能を実装後に有効化
+      /*
       if (!isPremium && rateCheck.remainingToday !== undefined && rateCheck.remainingToday <= 1) {
         // 最後の1回は確認を取る
         await this.lineClient.replyMessage(replyToken, [{
@@ -95,6 +98,7 @@ export class LineImageHandler {
           error: 'Confirmation required' 
         }
       }
+      */
       
       // 5.5. 使用を事前に記録（レースコンディション対策）
       // 失敗したら後でロールバックできるようにプレースホルダーを作成
@@ -178,10 +182,17 @@ export class LineImageHandler {
       
       // エラーメッセージを送信（エラー詳細も含む）
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      await this.lineClient.replyMessage(replyToken, [{
-        type: 'text',
-        text: `画像の処理に失敗しました。\n\nエラー: ${errorMessage}\n\nテキストで説明していただけますか？`
-      }])
+      try {
+        await this.lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: `画像の処理に失敗しました。\n\nエラー: ${errorMessage}\n\nテキストで説明していただけますか？`
+        }])
+      } catch (replyError) {
+        logger.error('Failed to send error message', { 
+          replyError,
+          originalError: errorMessage 
+        })
+      }
       
       return { 
         success: false, 

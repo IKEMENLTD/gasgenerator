@@ -70,16 +70,22 @@ export class VisionRateLimiter {
         )
       }
       
-      // 2. 本日の使用回数チェック（processing状態も含む）
+      // 2. 本日の使用回数チェック（新しいprocessingとcompletedのみ）
       const today = new Date()
       today.setHours(0, 0, 0, 0)
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
       
-      const { count: todayCount } = await supabaseAdmin
+      // completedの数 + 5分以内のprocessingの数
+      const { data: usageRecords } = await supabaseAdmin
         .from('vision_usage')
-        .select('*', { count: 'exact', head: true })
+        .select('status, created_at')
         .eq('user_id', userId)
         .gte('created_at', today.toISOString())
-        .in('status', ['processing', 'completed']) // 処理中もカウント
+      
+      const todayCount = usageRecords?.filter(record => 
+        record.status === 'completed' || 
+        (record.status === 'processing' && record.created_at >= fiveMinutesAgo)
+      ).length || 0
       
       const dailyLimit = isPremium ? this.LIMITS.PREMIUM.daily : this.LIMITS.FREE.daily
       if ((todayCount || 0) >= dailyLimit) {
@@ -93,12 +99,16 @@ export class VisionRateLimiter {
       // 3. 月間使用回数チェック（ユーザー）
       const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
       
-      const { count: monthCount } = await supabaseAdmin
+      const { data: monthRecords } = await supabaseAdmin
         .from('vision_usage')
-        .select('*', { count: 'exact', head: true })
+        .select('status, created_at')
         .eq('user_id', userId)
         .gte('created_at', startOfMonth.toISOString())
-        .in('status', ['processing', 'completed']) // 処理中もカウント
+      
+      const monthCount = monthRecords?.filter(record => 
+        record.status === 'completed' || 
+        (record.status === 'processing' && record.created_at >= fiveMinutesAgo)
+      ).length || 0
       
       const monthlyLimit = isPremium ? this.LIMITS.PREMIUM.monthly : this.LIMITS.FREE.monthly
       if ((monthCount || 0) >= monthlyLimit) {
@@ -121,11 +131,15 @@ export class VisionRateLimiter {
       const dynamicMonthlyLimit = Math.max(1500, (premiumUserCount || 0) * 1500)
       const dynamicAlertLimit = Math.floor(dynamicMonthlyLimit * 0.8) // 80%で警告
       
-      const { count: globalCount } = await supabaseAdmin
+      const { data: globalRecords } = await supabaseAdmin
         .from('vision_usage')
-        .select('*', { count: 'exact', head: true })
+        .select('status, created_at')
         .gte('created_at', startOfMonth.toISOString())
-        .in('status', ['processing', 'completed']) // 処理中もカウント
+      
+      const globalCount = globalRecords?.filter(record => 
+        record.status === 'completed' || 
+        (record.status === 'processing' && record.created_at >= fiveMinutesAgo)
+      ).length || 0
       
       if ((globalCount || 0) >= dynamicMonthlyLimit) {
         logger.error('GLOBAL VISION LIMIT REACHED', { 
