@@ -5,6 +5,7 @@ import { logger } from '@/lib/utils/logger'
 import { MemoryMonitor } from '@/lib/utils/memory-monitor'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 export const maxDuration = 60 // 最大60秒
 
 // グローバルインスタンスを作成（メモリリーク対策）

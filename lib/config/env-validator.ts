@@ -190,8 +190,7 @@ export class EnvValidator {
     const { valid, errors } = this.validate()
     
     if (!valid) {
-      console.error('❌ Environment validation failed:')
-      errors.forEach(err => console.error(`  - ${err}`))
+      logger.critical('Environment validation failed:', { errors })
       
       if (process.env.NODE_ENV === 'production') {
         process.exit(1)

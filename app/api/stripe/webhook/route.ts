@@ -80,13 +80,19 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get('stripe-signature')
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
-    // 署名検証
-    if (webhookSecret) {
-      const isValid = await verifyStripeSignature(body, signature, webhookSecret)
-      if (!isValid) {
-        logger.error('Invalid Stripe signature')
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
-      }
+    // 署名検証を必須にする
+    if (!webhookSecret) {
+      logger.critical('STRIPE_WEBHOOK_SECRET is not configured - rejecting all webhooks for security')
+      return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
+    }
+
+    const isValid = await verifyStripeSignature(body, signature, webhookSecret)
+    if (!isValid) {
+      logger.error('Invalid Stripe signature - possible security breach attempt', {
+        signature: signature?.substring(0, 20) + '...',
+        ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip')
+      })
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
     const event = JSON.parse(body)

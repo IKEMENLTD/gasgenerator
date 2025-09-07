@@ -11,10 +11,10 @@ export class ConversationSessionStore {
     timeoutTimer?: NodeJS.Timeout
   }>
   
-  // 30分のタイムアウト（ユーザー体験を優先）
-  private readonly SESSION_TIMEOUT = 30 * 60 * 1000
-  // 最大保持セッション数（メモリとUXのバランス）
-  private readonly MAX_SESSIONS = 20
+  // 15分のタイムアウト（メモリ節約のため短縮）
+  private readonly SESSION_TIMEOUT = 15 * 60 * 1000
+  // 最大保持セッション数（メモリ節約のため削減）
+  private readonly MAX_SESSIONS = 5
   // クリーンアップタイマーの参照を保持
   private cleanupTimer?: NodeJS.Timeout
   
@@ -36,17 +36,28 @@ export class ConversationSessionStore {
   
   // インスタンスの破棄メソッドを追加
   destroy(): void {
+    logger.info('Destroying session store', { 
+      sessionCount: this.sessions.size 
+    })
+    
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer)
       this.cleanupTimer = undefined
     }
+    
     // すべてのセッションタイマーをクリア
+    let clearedTimers = 0
     this.sessions.forEach((session) => {
       if (session.timeoutTimer) {
         clearTimeout(session.timeoutTimer)
+        clearedTimers++
       }
     })
+    
+    logger.info('Cleared session timers', { clearedTimers })
+    
     memoryManager.clearCache('conversation-sessions')
+    this.sessions.clear()
     ConversationSessionStore.instance = null as any
   }
   

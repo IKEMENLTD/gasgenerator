@@ -7,12 +7,13 @@ export class LineApiClient {
   private baseUrl: string
 
   constructor() {
-    this.accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN!
-    this.baseUrl = EXTERNAL_API_CONFIG.LINE.API_BASE_URL
-
-    if (!this.accessToken) {
+    const token = process.env.LINE_CHANNEL_ACCESS_TOKEN
+    if (!token) {
+      logger.critical('LINE_CHANNEL_ACCESS_TOKEN is missing')
       throw new Error('LINE_CHANNEL_ACCESS_TOKEN is required')
     }
+    this.accessToken = token
+    this.baseUrl = EXTERNAL_API_CONFIG.LINE.API_BASE_URL
   }
 
   /**

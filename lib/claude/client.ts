@@ -129,7 +129,27 @@ export class ClaudeApiClient {
       userId 
     })
     
-    throw new Error(`Claude API failed after ${maxRetries} attempts: ${errorMessage}`)
+    // フォールバック処理
+    const { FallbackHandler } = await import('../utils/fallback-handler')
+    const fallbackResponse = FallbackHandler.getClaudeFallbackResponse(lastError)
+    
+    // フォールバックレスポンスを返す（エラーをthrowしない）
+    return {
+      content: [{
+        type: 'text',
+        text: fallbackResponse
+      }],
+      id: 'fallback-' + Date.now(),
+      model: this.config.model,
+      role: 'assistant',
+      stop_reason: 'error',
+      stop_sequence: null,
+      type: 'message',
+      usage: {
+        input_tokens: 0,
+        output_tokens: 0
+      }
+    }
   }
 
   /**

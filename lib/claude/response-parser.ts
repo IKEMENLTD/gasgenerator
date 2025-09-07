@@ -263,8 +263,8 @@ export class ResponseParser {
     return {
       code: `// コード生成エラーが発生しました
 function generationError() {
-  console.log("申し訳ありません。コード生成中にエラーが発生しました。");
-  console.log("もう一度詳しい要求を送信してください。");
+  Logger.log("申し訳ありません。コード生成中にエラーが発生しました。");
+  Logger.log("もう一度詳しい要求を送信してください。");
 }`,
       explanation: rawContent.substring(0, 200) || 'コード生成中にエラーが発生しました',
       steps: [

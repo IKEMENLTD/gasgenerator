@@ -433,16 +433,34 @@ export class CodeQueries {
 
   static async saveGeneratedCode(codeData: any) {
     try {
+      // user_idとsession_idはTEXT型として保存（UUID型エラー回避）
+      const insertData = {
+        ...codeData,
+        user_id: String(codeData.user_id || codeData.line_user_id),
+        session_id: String(codeData.session_id || `session_${Date.now()}`)
+      }
+      
       const { data, error } = await supabaseAdmin
-        .from<any>('generated_codes')
-        .insert(codeData)
+        .from('generated_codes')
+        .insert(insertData)
         .select()
         .single()
       
-      if (error) throw error
+      if (error) {
+        logger.error('Failed to save generated code', { 
+          error: error.message,
+          errorCode: error.code,
+          errorHint: error.hint
+        })
+        throw error
+      }
       return data
-    } catch (error) {
-      console.error('CodeQueries.saveGeneratedCode error:', error)
+    } catch (error: any) {
+      logger.error('CodeQueries.saveGeneratedCode error:', {
+        message: error?.message,
+        code: error?.code,
+        hint: error?.hint
+      })
       return null
     }
   }

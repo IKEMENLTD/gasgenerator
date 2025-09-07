@@ -4,12 +4,13 @@ import { MessageTemplates } from '../../../lib/line/message-templates'
 import { QueueManager } from '../../../lib/queue/manager'
 import { UserQueries } from '../../../lib/supabase/queries'
 import { logger } from '../../../lib/utils/logger'
-import { generateRequestId, generateUUID } from '../../../lib/utils/crypto'
+import { generateRequestId, generateUUID, validateLineSignature } from '../../../lib/utils/crypto'
 import { getCategoryIdByName } from '../../../lib/conversation/category-definitions'
 import { ConversationalFlow, ConversationContext } from '../../../lib/conversation/conversational-flow'
 import { ConversationSessionStore } from '../../../lib/conversation/session-store'
 import { LineImageHandler } from '../../../lib/line/image-handler'
 import { rateLimiters } from '../../../lib/middleware/rate-limiter'
+import { ApiKeyValidator } from '../../../lib/security/api-key-validator'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -18,6 +19,19 @@ export const maxDuration = 30  // Webhookは30秒で応答
 const lineClient = new LineApiClient()
 const sessionStore = ConversationSessionStore.getInstance()
 const imageHandler = new LineImageHandler()
+
+// プロセス終了時のクリーンアップ
+if (typeof process !== 'undefined') {
+  process.on('SIGTERM', () => {
+    logger.info('SIGTERM received, cleaning up...')
+    sessionStore.destroy()
+  })
+  
+  process.on('SIGINT', () => {
+    logger.info('SIGINT received, cleaning up...')
+    sessionStore.destroy()
+  })
+}
 
 // 重複イベント検出用のメモリキャッシュ（メモリリーク対策付き）
 const recentEventKeys = new Map<string, number>()
@@ -68,10 +82,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No signature' }, { status: 200 })
     }
 
-    // 2. 署名検証
-    if (!(await validateSignature(body, signature))) {
-      logger.warn('Invalid signature', { requestId })
+    // 2. セキュリティ検証
+    // LINE署名検証（validateLineSignature関数を使用）
+    const isValidSignature = await validateLineSignature(body, signature)
+    if (!isValidSignature) {
+      logger.warn('Invalid LINE signature', { requestId })
       return NextResponse.json({ error: 'Invalid signature' }, { status: 200 })
+    }
+    
+    // リクエスト元検証
+    const isValidRequest = await ApiKeyValidator.validateRequest(req, {
+      checkOrigin: process.env.NODE_ENV === 'production',
+      checkIp: true
+    })
+    
+    if (!isValidRequest) {
+      logger.warn('Invalid request origin or IP', { requestId })
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // 3. ボディをパース
@@ -574,7 +601,12 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
     
     return result.success
   } catch (error) {
-    logger.error('Image processing error', { error })
+    logger.error('Image processing error', { 
+      userId,
+      messageId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    })
     return false
   }
 }
@@ -596,7 +628,7 @@ async function processFileMessage(event: any, requestId: string): Promise<boolea
   logger.info('Processing file message', { userId, fileName, requestId })
 
   try {
-    await imageHandler.handleFileMessage(messageId, fileName || 'unknown', replyToken)
+    await imageHandler.handleFileMessage(messageId, fileName || 'unknown', replyToken, userId)
     
     // ファイル情報をコンテキストに保存
     let context = sessionStore.get(userId) || ConversationalFlow.resetConversation('spreadsheet')
