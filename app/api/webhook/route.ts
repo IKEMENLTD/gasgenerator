@@ -587,7 +587,9 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
         role: 'user',
         content: `[画像アップロード] ${result.description}`
       })
-      context.requirements.push(`画像の内容: ${result.description}`)
+      // requirementsはオブジェクトなので、画像内容を適切なプロパティに保存
+      context.requirements.imageContent = result.description
+      context.requirements.hasScreenshot = true
       sessionStore.set(userId, context)
     }
     

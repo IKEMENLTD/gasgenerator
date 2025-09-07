@@ -1,4 +1,5 @@
 import { supabaseAdmin } from './client'
+import { logger } from '../utils/logger'
 
 export class UserQueries {
   static async createOrUpdate(lineUserId: string) {
