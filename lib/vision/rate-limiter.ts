@@ -61,7 +61,7 @@ export class VisionRateLimiter {
         }
       }
       
-      // 2. 本日の使用回数チェック
+      // 2. 本日の使用回数チェック（processing状態も含む）
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       
@@ -70,12 +70,13 @@ export class VisionRateLimiter {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
         .gte('created_at', today.toISOString())
+        .in('status', ['processing', 'completed']) // 処理中もカウント
       
       const dailyLimit = isPremium ? this.LIMITS.PREMIUM.daily : this.LIMITS.FREE.daily
       if ((todayCount || 0) >= dailyLimit) {
         return {
           allowed: false,
-          reason: `本日の画像解析上限（${dailyLimit}回）に達しました。\n明日また利用できます。${!isPremium ? '\n\n💎 プレミアムプランなら1日10回まで解析可能！' : ''}`,
+          reason: `本日の画像解析上限（${dailyLimit}回）に達しました。\n明日また利用できます。${!isPremium ? '\n\n💎 プレミアムプランなら1日100回まで解析可能！' : ''}`,
           remainingToday: 0
         }
       }
@@ -88,6 +89,7 @@ export class VisionRateLimiter {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
         .gte('created_at', startOfMonth.toISOString())
+        .in('status', ['processing', 'completed']) // 処理中もカウント
       
       const monthlyLimit = isPremium ? this.LIMITS.PREMIUM.monthly : this.LIMITS.FREE.monthly
       if ((monthCount || 0) >= monthlyLimit) {
@@ -114,6 +116,7 @@ export class VisionRateLimiter {
         .from('vision_usage')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', startOfMonth.toISOString())
+        .in('status', ['processing', 'completed']) // 処理中もカウント
       
       if ((globalCount || 0) >= dynamicMonthlyLimit) {
         logger.error('GLOBAL VISION LIMIT REACHED', { 
@@ -159,11 +162,38 @@ export class VisionRateLimiter {
   }
   
   /**
-   * 画像解析の使用を記録
+   * 画像解析の使用を事前に記録（レースコンディション対策）
    */
-  async recordUsage(
+  async recordUsagePlaceholder(
     userId: string,
-    imageHash: string,
+    imageHash: string
+  ): Promise<string> {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('vision_usage')
+        .insert({
+          user_id: userId,
+          image_hash: imageHash,
+          analysis_result: '[PROCESSING]', // プレースホルダー
+          status: 'processing',
+          created_at: new Date().toISOString()
+        })
+        .select('id')
+        .single()
+      
+      if (error) throw error
+      return data.id
+    } catch (error) {
+      logger.error('Failed to create usage placeholder', { error })
+      throw error // プレースホルダー作成失敗は致命的
+    }
+  }
+  
+  /**
+   * プレースホルダーを実際の結果で更新
+   */
+  async updateUsageWithResult(
+    placeholderId: string,
     analysisResult: string,
     metadata?: {
       imageSize?: number
@@ -171,16 +201,32 @@ export class VisionRateLimiter {
     }
   ): Promise<void> {
     try {
-      await supabaseAdmin.from('vision_usage').insert({
-        user_id: userId,
-        image_hash: imageHash,
-        analysis_result: analysisResult.substring(0, 1000), // 最初の1000文字だけ保存
-        image_size_bytes: metadata?.imageSize,
-        processing_time_ms: metadata?.processingTime,
-        created_at: new Date().toISOString()
-      })
+      await supabaseAdmin
+        .from('vision_usage')
+        .update({
+          analysis_result: analysisResult.substring(0, 1000),
+          image_size_bytes: metadata?.imageSize,
+          processing_time_ms: metadata?.processingTime,
+          status: 'completed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', placeholderId)
     } catch (error) {
-      logger.error('Failed to record vision usage', { error })
+      logger.error('Failed to update usage with result', { error })
+    }
+  }
+  
+  /**
+   * エラー時にプレースホルダーを削除
+   */
+  async rollbackUsage(placeholderId: string): Promise<void> {
+    try {
+      await supabaseAdmin
+        .from('vision_usage')
+        .delete()
+        .eq('id', placeholderId)
+    } catch (error) {
+      logger.error('Failed to rollback usage', { error })
     }
   }
   

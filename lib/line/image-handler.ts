@@ -22,6 +22,8 @@ export class LineImageHandler {
     description?: string
     error?: string 
   }> {
+    let placeholderId: string | undefined
+    
     logger.info('=== IMAGE HANDLER START ===', {
       messageId,
       userId,
@@ -56,7 +58,7 @@ export class LineImageHandler {
                        user?.subscription_end_date && 
                        new Date(user.subscription_end_date) > new Date()
       
-      // 4. レート制限チェック
+      // 4. レート制限チェックと事前記録（レースコンディション対策）
       const rateCheck = await visionRateLimiter.canUseVision(userId, imageHash, isPremium)
       
       if (!rateCheck.allowed) {
@@ -94,6 +96,10 @@ export class LineImageHandler {
         }
       }
       
+      // 5.5. 使用を事前に記録（レースコンディション対策）
+      // 失敗したら後でロールバックできるようにプレースホルダーを作成
+      placeholderId = await visionRateLimiter.recordUsagePlaceholder(userId, imageHash)
+      
       // 6. 画像をBase64エンコード
       const base64Image = buffer.toString('base64')
       
@@ -122,10 +128,9 @@ export class LineImageHandler {
         responsePreview: description.substring(0, 500) // 応答の最初の500文字
       })
       
-      // 8. 使用履歴を記録
-      await visionRateLimiter.recordUsage(
-        userId, 
-        imageHash, 
+      // 8. プレースホルダーを実際の結果で更新
+      await visionRateLimiter.updateUsageWithResult(
+        placeholderId,
         description,
         {
           imageSize: buffer.length,
@@ -165,6 +170,11 @@ export class LineImageHandler {
           name: error.name
         } : String(error)
       })
+      
+      // プレースホルダーをロールバック
+      if (placeholderId) {
+        await visionRateLimiter.rollbackUsage(placeholderId)
+      }
       
       // エラーメッセージを送信（エラー詳細も含む）
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
