@@ -402,17 +402,49 @@ async function continueConversation(
       await startCodeGeneration(userId, context, replyToken)
       sessionStore.delete(userId)
       return true
-    } else if (messageText === '修正' || messageText === 'やり直し') {
+    } else if (messageText === '修正' || messageText === 'やり直し' || messageText === '修正したい') {
       // 要件の修正
       context.readyForCode = false
+      context.isModifying = true  // 修正モードフラグ
       sessionStore.set(userId, context)
       
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
-        text: 'どの部分を修正したいですか？詳しく教えてください。'
-      }])
+        text: '修正したい内容を教えてください。\n\n例：\n・「もっと詳細なログを出力したい」\n・「エラー処理を追加して」\n・「シート名を変更したい」\n\n修正内容を入力してください：',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }},
+            { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' }}
+          ]
+        }
+      }] as any)
       return true
     }
+  }
+
+  // 修正モードの処理
+  if ((context as any).isModifying) {
+    // 修正内容を要件に追加
+    if (!context.requirements) {
+      context.requirements = {}
+    }
+    (context.requirements as any).modifications = messageText
+    context.readyForCode = true
+    ;(context as any).isModifying = false
+    sessionStore.set(userId, context)
+    
+    await lineClient.replyMessage(replyToken, [{
+      type: 'text',
+      text: `修正内容を確認しました：\n\n「${messageText}」\n\nこの修正を反映してコードを再生成します。よろしいですか？`,
+      quickReply: {
+        items: [
+          { type: 'action', action: { type: 'message', label: '✅ はい', text: 'はい' }},
+          { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }},
+          { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' }}
+        ]
+      }
+    }] as any)
+    return true
   }
 
   // 会話継続
