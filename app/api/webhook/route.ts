@@ -10,7 +10,6 @@ import { ConversationalFlow, ConversationContext } from '../../../lib/conversati
 import { ConversationSessionStore } from '../../../lib/conversation/session-store'
 import { LineImageHandler } from '../../../lib/line/image-handler'
 import { rateLimiters } from '../../../lib/middleware/rate-limiter'
-import { ApiKeyValidator } from '../../../lib/security/api-key-validator'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -90,16 +89,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 200 })
     }
     
-    // リクエスト元検証
-    const isValidRequest = await ApiKeyValidator.validateRequest(req, {
-      checkOrigin: process.env.NODE_ENV === 'production',
-      checkIp: true
-    })
-    
-    if (!isValidRequest) {
-      logger.warn('Invalid request origin or IP', { requestId })
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    // リクエスト元検証は署名検証で十分なのでスキップ
+    // LINEはOriginヘッダーを送らないし、IPも変動する
+    logger.info('LINE signature validated, skipping origin/IP check', { requestId })
 
     // 3. ボディをパース
     let parsedBody: any
