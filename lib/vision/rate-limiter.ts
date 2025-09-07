@@ -46,7 +46,7 @@ export class VisionRateLimiter {
   }> {
     try {
       // 1. 同じ画像の重複チェック（24時間以内）
-      const { data: duplicate } = await supabaseAdminAdmin
+      const { data: duplicate } = await supabaseAdmin
         .from('vision_usage')
         .select('id, analysis_result')
         .eq('image_hash', imageHash)
@@ -144,7 +144,12 @@ export class VisionRateLimiter {
       }
       
     } catch (error) {
-      logger.error('Vision rate limit check failed', { error })
+      logger.error('Vision rate limit check failed', { 
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        imageHash
+      })
       // エラー時は安全側に倒す（使用不可）
       return {
         allowed: false,

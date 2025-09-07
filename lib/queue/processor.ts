@@ -193,8 +193,14 @@ export class QueueProcessor {
             processingTime: Date.now() - startTime
           }
         })
-      } catch (dbError) {
-        logger.error('Failed to save to database', { jobId, error: dbError })
+      } catch (dbError: any) {
+        logger.error('Failed to save to database', { 
+          jobId, 
+          error: dbError instanceof Error ? dbError.message : String(dbError),
+          code: dbError?.code,
+          hint: dbError?.hint,
+          stack: dbError instanceof Error ? dbError.stack : undefined
+        })
         // DBエラーでも続行
       }
 
