@@ -125,7 +125,7 @@ export class StructuredResponse {
       altText: 'コード生成完了',
       template: {
         type: 'buttons',
-        text: 'コードの生成が完了しました',
+        text: 'コードの生成が完了しました\n\nエラーが出た場合は📷ボタンでスクリーンショットを送信してください',
         actions: [
           {
             type: 'message',
@@ -134,13 +134,13 @@ export class StructuredResponse {
           },
           {
             type: 'message',
-            label: '✨ 新しく作る',
-            text: 'コード生成を開始'
+            label: '📷 エラースクショを送る',
+            text: 'エラーのスクリーンショットを送る'
           },
           {
-            type: 'uri',
-            label: '📖 使い方ガイド',
-            uri: 'https://gasgenerator.onrender.com/guide'
+            type: 'message',
+            label: '📖 使い方',
+            text: '使い方を教えて'
           }
         ]
       }
