@@ -809,17 +809,39 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
   logger.info('Processing image message', { userId, messageId, requestId })
 
   try {
+    // スクリーンショット待機モードのチェック
+    let context = sessionStore.get(userId)
+    const isWaitingForScreenshot = context && (context as any).waitingForScreenshot
+    
+    if (isWaitingForScreenshot) {
+      logger.info('Processing screenshot in waiting mode', { userId })
+      // waitingForScreenshotフラグをクリア
+      delete (context as any).waitingForScreenshot
+      sessionStore.set(userId, context)
+    }
+    
     const result = await imageHandler.handleImageMessage(messageId, replyToken, userId)
     
     if (result.success && result.description) {
       // 画像の解析結果をコンテキストに保存
-      let context = sessionStore.get(userId) || ConversationalFlow.resetConversation('spreadsheet')
-      context.messages.push({
-        role: 'user',
-        content: `[画像アップロード] ${result.description}`
-      })
-      // requirementsはオブジェクトなので、画像内容を適切なプロパティに保存
-      context.requirements.imageContent = result.description
+      context = sessionStore.get(userId) || ConversationalFlow.resetConversation('spreadsheet')
+      
+      // スクリーンショット待機モードだった場合は、エラー解決のコンテキストとして保存
+      if (isWaitingForScreenshot) {
+        context.messages.push({
+          role: 'user',
+          content: `[エラースクリーンショット] ${result.description}\nこのエラーを解決するコードを生成してください。`
+        })
+        context.requirements.errorScreenshot = result.description
+        context.requirements.isErrorFix = true
+      } else {
+        context.messages.push({
+          role: 'user',
+          content: `[画像アップロード] ${result.description}`
+        })
+        context.requirements.imageContent = result.description
+      }
+      
       context.requirements.hasScreenshot = true
       sessionStore.set(userId, context)
     }
