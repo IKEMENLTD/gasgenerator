@@ -1,4 +1,4 @@
-import { ResponseParser, ParsedResponse } from './response-parser'
+import { MessageStructureParser, ParsedResponse } from './response-parser'
 
 type Message = {
   type: string
@@ -8,10 +8,10 @@ type Message = {
 }
 
 export class StructuredResponse {
-  private parser: ResponseParser
+  private parser: MessageStructureParser
 
   constructor() {
-    this.parser = new ResponseParser()
+    this.parser = new MessageStructureParser()
   }
 
   formatResponse(responseText: string): Message[] {

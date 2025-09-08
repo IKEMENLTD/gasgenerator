@@ -10,7 +10,8 @@ export interface ParsedResponse {
   fallback?: string
 }
 
-export class ResponseParser {
+// 構造化メッセージ表示用のパーサー（ClaudeのResponseParserとは別物）
+export class MessageStructureParser {
   private patterns = {
     codeBlock: /```(\w+)?\s*([\s\S]*?)```/g,
     codeSection: /(?:コード[:：]?\s*\n)([\s\S]*?)(?=設定方法|注意点|手順|$)/i,

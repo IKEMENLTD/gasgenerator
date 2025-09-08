@@ -1,4 +1,4 @@
-import { ResponseParser } from '../lib/utils/response-parser'
+import { MessageStructureParser } from '../lib/utils/response-parser'
 import { StructuredResponse } from '../lib/utils/structured-response'
 
 // テスト用のサンプルレスポンス
@@ -79,7 +79,7 @@ Gmail自動送信の設定方法:
 function runTests() {
   console.log('===== 構造化レスポンステスト開始 =====\n')
   
-  const parser = new ResponseParser()
+  const parser = new MessageStructureParser()
   const formatter = new StructuredResponse()
   
   // テスト1: 完全な構造化レスポンス
