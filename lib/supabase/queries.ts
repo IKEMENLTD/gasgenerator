@@ -366,74 +366,8 @@ export class MetricsQueries {
   }
 }
 
-export class SessionQueries {
-  static async findActiveSession(userId: string) {
-    try {
-      const { data, error } = await supabaseAdmin
-        .from<any>('conversation_sessions')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .maybeSingle()
-      
-      if (error && error.code !== 'PGRST116') throw error
-      return data
-    } catch (error) {
-      console.error('SessionQueries.findActiveSession error:', error)
-      return null
-    }
-  }
-
-  static async createSession(userId: string, params: any = {}) {
-    try {
-      const { data, error } = await supabaseAdmin
-        .from<any>('conversation_sessions')
-        .insert({
-          user_id: userId,
-          status: params.status || 'active',
-          current_step: 1,
-          category: null,
-          subcategory: null,
-          collected_requirements: {}
-        })
-        .select()
-        .single()
-      
-      if (error) throw error
-      return data
-    } catch (error) {
-      console.error('SessionQueries.createSession error:', error)
-      // エラーでも最小限のセッションオブジェクトを返す
-      return {
-        id: `temp_${Date.now()}`,
-        user_id: userId,
-        status: 'active',
-        current_step: 1
-      }
-    }
-  }
-
-  static async updateSession(sessionId: string, updates: any) {
-    try {
-      const { data, error } = await supabaseAdmin
-        .from<any>('conversation_sessions')
-        .update(updates)
-        .eq('id', sessionId)
-        .select()
-        .single()
-      
-      if (error) throw error
-      return data
-    } catch (error) {
-      console.error('SessionQueries.updateSession error:', error)
-      return null
-    }
-  }
-
-  static async completeSession(sessionId: string) {
-    return await this.updateSession(sessionId, { status: 'completed' })
-  }
-}
+// SessionQueriesクラスは session-queries.ts に移動済み
+// 重複を避けるためここでは定義しない
 
 
 export class CodeQueries {
@@ -611,7 +545,6 @@ export class ProcessingQueueQueries {
 // エクスポート
 export default {
   UserQueries,
-  SessionQueries,
   MetricsQueries,
   CodeQueries,
   ClaudeUsageQueries,
