@@ -1,14 +1,17 @@
 import { supabaseAdmin } from './client'
 import { logger } from '../utils/logger'
 
+// SessionQueriesを再エクスポート
+export { SessionQueries } from './session-queries'
+
 export class UserQueries {
   static async createOrUpdate(lineUserId: string) {
     try {
-      // まず既存ユーザーを検索（maybeSingle使用）
+      // まず既存ユーザーを検索（line_user_idカラムの存在チェックを含む）
       const { data: existingUser, error: findError } = await supabaseAdmin
         .from<any>('users')
         .select('*')
-        .eq('line_user_id', lineUserId)
+        .or(`line_user_id.eq.${lineUserId}`)
         .maybeSingle()
 
       if (findError && findError.code !== 'PGRST116') {
@@ -139,6 +142,25 @@ export class QueueQueries {
     } catch (error) {
       console.error('QueueQueries.getNextJobs error:', error)
       return []
+    }
+  }
+  
+  static async getPendingJobsCount() {
+    try {
+      const { count, error } = await supabaseAdmin
+        .from('generation_queue')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending')
+      
+      if (error) {
+        console.error('Error getting pending jobs count:', error)
+        return 0
+      }
+      
+      return count || 0
+    } catch (error) {
+      console.error('QueueQueries.getPendingJobsCount error:', error)
+      return 0
     }
   }
   
@@ -434,11 +456,20 @@ export class CodeQueries {
 
   static async saveGeneratedCode(codeData: any) {
     try {
-      // user_idとsession_idはTEXT型として保存（UUID型エラー回避）
+      // UUID型エラーを完全回避 - idカラムを明示的に除外
+      const { id, ...cleanData } = codeData
+      
       const insertData = {
-        ...codeData,
         user_id: String(codeData.user_id || codeData.line_user_id),
-        session_id: String(codeData.session_id || `session_${Date.now()}`)
+        session_id: String(codeData.session_id || `session_${Date.now()}`),
+        queue_id: String(codeData.queue_id || ''),
+        code: String(codeData.code || ''),
+        gas_url: String(codeData.gas_url || ''),
+        category: String(codeData.category || ''),
+        subcategory: String(codeData.subcategory || ''),
+        requirements: codeData.requirements || {},
+        quality_score: Number(codeData.quality_score || 0),
+        created_at: new Date().toISOString()
       }
       
       const { data, error } = await supabaseAdmin

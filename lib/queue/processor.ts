@@ -8,6 +8,7 @@ import { MessageTemplates } from '@/lib/line/message-templates'
 import { CodeQueries } from '@/lib/supabase/queries'
 import { logger } from '@/lib/utils/logger'
 import { QUEUE_CONFIG } from '@/lib/constants/config'
+import { ConversationSessionStore } from '@/lib/conversation/session-store'
 import type { QueueJob } from '@/types/database'
 import type { CodeGenerationRequest } from '@/types/claude'
 
@@ -116,7 +117,7 @@ export class QueueProcessor {
     try {
       logger.info('Processing job', { 
         jobId, 
-        userId: job.user_id,
+        userId: job.line_user_id,
         category: job.requirements?.category,
         isConversational: !!job.requirements?.prompt
       })
@@ -136,7 +137,7 @@ export class QueueProcessor {
         const claudeResponse = await this.claudeClient.sendMessage([{
           role: 'user',
           content: prompt
-        }], job.user_id || job.line_user_id)
+        }], job.line_user_id)
 
         // レスポンス解析
         codeResponse = ResponseParser.parseCodeResponse(claudeResponse)
@@ -144,7 +145,7 @@ export class QueueProcessor {
       } else {
         // 従来型: プロンプトを構築
         const request: CodeGenerationRequest = {
-          userId: job.user_id,
+          userId: job.line_user_id,
           lineUserId: job.line_user_id,
           sessionId: job.session_id,
           category: job.requirements?.category,
@@ -160,7 +161,7 @@ export class QueueProcessor {
         const claudeResponse = await this.claudeClient.sendMessage([{
           role: 'user',
           content: prompt
-        }], job.user_id || job.line_user_id)
+        }], job.line_user_id)
 
         // レスポンス解析
         codeResponse = ResponseParser.parseCodeResponse(claudeResponse)
@@ -179,7 +180,7 @@ export class QueueProcessor {
       // 4. データベースに保存（エラーハンドリング強化）
       try {
         await CodeQueries.saveGeneratedCode({
-          user_id: job.user_id || job.line_user_id,
+          user_id: job.line_user_id,
           session_id: typeof job.session_id === 'string' ? job.session_id : job.session_id?.toString() || `job_${jobId}`,
           requirements_summary: this.summarizeRequirements(job.requirements),
           generated_code: codeResponse.code,
@@ -207,7 +208,37 @@ export class QueueProcessor {
       // 5. LINEに結果を送信（文字数制限対応）
       await this.sendResultToUser(job.line_user_id, codeResponse, job.requirements?.category)
 
-      // 6. ジョブを完了状態に更新
+      // 6. セッションを更新（コード生成完了フラグを立てる）
+      const sessionStore = ConversationSessionStore.getInstance()
+      // Supabaseから最新のセッションを取得（別プロセスからでも読み込めるように）
+      const existingContext = await sessionStore.getAsync(job.line_user_id)
+      if (existingContext) {
+        existingContext.lastGeneratedCode = true
+        existingContext.lastGeneratedCategory = job.requirements?.category
+        existingContext.lastGeneratedRequirements = job.requirements
+        await sessionStore.setAsync(job.line_user_id, existingContext)
+        logger.info('Session updated after code generation', {
+          userId: job.line_user_id,
+          hasLastGeneratedCode: true
+        })
+      } else {
+        // セッションがない場合は新規作成
+        await sessionStore.setAsync(job.line_user_id, {
+          messages: [],
+          category: job.requirements?.category,
+          subcategory: job.requirements?.subcategory,
+          requirements: job.requirements,
+          extractedRequirements: {},
+          currentStep: 4,
+          readyForCode: false,
+          lastGeneratedCode: true
+        } as any)
+        logger.info('New session created after code generation', {
+          userId: job.line_user_id
+        })
+      }
+
+      // 7. ジョブを完了状態に更新
       await QueueManager.completeJob(jobId)
 
       const processingTime = Date.now() - startTime
@@ -249,7 +280,7 @@ export class QueueProcessor {
   }
 
   /**
-   * LINEへの結果送信（文字数制限対応）
+   * LINEへの結果送信（構造化フォーマット対応）
    */
   private async sendResultToUser(
     lineUserId: string, 
@@ -257,79 +288,53 @@ export class QueueProcessor {
     category?: string
   ): Promise<void> {
     try {
-      const messages: any[] = []
+      // 構造化レスポンスフォーマットを使用
+      let fullResponseText = ''
       
-      // 1. 概要メッセージ
-      messages.push({
-        type: 'text',
-        text: `✅ コード生成が完了しました！\n\n【カテゴリ】${category || '汎用'}\n【概要】${codeResponse.summary || 'GASコードを生成しました'}`
-      })
-
-      // 2. 説明（500文字以内に制限）
+      // カテゴリと概要
+      fullResponseText = `コード生成が完了しました！【${category || '汎用'}】\n`
+      if (codeResponse.summary) {
+        fullResponseText += codeResponse.summary + '\n\n'
+      }
+      
+      // 説明
       if (codeResponse.explanation) {
-        const explanation = codeResponse.explanation.length > 500 
-          ? codeResponse.explanation.substring(0, 497) + '...'
-          : codeResponse.explanation
-        
-        messages.push({
-          type: 'text',
-          text: `【説明】\n${explanation}`
-        })
+        fullResponseText += codeResponse.explanation + '\n\n'
       }
-
-      // 3. コード（コピペしやすい形式で）
+      
+      // コード
       if (codeResponse.code) {
-        const code = codeResponse.code
-        const MAX_CODE_LENGTH = 3500  // LINEの文字数制限を考慮
-        
-        if (code.length <= MAX_CODE_LENGTH) {
-          messages.push({
-            type: 'text',
-            text: `📝 【GASコード】\n\n以下のコードをコピーしてください：\n\n${code}\n\n✨ コピー後はGoogle Apps Scriptエディタに貼り付けてください`
-          })
-        } else {
-          // コードが長い場合は分割送信
-          const part1 = code.substring(0, MAX_CODE_LENGTH)
-          const part2 = code.substring(MAX_CODE_LENGTH)
-          
-          messages.push({
-            type: 'text',
-            text: `📝 【GASコード 前半】\n\n${part1}`
-          })
-          
-          if (part2.length > 0) {
-            messages.push({
-              type: 'text',
-              text: `📝 【GASコード 後半】\n\n${part2}\n\n✨ 前半と後半をつなげてコピーしてください`
-            })
-          }
-        }
+        fullResponseText += `コード:\n\`\`\`javascript\n${codeResponse.code}\n\`\`\`\n\n`
       }
-
-      // 4. 使用手順
+      
+      // 設定方法（手順）
       if (codeResponse.steps && codeResponse.steps.length > 0) {
-        const steps = codeResponse.steps.slice(0, 5).join('\n')
-        messages.push({
-          type: 'text',
-          text: `【使用手順】\n${steps}`,
-          quickReply: {
-            items: [
-              { type: 'action', action: { type: 'message', label: '🆕 新しいコード', text: '新しいコードを作りたい' }},
-              { type: 'action', action: { type: 'message', label: '📝 修正', text: '修正したい' }},
-              { type: 'action', action: { type: 'message', label: '📷 エラースクリーンショット', text: 'エラーのスクリーンショットを送る' }}
-            ]
-          }
+        fullResponseText += `設定方法:\n`
+        codeResponse.steps.forEach((step: string, index: number) => {
+          fullResponseText += `${index + 1}. ${step}\n`
+        })
+        fullResponseText += '\n'
+      }
+      
+      // 注意点（もしあれば）
+      if (codeResponse.notes && Array.isArray(codeResponse.notes)) {
+        fullResponseText += `注意点:\n`
+        codeResponse.notes.forEach((note: string) => {
+          fullResponseText += `• ${note}\n`
         })
       }
-
-      // 使い方説明を追加
-      if (messages.length >= 5) {
-        messages.push({
-          type: 'text',
-          text: '📚 使い方のヒント：\n\n✅ コードをコピペしたらGASエディタに貼り付け\n🔧 エラーが出たらスクリーンショットを送ってください\n🆕 新しいコードが必要な時は「新しいコードを作りたい」と送信'
-        })
+      
+      // デフォルトの注意点を追加
+      if (!codeResponse.notes || codeResponse.notes.length === 0) {
+        fullResponseText += `注意点:\n`
+        fullResponseText += `• 初回実行時は承認が必要です\n`
+        fullResponseText += `• コードはGoogle Apps Scriptエディタに貼り付けてください\n`
+        fullResponseText += `• エラーが出た場合はスクリーンショットを送信してください\n`
       }
-
+      
+      // 構造化されたメッセージを生成
+      const messages = MessageTemplates.createStructuredCodeResult(fullResponseText)
+      
       // メッセージを送信（最大5つまで）
       await this.lineClient.pushMessage(lineUserId, messages.slice(0, 5))
       

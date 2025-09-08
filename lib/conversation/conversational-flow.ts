@@ -25,6 +25,12 @@ export interface ConversationContext {
     [key: string]: any
   }
   readyForCode: boolean
+  // 最後に生成したコード関連の情報
+  lastGeneratedCode?: boolean
+  lastGeneratedCategory?: string
+  lastGeneratedRequirements?: any
+  isModifying?: boolean
+  isAddingDescription?: boolean
 }
 
 // カテゴリ別の質問テンプレート

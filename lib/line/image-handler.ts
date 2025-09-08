@@ -51,7 +51,7 @@ export class LineImageHandler {
       const { data: user } = await supabaseAdmin
         .from('users')
         .select('subscription_status, subscription_end_date')
-        .eq('line_user_id', userId)
+        .eq('display_name', userId)
         .single()
       
       const isPremium = user?.subscription_status === 'premium' && 

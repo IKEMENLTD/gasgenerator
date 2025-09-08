@@ -80,6 +80,22 @@ export async function GET(req: NextRequest) {
       processor = new QueueProcessor()
     }
     
+    // まずキューにジョブがあるか確認（無駄な処理を避ける）
+    const pendingJobs = await QueueManager.getPendingJobsCount()
+    
+    if (pendingJobs === 0) {
+      // ジョブがない場合は早期リターン（コスト削減）
+      return NextResponse.json({
+        success: true,
+        message: 'No jobs to process',
+        processed: 0,
+        errors: 0,
+        remaining: 0,
+        processingTime: Date.now() - startTime,
+        timestamp: new Date().toISOString()
+      })
+    }
+    
     const result = await processor.startProcessing()
     
     logger.info('Queue processing completed', { 

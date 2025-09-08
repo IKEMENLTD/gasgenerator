@@ -82,6 +82,19 @@ export class QueueManager {
   }
 
   /**
+   * 保留中のジョブ数を取得（コスト削減用）
+   */
+  static async getPendingJobsCount(): Promise<number> {
+    try {
+      const count = await QueueQueries.getPendingJobsCount()
+      return count
+    } catch (error) {
+      logger.error('Failed to get pending jobs count', { error })
+      return 0
+    }
+  }
+
+  /**
    * ジョブを処理中状態にする
    */
   static async startProcessing(jobId: string): Promise<void> {

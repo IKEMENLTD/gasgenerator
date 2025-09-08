@@ -40,6 +40,8 @@ export interface ClaudeCodeResponse {
   code: string
   explanation: string
   steps: string[]
+  summary?: string
+  notes?: string[]
 }
 
 // プロンプト構築用

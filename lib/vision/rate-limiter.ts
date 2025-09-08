@@ -44,23 +44,77 @@ export class VisionRateLimiter {
     remainingToday?: number
     remainingMonth?: number
   }> {
+    logger.info('=== RATE LIMIT CHECK START ===', {
+      userId,
+      imageHash: imageHash.substring(0, 8),
+      isPremium,
+      timestamp: new Date().toISOString()
+    })
+    
+    // Supabaseが設定されていない場合のチェック
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      logger.error('CRITICAL: Supabase not configured for rate limiting', {
+        hasUrl: !!process.env.SUPABASE_URL,
+        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+      })
+      
+      // データベースがない場合はメモリ内カウンターで制限
+      // グローバル変数で簡易的に管理
+      if (!global.visionUsageCounter) {
+        global.visionUsageCounter = new Map()
+      }
+      
+      const todayKey = `${userId}_${new Date().toISOString().split('T')[0]}`
+      const currentCount = global.visionUsageCounter.get(todayKey) || 0
+      const dailyLimit = isPremium ? this.LIMITS.PREMIUM.daily : this.LIMITS.FREE.daily
+      
+      logger.warn('Using in-memory rate limiting', {
+        userId,
+        todayKey,
+        currentCount,
+        dailyLimit
+      })
+      
+      if (currentCount >= dailyLimit) {
+        return {
+          allowed: false,
+          reason: `本日の画像解析上限（${dailyLimit}回）に達しました。\n明日また利用できます。${!isPremium ? '\n\n💎 プレミアムプランなら1日100回まで解析可能！' : ''}`,
+          remainingToday: 0
+        }
+      }
+      
+      // カウントを事前に増やす
+      global.visionUsageCounter.set(todayKey, currentCount + 1)
+      
+      return {
+        allowed: true,
+        remainingToday: dailyLimit - currentCount - 1,
+        remainingMonth: 999 // メモリ内では月次制限は管理しない
+      }
+    }
+    
     try {
-      // 1. 同じ画像の重複チェック（24時間以内）
+      // 1. 同じ画像の重複チェック（エラースクショは除外）
+      // エラースクリーンショットは何度でも送信できるようにする
       const { data: duplicates } = await supabaseAdmin
         .from('vision_usage')
         .select('id, analysis_result, status')
         .eq('image_hash', imageHash)
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .eq('status', 'completed') // 完了したもののみ重複として扱う
+        .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // 5分以内に短縮（エラー解決用）
+        .eq('status', 'completed')
         .limit(1)
       
       if (duplicates && duplicates.length > 0) {
         const duplicate = duplicates[0]
-        logger.info('Duplicate image detected', { userId, imageHash })
+        logger.info('Duplicate image detected - allowing retry', { userId, imageHash })
+        // 重複でもカウントは消費するが、再解析は許可（エラー解決のため）
+        // コメントアウトして重複チェックを無効化
+        /*
         return {
           allowed: false,
-          reason: '同じ画像は24時間以内に既に解析済みです。\n\n前回の結果:\n' + duplicate.analysis_result
+          reason: '同じ画像は5分以内に既に解析済みです。\n\n前回の結果:\n' + duplicate.analysis_result
         }
+        */
       }
       
       // 1.5. 定期的にクリーンアップ（10%の確率で実行）
@@ -76,19 +130,48 @@ export class VisionRateLimiter {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
       
       // completedの数 + 5分以内のprocessingの数
-      const { data: usageRecords } = await supabaseAdmin
+      const { data: usageRecords, error: todayError } = await supabaseAdmin
         .from('vision_usage')
         .select('status, created_at')
         .eq('user_id', userId)
         .gte('created_at', today.toISOString())
+      
+      if (todayError) {
+        logger.error('Failed to fetch today usage', { 
+          error: todayError,
+          userId,
+          query: { from: today.toISOString() }
+        })
+        // エラー時は安全側に倒す
+        return {
+          allowed: false,
+          reason: '利用状況の確認に失敗しました。しばらく後でお試しください。'
+        }
+      }
       
       const todayCount = usageRecords?.filter(record => 
         record.status === 'completed' || 
         (record.status === 'processing' && record.created_at >= fiveMinutesAgo)
       ).length || 0
       
+      logger.info('Today usage count', {
+        userId,
+        todayCount,
+        totalRecords: usageRecords?.length || 0,
+        completedRecords: usageRecords?.filter(r => r.status === 'completed').length || 0,
+        processingRecords: usageRecords?.filter(r => r.status === 'processing').length || 0,
+        isPremium,
+        dailyLimit: isPremium ? this.LIMITS.PREMIUM.daily : this.LIMITS.FREE.daily
+      })
+      
       const dailyLimit = isPremium ? this.LIMITS.PREMIUM.daily : this.LIMITS.FREE.daily
       if ((todayCount || 0) >= dailyLimit) {
+        logger.warn('Daily limit exceeded', { 
+          userId, 
+          todayCount, 
+          dailyLimit,
+          isPremium 
+        })
         return {
           allowed: false,
           reason: `本日の画像解析上限（${dailyLimit}回）に達しました。\n明日また利用できます。${!isPremium ? '\n\n💎 プレミアムプランなら1日100回まで解析可能！' : ''}`,
@@ -99,19 +182,45 @@ export class VisionRateLimiter {
       // 3. 月間使用回数チェック（ユーザー）
       const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
       
-      const { data: monthRecords } = await supabaseAdmin
+      const { data: monthRecords, error: monthError } = await supabaseAdmin
         .from('vision_usage')
         .select('status, created_at')
         .eq('user_id', userId)
         .gte('created_at', startOfMonth.toISOString())
+      
+      if (monthError) {
+        logger.error('Failed to fetch monthly usage', { 
+          error: monthError,
+          userId,
+          query: { from: startOfMonth.toISOString() }
+        })
+        return {
+          allowed: false,
+          reason: '利用状況の確認に失敗しました。しばらく後でお試しください。'
+        }
+      }
       
       const monthCount = monthRecords?.filter(record => 
         record.status === 'completed' || 
         (record.status === 'processing' && record.created_at >= fiveMinutesAgo)
       ).length || 0
       
+      logger.info('Monthly usage count', {
+        userId,
+        monthCount,
+        totalMonthRecords: monthRecords?.length || 0,
+        isPremium,
+        monthlyLimit: isPremium ? this.LIMITS.PREMIUM.monthly : this.LIMITS.FREE.monthly
+      })
+      
       const monthlyLimit = isPremium ? this.LIMITS.PREMIUM.monthly : this.LIMITS.FREE.monthly
       if ((monthCount || 0) >= monthlyLimit) {
+        logger.warn('Monthly limit exceeded', { 
+          userId, 
+          monthCount, 
+          monthlyLimit,
+          isPremium 
+        })
         return {
           allowed: false,
           reason: `今月の画像解析上限（${monthlyLimit}回）に達しました。\n来月また利用できます。${!isPremium ? '\n\n💎 プレミアムプランなら月100回まで解析可能！' : ''}`,
@@ -163,11 +272,27 @@ export class VisionRateLimiter {
         // TODO: 管理者に通知
       }
       
-      return {
+      const result = {
         allowed: true,
         remainingToday: dailyLimit - (todayCount || 0),
         remainingMonth: monthlyLimit - (monthCount || 0)
       }
+      
+      logger.info('=== RATE LIMIT CHECK RESULT ===', {
+        userId,
+        ...result,
+        isPremium,
+        limits: {
+          daily: dailyLimit,
+          monthly: monthlyLimit
+        },
+        usage: {
+          today: todayCount,
+          month: monthCount
+        }
+      })
+      
+      return result
       
     } catch (error) {
       logger.error('Vision rate limit check failed', { 

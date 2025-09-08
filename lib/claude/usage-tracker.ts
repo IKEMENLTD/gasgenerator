@@ -32,7 +32,7 @@ export class ClaudeUsageTracker {
         const { data: user, error } = await supabaseAdmin
           .from('users')
           .select('subscription_status, subscription_end_date')
-          .eq('line_user_id', userId)
+          .eq('display_name', userId)
           .maybeSingle()
         
         if (!error && user && user.subscription_status === 'premium') {

@@ -3,6 +3,7 @@ import { LineApiClient } from '../../../lib/line/client'
 import { MessageTemplates } from '../../../lib/line/message-templates'
 import { QueueManager } from '../../../lib/queue/manager'
 import { UserQueries } from '../../../lib/supabase/queries'
+import { PremiumChecker } from '../../../lib/premium/premium-checker'
 import { logger } from '../../../lib/utils/logger'
 import { generateRequestId, generateUUID, validateLineSignature } from '../../../lib/utils/crypto'
 import { getCategoryIdByName } from '../../../lib/conversation/category-definitions'
@@ -260,7 +261,92 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       
       return true
     }
+    
+    // 画像解析関連のボタンハンドラ
+    if (messageText === '画像を解析') {
+      await lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '📸 解析したい画像を送信してください。\n\nスクリーンショット、エラー画面、Excel・PDFのスクショなど、どんな画像でも解析します。'
+      }])
+      return true
+    }
+    
+    if (messageText === '画像解析の使い方') {
+      await lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '📸 画像解析の使い方\n\n1️⃣ エラー画面のスクショを送る\n→ エラーの原因と解決コードを生成\n\n2️⃣ ExcelやPDFのスクショを送る\n→ データ構造を理解してコード生成\n\n3️⃣ Webサイトのスクショを送る\n→ スクレイピングやAPI連携コード生成\n\n💡 コツ：画像は鮮明に、文字が読めるように撮影してください'
+      }])
+      return true
+    }
+    
+    if (messageText === 'プレミアムプラン') {
+      const encodedUserId = Buffer.from(userId).toString('base64')
+      await lineClient.replyMessage(replyToken, [{
+        type: 'template',
+        altText: 'プレミアムプランのご案内',
+        template: {
+          type: 'buttons',
+          text: '💎 プレミアムプラン\n\n✅ 無制限のコード生成\n✅ 画像解析無制限\n✅ 優先サポート\n\n月額 500円',
+          actions: [{
+            type: 'uri',
+            label: '今すぐ申し込む',
+            uri: `https://buy.stripe.com/8wMdTAc9m8zQgmI9AA?client_reference_id=${encodedUserId}`
+          }]
+        }
+      }] as any)
+      return true
+    }
 
+    // コード生成後の修正モード（最優先でチェック）
+    if (messageText === '修正' || messageText === '修正したい' || messageText === 'やり直し') {
+      // Supabaseから最新のセッションを取得（別プロセスで保存された可能性があるため）
+      if (!context) {
+        context = await sessionStore.getAsync(userId)
+      }
+      
+      // デバッグログ追加
+      logger.info('Modify button pressed', {
+        userId,
+        hasContext: !!context,
+        lastGeneratedCode: context?.lastGeneratedCode,
+        contextKeys: context ? Object.keys(context) : []
+      })
+      
+      // セッションがない場合は新規作成して修正モードに
+      if (!context) {
+        context = {
+          messages: [],
+          category: null,
+          subcategory: null,
+          requirements: {},
+          extractedRequirements: {},
+          currentStep: 1,
+          readyForCode: false,
+          lastGeneratedCode: true,  // 修正モードとして扱う
+          isModifying: true
+        } as any
+      }
+      
+      // lastGeneratedCodeがない場合でも修正モードに入る
+      if (context.lastGeneratedCode || messageText === '修正したい') {
+        context.isModifying = true
+        context.lastGeneratedCode = false
+        sessionStore.set(userId, context)
+        
+        await lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: '🔧 修正したい内容を教えてください。\n\n例：\n・「エラー処理を追加して」\n・「ログを詳細に出力」\n・「シート名を変更」',
+          quickReply: {
+            items: [
+              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }},
+              { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' }}
+            ]
+          }
+        }] as any)
+        return true
+      }
+    }
+    
     // リセットコマンド
     if (isResetCommand(messageText)) {
       sessionStore.delete(userId)
@@ -395,12 +481,91 @@ async function continueConversation(
   messageText: string,
   replyToken: string
 ): Promise<boolean> {
+  // キャンセル処理（どの段階でも有効）
+  if (messageText === 'キャンセル') {
+    sessionStore.delete(userId)
+    await lineClient.replyMessage(replyToken, [{
+      type: 'text',
+      text: '❌ キャンセルしました。\n\n新しくコードを生成したい場合は、カテゴリを選んでください：',
+      quickReply: {
+        items: [
+          { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+          { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+          { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+          { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
+          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }}
+        ]
+      }
+    }] as any)
+    return true
+  }
+
+  // 画像解析後の処理
+  if (context.requirements?.imageContent) {
+    // 「はい、この内容で生成」ボタン
+    if (messageText === 'はい、この内容で生成') {
+      // 画像内容を元にコード生成開始
+      context.readyForCode = true
+      await startCodeGeneration(userId, context, replyToken)
+      // セッションを削除せず、コード生成後モードに変更
+      context.lastGeneratedCode = true
+      context.readyForCode = false
+      sessionStore.set(userId, context)
+      return true
+    }
+    // 「追加で説明します」ボタン
+    else if (messageText === '追加で説明します') {
+      // 追加説明モードに切り替え
+      context.isAddingDescription = true
+      sessionStore.set(userId, context)
+      
+      await lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '📝 追加で説明したい内容を入力してください。\n\n例：\n・「A列の日付を自動で入力したい」\n・「重複データは削除してほしい」\n・「エラー時はログを出力して」',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' }}
+          ]
+        }
+      }] as any)
+      return true
+    }
+  }
+
+  // 追加説明モードの処理
+  if ((context as any).isAddingDescription) {
+    // 追加説明を要件に追加
+    if (!context.requirements) {
+      context.requirements = {}
+    }
+    context.requirements.additionalDescription = messageText
+    context.readyForCode = true
+    ;(context as any).isAddingDescription = false
+    sessionStore.set(userId, context)
+    
+    await lineClient.replyMessage(replyToken, [{
+      type: 'text',
+      text: `✅ 追加説明を受け付けました。\n\n【画像の内容】\n${context.requirements.imageContent}\n\n【追加説明】\n${messageText}\n\nこの内容でコードを生成します。よろしいですか？`,
+      quickReply: {
+        items: [
+          { type: 'action', action: { type: 'message', label: '✅ はい', text: 'はい' }},
+          { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }},
+          { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' }}
+        ]
+      }
+    }] as any)
+    return true
+  }
+
   // コード生成確認段階
   if (context.readyForCode) {
     if (messageText === 'はい' || messageText.includes('生成') || messageText === 'OK') {
       // コード生成開始
       await startCodeGeneration(userId, context, replyToken)
-      sessionStore.delete(userId)
+      // セッションを削除せず、コード生成後モードに変更
+      context.lastGeneratedCode = true
+      context.readyForCode = false
+      sessionStore.set(userId, context)
       return true
     } else if (messageText === '修正' || messageText === 'やり直し' || messageText === '修正したい') {
       // 要件の修正
@@ -491,6 +656,31 @@ async function startCodeGeneration(
   replyToken: string
 ): Promise<void> {
   try {
+    // プレミアムステータスチェック
+    const premiumStatus = await PremiumChecker.checkPremiumStatus(userId)
+    
+    if (!premiumStatus.canGenerate) {
+      // 制限に達した場合
+      const upgradeUrl = PremiumChecker.getUpgradeUrl(userId)
+      await lineClient.replyMessage(replyToken, [{
+        type: 'template',
+        altText: premiumStatus.message || '利用制限に達しました',
+        template: {
+          type: 'buttons',
+          text: premiumStatus.message || '📊 無料プランの月間利用回数（10回）に達しました。\n\nプレミアムプランで無制限利用が可能です！',
+          actions: [{
+            type: 'uri',
+            label: '💎 プレミアムプランを見る',
+            uri: upgradeUrl
+          }]
+        }
+      }] as any)
+      return
+    }
+    
+    // 使用回数を記録
+    await PremiumChecker.incrementUsage(userId)
+    
     // ローディングアニメーションを開始（30秒）
     await lineClient.showLoadingAnimation(userId, 30)
     

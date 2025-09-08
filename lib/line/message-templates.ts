@@ -1,3 +1,5 @@
+import { StructuredResponse } from '../utils/structured-response'
+
 // LINE Message型定義（@line/bot-sdk依存を排除）
 type TextMessage = {
   type: 'text'
@@ -11,7 +13,7 @@ type Message = TextMessage | any
 const PROMPT_MESSAGES = {
   WELCOME: '👋 こんにちは！GASコードを自動生成します。\n\n作りたいコードのカテゴリを選んでください：',
   SUBCATEGORY_SELECT: (category: string) => `「${category}」を選択しました。\n具体的な内容を選んでください：`,
-  DETAIL_INPUT: '詳しい要件を教えてください。\n\n例: 「売上データを月別に集計して、グラフを作成したい」',
+  DETAIL_INPUT: '具体的な要件を教えてください。\n\n例：\n・「A列のデータをB列にコピー」\n・「毎日9時にメール送信」\n・「カレンダーに予定を一括登録」',
   PROCESSING: '🔄 コードを生成中です...\nしばらくお待ちください（1-2分）',
   GENERATION_ERROR: '⚠️ 申し訳ございません。コード生成中にエラーが発生しました。\nもう一度お試しください。',
   SYSTEM_ERROR: '⚠️ システムエラーが発生しました。\n時間をおいて再度お試しください。',
@@ -27,10 +29,21 @@ export class MessageTemplates {
   }
 
   static createDetailInputPrompt(category?: string, subcategory?: string): TextMessage {
-    let text = '詳しい要件を教えてください。\n\n'
-    if (category) text += `カテゴリ: ${category}\n`
-    if (subcategory) text += `種類: ${subcategory}\n\n`
-    text += '例: 「売上データを月別に集計して、グラフを作成したい」'
+    let text = '📝 具体的な要件を教えてください。\n\n'
+    if (category) text += `📦 カテゴリ: ${category}\n`
+    if (subcategory) text += `🎯 種類: ${subcategory}\n\n`
+    
+    // カテゴリに応じた例を表示
+    if (category?.includes('スプレッドシート')) {
+      text += '例：\n・「A列とB列を比較してC列に結果を出力」\n・「毎月の売上を集計してグラフ作成」'
+    } else if (category?.includes('カレンダー')) {
+      text += '例：\n・「スプレッドシートから予定を一括登録」\n・「毎週の定例会議を自動設定」'
+    } else if (category?.includes('Gmail')) {
+      text += '例：\n・「毎朝9時にレポートを自動送信」\n・「特定のメールを受信したら通知」'
+    } else {
+      text += '例：\n・「毎日のデータを自動バックアップ」\n・「APIからデータを取得して保存」'
+    }
+    
     return {
       type: 'text',
       text
@@ -233,12 +246,6 @@ export class MessageTemplates {
     } as TextMessage
   }
 
-  static createDetailInputPrompt(): TextMessage {
-    return {
-      type: 'text',
-      text: PROMPT_MESSAGES.DETAIL_INPUT
-    }
-  }
 
   static createProcessingMessage(): TextMessage {
     return {
@@ -248,38 +255,52 @@ export class MessageTemplates {
   }
 
   static createCodeResult(summary: string, explanation: string, code: string): Message[] {
-    const messages: Message[] = [
-      {
-        type: 'text',
-        text: `✅ ${summary}`
-      },
-      {
-        type: 'text',
-        text: explanation
-      }
-    ]
+    // 構造化レスポンスフォーマッターを使用
+    const structuredResponse = new StructuredResponse()
+    
+    // レスポンステキストを構築
+    const fullResponse = `${summary}\n\n${explanation}\n\nコード:\n\`\`\`javascript\n${code}\n\`\`\``
+    
+    // 構造化されたメッセージを返す
+    return structuredResponse.formatResponse(fullResponse)
+  }
 
-    if (code.length <= 1000) {
-      messages.push({
-        type: 'text',
-        text: `\`\`\`javascript\n${code}\n\`\`\``
-      })
-    } else {
-      messages.push({
-        type: 'text',
-        text: `📝 コードが長いため、分割して送信します：`
-      })
-      
-      const chunks = this.splitCode(code, 1000)
-      chunks.forEach((chunk, index) => {
-        messages.push({
-          type: 'text',
-          text: `[Part ${index + 1}/${chunks.length}]\n\`\`\`javascript\n${chunk}\n\`\`\``
-        })
-      })
+  // 新しいメソッド: 構造化されたコード結果を作成
+  static createStructuredCodeResult(responseText: string): Message[] {
+    const structuredResponse = new StructuredResponse()
+    return structuredResponse.formatResponse(responseText)
+  }
+
+  // クイックリプライアクションを作成
+  static createQuickReplyActions(): any {
+    return {
+      items: [
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: '🔄 修正したい',
+            text: '修正したい'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: '✨ 新しく作る',
+            text: 'コード生成を開始'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: '📖 使い方',
+            text: '使い方を教えて'
+          }
+        }
+      ]
     }
-
-    return messages
   }
 
   static createErrorMessage(errorType: 'generation' | 'system' = 'system'): TextMessage {
