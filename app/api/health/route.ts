@@ -32,7 +32,7 @@ interface HealthStatus {
 
 const startTime = Date.now()
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const healthStatus: HealthStatus = {
     status: 'healthy',
     timestamp: new Date().toISOString(),

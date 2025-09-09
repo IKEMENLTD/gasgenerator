@@ -69,11 +69,14 @@ export async function GET(request: Request) {
     }
     
     // Vision API使用統計を取得（全ユーザー）
-    const globalStats = await databaseRateLimiter.checkGlobalLimit()
+    const globalStats = await (databaseRateLimiter as any).checkGlobalLimit()
     const stats = {
       ...globalStats,
       alertLevel: globalStats.currentUsage >= globalStats.alertThreshold ? 'warning' : 
-                  globalStats.currentUsage >= globalStats.monthlyLimit ? 'critical' : 'normal'
+                  globalStats.currentUsage >= globalStats.monthlyLimit ? 'critical' : 'normal',
+      estimatedCost: globalStats.estimatedCost || 0,
+      monthTotal: globalStats.monthTotal || 0,
+      todayTotal: globalStats.todayTotal || 0
     }
     
     // アラート状態に応じた詳細情報
