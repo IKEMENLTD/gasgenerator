@@ -12,8 +12,8 @@ export class ConversationSessionStore {
     timeoutTimer?: NodeJS.Timeout
   }>
   
-  // 15分のタイムアウト（メモリ節約のため短縮）
-  private readonly SESSION_TIMEOUT = 60 * 60 * 1000 // 1時間に延長（修正のため）
+  // 24時間のタイムアウト（ユーザー体験改善のため）
+  private readonly SESSION_TIMEOUT = 24 * 60 * 60 * 1000 // 24時間
   // 最大保持セッション数（メモリ節約のため削減）
   private readonly MAX_SESSIONS = 30
   // クリーンアップタイマーの参照を保持

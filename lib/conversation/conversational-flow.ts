@@ -114,22 +114,26 @@ export class ConversationalFlow {
 
     // AIで会話を分析して次の質問を生成
     try {
-      const systemPrompt = `You are a GAS code assistant. Category: ${context.category}
+      const systemPrompt = `あなたは優秀なGoogle Apps Script（GAS）コード生成アシスタントです。
+カテゴリ: ${context.category}
 
-CRITICAL: Output ONLY valid JSON. No explanations, no text before/after.
+ユーザーの要望を理解して自然に対話してください。
 
-Response format:
+重要な指示:
+1. ユーザーの要望の本質を理解することを最優先にしてください
+2. 不明な点があれば、具体的で分かりやすい質問をしてください
+3. ユーザーが「勤怠管理」「請求書作成」など具体的な目的を伝えた場合、それを最優先に理解してください
+4. 会話の文脈を常に考慮し、前の会話内容を忘れないでください
+5. 必要な情報が集まったと判断したら、requirement_completeをtrueにしてください
+
+返答形式（JSONで返してください）:
 {
-  "reply": "Your response in Japanese",
-  "requirements": {"key": "value"},
-  "requirement_complete": false
-}
-
-Guidelines:
-- Ask 1-2 questions in Japanese
-- Extract requirements from user messages
-- Set requirement_complete to true when ready
-- ONLY output JSON, nothing else`
+  "reply": "ユーザーへの自然な日本語での返信",
+  "requirements": {
+    "収集した要件のキー": "値"
+  },
+  "requirement_complete": false または true
+}`
 
       const conversationHistory = context.messages
         .map(m => `${m.role === 'user' ? 'ユーザー' : 'アシスタント'}: ${m.content}`)
@@ -148,16 +152,10 @@ ${conversationHistory}
 次の返答を生成してください。
 要件が十分に集まった場合は、最後に「requirement_complete: true」を追加してください。
 
-必ず以下のJSON形式で返答してください（日本語のメッセージ部分以外は英語で記述）：
-{
-  "reply": "ユーザーへの返信メッセージ（日本語）",
-  "requirements": {
-    "収集した要件のキー": "値"
-  },
-  "requirement_complete": false
-}
+現在のユーザーの要望を踏まえて、適切な返答を生成してください。
+要件が十分に集まったと判断した場合は、requirement_completeをtrueにしてください。
 
-重要：返答全体を有効なJSONとして返してください。JSONのみを返し、他のテキストは含めないでください。`
+注意: 返答はJSON形式で、追加のテキストは含めないでください。`
         }]
       })
 
@@ -183,7 +181,7 @@ ${conversationHistory}
         console.error('AI response parse error:', parseError)
         // パースエラー時のフォールバック
         aiResponse = {
-          reply: 'もう少し詳しく教えていただけますか？どのような処理を自動化したいですか？',
+          reply: '申し訳ございません。エラーが発生しました。もう一度お試しください。',
           requirements: {},
           requirement_complete: false
         }
@@ -223,34 +221,15 @@ ${conversationHistory}
     } catch (error) {
       console.error('AI conversation error:', error)
       
-      // フォールバック：事前定義の質問を使用
-      const categoryKey = context.category as keyof typeof CATEGORY_QUESTIONS
-      const questions = CATEGORY_QUESTIONS[categoryKey]?.followUp || []
-      const questionIndex = Math.min(context.messages.length / 2 - 1, questions.length - 1)
-      
-      if (questionIndex >= 0 && questions[questionIndex]) {
-        const reply = questions[questionIndex]
-        context.messages.push({
-          role: 'assistant',
-          content: reply
-        })
-        
-        return {
-          reply,
-          isComplete: false,
-          updatedContext: context
-        }
-      }
-      
-      // デフォルトの返答
-      const defaultReply = 'もう少し詳しく教えていただけますか？どのような処理を自動化したいですか？'
+      // エラー時の返答
+      const errorReply = '申し訳ございません。エラーが発生しました。もう一度お試しください。\n\nお困りの場合は、具体的にどのような作業を自動化したいか教えていただければ、お手伝いさせていただきます。'
       context.messages.push({
         role: 'assistant',
-        content: defaultReply
+        content: errorReply
       })
       
       return {
-        reply: defaultReply,
+        reply: errorReply,
         isComplete: false,
         updatedContext: context
       }

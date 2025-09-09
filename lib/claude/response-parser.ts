@@ -131,7 +131,7 @@ export class ResponseParser {
     }
 
     const code = codeLines.length > 0 ? codeLines.join('\n').trim() : 
-      '// コード抽出に失敗しました\nfunction sample() {\n  console.log("再度お試しください")\n}'
+      '// 申し訳ございません。コード生成に失敗しました。\n// もう一度、具体的な要望をお聞かせください。\nfunction sample() {\n  console.log("エラーが発生しました。もう一度お試しください。")\n}'
 
     const explanation = content.substring(0, 200).trim() || 'コード生成に成功しました'
 

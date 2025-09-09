@@ -1,4 +1,5 @@
 import { MessageStructureParser, ParsedResponse } from './response-parser'
+import { FlexCodeTemplate } from '../line/flex-code-template'
 
 type Message = {
   type: string
@@ -31,6 +32,20 @@ export class StructuredResponse {
   }
 
   private createStructuredMessages(parsed: ParsedResponse): Message[] {
+    // Flex Messageを使用してリッチなコード表示
+    if (parsed.code?.hasCode && parsed.code.content) {
+      const flexMessage = FlexCodeTemplate.createCodeMessage(
+        parsed.code.content,
+        parsed.steps || this.getDefaultSteps(),
+        parsed.notes || this.getDefaultNotes(),
+        true // エンジニア相談ボタンを含める
+      )
+      
+      // Flex Messageを含む配列を返す
+      return [flexMessage as any]
+    }
+    
+    // フォールバック: 従来のメッセージ形式
     const messages: Message[] = []
 
     // イントロメッセージ
@@ -74,24 +89,27 @@ export class StructuredResponse {
   private createCodeMessages(code: { language: string; content: string }): Message[] {
     const messages: Message[] = []
     
-    // コードヘッダー
+    // コードヘッダー（簡潔に）
     messages.push({
       type: 'text',
-      text: `📝 コード (${this.getLanguageLabel(code.language)}):`
+      text: `🎆 GAS コードを自動生成しました！`
     })
 
-    // コードが長い場合は分割
+    // コードブロック（黒背景風に見せるための装飾）
     if (code.content.length <= 2000) {
+      // 黒背景風の装飾を追加
+      const decoratedCode = this.decorateCode(code.content)
       messages.push({
         type: 'text',
-        text: `\`\`\`${code.language}\n${code.content}\n\`\`\``
+        text: `コード：\n════════════════════\n🖥️\n\`\`\`javascript\n${decoratedCode}\n\`\`\`\n════════════════════`
       })
     } else {
-      const chunks = this.splitCode(code.content, 1800)
+      const chunks = this.splitCode(code.content, 1500)
       chunks.forEach((chunk, index) => {
+        const decoratedChunk = this.decorateCode(chunk)
         messages.push({
           type: 'text',
-          text: `[Part ${index + 1}/${chunks.length}]\n\`\`\`${code.language}\n${chunk}\n\`\`\``
+          text: `[パート ${index + 1}/${chunks.length}]\n════════════════\n\`\`\`javascript\n${decoratedChunk}\n\`\`\`\n════════════════`
         })
       })
     }
@@ -100,13 +118,16 @@ export class StructuredResponse {
   }
 
   private createStepsMessage(steps: string[]): Message {
-    const stepsList = steps.map((step, index) => 
-      `${index + 1}. ${step}`
-    ).join('\n')
+    const stepsList = steps.map((step, index) => {
+      // 大きい数字と絵文字で見やすく
+      const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
+      const emoji = numberEmojis[index] || `${index + 1}.`
+      return `${emoji} ${step}`
+    }).join('\n\n')
 
     return {
       type: 'text',
-      text: `📋 設定方法:\n\n${stepsList}`
+      text: `📖 設定方法：\n\n${stepsList}`
     }
   }
 
@@ -115,7 +136,7 @@ export class StructuredResponse {
 
     return {
       type: 'text',
-      text: `⚠️ 注意点:\n\n${notesList}`
+      text: `⚠️ 注意点：\n\n${notesList}\n\nコピーする`
     }
   }
 
@@ -125,21 +146,21 @@ export class StructuredResponse {
       altText: 'コード生成完了',
       template: {
         type: 'buttons',
-        text: 'コードの生成が完了しました\n\nエラーが出た場合は📷ボタンでスクリーンショットを送信してください',
+        text: '✅ コード生成が完了しました！\n\n何かお困りの点がございましたらお気軽にご連絡ください。',
         actions: [
           {
             type: 'message',
-            label: '🔄 修正したい',
-            text: '修正したい'
+            label: '🔧 コードを修正',
+            text: 'コードを修正したい'
           },
           {
             type: 'message',
-            label: '📷 エラースクショを送る',
-            text: 'エラーのスクリーンショットを送る'
+            label: '📸 エラー画面を送信',
+            text: 'エラー画面のスクリーンショットを送信'
           },
           {
             type: 'message',
-            label: '📖 使い方',
+            label: '❓ 使い方を確認',
             text: '使い方を教えて'
           }
         ]
@@ -218,11 +239,36 @@ export class StructuredResponse {
     return chunks
   }
 
+  private decorateCode(code: string): string {
+    // コードの先頭にコメントを追加（黒背景で見やすくするため）
+    const lines = code.split('\n')
+    if (!lines[0].includes('//')) {
+      lines.unshift('// ✨ GASコードを自動生成しました')
+    }
+    return lines.join('\n')
+  }
+
+  private getDefaultSteps(): string[] {
+    return [
+      'Google スプレッドシートを開く',
+      '拡張機能 > Apps Script をクリック',
+      'コードをコピーして貼り付け',
+      '保存して実行'
+    ]
+  }
+
+  private getDefaultNotes(): string[] {
+    return [
+      '初回実行時は承認が必要です',
+      'エラーが出た場合は画面をスクショして送信してください'
+    ]
+  }
+
   private getLanguageLabel(lang: string): string {
     const labels: { [key: string]: string } = {
-      'javascript': 'JavaScript / GAS',
-      'js': 'JavaScript / GAS',
-      'gas': 'Google Apps Script',
+      'javascript': 'GAS',
+      'js': 'GAS',
+      'gas': 'GAS',
       'python': 'Python',
       'html': 'HTML',
       'css': 'CSS',
@@ -235,19 +281,21 @@ export class StructuredResponse {
 // 構造化レスポンスのサンプルテンプレート
 export const STRUCTURED_TEMPLATES = {
   spreadsheet: {
-    intro: 'スプレッドシートのA列とB列を比較してC列にチェックを入れるコードを生成しました。',
+    intro: 'スプレッドシートのA列とB列を比較してC列にチェックを入れるGAS（Google Apps Script）を記述します。',
     steps: [
-      'Google スプレッドシートを開く',
-      'メニューから「拡張機能」→「Apps Script」を選択',
-      '既存のコードを削除して、上記のコードを貼り付け',
-      'プロジェクト名を設定して保存（Ctrl+S）',
-      '実行ボタン（▶）をクリックして実行',
-      '初回実行時は承認が必要です'
+      'スプレッドシートを開く：対象のスプレッドシートを開きます',
+      'スクリプトエディタを開く：「ツール」>「スクリプトエディタ」を選択します',
+      'コードを貼り付ける：スクリプトエディタに上記のコードをコピー＆ペーストします',
+      '保存：スクリプトを保存します（例：checkColumns）',
+      '実行：スクリプトエディタの左側にある「実行」ボタンをクリックします',
+      '実行する関数：checkColumns を選択し、「実行」ボタンをクリックします',
+      'イベントシートから実行時間にスプレッドシートのセルに変更が反映されます'
     ],
     notes: [
-      'データが多い場合は処理に時間がかかることがあります',
-      '1行目はヘッダー行として扱われます',
-      '文字列の大小文字は区別されます'
+      '上記のコードは、A列とB列の値が同じ場合、C列に「TRUE」を入力します',
+      '1行目はヘッダー行として考え、スキップします。もしヘッダーがない場合は、for文の初期値を「i = 0」に変更してください',
+      'トリガーを設定すると、スプレッドシートが編集されるたびに自動的にスクリプトが実行されます',
+      '必要に応じて、setValue(\"TRUE\")とsetValue(\"FALSE\")の部分を、チェックボックスやその他の文字列に変更してください'
     ]
   },
   calendar: {

@@ -11,6 +11,7 @@ import { ConversationalFlow, ConversationContext } from '../../../lib/conversati
 import { ConversationSessionStore } from '../../../lib/conversation/session-store'
 import { LineImageHandler } from '../../../lib/line/image-handler'
 import { rateLimiters } from '../../../lib/middleware/rate-limiter'
+import { engineerSupport } from '../../../lib/line/engineer-support'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -215,6 +216,34 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
   const messageText = event.message?.text?.trim() || ''
   const replyToken = event.replyToken
   
+  // 🔍 デバッグコード追加（ここから）
+  console.log('=== DEBUG: Event Source Info ===')
+  console.log('Source Type:', event.source?.type)
+  console.log('User ID:', event.source?.userId)
+  console.log('Group ID:', event.source?.groupId)
+  console.log('Room ID:', event.source?.roomId)
+  console.log('Message:', messageText)
+  console.log('================================')
+  
+  // グループIDを含むメッセージを返信（グループ内でのみ）
+  if (event.source?.type === 'group' && messageText === 'グループID確認') {
+    await lineClient.replyMessage(replyToken, [{
+      type: 'text',
+      text: `📍 グループID: ${event.source.groupId}\n\nこのIDを環境変数 ENGINEER_SUPPORT_GROUP_ID に設定してください。`
+    }])
+    return true
+  }
+  
+  // ユーザーIDを返信（個人チャットでのみ）
+  if (event.source?.type === 'user' && messageText === 'ユーザーID確認') {
+    await lineClient.replyMessage(replyToken, [{
+      type: 'text',
+      text: `👤 あなたのユーザーID: ${event.source.userId}\n\nエンジニアの場合は、このIDを環境変数 ENGINEER_USER_IDS に追加してください。`
+    }])
+    return true
+  }
+  // 🔍 デバッグコード追加（ここまで）
+  
   if (!userId || !replyToken) {
     logger.warn('Missing required fields', { userId, hasReplyToken: !!replyToken })
     return false
@@ -268,6 +297,16 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         type: 'text',
         text: '📸 解析したい画像を送信してください。\n\nスクリーンショット、エラー画面、Excel・PDFのスクショなど、どんな画像でも解析します。'
       }])
+      return true
+    }
+    
+    // エンジニアに相談
+    if (messageText === 'エンジニアに相談する' || 
+        messageText === 'エンジニアに相談' || 
+        messageText === '👨‍💻 エンジニアに相談' ||
+        messageText.includes('人間') && messageText.includes('相談')) {
+      
+      await engineerSupport.handleSupportRequest(userId, messageText, replyToken)
       return true
     }
     

@@ -130,14 +130,13 @@ export class ClaudeApiClient {
     })
     
     // フォールバック処理
-    const { FallbackHandler } = await import('../utils/fallback-handler')
-    const fallbackResponse = FallbackHandler.getClaudeFallbackResponse(lastError)
+    const fallbackText = '申し訳ございません。エラーが発生しました。もう一度お試しください。'
     
     // フォールバックレスポンスを返す（エラーをthrowしない）
     return {
       content: [{
         type: 'text',
-        text: fallbackResponse
+        text: fallbackText
       }],
       id: 'fallback-' + Date.now(),
       model: this.config.model,
