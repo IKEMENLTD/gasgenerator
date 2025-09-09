@@ -500,9 +500,8 @@ function isDuplicateEvent(userId: string, timestamp: number): boolean {
   // キャッシュに追加
   recentEventKeys.set(eventKey, now)
   
-  // TTL後に自動削除（GlobalTimerManagerを使用）
-  const { safeSetTimeout } = await import('@/lib/utils/global-timer-manager')
-  safeSetTimeout(() => recentEventKeys.delete(eventKey), CACHE_TTL, `event_cache_${eventKey}`)
+  // TTL後に自動削除（シンプルなsetTimeoutを使用）
+  setTimeout(() => recentEventKeys.delete(eventKey), CACHE_TTL)
   
   return false
 }

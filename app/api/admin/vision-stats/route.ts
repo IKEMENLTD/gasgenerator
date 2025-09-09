@@ -46,11 +46,10 @@ export async function GET(request: Request) {
     }
     
     // 管理者権限チェック（厳密）
-    if (payload.role !== 'admin' || !payload.permissions?.includes('view_stats')) {
+    if (payload.role !== 'admin') {
       logger.warn('Insufficient permissions for admin access', { 
         userId: payload.sub,
-        role: payload.role,
-        permissions: payload.permissions
+        role: payload.role
       })
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
