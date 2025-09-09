@@ -4,6 +4,7 @@ import { AppError } from '@/lib/errors/app-error'
 import { InputValidator } from '@/lib/validation/input-validator'
 import { supabase } from '@/lib/supabase/client'
 import crypto from 'crypto'
+import { SecureRandom } from '@/lib/utils/secure-random'
 
 interface FileUploadOptions {
   maxFileSize?: number // bytes
@@ -30,6 +31,11 @@ export class FileUploadHandler {
   private static instance: FileUploadHandler | null = null
   private readonly DEFAULT_MAX_SIZE = 10 * 1024 * 1024 // 10MB
   private readonly CHUNK_SIZE = 1024 * 1024 // 1MB
+  
+  // 同時アップロード制限
+  private readonly MAX_CONCURRENT_UPLOADS = 3
+  private currentUploads = 0
+  private uploadQueue: Array<() => Promise<void>> = []
   
   // 安全なMIMEタイプ
   private readonly SAFE_MIME_TYPES = [
@@ -65,6 +71,34 @@ export class FileUploadHandler {
       this.instance = new FileUploadHandler()
     }
     return this.instance
+  }
+
+  /**
+   * 同時実行制限付きアップロード実行
+   */
+  private async executeWithConcurrencyLimit<T>(
+    fn: () => Promise<T>
+  ): Promise<T> {
+    // 制限に達している場合は待機
+    while (this.currentUploads >= this.MAX_CONCURRENT_UPLOADS) {
+      await new Promise(resolve => {
+        this.uploadQueue.push(resolve as () => Promise<void>)
+      })
+    }
+    
+    this.currentUploads++
+    
+    try {
+      return await fn()
+    } finally {
+      this.currentUploads--
+      
+      // 待機中のアップロードを開始
+      const next = this.uploadQueue.shift()
+      if (next) {
+        next()
+      }
+    }
   }
 
   /**
@@ -109,11 +143,13 @@ export class FileUploadHandler {
             await this.scanFile(value)
           }
 
-          // ファイル保存
-          const uploadedFile = await this.saveFile(value, {
-            destination,
-            generateUniqueName
-          })
+          // 同時実行制限付きでファイル保存
+          const uploadedFile = await this.executeWithConcurrencyLimit(
+            () => this.saveFile(value, {
+              destination,
+              generateUniqueName
+            })
+          )
 
           files.push(uploadedFile)
         }
@@ -508,7 +544,7 @@ export class FileUploadHandler {
    * ファイルIDの生成
    */
   private generateFileId(): string {
-    return `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    return `file_${Date.now()}_${SecureRandom.generateString(9)}`
   }
 
   /**

@@ -5,13 +5,43 @@ import { logger } from '@/lib/utils/logger'
 // ダミークライアント（環境変数がない場合のフォールバック）
 class DummySupabaseClient {
   from() {
-    return {
-      select: () => ({ data: null, error: new Error('Supabase not configured') }),
-      insert: () => ({ data: null, error: new Error('Supabase not configured') }),
-      update: () => ({ data: null, error: new Error('Supabase not configured') }),
-      delete: () => ({ data: null, error: new Error('Supabase not configured') }),
-      upsert: () => ({ data: null, error: new Error('Supabase not configured') })
+    const errorResult = { data: null, error: new Error('Supabase not configured') }
+    const chainableMethods = {
+      select: () => chainableMethods,
+      insert: () => chainableMethods,
+      update: () => chainableMethods,
+      delete: () => chainableMethods,
+      upsert: () => chainableMethods,
+      eq: () => chainableMethods,
+      neq: () => chainableMethods,
+      gt: () => chainableMethods,
+      gte: () => chainableMethods,
+      lt: () => chainableMethods,
+      lte: () => chainableMethods,
+      like: () => chainableMethods,
+      ilike: () => chainableMethods,
+      is: () => chainableMethods,
+      in: () => chainableMethods,
+      contains: () => chainableMethods,
+      containedBy: () => chainableMethods,
+      range: () => chainableMethods,
+      overlaps: () => chainableMethods,
+      match: () => chainableMethods,
+      not: () => chainableMethods,
+      or: () => chainableMethods,
+      filter: () => chainableMethods,
+      order: () => chainableMethods,
+      limit: () => chainableMethods,
+      offset: () => chainableMethods,
+      single: () => Promise.resolve(errorResult),
+      maybeSingle: () => Promise.resolve(errorResult),
+      then: (resolve: any) => resolve(errorResult)
     }
+    return chainableMethods
+  }
+  
+  rpc() {
+    return Promise.resolve({ data: null, error: new Error('Supabase not configured') })
   }
 }
 
@@ -25,13 +55,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // 通常のクライアント（RLS有効）
-export const supabase: SupabaseClient<Database> | DummySupabaseClient = 
+export const supabase: SupabaseClient<Database> = 
   (supabaseUrl && supabaseAnonKey) 
     ? createClient<Database>(supabaseUrl, supabaseAnonKey)
     : new DummySupabaseClient() as any
 
 // 管理者権限クライアント（RLS無効）
-export const supabaseAdmin: SupabaseClient<Database> | DummySupabaseClient = 
+export const supabaseAdmin: SupabaseClient<Database> = 
   (supabaseUrl && supabaseServiceRoleKey)
     ? createClient<Database>(
         supabaseUrl,

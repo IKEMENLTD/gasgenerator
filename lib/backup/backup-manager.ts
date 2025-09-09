@@ -3,6 +3,7 @@ import { logger } from '@/lib/utils/logger'
 import { AppError } from '@/lib/errors/app-error'
 import fs from 'fs/promises'
 import path from 'path'
+import { SecureRandom } from '@/lib/utils/secure-random'
 import { createWriteStream, createReadStream } from 'fs'
 import { pipeline } from 'stream/promises'
 import zlib from 'zlib'
@@ -483,7 +484,7 @@ export class BackupManager {
    */
   private generateBackupId(): string {
     const timestamp = Date.now().toString(36)
-    const random = Math.random().toString(36).substring(2, 11)
+    const random = SecureRandom.generateString(9)
     return `backup_${timestamp}_${random}`
   }
 

@@ -46,7 +46,19 @@ export class MessageTemplates {
     
     return {
       type: 'text',
-      text
+      text,
+      quickReply: {
+        items: [
+          {
+            type: 'action',
+            action: {
+              type: 'message',
+              label: '👨‍💻 エンジニアに相談',
+              text: 'エンジニアに相談する'
+            }
+          }
+        ]
+      }
     }
   }
   static createWelcomeMessage(): Message[] {
@@ -71,6 +83,11 @@ export class MessageTemplates {
               type: 'message',
               label: '無料で試す',
               text: 'コード生成を開始'
+            },
+            {
+              type: 'message',
+              label: '👨‍💻 エンジニアに相談',
+              text: 'エンジニアに相談する'
             }
           ]
         }
@@ -118,6 +135,14 @@ export class MessageTemplates {
                 type: 'message',
                 label: '✨ その他',
                 text: 'その他'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '👨‍💻 エンジニア相談',
+                text: 'エンジニアに相談する'
               }
             }
           ]
@@ -289,6 +314,14 @@ export class MessageTemplates {
             type: 'message',
             label: '✨ 新しく作る',
             text: 'コード生成を開始'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: '👨‍💻 エンジニア相談',
+            text: 'エンジニアに相談する'
           }
         },
         {

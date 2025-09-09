@@ -1,5 +1,6 @@
 import { MessageStructureParser, ParsedResponse } from './response-parser'
 import { FlexCodeTemplate } from '../line/flex-code-template'
+import { logger } from './logger'
 
 type Message = {
   type: string
@@ -25,7 +26,7 @@ export class StructuredResponse {
 
       return this.createStructuredMessages(parsed)
     } catch (error) {
-      console.error('Failed to format structured response:', error)
+      logger.error('Failed to format structured response:', { error })
       // エラー時は単純なテキストメッセージとして返す
       return this.createFallbackMessages(responseText)
     }
@@ -155,8 +156,8 @@ export class StructuredResponse {
           },
           {
             type: 'message',
-            label: '📸 エラー画面を送信',
-            text: 'エラー画面のスクリーンショットを送信'
+            label: '👨‍💻 エンジニアに相談',
+            text: 'エンジニアに相談する'
           },
           {
             type: 'message',

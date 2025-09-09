@@ -107,12 +107,12 @@ export class PremiumChecker {
 
     } catch (error) {
       logger.error('Failed to check premium status', { error, userId })
-      // エラー時は生成を許可（ユーザー体験を優先）
+      // エラー時は安全側に倒して生成を拒否
       return {
         isPremium: false,
-        remainingUses: 1,
-        canGenerate: true,
-        message: 'ステータス確認中...'
+        remainingUses: 0,
+        canGenerate: false,
+        message: 'ステータス確認エラーが発生しました。しばらくしてからお試しください。'
       }
     }
   }

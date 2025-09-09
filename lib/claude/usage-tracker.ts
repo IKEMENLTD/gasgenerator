@@ -122,9 +122,32 @@ export class ClaudeUsageTracker {
     // 過去1時間のリクエスト数を取得
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
     
-    // TODO: 時間単位での使用量取得クエリ実装
-    // 現在は日次データで代用
-    const { requests } = await UsageQueries.getDailyUsage(userId)
+    // 時間単位での使用量を取得
+    const { supabaseAdmin } = await import('@/lib/supabase/client')
+    const { data, error } = await supabaseAdmin
+      .from('claude_usage')
+      .select('total_tokens')
+      .gte('created_at', oneHourAgo)
+      .eq(userId ? 'user_id' : 'service_type', userId || 'global')
+    
+    const hourlyRequests = data?.length || 0
+    
+    // フォールバック：エラー時は日次データから推定
+    if (error) {
+      const { requests } = await UsageQueries.getDailyUsage(userId)
+      const estimatedHourlyRequests = Math.ceil(requests / 24)
+      return this.checkHourlyLimit(estimatedHourlyRequests, userId)
+    }
+    
+    return this.checkHourlyLimit(hourlyRequests, userId)
+  }
+  
+  private static checkHourlyLimit(hourlyRequests: number, userId?: string): {
+    allowed: boolean
+    reason?: string
+    retryAfter?: number
+  } {
+    const { requests } = { requests: hourlyRequests }
     const estimatedHourlyRequests = Math.ceil(requests / 24)
 
     if (estimatedHourlyRequests >= DEFAULT_LIMITS.hourlyRequests) {
@@ -195,9 +218,20 @@ export class ClaudeUsageTracker {
     try {
       const { requests: dailyRequests, cost: dailyCost } = await UsageQueries.getDailyUsage(userId)
       
-      // TODO: 月次データの取得
-      const monthlyRequests = dailyRequests * 30 // 概算
-      const monthlyCost = dailyCost * 30 // 概算
+      // 月次データの取得
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+      
+      const { supabaseAdmin } = await import('@/lib/supabase/client')
+      const { data: monthlyData } = await supabaseAdmin
+        .from('claude_usage')
+        .select('total_tokens, total_cost')
+        .gte('created_at', startOfMonth.toISOString())
+        .eq(userId ? 'user_id' : 'service_type', userId || 'global')
+      
+      const monthlyRequests = monthlyData?.length || dailyRequests
+      const monthlyCost = monthlyData?.reduce((sum, row) => sum + (row.total_cost || 0), 0) || dailyCost
 
       return {
         daily: {
@@ -248,7 +282,16 @@ export class ClaudeUsageTracker {
           dailyCost: stats.daily.cost
         })
         
-        // TODO: 管理者への通知（メール、Slack等）
+        // 管理者への通知
+        await this.sendAdminNotification({
+          type: 'HIGH_USAGE_ALERT',
+          severity: 'warning',
+          data: {
+            dailyPercentage: stats.daily.percentage,
+            dailyRequests: stats.daily.requests,
+            dailyCost: stats.daily.cost
+          }
+        })
       }
 
       // 日次コストが$25を超えたらアラート
@@ -261,6 +304,32 @@ export class ClaudeUsageTracker {
 
     } catch (error) {
       logger.error('Failed to check usage alerts', { error })
+    }
+  }
+
+  /**
+   * 管理者への通知を送信
+   */
+  private static async sendAdminNotification(notification: {
+    type: string
+    severity: 'info' | 'warning' | 'error'
+    data: any
+  }): Promise<void> {
+    try {
+      // Supabaseに通知を記録
+      const { supabaseAdmin } = await import('@/lib/supabase/client')
+      await supabaseAdmin
+        .from('admin_notifications')
+        .insert({
+          type: notification.type,
+          severity: notification.severity,
+          data: notification.data,
+          created_at: new Date().toISOString()
+        })
+      
+      logger.info('Admin notification sent', notification)
+    } catch (error) {
+      logger.error('Failed to send admin notification', { error, notification })
     }
   }
 

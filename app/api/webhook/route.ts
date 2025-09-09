@@ -80,7 +80,8 @@ export async function POST(req: NextRequest) {
     
     if (!signature) {
       logger.warn('No signature provided', { requestId })
-      return NextResponse.json({ error: 'No signature' }, { status: 200 })
+      // 署名がない場合は401を返す（セキュリティ上重要）
+      return NextResponse.json({ error: 'No signature' }, { status: 401 })
     }
 
     // 2. セキュリティ検証
@@ -88,7 +89,8 @@ export async function POST(req: NextRequest) {
     const isValidSignature = await validateLineSignature(body, signature)
     if (!isValidSignature) {
       logger.warn('Invalid LINE signature', { requestId })
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 200 })
+      // 署名検証失敗は401を返す（セキュリティ上重要）
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
     
     // リクエスト元検証は署名検証で十分なのでスキップ
@@ -101,6 +103,7 @@ export async function POST(req: NextRequest) {
       parsedBody = JSON.parse(body)
     } catch (e) {
       logger.error('Invalid JSON body', { requestId })
+      // LINEの再送を防ぐため200を返す（LINE仕様）
       return NextResponse.json({ error: 'Invalid body' }, { status: 200 })
     }
 
@@ -177,10 +180,24 @@ export async function POST(req: NextRequest) {
 
 /**
  * 署名検証（Web Crypto API使用）
+ * 注意: この関数は未使用です。lib/utils/crypto.tsのvalidateLineSignatureを使用しています。
  */
-async function validateSignature(body: string, signature: string): Promise<boolean> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function _validateSignature(body: string, signature: string): Promise<boolean> {
   try {
-    const channelSecret = process.env.LINE_CHANNEL_SECRET || ''
+    const channelSecret = process.env.LINE_CHANNEL_SECRET
+    
+    // シークレットが設定されていない場合はエラー
+    if (!channelSecret) {
+      logger.error('Webhook signature validation failed: Missing required configuration')
+      return false
+    }
+    
+    // 署名が提供されていない場合はエラー
+    if (!signature) {
+      logger.error('No signature provided in request')
+      return false
+    }
     
     // Web Crypto APIを使用
     const encoder = new TextEncoder()
@@ -201,11 +218,37 @@ async function validateSignature(body: string, signature: string): Promise<boole
     // Base64エンコード
     const base64 = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)))
     
-    return base64 === signature
+    // タイミング攻撃を防ぐため、固定時間比較を実装
+    const result = timingSafeEqual(base64, signature)
+    
+    if (!result) {
+      logger.warn('Invalid signature detected', {
+        providedSignature: signature.substring(0, 10) + '...',
+        expectedSignature: base64.substring(0, 10) + '...'
+      })
+    }
+    
+    return result
   } catch (error) {
     logger.error('Signature validation error', { error })
     return false
   }
+}
+
+/**
+ * タイミング攻撃を防ぐための固定時間文字列比較
+ */
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false
+  }
+  
+  let result = 0
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  }
+  
+  return result === 0
 }
 
 /**
@@ -216,14 +259,14 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
   const messageText = event.message?.text?.trim() || ''
   const replyToken = event.replyToken
   
-  // 🔍 デバッグコード追加（ここから）
-  console.log('=== DEBUG: Event Source Info ===')
-  console.log('Source Type:', event.source?.type)
-  console.log('User ID:', event.source?.userId)
-  console.log('Group ID:', event.source?.groupId)
-  console.log('Room ID:', event.source?.roomId)
-  console.log('Message:', messageText)
-  console.log('================================')
+  // デバッグ情報をログに記録
+  logger.debug('Event source info', {
+    sourceType: event.source?.type,
+    userId: event.source?.userId,
+    groupId: event.source?.groupId,
+    roomId: event.source?.roomId,
+    message: messageText?.substring(0, 100) // メッセージは最初の100文字のみ
+  })
   
   // グループIDを含むメッセージを返信（グループ内でのみ）
   if (event.source?.type === 'group' && messageText === 'グループID確認') {
@@ -425,8 +468,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       logger.error('Failed to send error reply', { replyError })
     }
     
-    // エラー時はコンテキストをクリア
-    sessionStore.delete(userId)
+    // エラー時はコンテキストを保持（データ損失防止）
+    // sessionStore.delete(userId) // コメントアウト：セッションを保持
+    logger.info('Preserving session after error', { userId })
     return false
   }
 }
@@ -456,8 +500,9 @@ function isDuplicateEvent(userId: string, timestamp: number): boolean {
   // キャッシュに追加
   recentEventKeys.set(eventKey, now)
   
-  // TTL後に自動削除
-  setTimeout(() => recentEventKeys.delete(eventKey), CACHE_TTL)
+  // TTL後に自動削除（GlobalTimerManagerを使用）
+  const { safeSetTimeout } = await import('@/lib/utils/global-timer-manager')
+  safeSetTimeout(() => recentEventKeys.delete(eventKey), CACHE_TTL, `event_cache_${eventKey}`)
   
   return false
 }

@@ -1,5 +1,6 @@
 import { logger } from '@/lib/utils/logger'
 import { ErrorHandler } from '@/lib/errors/error-handler'
+import { SecureRandom } from '@/lib/utils/secure-random'
 
 export interface RetryOptions {
   maxAttempts?: number
@@ -256,7 +257,7 @@ export class RetryHandler {
    * ジッター付き遅延（同時リトライの分散）
    */
   static async delayWithJitter(baseDelay: number, maxJitter: number = 0.3): Promise<void> {
-    const jitter = Math.random() * maxJitter * baseDelay
+    const jitter = SecureRandom.random() * maxJitter * baseDelay
     const delay = baseDelay + jitter
     return this.delay(Math.floor(delay))
   }

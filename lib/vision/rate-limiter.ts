@@ -1,20 +1,48 @@
 import { supabaseAdmin } from '../supabase/client'
 import { logger } from '../utils/logger'
+import { MemoryUsageCounter } from './memory-counter'
+import * as crypto from 'crypto'
+import { SecureRandom } from '../utils/secure-random'
 
-// Node.jsのcryptoモジュールを安全にインポート
-let crypto: any
-if (typeof window === 'undefined') {
-  crypto = require('crypto')
-} else {
-  // ブラウザ環境では Web Crypto API を使用
-  crypto = {
-    createHash: (algorithm: string) => {
-      throw new Error('Image hashing is not supported in browser environment')
+// Mutex実装（レースコンディション対策）
+class Mutex {
+  private locks: Map<string, Promise<void>> = new Map()
+  
+  async acquire(key: string): Promise<() => void> {
+    // 既存のロックがあれば待つ
+    while (this.locks.has(key)) {
+      await this.locks.get(key)
+    }
+    
+    // 新しいロックを作成
+    let release: () => void
+    const promise = new Promise<void>(resolve => {
+      release = resolve
+    })
+    
+    this.locks.set(key, promise)
+    
+    // リリース関数を返す
+    return () => {
+      this.locks.delete(key)
+      release!()
+    }
+  }
+  
+  async withLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
+    const release = await this.acquire(key)
+    try {
+      return await fn()
+    } finally {
+      release()
     }
   }
 }
 
 export class VisionRateLimiter {
+  private mutex = new Mutex()
+  private memoryCounter = MemoryUsageCounter.getInstance()
+  
   // 料金制限設定（月1万円プランベース）
   private readonly LIMITS = {
     FREE: {
@@ -51,47 +79,44 @@ export class VisionRateLimiter {
       timestamp: new Date().toISOString()
     })
     
-    // Supabaseが設定されていない場合のチェック
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      logger.error('CRITICAL: Supabase not configured for rate limiting', {
-        hasUrl: !!process.env.SUPABASE_URL,
-        hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
-      })
-      
-      // データベースがない場合はメモリ内カウンターで制限
-      // グローバル変数で簡易的に管理
-      if (!global.visionUsageCounter) {
-        global.visionUsageCounter = new Map()
-      }
-      
-      const todayKey = `${userId}_${new Date().toISOString().split('T')[0]}`
-      const currentCount = global.visionUsageCounter.get(todayKey) || 0
-      const dailyLimit = isPremium ? this.LIMITS.PREMIUM.daily : this.LIMITS.FREE.daily
-      
-      logger.warn('Using in-memory rate limiting', {
-        userId,
-        todayKey,
-        currentCount,
-        dailyLimit
-      })
-      
-      if (currentCount >= dailyLimit) {
+    // Mutexでレースコンディションを防ぐ
+    return await this.mutex.withLock(`rate-limit-${userId}`, async () => {
+      // Supabaseが設定されていない場合のチェック
+      if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        logger.error('CRITICAL: Supabase not configured for rate limiting', {
+          hasUrl: !!process.env.SUPABASE_URL,
+          hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+        })
+        
+        // データベースがない場合はメモリ内カウンターで制限
+        const todayKey = `${userId}_${new Date().toISOString().split('T')[0]}`
+        const currentCount = this.memoryCounter.get(todayKey)
+        const dailyLimit = isPremium ? this.LIMITS.PREMIUM.daily : this.LIMITS.FREE.daily
+        
+        logger.warn('Using in-memory rate limiting', {
+          userId,
+          todayKey,
+          currentCount,
+          dailyLimit
+        })
+        
+        if (currentCount >= dailyLimit) {
+          return {
+            allowed: false,
+            reason: `本日の画像解析上限（${dailyLimit}回）に達しました。\n明日また利用できます。${!isPremium ? '\n\n💎 プレミアムプランなら1日100回まで解析可能！' : ''}`,
+            remainingToday: 0
+          }
+        }
+        
+        // カウントを事前に増やす（Mutex内なので安全）
+        this.memoryCounter.increment(todayKey)
+        
         return {
-          allowed: false,
-          reason: `本日の画像解析上限（${dailyLimit}回）に達しました。\n明日また利用できます。${!isPremium ? '\n\n💎 プレミアムプランなら1日100回まで解析可能！' : ''}`,
-          remainingToday: 0
+          allowed: true,
+          remainingToday: dailyLimit - currentCount - 1,
+          remainingMonth: 999 // メモリ内では月次制限は管理しない
         }
       }
-      
-      // カウントを事前に増やす
-      global.visionUsageCounter.set(todayKey, currentCount + 1)
-      
-      return {
-        allowed: true,
-        remainingToday: dailyLimit - currentCount - 1,
-        remainingMonth: 999 // メモリ内では月次制限は管理しない
-      }
-    }
     
     try {
       // 1. 同じ画像の重複チェック（エラースクショは除外）
@@ -118,7 +143,7 @@ export class VisionRateLimiter {
       }
       
       // 1.5. 定期的にクリーンアップ（10%の確率で実行）
-      if (Math.random() < 0.1) {
+      if (SecureRandom.random() < 0.1) {
         this.cleanupStaleProcessingRecords().catch(err => 
           logger.error('Background cleanup failed', { err })
         )
@@ -269,7 +294,8 @@ export class VisionRateLimiter {
           threshold: dynamicAlertLimit,
           limit: dynamicMonthlyLimit 
         })
-        // TODO: 管理者に通知
+        // 管理者に通知
+        this.notifyAdminAboutUsageAlert(globalCount, dynamicAlertLimit, dynamicMonthlyLimit)
       }
       
       const result = {
@@ -307,6 +333,7 @@ export class VisionRateLimiter {
         reason: '画像解析の利用状況確認に失敗しました。しばらく後でお試しください。'
       }
     }
+    }) // Mutex.withLock終了
   }
   
   /**
@@ -316,56 +343,59 @@ export class VisionRateLimiter {
     userId: string,
     imageHash: string
   ): Promise<string> {
-    const maxRetries = 3
-    let lastError: any
-    
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        // レースコンディション対策: 同じユーザーが同時にprocessingを作ろうとしていないか確認
-        const { data: existing } = await supabaseAdmin
-          .from('vision_usage')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('image_hash', imageHash)
-          .eq('status', 'processing')
-          .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // 5分以内
-          .limit(1)
-        
-        if (existing && existing.length > 0) {
-          logger.warn('Duplicate processing detected', { userId, imageHash, existingId: existing[0].id })
-          return existing[0].id // 既存のプレースホルダーを再利用
-        }
-        
-        const { data, error } = await supabaseAdmin
-          .from('vision_usage')
-          .insert({
-            user_id: userId,
-            image_hash: imageHash,
-            analysis_result: '[PROCESSING]',
-            status: 'processing',
-            created_at: new Date().toISOString()
+    // Mutexで同一ユーザーの同時実行を防ぐ
+    return await this.mutex.withLock(`placeholder-${userId}-${imageHash}`, async () => {
+      const maxRetries = 3
+      let lastError: Error | null = null
+      
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          // レースコンディション対策: 同じユーザーが同時にprocessingを作ろうとしていないか確認
+          const { data: existing } = await supabaseAdmin
+            .from('vision_usage')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('image_hash', imageHash)
+            .eq('status', 'processing')
+            .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // 5分以内
+            .limit(1)
+          
+          if (existing && existing.length > 0) {
+            logger.warn('Duplicate processing detected', { userId, imageHash, existingId: existing[0].id })
+            return existing[0].id // 既存のプレースホルダーを再利用
+          }
+          
+          const { data, error } = await supabaseAdmin
+            .from('vision_usage')
+            .insert({
+              user_id: userId,
+              image_hash: imageHash,
+              analysis_result: '[PROCESSING]',
+              status: 'processing',
+              created_at: new Date().toISOString()
+            })
+            .select('id')
+            .single()
+          
+          if (error) throw error
+          return data.id
+          
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error))
+          logger.error(`Placeholder creation attempt ${i + 1} failed`, { 
+            error: lastError.message,
+            userId,
+            imageHash 
           })
-          .select('id')
-          .single()
-        
-        if (error) throw error
-        return data.id
-        
-      } catch (error: any) {
-        lastError = error
-        logger.error(`Placeholder creation attempt ${i + 1} failed`, { 
-          error: error.message,
-          userId,
-          imageHash 
-        })
-        
-        if (i < maxRetries - 1) {
-          await new Promise(resolve => setTimeout(resolve, 100 * (i + 1))) // バックオフ
+          
+          if (i < maxRetries - 1) {
+            await new Promise(resolve => setTimeout(resolve, 100 * (i + 1))) // バックオフ
+          }
         }
       }
-    }
-    
-    throw lastError
+      
+      throw lastError || new Error('Failed to create placeholder')
+    })
   }
   
   /**
@@ -498,11 +528,11 @@ export class VisionRateLimiter {
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
     
     const [todayResult, monthResult] = await Promise.all([
-      supabase
+      supabaseAdmin
         .from('vision_usage')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', today.toISOString()),
-      supabase
+      supabaseAdmin
         .from('vision_usage')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', startOfMonth.toISOString())
@@ -523,6 +553,29 @@ export class VisionRateLimiter {
       monthTotal,
       estimatedCost,
       alertLevel
+    }
+  }
+  
+  /**
+   * 管理者へのアラート通知
+   */
+  private async notifyAdminAboutUsageAlert(
+    currentUsage: number,
+    alertThreshold: number,
+    maxLimit: number
+  ): Promise<void> {
+    try {
+      logger.warn('Vision API usage alert', {
+        currentUsage,
+        alertThreshold,
+        maxLimit,
+        percentageUsed: Math.round((currentUsage / maxLimit) * 100)
+      })
+      
+      // Slackやメール通知の実装をここに追加可能
+      // 現状はログ出力のみ
+    } catch (error) {
+      logger.error('Failed to send admin notification', { error })
     }
   }
 }

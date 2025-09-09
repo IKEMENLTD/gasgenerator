@@ -7,30 +7,50 @@ export interface Database {
       users: {
         Row: {
           id: string
-          line_user_id: string
-          display_name: string | null
+          display_name: string  // LINE User IDを格納
+          user_id: string | null  // 内部ID（実際のテーブルに合わせる）
           skill_level: 'beginner' | 'intermediate' | 'advanced'
+          subscription_status: 'free' | 'premium'
+          subscription_end_date: string | null
+          subscription_started_at: string | null
+          subscription_cancelled_at: string | null
+          stripe_customer_id: string | null
+          subscription_id: string | null  // 実際のテーブルに存在
+          monthly_usage_count: number
           total_requests: number
+          last_reset_date: string | null
           last_active_at: string
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          line_user_id: string
-          display_name?: string | null
+          display_name: string  // LINE User IDを格納
+          user_id?: string | null
           skill_level?: 'beginner' | 'intermediate' | 'advanced'
+          subscription_status?: 'free' | 'premium'
+          subscription_end_date?: string | null
+          subscription_id?: string | null
+          stripe_customer_id?: string | null
+          monthly_usage_count?: number
           total_requests?: number
+          last_reset_date?: string | null
           last_active_at?: string
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
-          line_user_id?: string
-          display_name?: string | null
+          display_name?: string  // LINE User IDを格納
+          user_id?: string | null
           skill_level?: 'beginner' | 'intermediate' | 'advanced'
+          subscription_status?: 'free' | 'premium'
+          subscription_end_date?: string | null
+          subscription_id?: string | null
+          stripe_customer_id?: string | null
+          monthly_usage_count?: number
           total_requests?: number
+          last_reset_date?: string | null
           last_active_at?: string
           created_at?: string
           updated_at?: string
@@ -201,6 +221,119 @@ export interface Database {
           error_type?: string | null
           processing_time_ms?: number | null
           created_at?: string
+        }
+      }
+      vision_usage: {
+        Row: {
+          id: string
+          user_id: string
+          image_hash: string
+          analysis_result: string
+          status: 'processing' | 'completed' | 'failed'
+          image_size_bytes: number | null
+          processing_time_ms: number | null
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          image_hash: string
+          analysis_result: string
+          status?: 'processing' | 'completed' | 'failed'
+          image_size_bytes?: number | null
+          processing_time_ms?: number | null
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          image_hash?: string
+          analysis_result?: string
+          status?: 'processing' | 'completed' | 'failed'
+          image_size_bytes?: number | null
+          processing_time_ms?: number | null
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
+      stripe_events: {
+        Row: {
+          id: string
+          event_id: string
+          event_type: string
+          processed_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          event_type: string
+          processed_at: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          event_type?: string
+          processed_at?: string
+          created_at?: string
+        }
+      }
+      refunds: {
+        Row: {
+          id: string
+          charge_id: string
+          amount: number
+          customer_id: string | null
+          refunded_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          charge_id: string
+          amount: number
+          customer_id?: string | null
+          refunded_at: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          charge_id?: string
+          amount?: number
+          customer_id?: string | null
+          refunded_at?: string
+          created_at?: string
+        }
+      }
+      generation_queue: {
+        Row: {
+          id: string
+          user_id: string
+          category: string
+          requirements: any
+          status: 'pending' | 'processing' | 'completed' | 'failed'
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          category: string
+          requirements: any
+          status?: 'pending' | 'processing' | 'completed' | 'failed'
+          created_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          category?: string
+          requirements?: any
+          status?: 'pending' | 'processing' | 'completed' | 'failed'
+          created_at?: string
+          updated_at?: string | null
         }
       }
       system_metrics: {

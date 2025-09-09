@@ -1,6 +1,7 @@
 import { logger } from '@/lib/utils/logger'
 import { AppError, ErrorCode } from '@/lib/errors/app-error'
 import { LineApiClient } from '@/lib/line/client'
+import { SecureRandom } from '@/lib/utils/secure-random'
 
 interface ErrorNotification {
   id: string
@@ -32,6 +33,7 @@ export class ErrorNotifier {
   private lastNotificationTime: Map<string, number> = new Map()
   private hourlyNotificationCount = 0
   private hourlyCountResetTime = Date.now() + 3600000
+  private cleanupInterval?: NodeJS.Timeout
 
   private readonly MAX_HISTORY = 100
   private readonly ERROR_PATTERNS = new Map<RegExp, 'critical' | 'high' | 'medium' | 'low'>([
@@ -113,7 +115,7 @@ export class ErrorNotifier {
     error: unknown,
     context?: Record<string, any>
   ): ErrorNotification {
-    const id = `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const id = `error_${Date.now()}_${SecureRandom.random().toString(36).substr(2, 9)}`
     const severity = this.determineSeverity(error)
 
     let errorInfo: ErrorNotification['error']
@@ -367,7 +369,7 @@ export class ErrorNotifier {
    * 定期クリーンアップ
    */
   private startCleanup(): void {
-    setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       const cutoff = Date.now() - 3600000 // 1時間
       
       // 古いエラーを削除
@@ -401,6 +403,10 @@ export class ErrorNotifier {
    * クリーンアップ
    */
   destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval)
+      this.cleanupInterval = undefined
+    }
     this.errors.clear()
     this.notificationHistory = []
     this.lastNotificationTime.clear()

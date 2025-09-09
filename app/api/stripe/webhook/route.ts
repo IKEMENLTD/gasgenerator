@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
+import EnvironmentValidator from '@/lib/config/environment'
 
 export const runtime = 'edge'
 
@@ -38,7 +39,7 @@ async function verifyStripeSignature(
 
     // タイムスタンプが5分以内かチェック（リプレイ攻撃防止）
     const currentTime = Math.floor(Date.now() / 1000)
-    const webhookTime = parseInt(timestamp)
+    const webhookTime = parseInt(timestamp, 10)
     if (Math.abs(currentTime - webhookTime) > 300) {
       logger.warn('Webhook timestamp too old', { currentTime, webhookTime })
       return false
@@ -78,13 +79,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.text()
     const signature = req.headers.get('stripe-signature')
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-
-    // 署名検証を必須にする
-    if (!webhookSecret) {
-      logger.critical('STRIPE_WEBHOOK_SECRET is not configured - rejecting all webhooks for security')
-      return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
-    }
+    // Stripe Webhook Secretは必須（起動時にチェック済み）
+    const webhookSecret = EnvironmentValidator.getRequired('STRIPE_WEBHOOK_SECRET')
 
     const isValid = await verifyStripeSignature(body, signature, webhookSecret)
     if (!isValid) {
@@ -100,6 +96,27 @@ export async function POST(req: NextRequest) {
     
     logger.info('Stripe webhook received', { eventType })
     
+    // 重複処理防止のためのイベントID確認
+    const { data: existingEvent } = await (supabaseAdmin as any)
+      .from('stripe_events')
+      .select('id')
+      .eq('event_id', event.id)
+      .single()
+    
+    if (existingEvent) {
+      logger.info('Duplicate webhook event, skipping', { eventId: event.id })
+      return NextResponse.json({ received: true, duplicate: true })
+    }
+    
+    // イベントを記録（トランザクション的処理の代替）
+    await (supabaseAdmin as any)
+      .from('stripe_events')
+      .insert({
+        event_id: event.id,
+        event_type: eventType,
+        processed_at: new Date().toISOString()
+      })
+    
     switch (eventType) {
       case 'checkout.session.completed':
         // 決済完了時の処理
@@ -113,18 +130,43 @@ export async function POST(req: NextRequest) {
         })
         
         if (lineUserId) {
-          // Base64デコード
-          const decodedLineUserId = Buffer.from(lineUserId, 'base64').toString('utf-8')
+          // Base64デコード（エラーハンドリング付き）
+          let decodedLineUserId: string
+          try {
+            decodedLineUserId = Buffer.from(lineUserId, 'base64').toString('utf-8')
+            // LINE User IDの形式チェック（Uで始まる33文字）
+            if (!decodedLineUserId || !decodedLineUserId.match(/^U[0-9a-f]{32}$/)) {
+              logger.error('Invalid LINE User ID format', { decodedLineUserId })
+              return NextResponse.json({ received: true, error: 'Invalid user ID format' })
+            }
+          } catch (decodeError) {
+            logger.error('Failed to decode LINE User ID', { lineUserId, error: decodeError })
+            return NextResponse.json({ received: true, error: 'Decode error' })
+          }
+          
+          // まず既存のユーザーを確認（display_nameにLINE IDが格納されている）
+          const { data: existingUser } = await (supabaseAdmin as any)
+            .from('users')
+            .select('subscription_status, stripe_customer_id')
+            .eq('display_name', decodedLineUserId)
+            .single()
+          
+          // 既にプレミアムの場合はスキップ（重複課金防止）
+          if (existingUser?.subscription_status === 'premium') {
+            logger.warn('User already has premium subscription', { lineUserId: decodedLineUserId })
+            return NextResponse.json({ received: true, alreadyPremium: true })
+          }
           
           // ユーザーのステータスを更新
-          const { error } = await supabaseAdmin
+          const { error } = await (supabaseAdmin as any)
             .from('users')
             .update({
               subscription_status: 'premium',
               stripe_customer_id: session.customer,
-              subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+              subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              subscription_started_at: new Date().toISOString()
             })
-            .eq('line_user_id', decodedLineUserId)
+            .eq('display_name', decodedLineUserId)  // display_nameにLINE IDが格納されている
           
           if (error) {
             logger.error('Failed to update user subscription', { error, lineUserId: decodedLineUserId })
@@ -150,17 +192,52 @@ export async function POST(req: NextRequest) {
         break
       
       case 'customer.subscription.deleted':
+      case 'customer.subscription.canceled':
         // サブスクリプションキャンセル時
         const subscription = event.data.object
         
-        await supabaseAdmin
+        const { error: cancelError } = await (supabaseAdmin as any)
           .from('users')
           .update({
-            subscription_status: 'free'
+            subscription_status: 'free',
+            subscription_end_date: new Date().toISOString(),
+            subscription_cancelled_at: new Date().toISOString()
           })
           .eq('stripe_customer_id', subscription.customer)
         
-        logger.info('Subscription cancelled', { customerId: subscription.customer })
+        if (cancelError) {
+          logger.error('Failed to cancel subscription', { error: cancelError, customerId: subscription.customer })
+        } else {
+          logger.info('Subscription cancelled', { customerId: subscription.customer })
+        }
+        break
+      
+      case 'charge.refunded':
+        // 返金処理
+        const charge = event.data.object
+        
+        // 返金記録を保存
+        await (supabaseAdmin as any)
+          .from('refunds')
+          .insert({
+            charge_id: charge.id,
+            amount: charge.amount_refunded,
+            customer_id: charge.customer,
+            refunded_at: new Date().toISOString()
+          })
+        
+        // ユーザーのステータスを無料に戻す
+        if (charge.customer) {
+          await (supabaseAdmin as any)
+            .from('users')
+            .update({
+              subscription_status: 'free',
+              refund_processed_at: new Date().toISOString()
+            })
+            .eq('stripe_customer_id', charge.customer)
+        }
+        
+        logger.info('Refund processed', { chargeId: charge.id, amount: charge.amount_refunded })
         break
     }
     

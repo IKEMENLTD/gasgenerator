@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'async_hooks'
 import { logger } from '@/lib/utils/logger'
 import { performanceMonitor } from '@/lib/monitoring/performance'
+import { SecureRandom } from '@/lib/utils/secure-random'
 
 export interface RequestContext {
   requestId: string
@@ -140,12 +141,39 @@ class RequestContextManager {
   }
 
   /**
-   * コンテキストのマージ
+   * コンテキストのマージ（プロトタイプ汚染対策済み）
    */
   mergeContext(updates: Partial<RequestContext>): void {
     const context = this.getContext()
-    if (context) {
-      Object.assign(context, updates)
+    if (context && updates && typeof updates === 'object') {
+      // プロトタイプ汚染対策：安全なプロパティのみコピー
+      const safeKeys = ['requestId', 'traceId', 'spanId', 'method', 'path', 'ip', 'userAgent']
+      
+      for (const key of safeKeys) {
+        if (key in updates && !key.includes('__proto__') && !key.includes('constructor') && !key.includes('prototype')) {
+          const value = updates[key as keyof RequestContext]
+          if (value !== undefined && value !== null) {
+            (context as any)[key] = value
+          }
+        }
+      }
+      
+      // MapやDateなどの特殊なプロパティは個別に処理
+      if (updates.tags && updates.tags instanceof Map) {
+        updates.tags.forEach((value, key) => {
+          if (!key.includes('__proto__') && !key.includes('constructor')) {
+            context.tags.set(key, value)
+          }
+        })
+      }
+      
+      if (updates.metrics && updates.metrics instanceof Map) {
+        updates.metrics.forEach((value, key) => {
+          if (!key.includes('__proto__') && !key.includes('constructor')) {
+            context.metrics.set(key, value)
+          }
+        })
+      }
     }
   }
 
@@ -194,7 +222,7 @@ class RequestContextManager {
    */
   private generateRequestId(): string {
     const timestamp = Date.now().toString(36)
-    const random = Math.random().toString(36).substring(2, 11)
+    const random = SecureRandom.generateString(9)
     return `req_${timestamp}_${random}`
   }
 

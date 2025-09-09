@@ -3,6 +3,7 @@ import { QueueProcessor } from '@/lib/queue/processor'
 import { QueueManager } from '@/lib/queue/manager'
 import { logger } from '@/lib/utils/logger'
 import { MemoryMonitor } from '@/lib/utils/memory-monitor'
+import EnvironmentValidator from '@/lib/config/environment'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -15,43 +16,17 @@ export async function GET(req: NextRequest) {
   const startTime = Date.now()
   
   try {
-    // cron-job.orgからのアクセスを安全に許可
-    const cronSecret = req.headers.get('x-cron-secret')
-    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    const userAgent = req.headers.get('user-agent')
+    // 認証チェック（CRON_SECRETは必須、IPアドレス認証は削除）
+    const cronSecret = req.headers.get('authorization')?.replace('Bearer ', '') || req.headers.get('x-cron-secret')
+    const expectedSecret = EnvironmentValidator.getRequired('CRON_SECRET')
     
-    // 許可されたIPアドレス（cron-job.org）
-    const allowedIPs = [
-      '128.140.8.200', // cron-job.org
-      '::1', // localhost IPv6
-      '127.0.0.1' // localhost IPv4
-    ]
+    // セキュリティ: IPアドレス認証は偽装可能なため完全に削除
+    // X-Forwarded-Forヘッダーは信頼できないため使用しない
     
-    // 環境変数でシークレットが設定されている場合はチェック
-    const expectedSecret = process.env.CRON_SECRET
-    
-    // 認証チェック
-    let authorized = false
-    
-    // 1. シークレットベースの認証（推奨）
-    if (expectedSecret && cronSecret === expectedSecret) {
-      authorized = true
-    }
-    // 2. IPアドレスベースの認証（フォールバック）
-    else if (clientIP && allowedIPs.includes(clientIP)) {
-      authorized = true
-    }
-    // 3. cron-job.orgのUser-Agentチェック（追加の検証）
-    else if (userAgent?.includes('cron-job.org')) {
-      // User-Agentだけでは信頼できないが、ログに記録
-      logger.warn('Cron access with cron-job.org User-Agent but no valid auth', {
-        clientIP,
-        userAgent
-      })
-      authorized = true // 一時的に許可（本番では削除すべき）
-    }
-    
-    if (!authorized) {
+    if (!cronSecret || cronSecret !== expectedSecret) {
+      const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      const userAgent = req.headers.get('user-agent')
+      
       logger.warn('Unauthorized cron access attempt', {
         clientIP,
         userAgent,
@@ -65,8 +40,6 @@ export async function GET(req: NextRequest) {
     }
     
     logger.info('Cron job triggered', {
-      clientIP,
-      userAgent,
       authorized: true
     })
 
@@ -140,8 +113,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Internal error',
-        message: errorMessage,
-        details: process.env.NODE_ENV !== 'production' ? errorStack : undefined
+        // 本番環境ではエラーの詳細を露出しない
+        message: process.env.NODE_ENV === 'production' ? 'An error occurred' : errorMessage
       },
       { status: 500 }
     )

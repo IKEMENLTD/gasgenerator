@@ -1,3 +1,5 @@
+import { logger } from './logger'
+
 export interface ParsedResponse {
   intro?: string
   code?: {
@@ -39,7 +41,7 @@ export class MessageStructureParser {
         notes
       }
     } catch (error) {
-      console.error('Response parsing failed:', error)
+      logger.error('Response parsing failed:', { error })
       return { fallback: responseText }
     }
   }

@@ -18,10 +18,18 @@ interface RateLimitStore {
 // メモリストア（本番環境ではRedisを使用すべき）
 class MemoryStore {
   private store: Map<string, RateLimitStore> = new Map()
-  private cleanupInterval: NodeJS.Timeout
+  private cleanupInterval: NodeJS.Timeout | null = null
   
   constructor() {
     // 1分ごとに期限切れエントリをクリーンアップ
+    this.startCleanup()
+  }
+  
+  private startCleanup(): void {
+    // 既存のインターバルをクリア（メモリリーク防止）
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval)
+    }
     this.cleanupInterval = setInterval(() => this.cleanup(), 60000)
   }
   
@@ -72,13 +80,37 @@ class MemoryStore {
   destroy(): void {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval)
+      this.cleanupInterval = null
     }
     this.store.clear()
   }
 }
 
-// グローバルストア
-const globalStore = new MemoryStore()
+// グローバルストアをシングルトンとして管理
+let globalStore: MemoryStore | null = null
+
+function getGlobalStore(): MemoryStore {
+  if (!globalStore) {
+    globalStore = new MemoryStore()
+  }
+  return globalStore
+}
+
+// プロセス終了時のクリーンアップ
+if (typeof process !== 'undefined') {
+  process.on('SIGTERM', () => {
+    if (globalStore) {
+      globalStore.destroy()
+      globalStore = null
+    }
+  })
+  process.on('SIGINT', () => {
+    if (globalStore) {
+      globalStore.destroy()
+      globalStore = null
+    }
+  })
+}
 
 /**
  * レート制限ミドルウェア
@@ -97,7 +129,7 @@ export class RateLimiter {
       ...config
     }
     
-    this.store = globalStore
+    this.store = getGlobalStore()
   }
   
   /**
@@ -190,5 +222,39 @@ export const rateLimiters = {
     windowMs: 5 * 60 * 1000,
     maxRequests: 5,
     skipSuccessfulRequests: true // 成功した認証はカウントしない
+  }),
+  
+  // パスワードリセット: 3回/時間
+  passwordReset: new RateLimiter({
+    windowMs: 60 * 60 * 1000,
+    maxRequests: 3
+  }),
+  
+  // ファイルアップロード: 5回/分
+  fileUpload: new RateLimiter({
+    windowMs: 60 * 1000,
+    maxRequests: 5
+  }),
+  
+  // エクスポート: 10回/時間
+  export: new RateLimiter({
+    windowMs: 60 * 60 * 1000,
+    maxRequests: 10
+  }),
+  
+  // AI処理: 10回/分
+  ai: new RateLimiter({
+    windowMs: 60 * 1000,
+    maxRequests: 10
+  }),
+  
+  // 管理者API: 100回/分
+  admin: new RateLimiter({
+    windowMs: 60 * 1000,
+    maxRequests: 100,
+    keyGenerator: (req) => {
+      const token = req.headers.get('authorization')?.replace('Bearer ', '') || 'unknown'
+      return `admin:${token}`
+    }
   })
 }

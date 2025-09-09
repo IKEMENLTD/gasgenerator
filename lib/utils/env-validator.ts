@@ -1,6 +1,7 @@
 /**
  * 環境変数バリデーション
  */
+import { logger } from './logger'
 
 interface RequiredEnvVars {
   // LINE関連
@@ -117,8 +118,8 @@ const validator = EnvValidator.getInstance()
 const validation = validator.validateRequired()
 
 if (!validation.isValid) {
-  console.error('❌ Environment validation failed:')
-  validation.errors.forEach(error => console.error(`  - ${error}`))
+  logger.error('❌ Environment validation failed:', { errors: validation.errors })
+  validation.errors.forEach(error => logger.error(`  - ${error}`))
   
   // 開発環境では警告のみ、本番環境ではエラー
   if (process.env.NODE_ENV === 'production') {

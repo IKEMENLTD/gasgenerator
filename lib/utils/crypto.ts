@@ -1,4 +1,5 @@
 // Edge Runtime互換のcrypto実装
+import { logger } from './logger'
 
 // LINE署名検証（Edge Runtime対応）
 export async function validateLineSignature(body: string, signature: string | null): Promise<boolean> {
@@ -33,7 +34,7 @@ export async function validateLineSignature(body: string, signature: string | nu
     // タイミング攻撃対策の比較
     return timingSafeEqual(signature, expectedSignature)
   } catch (error) {
-    console.error('Line signature validation error:', error)
+    logger.error('Line signature validation error:', { error })
     return false
   }
 }
@@ -74,7 +75,7 @@ export async function validateWebhookSignature(body: string, signature: string |
     const expectedSignature = await generateWebhookSignature(body)
     return timingSafeEqual(signature, expectedSignature)
   } catch (error) {
-    console.error('Webhook signature validation error:', error)
+    logger.error('Webhook signature validation error:', { error })
     return false
   }
 }

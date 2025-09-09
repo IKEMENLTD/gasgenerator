@@ -121,7 +121,7 @@ export class LineWebhookValidator {
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000
     for (const key of recentEvents) {
       const [, timestampStr] = key.split('_')
-      const timestamp = parseInt(timestampStr)
+      const timestamp = parseInt(timestampStr, 10)
       if (timestamp < fiveMinutesAgo) {
         recentEvents.delete(key)
       }
@@ -165,7 +165,7 @@ class LimitedEventCache {
     
     for (const key of this.cache) {
       const [, timestampStr] = key.split('_')
-      const timestamp = parseInt(timestampStr)
+      const timestamp = parseInt(timestampStr, 10)
       if (now - timestamp > this.ttl) {
         expired.push(key)
       }

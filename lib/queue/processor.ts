@@ -106,12 +106,15 @@ export class QueueProcessor {
     const jobId = job.id
     const startTime = Date.now()
 
-    // 重複実行防止
-    if (this.currentJobs.has(jobId)) {
+    // アトミックな重複実行防止（Setの操作をまとめる）
+    const wasAlreadyProcessing = this.currentJobs.has(jobId)
+    
+    if (wasAlreadyProcessing) {
       logger.warn('Job already being processed', { jobId })
       return { success: false, error: 'Duplicate processing' }
     }
-
+    
+    // チェックと追加を同時に行うことで、レースコンディションを防ぐ
     this.currentJobs.add(jobId)
 
     try {

@@ -63,8 +63,8 @@ export const SECURITY_CONFIG = {
   MIN_WEBHOOK_SECRET_LENGTH: 8,
   MAX_REQUEST_BODY_SIZE: 10000, // 10KB
   CORS_ALLOWED_ORIGINS: process.env.NODE_ENV === 'production' 
-    ? ['https://line.me'] 
-    : ['*']
+    ? ['https://line.me', 'https://api.line.me', 'https://webhook.line.me'] 
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000'] // 開発環境でも具体的なオリジンを指定
 } as const
 
 // 外部API設定

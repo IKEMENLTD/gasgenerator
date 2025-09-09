@@ -17,7 +17,7 @@ export class UserQueries {
         .maybeSingle()
 
       if (findError && findError.code !== 'PGRST116') {
-        console.error('Error finding user:', findError)
+        // Error finding user
         throw findError
       }
 
@@ -53,7 +53,7 @@ export class UserQueries {
         return data
       }
     } catch (error) {
-      console.error('UserQueries.createOrUpdate error:', error)
+      // UserQueries.createOrUpdate error
       // エラーでも最小限のユーザーオブジェクトを返す
       return {
         id: lineUserId,
@@ -78,7 +78,7 @@ export class SessionQueries {
       if (error && error.code !== 'PGRST116') throw error
       return data
     } catch (error) {
-      console.error('SessionQueries.findActiveSession error:', error)
+      // SessionQueries.findActiveSession error
       return null
     }
   }
@@ -101,7 +101,7 @@ export class SessionQueries {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('SessionQueries.createSession error:', error)
+      // SessionQueries.createSession error
       // エラーでも最小限のセッションオブジェクトを返す
       return {
         id: `temp_${Date.now()}`,
@@ -124,7 +124,7 @@ export class SessionQueries {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('SessionQueries.updateSession error:', error)
+      // SessionQueries.updateSession error
       return null
     }
   }
@@ -141,7 +141,7 @@ export class MetricsQueries {
         .from<any>('system_metrics')
         .insert(metric)
     } catch (error) {
-      console.error('MetricsQueries.recordMetric error:', error)
+      // MetricsQueries.recordMetric error
     }
   }
 }
@@ -159,7 +159,7 @@ export class CodeQueries {
       if (error) throw error
       return data || []
     } catch (error) {
-      console.error('CodeQueries.getRecentCodes error:', error)
+      // CodeQueries.getRecentCodes error
       return []
     }
   }
@@ -175,7 +175,7 @@ export class CodeQueries {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('CodeQueries.saveGeneratedCode error:', error)
+      // CodeQueries.saveGeneratedCode error
       return null
     }
   }
@@ -188,7 +188,7 @@ export class ClaudeUsageQueries {
         .from<any>('claude_usage_logs')
         .insert(usageData)
     } catch (error) {
-      console.error('ClaudeUsageQueries.logUsage error:', error)
+      // ClaudeUsageQueries.logUsage error
     }
   }
 
@@ -207,7 +207,7 @@ export class ClaudeUsageQueries {
       
       return { total_cost: total, usage_count: (data || []).length }
     } catch (error) {
-      console.error('ClaudeUsageQueries.getUsageSummary error:', error)
+      // ClaudeUsageQueries.getUsageSummary error
       return { total_cost: 0, usage_count: 0 }
     }
   }
@@ -230,7 +230,7 @@ export class QueueQueries {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('QueueQueries.addToQueue error:', error)
+      // QueueQueries.addToQueue error
       return null
     }
   }
@@ -260,7 +260,7 @@ export class QueueQueries {
       
       return data
     } catch (error) {
-      console.error('QueueQueries.getNextJob error:', error)
+      // QueueQueries.getNextJob error
       return null
     }
   }
@@ -285,7 +285,7 @@ export class QueueQueries {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('QueueQueries.updateJobStatus error:', error)
+      // QueueQueries.updateJobStatus error
       return null
     }
   }

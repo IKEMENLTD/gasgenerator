@@ -1,5 +1,6 @@
 import { supabaseAdmin } from './client'
 import { logger } from '../utils/logger'
+import { InputValidator } from '../utils/input-validator'
 
 // SessionQueriesを再エクスポート
 export { SessionQueries } from './session-queries'
@@ -7,15 +8,21 @@ export { SessionQueries } from './session-queries'
 export class UserQueries {
   static async createOrUpdate(lineUserId: string) {
     try {
-      // まず既存ユーザーを検索（line_user_idカラムの存在チェックを含む）
+      // LINE User IDの検証（SQLインジェクション対策）
+      if (!InputValidator.validateLineUserId(lineUserId)) {
+        throw new Error('Invalid LINE User ID format')
+      }
+      
+      // まず既存ユーザーを検索（display_nameにLINE IDを格納）
       const { data: existingUser, error: findError } = await supabaseAdmin
-        .from<any>('users')
+        .from('users')
         .select('*')
-        .or(`line_user_id.eq.${lineUserId}`)
+        .eq('display_name', lineUserId)
+        .limit(1)
         .maybeSingle()
 
       if (findError && findError.code !== 'PGRST116') {
-        console.error('Error finding user:', findError)
+        logger.error('Error finding user', { error: findError })
         throw findError
       }
 
@@ -38,9 +45,10 @@ export class UserQueries {
         const { data, error } = await supabaseAdmin
           .from<any>('users')
           .insert({
-            line_user_id: lineUserId,
-            display_name: null,
+            display_name: lineUserId,  // display_nameにLINE IDを保存
             skill_level: 'beginner',
+            subscription_status: 'free',
+            monthly_usage_count: 0,
             total_requests: 1,
             last_active_at: new Date().toISOString()
           })
@@ -51,13 +59,14 @@ export class UserQueries {
         return data
       }
     } catch (error) {
-      console.error('UserQueries.createOrUpdate error:', error)
+      logger.error('UserQueries.createOrUpdate error', { error })
       // エラーでも最小限のユーザーオブジェクトを返す
       return {
         id: lineUserId,
-        line_user_id: lineUserId,
-        display_name: null,
-        skill_level: 'beginner'
+        display_name: lineUserId,  // display_nameにLINE IDを保存
+        skill_level: 'beginner',
+        subscription_status: 'free',
+        monthly_usage_count: 0
       }
     }
   }
@@ -69,10 +78,10 @@ export class UserQueries {
         monthly_usage_count: 0,
         last_reset_date: new Date().toISOString()
       })
-      .eq('id', userId)
+      .eq('display_name', userId)  // display_nameにLINE IDが格納されている
     
     if (error) {
-      console.error('Failed to reset monthly usage:', error)
+      logger.error('Failed to reset monthly usage', { error })
     }
   }
   
@@ -80,11 +89,12 @@ export class UserQueries {
     const { data: user, error: fetchError } = await supabaseAdmin
       .from('users')
       .select('monthly_usage_count')
-      .eq('id', userId)
+      .eq('display_name', userId)  // display_nameにLINE IDが格納されている
+      .limit(1)
       .maybeSingle()
     
     if (fetchError || !user) {
-      console.error('Failed to fetch usage count:', fetchError)
+      logger.error('Failed to fetch usage count', { error: fetchError })
       return
     }
     
@@ -93,10 +103,10 @@ export class UserQueries {
       .update({
         monthly_usage_count: (user.monthly_usage_count || 0) + 1
       })
-      .eq('id', userId)
+      .eq('display_name', userId)  // display_nameにLINE IDが格納されている
     
     if (error) {
-      console.error('Failed to increment usage count:', error)
+      logger.error('Failed to increment usage count', { error })
     }
   }
 }
@@ -113,7 +123,7 @@ export class QueueQueries {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('QueueQueries.addToQueue error:', error)
+      logger.error('QueueQueries.addToQueue error:', { error })
       // 仮のレスポンス（DBエラー時でも動作継続）
       return {
         id: `temp_${Date.now()}`,
@@ -134,13 +144,13 @@ export class QueueQueries {
         .limit(batchSize)
       
       if (error) {
-        console.error('Error getting next jobs:', error)
+        logger.error('Error getting next jobs:', { error })
         return []
       }
       
       return data || []
     } catch (error) {
-      console.error('QueueQueries.getNextJobs error:', error)
+      logger.error('QueueQueries.getNextJobs error:', { error })
       return []
     }
   }
@@ -153,13 +163,13 @@ export class QueueQueries {
         .eq('status', 'pending')
       
       if (error) {
-        console.error('Error getting pending jobs count:', error)
+        logger.error('Error getting pending jobs count:', { error })
         return 0
       }
       
       return count || 0
     } catch (error) {
-      console.error('QueueQueries.getPendingJobsCount error:', error)
+      logger.error('QueueQueries.getPendingJobsCount error:', { error })
       return 0
     }
   }
@@ -175,10 +185,10 @@ export class QueueQueries {
         .eq('id', jobId)
       
       if (error) {
-        console.error('Error marking job as processing:', error)
+        logger.error('Error marking job as processing:', { error })
       }
     } catch (error) {
-      console.error('QueueQueries.markJobProcessing error:', error)
+      logger.error('QueueQueries.markJobProcessing error:', { error })
     }
   }
   
@@ -193,10 +203,10 @@ export class QueueQueries {
         .eq('id', jobId)
       
       if (error) {
-        console.error('Error marking job as completed:', error)
+        logger.error('Error marking job as completed:', { error })
       }
     } catch (error) {
-      console.error('QueueQueries.markJobCompleted error:', error)
+      logger.error('QueueQueries.markJobCompleted error:', { error })
     }
   }
   
@@ -210,7 +220,7 @@ export class QueueQueries {
         .single()
       
       if (fetchError || !job) {
-        console.error('Error fetching job for retry:', fetchError)
+        logger.error('Error fetching job for retry:', { fetchError })
         return
       }
       
@@ -228,10 +238,10 @@ export class QueueQueries {
         .eq('id', jobId)
       
       if (error) {
-        console.error('Error marking job as failed:', error)
+        logger.error('Error marking job as failed:', { error })
       }
     } catch (error) {
-      console.error('QueueQueries.markJobFailed error:', error)
+      logger.error('QueueQueries.markJobFailed error:', { error })
     }
   }
   
@@ -243,10 +253,10 @@ export class QueueQueries {
         .eq('id', jobId)
       
       if (error) {
-        console.error('Error updating job status:', error)
+        logger.error('Error updating job status:', { error })
       }
     } catch (error) {
-      console.error('QueueQueries.updateJobStatus error:', error)
+      logger.error('QueueQueries.updateJobStatus error:', { error })
     }
   }
 }
@@ -271,7 +281,7 @@ export class UsageQueries {
       const { data, error } = await query
       
       if (error) {
-        console.error('Error getting daily usage:', error)
+        logger.error('Error getting daily usage:', { error })
         return { tokens: 0, cost: 0, requests: 0 }
       }
       
@@ -281,7 +291,7 @@ export class UsageQueries {
       
       return { tokens: totalTokens, cost: totalCost, requests: totalRequests }
     } catch (error) {
-      console.error('UsageQueries.getDailyUsage error:', error)
+      logger.error('UsageQueries.getDailyUsage error:', { error })
       return { tokens: 0, cost: 0, requests: 0 }
     }
   }
@@ -310,10 +320,10 @@ export class UsageQueries {
         })
       
       if (error) {
-        console.error('Error logging Claude usage:', error)
+        logger.error('Error logging Claude usage:', { error })
       }
     } catch (error) {
-      console.error('UsageQueries.logClaudeUsage error:', error)
+      logger.error('UsageQueries.logClaudeUsage error:', { error })
     }
   }
   
@@ -330,7 +340,7 @@ export class UsageQueries {
         .gte('created_at', startOfMonth.toISOString())
       
       if (error) {
-        console.error('Error getting monthly usage:', error)
+        logger.error('Error getting monthly usage:', { error })
         return { tokens: 0, cost: 0 }
       }
       
@@ -339,7 +349,7 @@ export class UsageQueries {
       
       return { tokens: totalTokens, cost: totalCost }
     } catch (error) {
-      console.error('UsageQueries.getMonthlyUsage error:', error)
+      logger.error('UsageQueries.getMonthlyUsage error:', { error })
       return { tokens: 0, cost: 0 }
     }
   }
@@ -358,10 +368,10 @@ export class MetricsQueries {
         })
       
       if (error) {
-        console.error('Error recording metric:', error)
+        logger.error('Error recording metric:', { error })
       }
     } catch (error) {
-      console.error('MetricsQueries.recordMetric error:', error)
+      logger.error('MetricsQueries.recordMetric error:', { error })
     }
   }
 }
@@ -383,7 +393,7 @@ export class CodeQueries {
       if (error) throw error
       return data || []
     } catch (error) {
-      console.error('CodeQueries.getRecentCodes error:', error)
+      logger.error('CodeQueries.getRecentCodes error:', { error })
       return []
     }
   }
@@ -439,7 +449,7 @@ export class ClaudeUsageQueries {
         .from<any>('claude_usage_logs')
         .insert(usageData)
     } catch (error) {
-      console.error('ClaudeUsageQueries.logUsage error:', error)
+      logger.error('ClaudeUsageQueries.logUsage error:', { error })
     }
   }
 
@@ -458,7 +468,7 @@ export class ClaudeUsageQueries {
       
       return { total_cost: total, usage_count: (data || []).length }
     } catch (error) {
-      console.error('ClaudeUsageQueries.getUsageSummary error:', error)
+      logger.error('ClaudeUsageQueries.getUsageSummary error:', { error })
       return { total_cost: 0, usage_count: 0 }
     }
   }
@@ -481,7 +491,7 @@ export class ProcessingQueueQueries {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('ProcessingQueueQueries.addToQueue error:', error)
+      logger.error('ProcessingQueueQueries.addToQueue error:', { error })
       return null
     }
   }
@@ -511,7 +521,7 @@ export class ProcessingQueueQueries {
       
       return data
     } catch (error) {
-      console.error('ProcessingQueueQueries.getNextJob error:', error)
+      logger.error('ProcessingQueueQueries.getNextJob error:', { error })
       return null
     }
   }
@@ -536,7 +546,7 @@ export class ProcessingQueueQueries {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('ProcessingQueueQueries.updateJobStatus error:', error)
+      logger.error('ProcessingQueueQueries.updateJobStatus error:', { error })
       return null
     }
   }

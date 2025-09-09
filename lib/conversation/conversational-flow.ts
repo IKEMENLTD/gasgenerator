@@ -1,8 +1,17 @@
 import { Anthropic } from '@anthropic-ai/sdk'
+import { logger } from '../utils/logger'
 
 // Anthropic SDKの型定義
 interface AnthropicMessage {
   content: Array<{ text: string }>
+}
+
+// 型ガード関数
+function isAnthropicMessage(obj: any): obj is AnthropicMessage {
+  return obj && 
+         Array.isArray(obj.content) && 
+         obj.content.length > 0 && 
+         typeof obj.content[0].text === 'string'
 }
 
 const anthropic = new Anthropic({
@@ -22,13 +31,13 @@ export interface ConversationContext {
     constraints?: string[]
     dataStructure?: string
     frequency?: string
-    [key: string]: any
+    [key: string]: string | string[] | undefined
   }
   readyForCode: boolean
   // 最後に生成したコード関連の情報
   lastGeneratedCode?: boolean
   lastGeneratedCategory?: string
-  lastGeneratedRequirements?: any
+  lastGeneratedRequirements?: Record<string, string | string[] | undefined>
   isModifying?: boolean
   isAddingDescription?: boolean
 }
@@ -79,6 +88,42 @@ const CATEGORY_QUESTIONS = {
 
 export class ConversationalFlow {
   /**
+   * 会話から要件を抽出
+   */
+  private static extractRequirementsFromConversation(
+    messages: Array<{role: string, content: string}>,
+    latestReply: string
+  ): Record<string, string | string[] | undefined> | null {
+    const requirements: Record<string, string | string[] | undefined> = {}
+    
+    // 会話全体から要件を抽出するシンプルなロジック
+    const allText = messages.map(m => m.content).join(' ') + ' ' + latestReply
+    
+    // スプレッドシート関連
+    if (allText.includes('A列') || allText.includes('B列') || allText.includes('C列')) {
+      requirements.columns = allText.match(/[A-Z]列/g)?.join(', ')
+    }
+    
+    // 実行タイミング
+    if (allText.includes('毎日') || allText.includes('毎週') || allText.includes('毎月')) {
+      requirements.frequency = allText.match(/(毎日|毎週|毎月)/)?.[0]
+    }
+    
+    // 時刻
+    const timeMatch = allText.match(/(\d{1,2}時)/g)
+    if (timeMatch) {
+      requirements.executionTime = timeMatch[0]
+    }
+    
+    // 処理内容
+    if (allText.includes('集計')) requirements.action = '集計'
+    if (allText.includes('転記')) requirements.action = '転記'
+    if (allText.includes('比較')) requirements.action = '比較'
+    if (allText.includes('メール')) requirements.action = 'メール送信'
+    
+    return Object.keys(requirements).length > 0 ? requirements : null
+  }
+  /**
    * AIを使った会話的な要件収集
    */
   static async processConversation(
@@ -121,19 +166,23 @@ export class ConversationalFlow {
 
 重要な指示:
 1. ユーザーの要望の本質を理解することを最優先にしてください
-2. 不明な点があれば、具体的で分かりやすい質問をしてください
+2. 不明な点があれば、具体的で分かりやすい質問をしてください  
 3. ユーザーが「勤怠管理」「請求書作成」など具体的な目的を伝えた場合、それを最優先に理解してください
 4. 会話の文脈を常に考慮し、前の会話内容を忘れないでください
-5. 必要な情報が集まったと判断したら、requirement_completeをtrueにしてください
+5. 必要な情報が十分に集まったら、返答の最後に「[READY_FOR_CODE]」というマーカーを付けてください
 
-返答形式（JSONで返してください）:
-{
-  "reply": "ユーザーへの自然な日本語での返信",
-  "requirements": {
-    "収集した要件のキー": "値"
-  },
-  "requirement_complete": false または true
-}`
+返答の構造:
+- 自然な日本語での返信を行ってください
+- 要件が集まった場合は、最後に「[READY_FOR_CODE]」を追加
+- 収集した要件は会話の中で自然に確認してください
+
+例:
+「スプレッドシートのA列とB列を比較して、一致するデータをC列に出力する処理ですね。
+毎日自動実行する必要はありますか？それとも手動実行で問題ないでしょうか？」
+
+または要件が揃った場合:
+「承知しました。毎日朝9時に自動実行して、A列とB列を比較し、一致データをC列に出力するコードを生成します。
+[READY_FOR_CODE]」`
 
       const conversationHistory = context.messages
         .map(m => `${m.role === 'user' ? 'ユーザー' : 'アシスタント'}: ${m.content}`)
@@ -142,84 +191,70 @@ export class ConversationalFlow {
       const response = await anthropic.messages.create({
         model: 'claude-3-haiku-20240307',
         max_tokens: 500,
-        temperature: 0.1,  // 低温度で一貫したJSON出力
+        temperature: 0.7,  // 自然な会話のために温度を上げる
         system: systemPrompt,
         messages: [{
           role: 'user',
           content: `これまでの会話:
 ${conversationHistory}
 
-次の返答を生成してください。
-要件が十分に集まった場合は、最後に「requirement_complete: true」を追加してください。
-
-現在のユーザーの要望を踏まえて、適切な返答を生成してください。
-要件が十分に集まったと判断した場合は、requirement_completeをtrueにしてください。
-
-注意: 返答はJSON形式で、追加のテキストは含めないでください。`
+ユーザーの最新の発言を踏まえて、自然な日本語で返答してください。
+必要な情報が十分に集まったら、返答の最後に [READY_FOR_CODE] を追加してください。`
         }]
       })
 
-      const responseText = (response as any).content[0].text
-      
-      // JSONパースのエラーハンドリング
-      let aiResponse: any
-      try {
-        // レスポンスがJSONかチェック
-        const trimmedText = responseText.trim()
-        if (!trimmedText.startsWith('{')) {
-          // JSON形式でない場合は、デフォルトレスポンスを作成
-          console.warn('Non-JSON response from Claude:', trimmedText.substring(0, 100))
-          aiResponse = {
-            reply: trimmedText,
-            requirements: {},
-            requirement_complete: false
-          }
-        } else {
-          aiResponse = JSON.parse(trimmedText)
-        }
-      } catch (parseError) {
-        console.error('AI response parse error:', parseError)
-        // パースエラー時のフォールバック
-        aiResponse = {
-          reply: '申し訳ございません。エラーが発生しました。もう一度お試しください。',
-          requirements: {},
-          requirement_complete: false
-        }
+      // 型安全なキャスト
+      if (!isAnthropicMessage(response)) {
+        throw new Error('Invalid response format from Anthropic API')
       }
+      const responseText = response.content[0].text
+      
+      // 自然言語での処理に変更
+      const aiReply = responseText.trim()
+      const isReadyForCode = aiReply.includes('[READY_FOR_CODE]')
+      
+      // マーカーを除去した返信テキスト
+      let cleanReply = aiReply.replace('[READY_FOR_CODE]', '').trim()
+      
+      // 要件の抽出（会話から自然に抽出）
+      const extractedRequirements = this.extractRequirementsFromConversation(
+        context.messages,
+        cleanReply
+      )
       
       // 要件を更新
-      if (aiResponse.requirements) {
+      if (extractedRequirements) {
         context.requirements = {
           ...context.requirements,
-          ...aiResponse.requirements
+          ...extractedRequirements
         }
       }
 
       // 会話履歴に追加
       context.messages.push({
         role: 'assistant',
-        content: aiResponse.reply
+        content: cleanReply
       })
 
       // 要件収集が完了した場合
-      if (aiResponse.requirement_complete) {
+      if (isReadyForCode) {
         context.readyForCode = true
         const confirmMessage = `\n\n📝 要件を確認させていただきます：\n\n${Object.entries(context.requirements)
           .filter(([k, v]) => v)
           .map(([k, v]) => `・${k}: ${v}`)
           .join('\n')}\n\nこの内容でコードを生成してよろしいですか？\n\n「はい」または「修正」とお答えください。`
         
-        aiResponse.reply += confirmMessage
+        cleanReply += confirmMessage
       }
 
       return {
-        reply: aiResponse.reply,
-        isComplete: aiResponse.requirement_complete || false,
+        reply: cleanReply,
+        isComplete: isReadyForCode,
         updatedContext: context
       }
 
     } catch (error) {
-      console.error('AI conversation error:', error)
+      logger.error('AI conversation error', { error })
       
       // エラー時の返答
       const errorReply = '申し訳ございません。エラーが発生しました。もう一度お試しください。\n\nお困りの場合は、具体的にどのような作業を自動化したいか教えていただければ、お手伝いさせていただきます。'

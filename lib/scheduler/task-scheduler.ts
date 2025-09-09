@@ -1,6 +1,7 @@
 import { logger } from '@/lib/utils/logger'
 import { performanceMonitor } from '@/lib/monitoring/performance'
 import { supabase } from '@/lib/supabase/client'
+import { SecureRandom } from '@/lib/utils/secure-random'
 
 interface ScheduledTask {
   id: string
@@ -421,7 +422,7 @@ export class TaskScheduler {
    * タスクIDの生成
    */
   private generateTaskId(): string {
-    return `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    return `task_${Date.now()}_${SecureRandom.generateString(9)}`
   }
 
   /**

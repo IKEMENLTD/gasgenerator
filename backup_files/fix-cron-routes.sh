@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     }
 
     // クリーンアップ処理（簡略化）
-    console.log('Cleanup job executed')
+    // Cleanup job executed
 
     return NextResponse.json({
       success: true,
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Cleanup error:', error)
+    // Cleanup error
     return NextResponse.json(
       { error: 'Internal error' },
       { status: 500 }
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
     }
 
     // キュー処理（簡略化）
-    console.log('Process queue job executed')
+    // Process queue job executed
 
     return NextResponse.json({
       success: true,
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Queue processing error:', error)
+    // Queue processing error
     return NextResponse.json(
       { error: 'Internal error' },
       { status: 500 }

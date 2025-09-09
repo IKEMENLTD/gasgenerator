@@ -1,5 +1,6 @@
 import { logger } from '@/lib/utils/logger'
 import { EXTERNAL_API_CONFIG, TIMEOUTS } from '@/lib/constants/config'
+import EnvironmentValidator from '@/lib/config/environment'
 import type { LineMessage, LinePushMessage } from '@/types/line'
 
 export class LineApiClient {
@@ -7,12 +8,8 @@ export class LineApiClient {
   private baseUrl: string
 
   constructor() {
-    const token = process.env.LINE_CHANNEL_ACCESS_TOKEN
-    if (!token) {
-      logger.critical('LINE_CHANNEL_ACCESS_TOKEN is missing')
-      throw new Error('LINE_CHANNEL_ACCESS_TOKEN is required')
-    }
-    this.accessToken = token
+    // 環境変数を安全に取得
+    this.accessToken = EnvironmentValidator.getRequired('LINE_CHANNEL_ACCESS_TOKEN')
     this.baseUrl = EXTERNAL_API_CONFIG.LINE.API_BASE_URL
   }
 

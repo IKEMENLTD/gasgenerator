@@ -59,8 +59,13 @@ export class ApiKeyValidator {
    * APIキーの暗号化（保存時）
    */
   static encryptApiKey(apiKey: string): string {
-    // 実装例：本番では強力な暗号化を使用
-    const secret = process.env.ENCRYPTION_SECRET || 'default-secret-change-this'
+    // 暗号化シークレットを環境変数から取得（必須）
+    const secret = process.env.ENCRYPTION_SECRET
+    
+    if (!secret || secret.length < 32) {
+      throw new Error('ENCRYPTION_SECRET must be set and at least 32 characters long')
+    }
+    
     const cipher = createHmac('sha256', secret)
     return cipher.update(apiKey).digest('hex')
   }

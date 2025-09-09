@@ -285,8 +285,14 @@ export class ConversationFlowManager {
     // セッションを生成準備完了状態に更新
     await SessionHandler.markReadyForGeneration(currentState.sessionId, finalRequirements)
 
-    // TODO: キューに追加（次のステップで実装）
-    // await QueueQueries.addToQueue({ ... })
+    // キューに追加
+    const QueueQueries = (await import('@/lib/supabase/queue-queries')).QueueQueries
+    await QueueQueries.addToQueue({
+      user_id: lineUserId,
+      category: currentState.category,
+      requirements: finalRequirements,
+      status: 'pending'
+    })
 
     // 処理中メッセージ送信
     await this.lineClient.replyMessage(replyToken, [
@@ -317,8 +323,12 @@ export class ConversationFlowManager {
         issues.push('LINE API connection failed')
       }
 
-      // TODO: データベース接続テスト
-      // TODO: その他の依存サービステスト
+      // データベース接続テスト
+      const supabase = (await import('@/lib/supabase/client')).supabaseAdmin
+      const { error: dbError } = await supabase.from('users').select('id').limit(1)
+      if (dbError) {
+        issues.push('Database connection failed')
+      }
 
     } catch (error) {
       issues.push(`Health check failed: ${error}`)

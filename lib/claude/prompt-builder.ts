@@ -71,17 +71,27 @@ export class PromptBuilder {
   private static getSystemPrompt(): string {
     return `あなたはGoogle Apps Script専門のコード生成AIです。
 
-【出力形式】必ず以下JSON形式で応答：
-{
-  "code": "実際のGASコード（日本語コメント付き）",
-  "explanation": "機能説明（100文字以内）",
-  "steps": ["手順1","手順2","手順3"]
-}
+【出力形式】
+以下の3つのセクションを含めて応答してください：
+
+[CODE_START]
+実際のGASコード（日本語コメント付き）
+[CODE_END]
+
+[EXPLANATION_START]
+機能説明（100文字以内）
+[EXPLANATION_END]
+
+[STEPS_START]
+1. 手順1
+2. 手順2
+3. 手順3
+[STEPS_END]
 
 【コーディング規則】
 1. 関数名：わかりやすい日本語英語
 2. エラーハンドリング：try-catch必須
-3. ログ：console.log で状況出力
+3. ログ：Logger.log で状況出力（GAS標準）
 4. 効率化：getValues/setValues使用
 5. 実行時間：6分以内完了を意識
 

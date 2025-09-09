@@ -1,10 +1,20 @@
 import { LineApiClient } from './client'
 import { logger } from '../utils/logger'
-import { visionRateLimiter } from '../vision/rate-limiter'
+import { ConfigurationError, ExternalServiceError } from '../utils/errors'
+import { databaseRateLimiter } from '../vision/database-rate-limiter'
 import { supabaseAdmin } from '../supabase/client'
 
 export class LineImageHandler {
   private lineClient: LineApiClient
+  
+  // メモリ制限設定
+  private static readonly MAX_CONCURRENT_IMAGES = 2 // 同時処理画像数
+  private static readonly MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+  private static readonly MAX_TOTAL_MEMORY = 50 * 1024 * 1024 // 合計50MBまで
+  
+  private static currentProcessing = 0
+  private static totalMemoryUsage = 0
+  private static processingQueue: Array<() => Promise<void>> = []
   
   constructor() {
     this.lineClient = new LineApiClient()
@@ -22,30 +32,72 @@ export class LineImageHandler {
     description?: string
     error?: string 
   }> {
+    // メモリ制限チェック
+    if (LineImageHandler.currentProcessing >= LineImageHandler.MAX_CONCURRENT_IMAGES) {
+      await this.lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '⏳ 現在画像処理が混雑しています。しばらくしてからお試しください。'
+      }])
+      return { 
+        success: false, 
+        error: 'Too many concurrent image processing requests' 
+      }
+    }
+    
+    // メモリ使用量チェック
+    if (LineImageHandler.totalMemoryUsage >= LineImageHandler.MAX_TOTAL_MEMORY) {
+      logger.warn('Total memory limit exceeded', {
+        totalMemoryUsage: LineImageHandler.totalMemoryUsage,
+        limit: LineImageHandler.MAX_TOTAL_MEMORY
+      })
+      await this.lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '⚠️ システムメモリが不足しています。しばらくしてからお試しください。'
+      }])
+      return { 
+        success: false, 
+        error: 'Memory limit exceeded' 
+      }
+    }
+    
     let placeholderId: string | undefined
+    let bufferSize = 0 // メモリクリーンアップ用
     
     logger.info('=== IMAGE HANDLER START ===', {
       messageId,
       userId,
       hasReplyToken: !!replyToken,
+      currentProcessing: LineImageHandler.currentProcessing,
+      totalMemoryUsage: LineImageHandler.totalMemoryUsage,
       envCheck: {
-        hasLineToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
-        hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
-        hasSupabaseUrl: !!process.env.SUPABASE_URL
+        hasRequiredConfigs: !!process.env.LINE_CHANNEL_ACCESS_TOKEN && 
+                           !!process.env.ANTHROPIC_API_KEY && 
+                           !!process.env.SUPABASE_URL
       }
     })
+    
+    // 同時処理数をインクリメント
+    LineImageHandler.currentProcessing++
     
     try {
       // 1. LINE APIから画像データを取得
       logger.info('Step 1: Downloading image from LINE')
       const { buffer, contentType } = await this.downloadImage(messageId)
+      
+      // メモリ使用量を追加
+      bufferSize = buffer.length
+      LineImageHandler.totalMemoryUsage += bufferSize
+      
       logger.info('Step 1 completed: Image downloaded', { 
-        bufferSize: buffer.length,
-        contentType 
+        bufferSize,
+        contentType,
+        totalMemoryUsage: LineImageHandler.totalMemoryUsage
       })
       
       // 2. 画像ハッシュを計算
-      const imageHash = visionRateLimiter.calculateImageHash(buffer)
+      // 画像のハッシュ値を計算
+      const crypto = require('crypto')
+      const imageHash = crypto.createHash('sha256').update(buffer).digest('hex')
       
       // 3. ユーザーのプレミアムステータス確認
       const { data: user } = await supabaseAdmin
@@ -59,7 +111,7 @@ export class LineImageHandler {
                        new Date(user.subscription_end_date) > new Date()
       
       // 4. レート制限チェックと事前記録（レースコンディション対策）
-      const rateCheck = await visionRateLimiter.canUseVision(userId, imageHash, isPremium)
+      const rateCheck = await databaseRateLimiter.checkAndIncrement(userId, imageHash, isPremium)
       
       if (!rateCheck.allowed) {
         await this.lineClient.replyMessage(replyToken, [{
@@ -102,7 +154,8 @@ export class LineImageHandler {
       
       // 5.5. 使用を事前に記録（レースコンディション対策）
       // 失敗したら後でロールバックできるようにプレースホルダーを作成
-      placeholderId = await visionRateLimiter.recordUsagePlaceholder(userId, imageHash)
+      // プレースホルダーは新実装では不要（checkAndIncrementで記録済み）
+      placeholderId = imageHash
       
       // 6. 画像をBase64エンコード
       const base64Image = buffer.toString('base64')
@@ -133,7 +186,7 @@ export class LineImageHandler {
       })
       
       // 8. プレースホルダーを実際の結果で更新
-      await visionRateLimiter.updateUsageWithResult(
+      await databaseRateLimiter.updateAnalysisResult(
         placeholderId,
         description,
         {
@@ -177,7 +230,7 @@ export class LineImageHandler {
       
       // プレースホルダーをロールバック
       if (placeholderId) {
-        await visionRateLimiter.rollbackUsage(placeholderId)
+        await databaseRateLimiter.markAnalysisFailed(userId, placeholderId, 'Image analysis failed')
       }
       
       // エラーメッセージを送信（エラー詳細も含む）
@@ -198,6 +251,24 @@ export class LineImageHandler {
         success: false, 
         error: errorMessage
       }
+    } finally {
+      // 同時処理数とメモリ使用量をデクリメント
+      LineImageHandler.currentProcessing--
+      if (bufferSize > 0) {
+        LineImageHandler.totalMemoryUsage -= bufferSize
+      }
+      
+      // 待機中の処理があれば開始
+      const next = LineImageHandler.processingQueue.shift()
+      if (next) {
+        next()
+      }
+      
+      logger.info('Image processing cleanup', {
+        currentProcessing: LineImageHandler.currentProcessing,
+        totalMemoryUsage: LineImageHandler.totalMemoryUsage,
+        queueLength: LineImageHandler.processingQueue.length
+      })
     }
   }
   
@@ -210,8 +281,7 @@ export class LineImageHandler {
   }> {
     const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN
     if (!accessToken) {
-      logger.error('LINE_CHANNEL_ACCESS_TOKEN is missing')
-      throw new Error('LINE API configuration error')
+      throw new ConfigurationError('LINE API', 'Channel access token is not configured')
     }
     
     const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`
@@ -249,8 +319,7 @@ export class LineImageHandler {
     // API キーチェック
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
-      logger.critical('ANTHROPIC_API_KEY is missing - Vision API cannot function')
-      throw new Error('Vision API is not configured')
+      throw new ConfigurationError('Vision API', 'API key is not configured')
     }
     
     try {
@@ -371,7 +440,7 @@ export class LineImageHandler {
       
       if (!data.content || !data.content[0]?.text) {
         logger.error('Invalid Claude Vision API response structure', { data })
-        throw new Error('Invalid response from Claude Vision API')
+        throw new ExternalServiceError('Claude Vision API', 'Invalid response structure', { data })
       }
       
       return data.content[0].text

@@ -33,17 +33,26 @@ export class SecurityHeaders {
    * Content Security Policyの生成
    */
   private static getCSP(): string {
+    const isProd = process.env.NODE_ENV === 'production'
+    
     const directives = {
       'default-src': ["'self'"],
-      'script-src': [
+      'script-src': isProd ? [
         "'self'",
-        "'unsafe-inline'", // Next.jsインラインスクリプト用
-        "'unsafe-eval'", // 開発環境用（本番では削除推奨）
-        'https://cdn.jsdelivr.net' // 外部ライブラリ用
+        "'nonce-{NONCE_PLACEHOLDER}'", // nonceベースのインラインスクリプト（本番環境）
+        'https://cdn.jsdelivr.net'
+      ] : [
+        "'self'",
+        "'unsafe-inline'", // 開発環境のみ
+        "'unsafe-eval'", // 開発環境のみ
+        'https://cdn.jsdelivr.net'
       ],
-      'style-src': [
+      'style-src': isProd ? [
         "'self'",
-        "'unsafe-inline'" // インラインスタイル用
+        "'nonce-{NONCE_PLACEHOLDER}'" // nonceベースのインラインスタイル（本番環境）
+      ] : [
+        "'self'",
+        "'unsafe-inline'" // 開発環境のみ
       ],
       'img-src': [
         "'self'",
@@ -89,12 +98,11 @@ export class SecurityHeaders {
     const origin = request.headers.get('origin')
     const allowedOrigins = this.getAllowedOrigins()
 
-    // オリジンチェック
+    // オリジンチェック（ワイルドカードは使用しない）
     if (origin && allowedOrigins.includes(origin)) {
       response.headers.set('Access-Control-Allow-Origin', origin)
-    } else if (allowedOrigins.includes('*')) {
-      response.headers.set('Access-Control-Allow-Origin', '*')
     }
+    // 不明なオリジンからのリクエストはCORSヘッダーを設定しない
 
     // その他のCORSヘッダー
     response.headers.set(
@@ -106,7 +114,10 @@ export class SecurityHeaders {
       'Content-Type, Authorization, X-Line-Signature, X-User-Id'
     )
     response.headers.set('Access-Control-Max-Age', '86400')
-    response.headers.set('Access-Control-Allow-Credentials', 'true')
+    // credentialsを使う場合はワイルドカードオリジンは使用不可
+    if (origin && allowedOrigins.includes(origin)) {
+      response.headers.set('Access-Control-Allow-Credentials', 'true')
+    }
 
     return response
   }

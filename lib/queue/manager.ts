@@ -198,10 +198,24 @@ export class QueueManager {
     try {
       const cutoffTime = new Date(Date.now() - QUEUE_CONFIG.CLEANUP_INTERVAL_MS)
       
-      // TODO: 古いジョブ削除クエリの実装
-      logger.info('Old jobs cleanup initiated', { cutoffTime })
+      // 古いジョブを削除
+      const { supabaseAdmin } = await import('@/lib/supabase/client')
+      const { data: oldJobs, error } = await supabaseAdmin
+        .from('generation_queue')
+        .delete()
+        .or(`status.eq.completed,status.eq.failed`)
+        .lt('created_at', cutoffTime.toISOString())
+        .select('id')
       
-      return 0 // 削除されたジョブ数
+      if (error) {
+        logger.error('Failed to cleanup old jobs', { error })
+        return 0
+      }
+      
+      const deletedCount = oldJobs?.length || 0
+      logger.info('Old jobs cleaned up', { cutoffTime, deletedCount })
+      
+      return deletedCount
 
     } catch (error) {
       logger.error('Job cleanup failed', { error })
@@ -258,7 +272,23 @@ export class QueueManager {
   static async cancelJob(jobId: string, userId: string): Promise<boolean> {
     try {
       // セキュリティ：ユーザーは自分のジョブのみ取り消し可能
-      // TODO: 所有者チェック機能の実装
+      const { supabaseAdmin } = await import('@/lib/supabase/client')
+      const { data: job, error: fetchError } = await supabaseAdmin
+        .from('generation_queue')
+        .select('user_id')
+        .eq('id', jobId)
+        .single()
+      
+      if (fetchError || !job) {
+        logger.warn('Job not found for cancellation', { jobId, userId })
+        return false
+      }
+      
+      // 所有者チェック
+      if (job.user_id !== userId) {
+        logger.warn('Unauthorized job cancellation attempt', { jobId, userId, ownerId: job.user_id })
+        return false
+      }
       
       await QueueQueries.updateJobStatus(jobId, {
         status: 'failed',
@@ -282,10 +312,30 @@ export class QueueManager {
       const stuckJobsThreshold = 5 * 60 * 1000 // 5分以上処理中のジョブ
       const stuckTime = new Date(Date.now() - stuckJobsThreshold)
       
-      // TODO: スタックしたジョブの検出・解決
-      logger.info('Deadlock resolution initiated', { stuckTime })
+      // スタックしたジョブを検出してリセット
+      const { supabaseAdmin } = await import('@/lib/supabase/client')
+      const { data: stuckJobs, error } = await supabaseAdmin
+        .from('generation_queue')
+        .update({
+          status: 'pending',
+          retry_count: 0,
+          error_message: 'Reset due to processing timeout'
+        })
+        .eq('status', 'processing')
+        .lt('processed_at', stuckTime.toISOString())
+        .select('id')
       
-      return 0 // 解決されたジョブ数
+      if (error) {
+        logger.error('Failed to resolve deadlocks', { error })
+        return 0
+      }
+      
+      const resolvedCount = stuckJobs?.length || 0
+      if (resolvedCount > 0) {
+        logger.warn('Resolved deadlocked jobs', { stuckTime, resolvedCount, jobIds: stuckJobs?.map(j => j.id) })
+      }
+      
+      return resolvedCount
 
     } catch (error) {
       logger.error('Deadlock resolution failed', { error })

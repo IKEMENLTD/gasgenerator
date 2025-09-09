@@ -175,7 +175,7 @@ export class ApiResponseBuilder {
   }
 
   /**
-   * リダイレクトレスポンス
+   * リダイレクトレスポンス（セキュリティ検証付き）
    */
   static redirect(
     url: string,
@@ -183,17 +183,48 @@ export class ApiResponseBuilder {
       statusCode?: 301 | 302 | 303 | 307 | 308
       requestId?: string
       headers?: HeadersInit
+      allowExternal?: boolean
+      baseDomain?: string
     } = {}
   ): NextResponse {
-    const { statusCode = 302, requestId = generateRequestId(), headers = {} } = options
+    const { 
+      statusCode = 302, 
+      requestId = generateRequestId(), 
+      headers = {},
+      allowExternal = false,
+      baseDomain
+    } = options
+
+    // URLValidatorをインポート
+    const { URLValidator } = require('@/lib/utils/url-validator')
+    
+    // URL検証
+    if (!URLValidator.isValidRedirectURL(url, { allowExternal, baseDomain })) {
+      logger.warn('Invalid redirect URL blocked', {
+        requestId,
+        url,
+        allowExternal
+      })
+      
+      // 安全なフォールバックURL
+      const safeUrl = URLValidator.createSafeRedirectURL('/', baseDomain)
+      
+      return NextResponse.redirect(safeUrl, {
+        status: statusCode,
+        headers
+      })
+    }
+
+    // URLのサニタイズ
+    const sanitizedUrl = URLValidator.sanitizeURL(url)
 
     logger.info('API redirect response', {
       requestId,
-      url,
+      url: sanitizedUrl,
       statusCode
     })
 
-    return NextResponse.redirect(url, {
+    return NextResponse.redirect(sanitizedUrl, {
       status: statusCode,
       headers
     })

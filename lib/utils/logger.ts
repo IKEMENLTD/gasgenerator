@@ -4,7 +4,7 @@
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 interface LogContext {
-  [key: string]: any
+  [key: string]: unknown
 }
 
 interface LogEntry {
@@ -73,29 +73,71 @@ class Logger {
     return JSON.stringify(entry)
   }
 
-  // 機密情報をマスキング
+  // 機密情報をマスキング（強化版）
   private sanitizeContext(context: LogContext): LogContext {
-    const sensitiveKeys = ['password', 'token', 'secret', 'key', 'authorization', 'api_key', 'apikey', 'auth']
-    const sanitized = this.deepClone(context)
-
-    for (const key of Object.keys(sanitized)) {
-      const lowerKey = key.toLowerCase()
-      if (sensitiveKeys.some(sensitive => lowerKey.includes(sensitive))) {
-        sanitized[key] = '[REDACTED]'
+    const sensitiveKeys = [
+      'password', 'token', 'secret', 'key', 'authorization', 
+      'api_key', 'apikey', 'auth', 'credential', 'private',
+      'access_token', 'refresh_token', 'bearer', 'session',
+      'cookie', 'stripe', 'webhook_secret', 'encryption'
+    ]
+    
+    // 機密パターン（正規表現）
+    const sensitivePatterns = [
+      /sk-[a-zA-Z0-9-_]{20,}/g, // Stripeキー
+      /sk_[a-zA-Z0-9]{20,}/g, // Stripe APIキー
+      /U[0-9a-f]{32}/g, // LINE User ID
+      /Bearer\s+[a-zA-Z0-9-._~+/]+=*/g, // Bearer token
+      /eyJ[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+/g, // JWT
+    ]
+    
+    const sanitized = this.deepClone(context) as LogContext
+    
+    // 再帰的にサニタイズ
+    const sanitizeValue = (value: any): any => {
+      if (typeof value === 'string') {
+        // パターンマッチング
+        let sanitizedValue = value
+        for (const pattern of sensitivePatterns) {
+          sanitizedValue = sanitizedValue.replace(pattern, '[REDACTED]')
+        }
+        
+        // スタックトレースの削除（本番環境のみ）
+        if (process.env.NODE_ENV === 'production' && value.includes('at ')) {
+          return '[STACK_TRACE_REMOVED]'
+        }
+        
+        return sanitizedValue
+      } else if (Array.isArray(value)) {
+        return value.map(item => sanitizeValue(item))
+      } else if (typeof value === 'object' && value !== null) {
+        const result: any = {}
+        for (const key of Object.keys(value)) {
+          const lowerKey = key.toLowerCase()
+          if (sensitiveKeys.some(sensitive => lowerKey.includes(sensitive))) {
+            result[key] = '[REDACTED]'
+          } else {
+            result[key] = sanitizeValue(value[key])
+          }
+        }
+        return result
       }
+      return value
     }
 
-    return sanitized
+    return sanitizeValue(sanitized)
   }
 
-  private deepClone(obj: any): any {
+  private deepClone(obj: unknown): unknown {
     if (obj === null || typeof obj !== 'object') return obj
     if (obj instanceof Date) return new Date(obj.getTime())
     if (obj instanceof Array) return obj.map(item => this.deepClone(item))
     
-    const cloned: any = {}
+    const cloned: Record<string, unknown> = {}
     for (const key in obj) {
-      cloned[key] = this.deepClone(obj[key])
+      if (obj.hasOwnProperty(key)) {
+        cloned[key] = this.deepClone((obj as Record<string, unknown>)[key])
+      }
     }
     return cloned
   }
@@ -118,6 +160,11 @@ class Logger {
   error(message: string, context?: LogContext): void {
     if (!this.shouldLog('error')) return
     console.error(this.formatLogEntry('error', message, context))
+  }
+
+  critical(message: string, context?: LogContext): void {
+    // criticalはerrorと同じレベルで処理
+    console.error(this.formatLogEntry('error', `[CRITICAL] ${message}`, context))
   }
 
   // リクエスト用の特別メソッド

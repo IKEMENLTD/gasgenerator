@@ -1,26 +1,81 @@
 import { NextResponse } from 'next/server'
-import { visionRateLimiter } from '@/lib/vision/rate-limiter'
+import { databaseRateLimiter } from '@/lib/vision/database-rate-limiter'
 import { logger } from '@/lib/utils/logger'
-
-// 管理者認証（簡易版）
-const ADMIN_TOKEN = process.env.ADMIN_API_TOKEN || 'your-secure-admin-token'
+import { JWTManager } from '@/lib/auth/jwt-manager'
 
 export async function GET(request: Request) {
   try {
-    // 認証チェック
+    // JWT認証チェック（強化版）
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      logger.warn('Missing authorization header in admin request')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    const token = authHeader.substring(7)
-    if (token !== ADMIN_TOKEN) {
-      logger.warn('Invalid admin token attempt')
+    const token = authHeader.substring(7).trim()
+    
+    // トークンの形式チェック
+    if (!token || token.length < 20) {
+      logger.warn('Invalid token format in admin request')
+      return NextResponse.json({ error: 'Invalid token format' }, { status: 401 })
+    }
+    
+    // トークン検証（タイミング攻撃対策付き）
+    const startTime = Date.now()
+    const verification = JWTManager.verifyToken(token)
+    
+    // 最小処理時間を保証（タイミング攻撃対策）
+    const elapsedTime = Date.now() - startTime
+    if (elapsedTime < 10) {
+      await new Promise(resolve => setTimeout(resolve, 10 - elapsedTime))
+    }
+    
+    if (!verification.valid) {
+      logger.warn('Invalid admin token attempt', { 
+        error: verification.error,
+        ip: request.headers.get('x-forwarded-for') || 'unknown'
+      })
       return NextResponse.json({ error: 'Invalid token' }, { status: 403 })
     }
     
-    // Vision API使用統計を取得
-    const stats = await visionRateLimiter.getUsageStats()
+    // トークン有効期限チェック
+    const payload = verification.payload
+    if (!payload || !payload.exp || payload.exp * 1000 < Date.now()) {
+      logger.warn('Expired admin token', { userId: payload?.sub })
+      return NextResponse.json({ error: 'Token expired' }, { status: 403 })
+    }
+    
+    // 管理者権限チェック（厳密）
+    if (payload.role !== 'admin' || !payload.permissions?.includes('view_stats')) {
+      logger.warn('Insufficient permissions for admin access', { 
+        userId: payload.sub,
+        role: payload.role,
+        permissions: payload.permissions
+      })
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
+    
+    // IPアドレスチェック（オプション）
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                    request.headers.get('x-real-ip')
+    if (clientIP && process.env.ADMIN_ALLOWED_IPS) {
+      const allowedIPs = process.env.ADMIN_ALLOWED_IPS.split(',')
+      if (!allowedIPs.includes(clientIP)) {
+        logger.warn('Admin access from unauthorized IP', { 
+          userId: payload.sub,
+          ip: clientIP 
+        })
+        return NextResponse.json({ error: 'Access denied from this IP' }, { status: 403 })
+      }
+    }
+    
+    // Vision API使用統計を取得（全ユーザー）
+    const globalStats = await databaseRateLimiter.checkGlobalLimit()
+    const stats = {
+      ...globalStats,
+      alertLevel: globalStats.currentUsage >= globalStats.alertThreshold ? 'warning' : 
+                  globalStats.currentUsage >= globalStats.monthlyLimit ? 'critical' : 'normal'
+    }
     
     // アラート状態に応じた詳細情報
     const alerts = []

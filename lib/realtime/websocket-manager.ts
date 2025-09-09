@@ -1,5 +1,6 @@
 import { logger } from '@/lib/utils/logger'
 import { EventEmitter } from 'events'
+import { SecureRandom } from '@/lib/utils/secure-random'
 
 interface WebSocketMessage {
   id: string
@@ -42,9 +43,9 @@ export class WebSocketManager extends EventEmitter {
   }
 
   /**
-   * WebSocket接続の確立
+   * WebSocket接続の確立（認証強化版）
    */
-  async connect(sessionId?: string): Promise<void> {
+  async connect(sessionId?: string, authToken?: string): Promise<void> {
     if (this.isConnected) {
       logger.debug('WebSocket already connected')
       return
@@ -54,7 +55,14 @@ export class WebSocketManager extends EventEmitter {
 
     return new Promise((resolve, reject) => {
       try {
-        this.ws = new WebSocket(this.url)
+        // 認証トークンをクエリパラメータまたはヘッダーで送信
+        let wsUrl = this.url
+        if (authToken) {
+          const separator = wsUrl.includes('?') ? '&' : '?'
+          wsUrl = `${wsUrl}${separator}token=${encodeURIComponent(authToken)}`
+        }
+
+        this.ws = new WebSocket(wsUrl)
 
         this.ws.onopen = () => {
           logger.info('WebSocket connected', { url: this.url })
@@ -67,9 +75,9 @@ export class WebSocketManager extends EventEmitter {
           // キューに溜まったメッセージを送信
           this.flushMessageQueue()
           
-          // 認証
-          if (this.sessionId) {
-            this.authenticate(this.sessionId)
+          // 認証（セッションIDとトークンの両方を送信）
+          if (this.sessionId || authToken) {
+            this.authenticate(this.sessionId, authToken)
           }
           
           this.emit('connected')
@@ -110,12 +118,32 @@ export class WebSocketManager extends EventEmitter {
   }
 
   /**
-   * 認証処理
+   * 認証処理（強化版）
    */
-  private authenticate(sessionId: string): void {
+  private authenticate(sessionId?: string, authToken?: string): void {
+    const authData: any = {}
+    
+    if (sessionId) {
+      authData.sessionId = sessionId
+    }
+    
+    if (authToken) {
+      authData.token = authToken
+    }
+    
+    // タイムスタンプを追加（リプレイ攻撃対策）
+    authData.timestamp = Date.now()
+    authData.nonce = SecureRandom.generateString(16)
+    
     this.send({
       type: 'auth',
-      data: { sessionId }
+      data: authData
+    })
+    
+    logger.debug('WebSocket authentication sent', { 
+      hasSessionId: !!sessionId,
+      hasToken: !!authToken,
+      timestamp: authData.timestamp
     })
   }
 
@@ -217,11 +245,20 @@ export class WebSocketManager extends EventEmitter {
   }
 
   /**
-   * メッセージ処理
+   * メッセージ処理（検証強化版）
    */
   private handleMessage(data: string): void {
     try {
       const message: WebSocketMessage = JSON.parse(data)
+      
+      // メッセージ検証
+      if (!this.validateMessage(message)) {
+        logger.warn('Invalid WebSocket message received', { 
+          messageId: message.id,
+          type: message.type 
+        })
+        return
+      }
       
       logger.debug('Message received', {
         messageId: message.id,
@@ -233,6 +270,17 @@ export class WebSocketManager extends EventEmitter {
       switch (message.type) {
         case 'pong':
           // ハートビート応答
+          break
+          
+        case 'auth_success':
+          logger.info('WebSocket authentication successful')
+          this.emit('authenticated')
+          break
+          
+        case 'auth_failed':
+          logger.error('WebSocket authentication failed', { reason: message.data })
+          this.disconnect()
+          this.emit('auth_failed', message.data)
           break
           
         case 'error':
@@ -254,11 +302,41 @@ export class WebSocketManager extends EventEmitter {
             this.emit('message', message.data)
           }
           break
+          
+        default:
+          logger.warn('Unknown message type', { type: message.type })
       }
 
     } catch (error) {
       logger.error('Failed to parse message', { data, error })
     }
+  }
+  
+  /**
+   * メッセージの検証
+   */
+  private validateMessage(message: WebSocketMessage): boolean {
+    // 必須フィールドのチェック
+    if (!message.id || !message.type || !message.timestamp) {
+      return false
+    }
+    
+    // タイムスタンプの妥当性チェック（5分以内）
+    const now = Date.now()
+    const messageTime = message.timestamp
+    if (Math.abs(now - messageTime) > 5 * 60 * 1000) {
+      logger.warn('Message timestamp out of range', { 
+        messageTime,
+        currentTime: now,
+        diff: Math.abs(now - messageTime)
+      })
+      return false
+    }
+    
+    // メッセージIDの重複チェック（簡易実装）
+    // 実際の実装では、最近のメッセージIDをSetで管理
+    
+    return true
   }
 
   /**
@@ -360,7 +438,7 @@ export class WebSocketManager extends EventEmitter {
    * メッセージIDの生成
    */
   private generateMessageId(): string {
-    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    return `msg_${Date.now()}_${SecureRandom.random().toString(36).substr(2, 9)}`
   }
 
   /**

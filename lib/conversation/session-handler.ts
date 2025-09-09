@@ -191,11 +191,23 @@ export class SessionHandler {
     try {
       const cutoffTime = new Date(Date.now() - DATABASE_CONFIG.MAX_SESSION_AGE_HOURS * 60 * 60 * 1000)
       
-      // Note: 実際のクリーンアップクエリはSupabaseで直接実行
-      // ここではログのみ
-      logger.info('Session cleanup initiated', { cutoffTime })
+      // 期限切れセッションを削除
+      const { supabaseAdmin } = await import('@/lib/supabase/client')
+      const { data: deletedSessions, error } = await supabaseAdmin
+        .from('sessions')
+        .delete()
+        .lt('updated_at', cutoffTime.toISOString())
+        .select('id')
       
-      return 0 // TODO: 実際の削除数を返す
+      if (error) {
+        logger.error('Failed to delete expired sessions', { error })
+        return 0
+      }
+      
+      const deletedCount = deletedSessions?.length || 0
+      logger.info('Session cleanup completed', { cutoffTime, deletedCount })
+      
+      return deletedCount
 
     } catch (error) {
       logger.error('Session cleanup failed', { error })
@@ -216,11 +228,34 @@ export class SessionHandler {
       const user = await UserQueries.findByLineUserId(lineUserId)
       if (!user) return null
 
-      // TODO: 詳細な統計クエリの実装
+      // 詳細な統計を取得
+      const { supabaseAdmin } = await import('@/lib/supabase/client')
+      const { data: sessionStats, error } = await supabaseAdmin
+        .from('sessions')
+        .select('status, step_data')
+        .eq('user_id', user.id)
+      
+      if (error) {
+        logger.error('Failed to get session stats', { error })
+        return {
+          totalSessions: user.total_requests,
+          completedSessions: 0,
+          averageSteps: 0,
+          lastActiveAt: user.last_active_at
+        }
+      }
+      
+      const completedSessions = sessionStats?.filter(s => s.status === 'completed').length || 0
+      const totalSteps = sessionStats?.reduce((sum, s) => {
+        const steps = s.step_data?.currentStep || 0
+        return sum + steps
+      }, 0) || 0
+      const averageSteps = sessionStats?.length ? Math.round(totalSteps / sessionStats.length) : 0
+      
       return {
-        totalSessions: user.total_requests,
-        completedSessions: 0,
-        averageSteps: 0,
+        totalSessions: sessionStats?.length || user.total_requests,
+        completedSessions,
+        averageSteps,
         lastActiveAt: user.last_active_at
       }
 

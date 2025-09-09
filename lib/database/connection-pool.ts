@@ -167,17 +167,17 @@ export class DatabaseConnectionPool {
       return
     }
 
-    connection.inUse = false
-    connection.lastUsed = Date.now()
-
-    // 待機中のリクエストがあれば処理
-    if (this.waitingQueue.length > 0) {
-      const resolve = this.waitingQueue.shift()
-      if (resolve) {
-        connection.inUse = true
-        connection.useCount++
-        resolve(client)
-      }
+    // アトミックな操作として実行（レースコンディション対策）
+    const resolve = this.waitingQueue.shift()
+    
+    if (resolve) {
+      // 同じ接続を即座に再利用
+      connection.useCount++
+      resolve(client)
+    } else {
+      // 待機中のリクエストがない場合のみ解放
+      connection.inUse = false
+      connection.lastUsed = Date.now()
     }
   }
 

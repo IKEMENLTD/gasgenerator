@@ -1,12 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
-    // ビルド時の型チェックを無効化
-    ignoreBuildErrors: true,
+    // 常に型チェックを実施（セキュリティのため）
+    ignoreBuildErrors: false,
   },
   eslint: {
-    // ビルド時のESLintを無効化
-    ignoreDuringBuilds: true,
+    // 常にESLintチェックを実施（セキュリティのため）
+    ignoreDuringBuilds: false,
   },
   swcMinify: true,
   experimental: {

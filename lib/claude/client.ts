@@ -1,6 +1,7 @@
 import { logger } from '@/lib/utils/logger'
 import { UsageQueries } from '@/lib/supabase/queries'
 import { CLAUDE_CONFIG, TIMEOUTS, EXTERNAL_API_CONFIG } from '@/lib/constants/config'
+import EnvironmentValidator from '@/lib/config/environment'
 import type { 
   ClaudeApiRequest, 
   ClaudeApiResponse, 
@@ -14,12 +15,9 @@ export class ClaudeApiClient {
   private config: ClaudeConfig
 
   constructor() {
-    this.apiKey = process.env.ANTHROPIC_API_KEY!
+    // 環境変数を安全に取得（undefinedの場合は例外が発生）
+    this.apiKey = EnvironmentValidator.getRequired('ANTHROPIC_API_KEY')
     this.baseUrl = EXTERNAL_API_CONFIG.ANTHROPIC.API_BASE_URL
-    
-    if (!this.apiKey) {
-      throw new Error('ANTHROPIC_API_KEY is required')
-    }
 
     this.config = {
       apiKey: this.apiKey,
@@ -39,7 +37,7 @@ export class ClaudeApiClient {
     maxRetries: number = 3
   ): Promise<ClaudeApiResponse> {
     const startTime = Date.now()
-    let lastError: any = null
+    let lastError: Error | null = null
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -210,7 +208,7 @@ export class ClaudeApiClient {
   /**
    * エラータイプ判定
    */
-  private getErrorType(error: any): string {
+  private getErrorType(error: unknown): string {
     const errorMessage = String(error)
     
     if (errorMessage.includes('429') || errorMessage.includes('rate')) {
@@ -232,14 +230,14 @@ export class ClaudeApiClient {
   /**
    * レート制限エラーかチェック
    */
-  private isRateLimitError(error: any): boolean {
+  private isRateLimitError(error: unknown): boolean {
     return this.getErrorType(error) === 'rate_limit'
   }
 
   /**
    * リトライ可能なエラーかチェック
    */
-  private isRetryableError(error: any): boolean {
+  private isRetryableError(error: unknown): boolean {
     const errorType = this.getErrorType(error)
     return ['timeout', 'network_error', 'rate_limit'].includes(errorType)
   }
@@ -247,7 +245,7 @@ export class ClaudeApiClient {
   /**
    * 待機時間を計算
    */
-  private calculateWaitTime(attempt: number, error: any): number {
+  private calculateWaitTime(attempt: number, error: unknown): number {
     // レート制限の場合は長めに待機
     if (this.isRateLimitError(error)) {
       return Math.pow(4, attempt) * 1000 // 4秒, 16秒, 64秒
@@ -260,7 +258,7 @@ export class ClaudeApiClient {
   /**
    * エラーメッセージのフォーマット
    */
-  private formatError(error: any): string {
+  private formatError(error: unknown): string {
     if (error instanceof Error) {
       return error.message
     }
@@ -295,7 +293,7 @@ export class ClaudeApiClient {
       await this.sendMessage([{
         role: 'user',
         content: 'Test message'
-      }] as any)
+      }])
       return true
       
     } catch (error) {

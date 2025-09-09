@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { logger } from './logger'
 
 // LINE Webhook Event validation
 export const LineWebhookEventSchema = z.object({
@@ -152,7 +153,7 @@ export function validateEnvironment(): void {
   try {
     EnvironmentSchema.parse(process.env)
   } catch (error) {
-    console.error('Environment validation failed:', error)
+    logger.error('Environment validation failed:', { error })
     throw new Error('Invalid environment configuration')
   }
 }
