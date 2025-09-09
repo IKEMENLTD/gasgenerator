@@ -333,6 +333,7 @@ export const databaseRateLimiter = new DatabaseRateLimiter()
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   
   try {
+    const { createClient } = await import('@supabase/supabase-js')
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!

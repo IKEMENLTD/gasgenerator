@@ -39,28 +39,7 @@ const recentEventKeys = new Map<string, number>()
 const MAX_CACHE_SIZE = 20 // メモリ節約のため20に制限
 const CACHE_TTL = 10000 // 10秒に短縮
 
-// キャッシュクリーンアップ関数（setIntervalは使わない）
-function cleanupCache() {
-  const now = Date.now()
-  const keysToDelete: string[] = []
-  
-  for (const [key, timestamp] of recentEventKeys.entries()) {
-    if (now - timestamp > CACHE_TTL) {
-      keysToDelete.push(key)
-    }
-  }
-  
-  keysToDelete.forEach(key => recentEventKeys.delete(key))
-  
-  // キャッシュサイズが大きすぎる場合は古いものから削除
-  if (recentEventKeys.size > MAX_CACHE_SIZE) {
-    const entries = Array.from(recentEventKeys.entries())
-      .sort((a, b) => a[1] - b[1])
-    
-    const toRemove = entries.slice(0, entries.length - MAX_CACHE_SIZE)
-    toRemove.forEach(([key]) => recentEventKeys.delete(key))
-  }
-}
+// キャッシュクリーンアップはisDuplicateEvent内で実行
 
 /**
  * LINE Webhook エンドポイント
@@ -175,63 +154,6 @@ export async function POST(req: NextRequest) {
     
     // LINEの再送を防ぐため必ず200を返す
     return NextResponse.json({ success: false }, { status: 200 })
-  }
-}
-
-/**
- * 署名検証（Web Crypto API使用）
- * 注意: この関数は未使用です。lib/utils/crypto.tsのvalidateLineSignatureを使用しています。
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function _validateSignature(body: string, signature: string): Promise<boolean> {
-  try {
-    const channelSecret = process.env.LINE_CHANNEL_SECRET
-    
-    // シークレットが設定されていない場合はエラー
-    if (!channelSecret) {
-      logger.error('Webhook signature validation failed: Missing required configuration')
-      return false
-    }
-    
-    // 署名が提供されていない場合はエラー
-    if (!signature) {
-      logger.error('No signature provided in request')
-      return false
-    }
-    
-    // Web Crypto APIを使用
-    const encoder = new TextEncoder()
-    const key = await crypto.subtle.importKey(
-      'raw',
-      encoder.encode(channelSecret),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    )
-    
-    const signatureBuffer = await crypto.subtle.sign(
-      'HMAC',
-      key,
-      encoder.encode(body)
-    )
-    
-    // Base64エンコード
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)))
-    
-    // タイミング攻撃を防ぐため、固定時間比較を実装
-    const result = timingSafeEqual(base64, signature)
-    
-    if (!result) {
-      logger.warn('Invalid signature detected', {
-        providedSignature: signature.substring(0, 10) + '...',
-        expectedSignature: base64.substring(0, 10) + '...'
-      })
-    }
-    
-    return result
-  } catch (error) {
-    logger.error('Signature validation error', { error })
-    return false
   }
 }
 
