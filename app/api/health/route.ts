@@ -94,7 +94,10 @@ export async function GET() {
 
   // ログ出力
   if (healthStatus.status !== 'healthy') {
-    logger.warn('Health check failed', healthStatus)
+    logger.warn('Health check failed', {
+      status: healthStatus.status,
+      checks: healthStatus.checks
+    })
   }
 
   return NextResponse.json(healthStatus, {
