@@ -324,3 +324,58 @@ export class DatabaseRateLimiter {
 
 // シングルトンインスタンス
 export const databaseRateLimiter = new DatabaseRateLimiter()
+
+// checkGlobalLimit メソッドを追加（互換性のため）
+;(databaseRateLimiter as any).checkGlobalLimit = async () => {
+  // グローバル統計を取得
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  
+  try {
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    
+    // 月間使用量
+    const { count: monthTotal } = await supabaseAdmin
+      .from('vision_usage')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', startOfMonth.toISOString())
+    
+    // 本日の使用量
+    const { count: todayTotal } = await supabaseAdmin
+      .from('vision_usage')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', startOfDay.toISOString())
+    
+    const monthlyLimit = 500
+    const alertThreshold = 400
+    const costPerRequest = 0.01275 // $0.01275 per request
+    
+    return {
+      currentUsage: monthTotal || 0,
+      monthlyLimit,
+      alertThreshold,
+      withinLimit: (monthTotal || 0) < monthlyLimit,
+      alertLevel: (monthTotal || 0) >= alertThreshold ? 'warning' : 
+                  (monthTotal || 0) >= monthlyLimit ? 'critical' : 'normal',
+      monthTotal: monthTotal || 0,
+      todayTotal: todayTotal || 0,
+      estimatedCost: (monthTotal || 0) * costPerRequest
+    }
+  } catch (error) {
+    logger.error('Failed to get global stats', { error })
+    return {
+      currentUsage: 0,
+      monthlyLimit: 500,
+      alertThreshold: 400,
+      withinLimit: true,
+      alertLevel: 'normal',
+      monthTotal: 0,
+      todayTotal: 0,
+      estimatedCost: 0
+    }
+  }
+}
