@@ -95,7 +95,7 @@ export class MigrationManager {
       ON ${this.migrationsTable}(applied_at);
     `
 
-    const { error } = await supabase.rpc('exec_sql', { sql })
+    const { error } = await (supabase as any).rpc('exec_sql', { sql })
     
     if (error) {
       throw new Error(`Failed to create migrations table: ${error.message}`)
@@ -116,7 +116,7 @@ export class MigrationManager {
       throw new Error(`Failed to get applied migrations: ${error.message}`)
     }
 
-    return new Set(data?.map(m => m.version) || [])
+    return new Set(data?.map((m: any) => m.version) || [])
   }
 
   /**
@@ -196,7 +196,7 @@ export class MigrationManager {
 
     try {
       // トランザクション内で実行
-      const { error } = await supabase.rpc('exec_sql', { 
+      const { error } = await (supabase as any).rpc('exec_sql', { 
         sql: migration.sql 
       })
 
@@ -242,7 +242,7 @@ export class MigrationManager {
     success: boolean,
     error?: string
   ): Promise<void> {
-    const { error: insertError } = await supabase
+    const { error: insertError } = await (supabase as any)
       .from(this.migrationsTable)
       .insert({
         version: migration.version,
@@ -284,7 +284,7 @@ export class MigrationManager {
 
     // ロールバック対象の決定
     const targetMigrations = version
-      ? migrations.filter(m => m.version > version)
+      ? migrations.filter((m: any) => m.version > version)
       : [migrations[0]]
 
     for (const migration of targetMigrations) {
@@ -310,7 +310,7 @@ export class MigrationManager {
     try {
       const rollbackSql = await fs.readFile(rollbackPath, 'utf-8')
       
-      const { error } = await supabase.rpc('exec_sql', { 
+      const { error } = await (supabase as any).rpc('exec_sql', { 
         sql: rollbackSql 
       })
 
@@ -382,7 +382,7 @@ export class MigrationManager {
 
     // Supabaseのバックアップ機能を使用
     // 注: これは擬似コードで、実際のSupabase APIに応じて実装が必要
-    const { data, error } = await supabase.rpc('create_backup', {
+    const { data, error } = await (supabase as any).rpc('create_backup', {
       name: backupName
     })
 
@@ -405,7 +405,7 @@ export class MigrationManager {
     logger.info('Restoring database from backup', { backupId })
 
     // Supabaseのリストア機能を使用
-    const { error } = await supabase.rpc('restore_backup', {
+    const { error } = await (supabase as any).rpc('restore_backup', {
       backup_id: backupId
     })
 

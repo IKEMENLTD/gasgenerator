@@ -1,5 +1,5 @@
 import { ConversationContext } from './conversational-flow'
-import { supabaseAdmin } from '../supabase/admin-client'
+import { supabaseAdmin } from '../supabase/client'
 import { logger } from '../utils/logger'
 
 /**
@@ -27,7 +27,7 @@ export class StateRecovery {
         lastActivity: new Date().toISOString()
       }
       
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from(this.TABLE_NAME)
         .upsert({
           user_id: userId,
@@ -61,7 +61,7 @@ export class StateRecovery {
       }
       
       // 復元した状態を返す
-      return data.context as ConversationContext
+      return (data as any).context as ConversationContext
       
     } catch (error) {
       logger.error('State restore error', { error })
@@ -145,12 +145,12 @@ export class HybridSessionStore {
     this.lastSave.delete(userId)
     
     // DBからも削除（非同期）
-    supabaseAdmin
+    ;(supabaseAdmin as any)
       .from('conversation_states')
       .delete()
       .eq('user_id', userId)
       .then(() => logger.debug('Session deleted from DB', { userId }))
-      .catch(err => logger.error('DB delete failed', { err }))
+      .catch((err: any) => logger.error('DB delete failed', { err }))
   }
   
   /**

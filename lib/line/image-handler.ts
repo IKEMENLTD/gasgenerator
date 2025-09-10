@@ -9,7 +9,6 @@ export class LineImageHandler {
   
   // メモリ制限設定
   private static readonly MAX_CONCURRENT_IMAGES = 2 // 同時処理画像数
-  private static readonly MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
   private static readonly MAX_TOTAL_MEMORY = 50 * 1024 * 1024 // 合計50MBまで
   
   private static currentProcessing = 0
@@ -106,9 +105,9 @@ export class LineImageHandler {
         .eq('display_name', userId)
         .single()
       
-      const isPremium = user?.subscription_status === 'premium' && 
-                       user?.subscription_end_date && 
-                       new Date(user.subscription_end_date) > new Date()
+      const isPremium = (user as any)?.subscription_status === 'premium' && 
+                       (user as any)?.subscription_end_date && 
+                       new Date((user as any).subscription_end_date) > new Date()
       
       // 4. レート制限チェックと事前記録（レースコンディション対策）
       const rateCheck = await databaseRateLimiter.checkAndIncrement(userId, imageHash, isPremium)
@@ -186,14 +185,14 @@ export class LineImageHandler {
       })
       
       // 8. プレースホルダーを実際の結果で更新
-      await databaseRateLimiter.updateAnalysisResult(
-        placeholderId,
-        description,
-        {
-          imageSize: buffer.length,
+      if (placeholderId) {
+        await databaseRateLimiter.updateAnalysisResult(
+          placeholderId,
+          description,
+          'success',
           processingTime
-        }
-      )
+        )
+      }
       
       // 9. 解析結果を返信（残り回数も表示）
       const statusText = rateCheck.remainingToday !== undefined 

@@ -3,7 +3,6 @@ import { logger } from '@/lib/utils/logger'
 import { QUEUE_CONFIG } from '@/lib/constants/config'
 import { RetryHandler } from '@/lib/utils/retry-handler'
 import { AppError } from '@/lib/errors/app-error'
-import { DatabaseTransaction } from '@/lib/database/transaction'
 import type { QueueJob, QueueJobInsert } from '@/types/database'
 import type { CodeGenerationRequest } from '@/types/claude'
 
@@ -129,19 +128,28 @@ export class QueueManager {
    */
   static async failJob(jobId: string, errorMessage: string, shouldRetry: boolean = true): Promise<void> {
     try {
-      // ジョブ情報を取得
-      const job = await QueueQueries.getJob(jobId)
-      if (!job) {
+      // ジョブ情報を取得（直接Supabaseクエリ）
+      const { supabaseAdmin } = await import('@/lib/supabase/client')
+      const { data: job, error: fetchError } = await supabaseAdmin
+        .from('generation_queue')
+        .select('*')
+        .eq('id', jobId)
+        .single()
+      
+      if (fetchError || !job) {
         throw new Error('Job not found')
       }
 
-      const retryCount = (job.retry_count || 0) + 1
-      const maxRetries = job.max_retries || 3
+      const retryCount = ((job as any).retry_count || 0) + 1
+      const maxRetries = (job as any).max_retries || 3
 
       // リトライ可能かチェック
       if (shouldRetry && retryCount < maxRetries) {
         // リトライカウントを更新してpendingに戻す
-        await QueueQueries.retryJob(jobId, retryCount)
+        await QueueQueries.updateJobStatus(jobId, {
+          status: 'pending',
+          retry_count: retryCount
+        } as any)
         
         logger.warn('Job marked for retry', { 
           jobId, 
@@ -177,8 +185,26 @@ export class QueueManager {
     totalToday: number
   }> {
     try {
-      const stats = await QueueQueries.getQueueStats()
-      return stats
+      // 直接Supabaseクエリで統計を取得
+      const { supabaseAdmin } = await import('@/lib/supabase/client')
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      const [pending, processing, completed, failed, totalToday] = await Promise.all([
+        supabaseAdmin.from('generation_queue').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabaseAdmin.from('generation_queue').select('*', { count: 'exact', head: true }).eq('status', 'processing'),
+        supabaseAdmin.from('generation_queue').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+        supabaseAdmin.from('generation_queue').select('*', { count: 'exact', head: true }).eq('status', 'failed'),
+        supabaseAdmin.from('generation_queue').select('*', { count: 'exact', head: true }).gte('created_at', today.toISOString())
+      ])
+      
+      return {
+        pending: pending.count || 0,
+        processing: processing.count || 0,
+        completed: completed.count || 0,
+        failed: failed.count || 0,
+        totalToday: totalToday.count || 0
+      }
     } catch (error) {
       logger.error('Failed to get queue stats', { error })
       return {
@@ -285,8 +311,8 @@ export class QueueManager {
       }
       
       // 所有者チェック
-      if (job.user_id !== userId) {
-        logger.warn('Unauthorized job cancellation attempt', { jobId, userId, ownerId: job.user_id })
+      if ((job as any).user_id !== userId) {
+        logger.warn('Unauthorized job cancellation attempt', { jobId, userId, ownerId: (job as any).user_id })
         return false
       }
       
@@ -314,7 +340,7 @@ export class QueueManager {
       
       // スタックしたジョブを検出してリセット
       const { supabaseAdmin } = await import('@/lib/supabase/client')
-      const { data: stuckJobs, error } = await supabaseAdmin
+      const { data: stuckJobs, error } = await (supabaseAdmin as any)
         .from('generation_queue')
         .update({
           status: 'pending',
@@ -332,7 +358,7 @@ export class QueueManager {
       
       const resolvedCount = stuckJobs?.length || 0
       if (resolvedCount > 0) {
-        logger.warn('Resolved deadlocked jobs', { stuckTime, resolvedCount, jobIds: stuckJobs?.map(j => j.id) })
+        logger.warn('Resolved deadlocked jobs', { stuckTime, resolvedCount, jobIds: stuckJobs?.map((j: any) => j.id) })
       }
       
       return resolvedCount

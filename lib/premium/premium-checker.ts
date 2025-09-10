@@ -27,7 +27,7 @@ export class PremiumChecker {
       
       // ユーザーが存在しない場合、新規作成
       if (!user) {
-        const { data: newUser, error: insertError } = await supabaseAdmin
+        const { data: newUser, error: insertError } = await (supabaseAdmin as any)
           .from('users')
           .insert({
             display_name: userId,  // display_nameにLINE IDを保存
@@ -58,14 +58,14 @@ export class PremiumChecker {
 
       // 月次リセットチェック
       const now = new Date()
-      const lastReset = user.last_reset_date ? new Date(user.last_reset_date) : null
+      const lastReset = (user as any).last_reset_date ? new Date((user as any).last_reset_date) : null
       const needsReset = !lastReset || 
         lastReset.getMonth() !== now.getMonth() || 
         lastReset.getFullYear() !== now.getFullYear()
 
       if (needsReset) {
         // 月が変わったので使用回数をリセット
-        await supabaseAdmin
+        await (supabaseAdmin as any)
           .from('users')
           .update({
             monthly_usage_count: 0,
@@ -73,16 +73,16 @@ export class PremiumChecker {
           })
           .eq('display_name', userId)
 
-        user.monthly_usage_count = 0
+        ;(user as any).monthly_usage_count = 0
         logger.info('Monthly usage reset for user', { userId })
       }
 
       // プレミアムステータスチェック
-      const isPremium = user.subscription_status === 'premium' && 
-                       user.subscription_end_date && 
-                       new Date(user.subscription_end_date) > now
+      const isPremium = (user as any).subscription_status === 'premium' && 
+                       (user as any).subscription_end_date && 
+                       new Date((user as any).subscription_end_date) > now
 
-      const usageCount = user.monthly_usage_count || 0
+      const usageCount = (user as any).monthly_usage_count || 0
       const limit = isPremium ? this.PREMIUM_MONTHLY_LIMIT : this.FREE_MONTHLY_LIMIT
       const remaining = Math.max(0, limit - usageCount)
 
@@ -129,10 +129,10 @@ export class PremiumChecker {
         .eq('display_name', userId)
         .single()
 
-      const currentCount = user?.monthly_usage_count || 0
-      const totalRequests = user?.total_requests || 0
+      const currentCount = (user as any)?.monthly_usage_count || 0
+      const totalRequests = (user as any)?.total_requests || 0
 
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('users')
         .update({ 
           monthly_usage_count: currentCount + 1,

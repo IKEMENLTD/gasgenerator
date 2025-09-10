@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { ApiResponse, ApiError, ApiMetadata } from '@/types/api-types'
+import { ApiResponse, ApiError } from '@/types/api-types'
 import { generateRequestId } from '@/lib/utils/crypto'
 import { logger } from '@/lib/utils/logger'
 import { SecurityHeaders } from '@/lib/middleware/security-headers'

@@ -192,8 +192,11 @@ export class EnvValidator {
     if (!valid) {
       logger.critical('Environment validation failed:', { errors })
       
-      if (process.env.NODE_ENV === 'production') {
-        process.exit(1)
+      if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
+        if (typeof process.exit === 'function') {
+          process.exit(1)
+        }
+        throw new Error('Environment validation failed')
       }
     }
   }

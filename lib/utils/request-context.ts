@@ -30,7 +30,7 @@ class RequestContextManager {
       // ブラウザ環境では簡易的な実装
       this.storage = {
         getStore: () => undefined,
-        run: (store: any, callback: any) => callback(),
+        run: (_store: any, callback: any) => callback(),
         enterWith: () => {},
         disable: () => {},
         exit: () => {}

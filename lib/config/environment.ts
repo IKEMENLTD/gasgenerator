@@ -206,9 +206,12 @@ if (typeof window === 'undefined') {
     console.error('アプリケーションを起動できません。.env.local ファイルを確認してください。')
     console.error('='.repeat(60))
     
-    // 本番環境では起動を停止
-    if (process.env.NODE_ENV === 'production') {
-      process.exit(1)
+    // 本番環境では起動を停止（Edge Runtimeでは使用不可）
+    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
+      if (typeof process.exit === 'function') {
+        process.exit(1)
+      }
+      throw new Error('環境変数の設定エラー')
     }
   }
   

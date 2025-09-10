@@ -338,9 +338,9 @@ export class TaskScheduler {
    * タスクの保存
    */
   private async saveTask(task: ScheduledTask): Promise<void> {
-    const { handler, ...taskData } = task
+    // handlerを除外してDBに保存
     
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('scheduled_tasks')
       .upsert({
         id: task.id,
@@ -365,7 +365,7 @@ export class TaskScheduler {
    * 実行履歴の保存
    */
   private async saveExecution(execution: TaskExecution): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('task_executions')
       .insert({
         task_id: execution.taskId,
@@ -398,8 +398,8 @@ export class TaskScheduler {
     // タスクの復元（ハンドラーは別途登録が必要）
     for (const taskData of data || []) {
       logger.info('Task loaded from database', {
-        taskId: taskData.id,
-        name: taskData.name
+        taskId: (taskData as any).id,
+        name: (taskData as any).name
       })
     }
   }

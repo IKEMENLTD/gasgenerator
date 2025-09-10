@@ -94,7 +94,7 @@ export class DatabaseTransaction {
   ): Promise<void> {
     await this.executeInTransaction(async (client) => {
       // 1. キューのステータス更新
-      const { error: queueError } = await client
+      const { error: queueError } = await (client as any)
         .from('generation_queue')
         .update({
           status: 'completed',
@@ -106,7 +106,7 @@ export class DatabaseTransaction {
       if (queueError) throw queueError
       
       // 2. 生成済みコードの記録
-      const { error: codeError } = await client
+      const { error: codeError } = await (client as any)
         .from('codes_generated')
         .insert({
           user_id: userId,
@@ -119,7 +119,7 @@ export class DatabaseTransaction {
       if (codeError) throw codeError
       
       // 3. 使用状況の更新
-      const { error: usageError } = await client
+      const { error: usageError } = await (client as any)
         .from('claude_usage')
         .insert({
           user_id: userId,

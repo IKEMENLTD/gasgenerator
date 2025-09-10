@@ -130,7 +130,6 @@ export class VisionRateLimiter {
         .limit(1)
       
       if (duplicates && duplicates.length > 0) {
-        const duplicate = duplicates[0]
         logger.info('Duplicate image detected - allowing retry', { userId, imageHash })
         // 重複でもカウントは消費するが、再解析は許可（エラー解決のため）
         // コメントアウトして重複チェックを無効化
@@ -174,7 +173,7 @@ export class VisionRateLimiter {
         }
       }
       
-      const todayCount = usageRecords?.filter(record => 
+      const todayCount = usageRecords?.filter((record: any) => 
         record.status === 'completed' || 
         (record.status === 'processing' && record.created_at >= fiveMinutesAgo)
       ).length || 0
@@ -183,8 +182,8 @@ export class VisionRateLimiter {
         userId,
         todayCount,
         totalRecords: usageRecords?.length || 0,
-        completedRecords: usageRecords?.filter(r => r.status === 'completed').length || 0,
-        processingRecords: usageRecords?.filter(r => r.status === 'processing').length || 0,
+        completedRecords: usageRecords?.filter((r: any) => r.status === 'completed').length || 0,
+        processingRecords: usageRecords?.filter((r: any) => r.status === 'processing').length || 0,
         isPremium,
         dailyLimit: isPremium ? this.LIMITS.PREMIUM.daily : this.LIMITS.FREE.daily
       })
@@ -225,7 +224,7 @@ export class VisionRateLimiter {
         }
       }
       
-      const monthCount = monthRecords?.filter(record => 
+      const monthCount = monthRecords?.filter((record: any) => 
         record.status === 'completed' || 
         (record.status === 'processing' && record.created_at >= fiveMinutesAgo)
       ).length || 0
@@ -270,7 +269,7 @@ export class VisionRateLimiter {
         .select('status, created_at')
         .gte('created_at', startOfMonth.toISOString())
       
-      const globalCount = globalRecords?.filter(record => 
+      const globalCount = globalRecords?.filter((record: any) => 
         record.status === 'completed' || 
         (record.status === 'processing' && record.created_at >= fiveMinutesAgo)
       ).length || 0
@@ -361,11 +360,11 @@ export class VisionRateLimiter {
             .limit(1)
           
           if (existing && existing.length > 0) {
-            logger.warn('Duplicate processing detected', { userId, imageHash, existingId: existing[0].id })
-            return existing[0].id // 既存のプレースホルダーを再利用
+            logger.warn('Duplicate processing detected', { userId, imageHash, existingId: (existing[0] as any).id })
+            return (existing[0] as any).id // 既存のプレースホルダーを再利用
           }
           
-          const { data, error } = await supabaseAdmin
+          const { data, error } = await (supabaseAdmin as any)
             .from('vision_usage')
             .insert({
               user_id: userId,
@@ -410,7 +409,7 @@ export class VisionRateLimiter {
     }
   ): Promise<void> {
     try {
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('vision_usage')
         .update({
           analysis_result: analysisResult.substring(0, 1000),
@@ -511,7 +510,7 @@ export class VisionRateLimiter {
    * 画像のハッシュ値を計算
    */
   calculateImageHash(imageBuffer: Buffer): string {
-    return crypto.createHash('sha256').update(imageBuffer).digest('hex')
+    return crypto.createHash('sha256').update(imageBuffer as any).digest('hex')
   }
   
   /**

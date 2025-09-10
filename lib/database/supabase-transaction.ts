@@ -77,13 +77,13 @@ export class SupabaseTransaction {
       }
       
       // 2. 既にプレミアムの場合はスキップ（冪等性）
-      if (currentUser?.subscription_status === 'premium') {
+      if ((currentUser as any)?.subscription_status === 'premium') {
         logger.info('User already premium, skipping update', { userId })
         return
       }
       
       // 3. ユーザーステータスを更新
-      const { error: updateError } = await supabaseAdmin
+      const { error: updateError } = await (supabaseAdmin as any)
         .from('users')
         .update({
           subscription_status: 'premium',
@@ -100,7 +100,7 @@ export class SupabaseTransaction {
       }
       
       // 4. 使用履歴をリセット
-      const { error: resetError } = await supabaseAdmin
+      const { error: resetError } = await (supabaseAdmin as any)
         .from('users')
         .update({
           monthly_usage_count: 0,
@@ -133,7 +133,7 @@ export class SupabaseTransaction {
   ): Promise<void> {
     try {
       // 1. キューステータスを更新
-      const { error: queueError } = await supabaseAdmin
+      const { error: queueError } = await (supabaseAdmin as any)
         .from('processing_queue')
         .update({
           status: 'completed',
@@ -147,7 +147,7 @@ export class SupabaseTransaction {
       }
       
       // 2. 生成されたコードを保存
-      const { error: codeError } = await supabaseAdmin
+      const { error: codeError } = await (supabaseAdmin as any)
         .from('generated_codes')
         .insert({
           user_id: userId,
@@ -164,7 +164,7 @@ export class SupabaseTransaction {
       
       if (codeError) {
         // コード保存失敗時はキューを失敗状態に
-        await supabaseAdmin
+        await (supabaseAdmin as any)
           .from('processing_queue')
           .update({
             status: 'failed',
@@ -176,7 +176,7 @@ export class SupabaseTransaction {
       }
       
       // 3. ユーザーの使用回数を増加
-      const { error: usageError } = await supabaseAdmin
+      const { error: usageError } = await (supabaseAdmin as any)
         .from('users')
         .update({
           total_requests: metadata.totalRequests + 1,
@@ -214,7 +214,7 @@ export class SupabaseTransaction {
   ): Promise<boolean> {
     try {
       // Supabaseのフィルター機能を使って楽観的ロックを実装
-      let query = supabaseAdmin
+      let query = (supabaseAdmin as any)
         .from(table)
         .update(updates)
         .eq('id', id)

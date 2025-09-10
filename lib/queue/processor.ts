@@ -9,7 +9,6 @@ import { CodeQueries } from '@/lib/supabase/queries'
 import { logger } from '@/lib/utils/logger'
 import { QUEUE_CONFIG } from '@/lib/constants/config'
 import { ConversationSessionStore } from '@/lib/conversation/session-store'
-import type { QueueJob } from '@/types/database'
 import type { CodeGenerationRequest } from '@/types/claude'
 
 export class QueueProcessor {

@@ -221,7 +221,7 @@ export class MemoryManager {
    * 全キャッシュをクリア
    */
   clearAllCaches(): void {
-    for (const [name, cache] of this.caches.entries()) {
+    for (const [, cache] of this.caches.entries()) {
       cache.clear()
     }
     logger.info('All caches cleared')

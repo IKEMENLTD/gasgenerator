@@ -1,4 +1,18 @@
-import { FlexMessage, FlexBubble } from '@line/bot-sdk'
+// Type definitions for LINE SDK
+interface FlexMessage {
+  type: 'flex'
+  altText: string
+  contents: FlexBubble
+}
+
+interface FlexBubble {
+  type: 'bubble'
+  size?: 'nano' | 'micro' | 'kilo' | 'mega' | 'giga'
+  header?: any
+  body?: any
+  footer?: any
+  styles?: any
+}
 
 export class FlexCodeTemplate {
   /**
@@ -170,9 +184,8 @@ export class FlexCodeTemplate {
           text: 'エンジニアに相談する'
         },
         style: 'primary',
-        height: 'sm',
-        color: '#FF6B6B'
-      })
+        height: 'sm'
+      } as any)
     }
 
     buttons.push({
@@ -180,7 +193,7 @@ export class FlexCodeTemplate {
       action: {
         type: 'camera',
         label: '📸 エラー画面を送信'
-      },
+      } as any,
       style: 'secondary',
       height: 'sm'
     })

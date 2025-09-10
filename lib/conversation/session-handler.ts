@@ -42,29 +42,30 @@ export class SessionHandler {
       // 既存のアクティブセッションがあれば完了
       const existingSession = await SessionQueries.getSession((user as any).id || lineUserId)
       if (existingSession) {
-        await SessionQueries.updateSession((existingSession as any).id || '', { status: 'completed' })
+        await SessionQueries.deleteSession((user as any).id || lineUserId)
         logger.info('Completed existing session', { 
           lineUserId, 
-          sessionId: existingSession.id 
+          sessionId: (existingSession as any).id || '' 
         })
       }
 
       // 新しいセッション作成
-      const newSession = await SessionQueries.createSession(user.id, {
-        status: 'active',
-        current_step: 1,
-        collected_requirements: {}
+      await SessionQueries.setSession((user as any).id || lineUserId, {
+        messages: [],
+        category: '',
+        requirements: {},
+        readyForCode: false
       })
 
       logger.info('Started new conversation session', { 
         lineUserId, 
-        userId: user.id, 
-        sessionId: newSession.id 
+        userId: (user as any).id || lineUserId, 
+        sessionId: lineUserId 
       })
 
       return {
-        userId: user.id,
-        sessionId: newSession.id,
+        userId: (user as any).id || lineUserId,
+        sessionId: lineUserId,
         currentStep: 1,
         requirements: {},
         status: 'active'
@@ -89,40 +90,41 @@ export class SessionHandler {
     }
   ): Promise<ConversationState> {
     try {
-      const session = await SessionQueries.findActiveSession('')
+      const session = await SessionQueries.getSession(sessionId)
       if (!session) {
         throw new Error('Session not found')
       }
 
-      const currentRequirements = session.collected_requirements || {}
+      const currentRequirements = (session as any).collected_requirements || session.requirements || {}
       const updatedRequirements = {
         ...currentRequirements,
         ...stepData.additionalRequirements
       }
 
-      const updatedSession = await SessionQueries.updateSession(sessionId, {
-        current_step: stepData.step || (session.current_step + 1),
+      await SessionQueries.setSession(sessionId, {
+        ...session,
         category: stepData.category || session.category,
-        subcategory: stepData.subcategory || session.subcategory,
-        collected_requirements: updatedRequirements
+        requirements: updatedRequirements
       })
+      
+      const updatedSession = session
 
       logger.info('Advanced session step', { 
         sessionId, 
-        fromStep: session.current_step,
-        toStep: updatedSession.current_step,
-        category: updatedSession.category,
-        subcategory: updatedSession.subcategory
+        fromStep: (session as any).current_step || 1,
+        toStep: stepData.step || ((session as any).current_step || 1) + 1,
+        category: stepData.category || session.category,
+        subcategory: stepData.subcategory || (session as any).subcategory
       })
 
       return {
-        userId: updatedSession.user_id,
-        sessionId: updatedSession.id,
-        currentStep: updatedSession.current_step as 1 | 2 | 3,
+        userId: (updatedSession as any).user_id || sessionId,
+        sessionId: (updatedSession as any).id || sessionId,
+        currentStep: (stepData.step || ((session as any).current_step || 1) + 1) as 1 | 2 | 3,
         category: updatedSession.category || undefined,
-        subcategory: updatedSession.subcategory || undefined,
-        requirements: updatedSession.collected_requirements,
-        status: updatedSession.status
+        subcategory: (updatedSession as any).subcategory || undefined,
+        requirements: updatedRequirements,
+        status: (updatedSession as any).status || 'active'
       }
 
     } catch (error) {
@@ -139,10 +141,13 @@ export class SessionHandler {
     finalRequirements: Record<string, any>
   ): Promise<void> {
     try {
-      await SessionQueries.updateSession(sessionId, {
-        status: 'ready_for_generation',
-        collected_requirements: finalRequirements
-      })
+      const currentSession = await SessionQueries.getSession(sessionId)
+      if (currentSession) {
+        await SessionQueries.setSession(sessionId, {
+          ...currentSession,
+          requirements: finalRequirements
+        })
+      }
 
       logger.info('Session marked ready for generation', { sessionId })
 
@@ -157,7 +162,7 @@ export class SessionHandler {
    */
   static async completeSession(sessionId: string): Promise<void> {
     try {
-      await SessionQueries.completeSession(sessionId)
+      await SessionQueries.deleteSession(sessionId)
       logger.info('Session completed', { sessionId })
 
     } catch (error) {
@@ -171,9 +176,7 @@ export class SessionHandler {
    */
   static async abandonSession(sessionId: string, reason?: string): Promise<void> {
     try {
-      await SessionQueries.updateSession(sessionId, {
-        status: 'abandoned'
-      })
+      await SessionQueries.deleteSession(sessionId)
 
       logger.warn('Session abandoned', { sessionId, reason })
 
@@ -224,7 +227,7 @@ export class SessionHandler {
     lastActiveAt: string
   } | null> {
     try {
-      const user = await UserQueries.findByLineUserId(lineUserId)
+      const user = await UserQueries.createOrUpdate(lineUserId)
       if (!user) return null
 
       // 詳細な統計を取得
@@ -232,30 +235,30 @@ export class SessionHandler {
       const { data: sessionStats, error } = await supabaseAdmin
         .from('sessions')
         .select('status, step_data')
-        .eq('user_id', user.id)
+        .eq('user_id', (user as any).id || lineUserId)
       
       if (error) {
         logger.error('Failed to get session stats', { error })
         return {
-          totalSessions: user.total_requests,
+          totalSessions: (user as any).total_requests || 0,
           completedSessions: 0,
           averageSteps: 0,
-          lastActiveAt: user.last_active_at
+          lastActiveAt: (user as any).last_active_at || new Date().toISOString()
         }
       }
       
-      const completedSessions = sessionStats?.filter(s => s.status === 'completed').length || 0
-      const totalSteps = sessionStats?.reduce((sum, s) => {
+      const completedSessions = sessionStats?.filter((s: any) => s.status === 'completed').length || 0
+      const totalSteps = sessionStats?.reduce((sum, s: any) => {
         const steps = s.step_data?.currentStep || 0
         return sum + steps
       }, 0) || 0
       const averageSteps = sessionStats?.length ? Math.round(totalSteps / sessionStats.length) : 0
       
       return {
-        totalSessions: sessionStats?.length || user.total_requests,
+        totalSessions: sessionStats?.length || (user as any).total_requests || 0,
         completedSessions,
         averageSteps,
-        lastActiveAt: user.last_active_at
+        lastActiveAt: (user as any).last_active_at || new Date().toISOString()
       }
 
     } catch (error) {

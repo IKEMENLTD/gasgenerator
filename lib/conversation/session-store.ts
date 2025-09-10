@@ -45,7 +45,6 @@ export class ConversationSessionStore {
     context: ConversationContext
     lastActivity: number
   }>
-  private sessionCache: Map<string, any> // memoryManagerのキャッシュ用
   private timerManager: TimerManager
   
   // 24時間のタイムアウト（ユーザー体験改善のため）
@@ -61,7 +60,7 @@ export class ConversationSessionStore {
     this.sessions = new Map()
     
     // MemoryManagerを使用してキャッシュを作成（別途管理）
-    this.sessionCache = memoryManager.createCache<{
+    memoryManager.createCache<{
       context: ConversationContext
       lastActivity: number
     }>('conversation-sessions', {
@@ -179,18 +178,15 @@ export class ConversationSessionStore {
   /**
    * タイマー作成ヘルパー
    */
-  private createTimeoutTimer(userId: string): NodeJS.Timeout {
+  private createTimeoutTimer(userId: string): void {
     // 既存タイマーをクリア（メモリリーク防止）
     this.timerManager.clear(userId)
     
     // 新しいタイマーを作成してTimerManagerに登録
-    const timer = setTimeout(() => {
+    this.timerManager.set(userId, () => {
       this.delete(userId)
       logger.info('Session auto-deleted after timeout', { userId })
     }, this.SESSION_TIMEOUT)
-    
-    this.timerManager.set(userId, timer)
-    return timer
   }
   
   /**
@@ -208,14 +204,14 @@ export class ConversationSessionStore {
     await SessionLock.withLock(userId, 'session-set', async () => {
       // セッション固定化攻撃対策：既存セッションがある場合はセッションIDをローテート
       const existingSession = this.sessions.get(userId)
-      if (existingSession && context.sessionId) {
+      if (existingSession && (context as any).sessionId) {
         // 重要な操作時にセッションIDをローテート
-        const isImportantOperation = context.currentStep === 4 || // コード生成時
+        const isImportantOperation = (context as any).currentStep === 4 || // コード生成時
                                     context.readyForCode === true // 生成準備完了時
         
         if (isImportantOperation) {
-          const newSessionId = CryptoUtils.rotateSessionId(context.sessionId)
-          context.sessionId = newSessionId
+          const newSessionId = CryptoUtils.rotateSessionId((context as any).sessionId)
+          ;(context as any).sessionId = newSessionId
           logger.info('Session ID rotated for security', { 
             userId,
             operation: 'important_state_change' 
@@ -224,8 +220,8 @@ export class ConversationSessionStore {
       }
       
       // 新規セッションの場合はセッションIDを生成
-      if (!context.sessionId) {
-        context.sessionId = CryptoUtils.generateTimestampedSessionId()
+      if (!(context as any).sessionId) {
+        ;(context as any).sessionId = CryptoUtils.generateTimestampedSessionId()
         logger.info('New session ID generated', { userId })
       }
       
@@ -270,8 +266,6 @@ export class ConversationSessionStore {
         logger.info('Deleted oldest session due to limit', { userId: oldestUserId })
       }
     }
-    
-    const existingSession = this.sessions.get(userId)
     
     // 既存タイマーはTimerManagerが自動でクリア
     

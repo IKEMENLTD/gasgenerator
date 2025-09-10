@@ -264,10 +264,10 @@ export class ErrorNotifier {
     try {
       const message = this.formatNotificationMessage(notification)
       
-      await this.lineClient.pushMessage(this.config.adminLineUserId, {
+      await this.lineClient.pushMessage(this.config.adminLineUserId, [{
         type: 'text',
         text: message
-      })
+      }])
 
       notification.notified = true
       this.hourlyNotificationCount++
@@ -321,7 +321,7 @@ export class ErrorNotifier {
   /**
    * メトリクス更新
    */
-  private updateMetrics(notification: ErrorNotification): void {
+  private updateMetrics(_notification: ErrorNotification): void {
     // ここで外部監視サービスにメトリクスを送信することも可能
     // 例: Datadog, New Relic, CloudWatch等
   }

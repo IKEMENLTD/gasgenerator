@@ -1,4 +1,3 @@
-import { AppError } from '@/lib/errors/app-error'
 
 export interface ValidationRule {
   type: 'string' | 'number' | 'boolean' | 'email' | 'url' | 'uuid' | 'json'

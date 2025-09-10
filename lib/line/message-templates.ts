@@ -351,27 +351,6 @@ export class MessageTemplates {
       }
     ]
   }
-
-  private static splitCode(code: string, maxLength: number): string[] {
-    const lines = code.split('\n')
-    const chunks: string[] = []
-    let currentChunk = ''
-
-    for (const line of lines) {
-      if (currentChunk.length + line.length + 1 > maxLength) {
-        chunks.push(currentChunk)
-        currentChunk = line
-      } else {
-        currentChunk += (currentChunk ? '\n' : '') + line
-      }
-    }
-
-    if (currentChunk) {
-      chunks.push(currentChunk)
-    }
-
-    return chunks
-  }
 }
 
 export const EXAMPLE_PROMPTS = {

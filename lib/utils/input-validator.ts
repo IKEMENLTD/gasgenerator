@@ -280,4 +280,18 @@ export class InputValidator {
       return false
     }
   }
+
+  /**
+   * SQLインジェクション検出（後方互換性のため）
+   */
+  static detectSQLInjection(input: string): boolean {
+    if (!input) return false
+    
+    for (const pattern of this.SQL_INJECTION_PATTERNS) {
+      if (pattern.test(input)) {
+        return true
+      }
+    }
+    return false
+  }
 }

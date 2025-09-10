@@ -1,6 +1,5 @@
 import { supabaseAdmin } from '../supabase/client'
 import { logger } from '../utils/logger'
-import * as crypto from 'crypto'
 
 /**
  * データベースベースのレート制限実装
@@ -100,7 +99,7 @@ export class DatabaseRateLimiter {
       }
       
       // 4. 使用記録を作成（アトミック操作）
-      const { error: insertError } = await supabaseAdmin
+      const { error: insertError } = await (supabaseAdmin as any)
         .from('vision_usage')
         .insert({
           user_id: userId,
@@ -163,7 +162,7 @@ export class DatabaseRateLimiter {
     imageSizeBytes?: number
   ): Promise<void> {
     try {
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('vision_usage')
         .update({
           analysis_result: result,
@@ -193,7 +192,7 @@ export class DatabaseRateLimiter {
     errorMessage: string
   ): Promise<void> {
     try {
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('vision_usage')
         .update({
           status: 'failed',

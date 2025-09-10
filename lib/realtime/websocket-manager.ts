@@ -136,7 +136,7 @@ export class WebSocketManager extends EventEmitter {
     authData.nonce = SecureRandom.generateString(16)
     
     this.send({
-      type: 'auth',
+      type: 'auth' as any,
       data: authData
     })
     
@@ -201,7 +201,7 @@ export class WebSocketManager extends EventEmitter {
       
       // サーバーに購読を通知
       this.send({
-        type: 'subscribe',
+        type: 'subscribe' as any,
         channel
       })
     }
@@ -236,7 +236,7 @@ export class WebSocketManager extends EventEmitter {
       
       // サーバーに購読解除を通知
       this.send({
-        type: 'unsubscribe',
+        type: 'unsubscribe' as any,
         channel
       })
     }
@@ -267,7 +267,7 @@ export class WebSocketManager extends EventEmitter {
       })
 
       // メッセージタイプ別処理
-      switch (message.type) {
+      switch (message.type as any) {
         case 'pong':
           // ハートビート応答
           break
@@ -411,7 +411,7 @@ export class WebSocketManager extends EventEmitter {
         // 購読の再登録
         for (const channel of this.subscriptions.keys()) {
           this.send({
-            type: 'subscribe',
+            type: 'subscribe' as any,
             channel
           })
         }
@@ -532,7 +532,7 @@ export class SupabaseRealtimeManager {
   private createChannel(
     name: string,
     config: any,
-    callback: (payload: any) => void
+    _callback: (payload: any) => void
   ): any {
     // Supabase Realtime実装
     logger.info('Creating realtime channel', { name, config })

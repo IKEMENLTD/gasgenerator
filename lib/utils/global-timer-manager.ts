@@ -31,7 +31,7 @@ export class GlobalTimerManager {
     key: string,
     callback: () => void,
     delay: number,
-    options?: { autoCleanup?: boolean }
+    _options?: { autoCleanup?: boolean }
   ): void {
     // 既存のタイマーをクリア
     this.clearTimeout(key)
@@ -354,9 +354,8 @@ export function debounce<T extends (...args: any[]) => void>(
 export function throttle<T extends (...args: any[]) => void>(
   func: T,
   interval: number,
-  key?: string
+  _key?: string
 ): T {
-  const timerKey = key || `throttle_${func.name || 'anonymous'}`
   let lastCall = 0
   
   return ((...args: Parameters<T>) => {

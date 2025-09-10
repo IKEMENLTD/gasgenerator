@@ -204,9 +204,9 @@ ${request.context.errorMessage ? `\n⚠️ エラー:\n${request.context.errorMe
         .limit(1)
       
       return {
-        lastGeneratedCode: codes?.[0]?.generated_code,
-        errorMessage: errors?.[0]?.error_message,
-        conversationHistory: conversations?.[0]?.messages
+        lastGeneratedCode: (codes as any)?.[0]?.generated_code,
+        errorMessage: (errors as any)?.[0]?.error_message,
+        conversationHistory: (conversations as any)?.[0]?.messages
       }
       
     } catch (error) {
@@ -220,7 +220,7 @@ ${request.context.errorMessage ? `\n⚠️ エラー:\n${request.context.errorMe
    */
   private async saveSupportRequest(request: EngineerSupportRequest): Promise<void> {
     try {
-      await supabaseAdmin
+      await (supabaseAdmin as any)
         .from('support_requests')
         .insert({
           user_id: request.userId,
@@ -268,7 +268,7 @@ ${request.context.errorMessage ? `\n⚠️ エラー:\n${request.context.errorMe
       ])
       
       // サポートリクエストのステータスを更新
-      await supabaseAdmin
+      await (supabaseAdmin as any)
         .from('support_requests')
         .update({ 
           status: 'responded',

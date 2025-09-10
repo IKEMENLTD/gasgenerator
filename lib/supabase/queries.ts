@@ -28,13 +28,13 @@ export class UserQueries {
 
       if (existingUser) {
         // 既存ユーザーを更新
-        const { data, error } = await supabaseAdmin
-          .from<any>('users')
+        const { data, error } = await (supabaseAdmin as any)
+          .from('users')
           .update({
             last_active_at: new Date().toISOString(),
-            total_requests: (existingUser.total_requests || 0) + 1
+            total_requests: ((existingUser as any).total_requests || 0) + 1
           })
-          .eq('id', existingUser.id)
+          .eq('id', (existingUser as any).id)
           .select()
           .single()
 
@@ -42,8 +42,8 @@ export class UserQueries {
         return data
       } else {
         // 新規ユーザーを作成
-        const { data, error } = await supabaseAdmin
-          .from<any>('users')
+        const { data, error } = await (supabaseAdmin as any)
+          .from('users')
           .insert({
             display_name: lineUserId,  // display_nameにLINE IDを保存
             skill_level: 'beginner',
@@ -72,7 +72,7 @@ export class UserQueries {
   }
   
   static async resetMonthlyUsage(userId: string) {
-    const { error } = await supabaseAdmin
+    const { error } = await (supabaseAdmin as any)
       .from('users')
       .update({
         monthly_usage_count: 0,
@@ -98,10 +98,10 @@ export class UserQueries {
       return
     }
     
-    const { error } = await supabaseAdmin
+    const { error } = await (supabaseAdmin as any)
       .from('users')
       .update({
-        monthly_usage_count: (user.monthly_usage_count || 0) + 1
+        monthly_usage_count: ((user as any).monthly_usage_count || 0) + 1
       })
       .eq('display_name', userId)  // display_nameにLINE IDが格納されている
     
@@ -176,7 +176,7 @@ export class QueueQueries {
   
   static async markJobProcessing(jobId: string) {
     try {
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('generation_queue')
         .update({
           status: 'processing',
@@ -194,7 +194,7 @@ export class QueueQueries {
   
   static async markJobCompleted(jobId: string) {
     try {
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('generation_queue')
         .update({
           status: 'completed',
@@ -224,10 +224,10 @@ export class QueueQueries {
         return
       }
       
-      const newRetryCount = (job.retry_count || 0) + 1
-      const status = newRetryCount >= (job.max_retries || 3) ? 'failed' : 'pending'
+      const newRetryCount = ((job as any).retry_count || 0) + 1
+      const status = newRetryCount >= ((job as any).max_retries || 3) ? 'failed' : 'pending'
       
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('generation_queue')
         .update({
           status,
@@ -247,7 +247,7 @@ export class QueueQueries {
   
   static async updateJobStatus(jobId: string, updates: any) {
     try {
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('generation_queue')
         .update(updates)
         .eq('id', jobId)
@@ -285,8 +285,8 @@ export class UsageQueries {
         return { tokens: 0, cost: 0, requests: 0 }
       }
       
-      const totalTokens = data?.reduce((sum, row) => sum + (row.total_tokens || 0), 0) || 0
-      const totalCost = data?.reduce((sum, row) => sum + (row.total_cost || 0), 0) || 0
+      const totalTokens = data?.reduce((sum, row) => sum + ((row as any).total_tokens || 0), 0) || 0
+      const totalCost = data?.reduce((sum, row) => sum + ((row as any).total_cost || 0), 0) || 0
       const totalRequests = data?.length || 0
       
       return { tokens: totalTokens, cost: totalCost, requests: totalRequests }
@@ -306,7 +306,7 @@ export class UsageQueries {
     cost: number
   }) {
     try {
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('claude_usage')
         .insert({
           user_id: data.userId,
@@ -344,8 +344,8 @@ export class UsageQueries {
         return { tokens: 0, cost: 0 }
       }
       
-      const totalTokens = data?.reduce((sum, row) => sum + (row.total_tokens || 0), 0) || 0
-      const totalCost = data?.reduce((sum, row) => sum + (row.total_cost || 0), 0) || 0
+      const totalTokens = data?.reduce((sum, row) => sum + ((row as any).total_tokens || 0), 0) || 0
+      const totalCost = data?.reduce((sum, row) => sum + ((row as any).total_cost || 0), 0) || 0
       
       return { tokens: totalTokens, cost: totalCost }
     } catch (error) {
@@ -358,7 +358,7 @@ export class UsageQueries {
 export class MetricsQueries {
   static async recordMetric(metric: any) {
     try {
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('metrics')
         .insert({
           metric_type: metric.metric_type,
@@ -383,8 +383,8 @@ export class MetricsQueries {
 export class CodeQueries {
   static async getRecentCodes(userId: string, limit: number = 3) {
     try {
-      const { data, error } = await supabaseAdmin
-        .from<any>('generated_codes')
+      const { data, error } = await (supabaseAdmin as any)
+        .from('generated_codes')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
@@ -401,7 +401,6 @@ export class CodeQueries {
   static async saveGeneratedCode(codeData: any) {
     try {
       // UUID型エラーを完全回避 - idカラムを明示的に除外
-      const { id, ...cleanData } = codeData
       
       const insertData = {
         user_id: String(codeData.user_id || codeData.line_user_id),
@@ -416,7 +415,7 @@ export class CodeQueries {
         created_at: new Date().toISOString()
       }
       
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await (supabaseAdmin as any)
         .from('generated_codes')
         .insert(insertData)
         .select()
@@ -446,7 +445,7 @@ export class ClaudeUsageQueries {
   static async logUsage(usageData: any) {
     try {
       await supabaseAdmin
-        .from<any>('claude_usage_logs')
+        .from('claude_usage_logs')
         .insert(usageData)
     } catch (error) {
       logger.error('ClaudeUsageQueries.logUsage error:', { error })
@@ -456,7 +455,7 @@ export class ClaudeUsageQueries {
   static async getUsageSummary(userId: string) {
     try {
       const { data, error } = await supabaseAdmin
-        .from<any>('claude_usage_logs')
+        .from('claude_usage_logs')
         .select('estimated_cost')
         .eq('user_id', userId)
       
@@ -478,7 +477,7 @@ export class ProcessingQueueQueries {
   static async addToQueue(jobData: any) {
     try {
       const { data, error } = await supabaseAdmin
-        .from<any>('processing_queue')
+        .from('processing_queue')
         .insert({
           ...jobData,
           status: 'pending',
@@ -499,7 +498,7 @@ export class ProcessingQueueQueries {
   static async getNextJob() {
     try {
       const { data, error } = await supabaseAdmin
-        .from<any>('processing_queue')
+        .from('processing_queue')
         .select('*')
         .eq('status', 'pending')
         .order('priority', { ascending: false })
@@ -510,13 +509,13 @@ export class ProcessingQueueQueries {
       if (error && error.code !== 'PGRST116') throw error
       
       if (data) {
-        await supabaseAdmin
-          .from<any>('processing_queue')
+        await (supabaseAdmin as any)
+          .from('processing_queue')
           .update({ 
             status: 'processing',
             started_at: new Date().toISOString()
           })
-          .eq('id', data.id)
+          .eq('id', (data as any).id)
       }
       
       return data
@@ -536,8 +535,8 @@ export class ProcessingQueueQueries {
       if (result) updates.result = result
       if (errorMessage) updates.error_message = errorMessage
       
-      const { data, error } = await supabaseAdmin
-        .from<any>('processing_queue')
+      const { data, error } = await (supabaseAdmin as any)
+        .from('processing_queue')
         .update(updates)
         .eq('id', jobId)
         .select()

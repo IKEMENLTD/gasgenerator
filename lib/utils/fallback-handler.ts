@@ -193,7 +193,7 @@ export class FallbackHandler {
   private static recordErrorMetric(service: string, error: any): void {
     // Supabaseにエラー記録（非同期、失敗しても続行）
     import('../supabase/client').then(({ supabaseAdmin }) => {
-      supabaseAdmin
+      (supabaseAdmin as any)
         .from('error_logs')
         .insert({
           error_type: error?.constructor?.name || 'UnknownError',
@@ -204,7 +204,7 @@ export class FallbackHandler {
             timestamp: new Date().toISOString()
           }
         })
-        .then(({ error: dbError }) => {
+        .then(({ error: dbError }: any) => {
           if (dbError) {
             logger.error('Failed to record error metric', { dbError })
           }

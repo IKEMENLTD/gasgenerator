@@ -259,7 +259,7 @@ export class DistributedLock {
    */
   static async acquireRedis(
     key: string,
-    ttl: number = 5000
+    _ttl: number = 5000
   ): Promise<string | null> {
     // Redis実装の場合
     // const lockId = SecureRandom.generateString(16)
@@ -279,9 +279,9 @@ export class DistributedLock {
    * データベースベースのロック取得（アドバイザリーロック）
    */
   static async acquireDatabase(
-    connection: any,
+    _connection: any,
     key: string,
-    timeout: number = 5000
+    _timeout: number = 5000
   ): Promise<boolean> {
     // PostgreSQL アドバイザリーロック
     // const lockId = this.hashKey(key)
@@ -294,16 +294,4 @@ export class DistributedLock {
     return lockId !== null
   }
 
-  /**
-   * キーのハッシュ化（数値IDへの変換）
-   */
-  private static hashKey(key: string): number {
-    let hash = 0
-    for (let i = 0; i < key.length; i++) {
-      const char = key.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
-      hash = hash & hash // Convert to 32bit integer
-    }
-    return Math.abs(hash)
-  }
 }

@@ -107,7 +107,7 @@ async function seedData() {
       return
     }
 
-    console.log('✅ Sample codes created:', codes?.length)
+    console.log('✅ Sample codes created:', (codes as any)?.length)
 
     // 4. Claude使用ログのサンプル
     const { error: logError } = await supabase

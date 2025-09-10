@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 import { logger } from '@/lib/utils/logger'
 import { AppError } from '@/lib/errors/app-error'
-import { InputValidator } from '@/lib/validation/input-validator'
 import { supabase } from '@/lib/supabase/client'
 import crypto from 'crypto'
 import { SecureRandom } from '@/lib/utils/secure-random'
@@ -30,7 +29,6 @@ interface UploadedFile {
 export class FileUploadHandler {
   private static instance: FileUploadHandler | null = null
   private readonly DEFAULT_MAX_SIZE = 10 * 1024 * 1024 // 10MB
-  private readonly CHUNK_SIZE = 1024 * 1024 // 1MB
   
   // 同時アップロード制限
   private readonly MAX_CONCURRENT_UPLOADS = 3
@@ -347,7 +345,7 @@ export class FileUploadHandler {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('uploads')
       .upload(filePath, buffer, {
         contentType: file.type,
@@ -388,7 +386,7 @@ export class FileUploadHandler {
    * ファイル記録の保存
    */
   private async saveFileRecord(file: UploadedFile): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('uploaded_files')
       .insert({
         id: file.id,
@@ -552,7 +550,7 @@ export class FileUploadHandler {
    */
   private async calculateChecksum(buffer: Buffer): Promise<string> {
     const hash = crypto.createHash('sha256')
-    hash.update(buffer)
+    hash.update(buffer as any)
     return hash.digest('hex')
   }
 
@@ -574,7 +572,7 @@ export class FileUploadHandler {
     // ストレージから削除
     const { error: deleteError } = await supabase.storage
       .from('uploads')
-      .remove([fileRecord.path])
+      .remove([(fileRecord as any).path])
 
     if (deleteError) {
       throw new Error(`Failed to delete file: ${deleteError.message}`)

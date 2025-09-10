@@ -265,18 +265,6 @@ export class StructuredResponse {
     ]
   }
 
-  private getLanguageLabel(lang: string): string {
-    const labels: { [key: string]: string } = {
-      'javascript': 'GAS',
-      'js': 'GAS',
-      'gas': 'GAS',
-      'python': 'Python',
-      'html': 'HTML',
-      'css': 'CSS',
-      'json': 'JSON'
-    }
-    return labels[lang.toLowerCase()] || 'Code'
-  }
 }
 
 // 構造化レスポンスのサンプルテンプレート

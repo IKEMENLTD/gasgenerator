@@ -29,15 +29,15 @@ export class SessionQueries {
       // データベースのカラムからConversationContextを構築
       if (data) {
         return {
-          messages: data.messages || [],
-          category: data.category,
-          subcategory: data.subcategory,
-          requirements: data.collected_requirements || {},
-          extractedRequirements: data.collected_requirements || {},
-          currentStep: data.current_step || 1,
+          messages: (data as any).messages || [],
+          category: (data as any).category,
+          subcategory: (data as any).subcategory,
+          requirements: (data as any).collected_requirements || {},
+          extractedRequirements: (data as any).collected_requirements || {},
+          currentStep: (data as any).current_step || 1,
           readyForCode: false,
-          lastGeneratedCode: data.status === 'completed',
-          sessionId: data.session_id_text
+          lastGeneratedCode: (data as any).status === 'completed',
+          sessionId: (data as any).session_id_text
         } as ConversationContext
       }
 
@@ -64,22 +64,22 @@ export class SessionQueries {
       const sessionData = {
         user_id: userId,
         line_user_id: userId, // LINE User IDと同じ
-        session_id_text: context.sessionId || `session_${Date.now()}`,
+        session_id_text: (context as any).sessionId || `session_${Date.now()}`,
         messages: context.messages || [],
         category: context.category,
-        subcategory: context.subcategory,
+        subcategory: (context as any).subcategory,
         collected_requirements: context.requirements || {},
-        current_step: context.currentStep || 1,
+        current_step: (context as any).currentStep || 1,
         status: context.lastGeneratedCode ? 'completed' : 'active',
         updated_at: new Date().toISOString()
       }
 
       if (existing) {
         // 既存セッションを更新
-        const { error } = await supabaseAdmin
+        const { error } = await (supabaseAdmin as any)
           .from('conversation_sessions')
           .update(sessionData)
-          .eq('id', existing.id)
+          .eq('id', (existing as any).id)
 
         if (error) {
           logger.error('Failed to update session', { error, userId })
@@ -87,7 +87,7 @@ export class SessionQueries {
         }
       } else {
         // 新規セッションを作成
-        const { error } = await supabaseAdmin
+        const { error } = await (supabaseAdmin as any)
           .from('conversation_sessions')
           .insert({
             ...sessionData,
@@ -114,7 +114,7 @@ export class SessionQueries {
   static async deleteSession(userId: string): Promise<boolean> {
     try {
       // セッションを削除せず、非アクティブ化する
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('conversation_sessions')
         .update({ 
           status: 'inactive',
@@ -144,7 +144,7 @@ export class SessionQueries {
       // 1時間以上更新されていないセッションを非アクティブ化
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
       
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await (supabaseAdmin as any)
         .from('conversation_sessions')
         .update({ 
           status: 'inactive',

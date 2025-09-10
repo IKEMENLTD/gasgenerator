@@ -1,7 +1,6 @@
 import { logger } from '@/lib/utils/logger'
 import { EXTERNAL_API_CONFIG, TIMEOUTS } from '@/lib/constants/config'
 import EnvironmentValidator from '@/lib/config/environment'
-import type { LineMessage, LinePushMessage } from '@/types/line'
 
 export class LineApiClient {
   private accessToken: string

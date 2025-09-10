@@ -23,7 +23,6 @@ export class AsyncOptimizer {
 
   private readonly DEFAULT_CONCURRENCY = 5
   private readonly DEFAULT_BATCH_SIZE = 10
-  private readonly DEFAULT_BATCH_WAIT = 100 // ms
 
   private constructor() {
     this.initializeLimits()

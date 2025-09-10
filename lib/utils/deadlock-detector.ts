@@ -343,7 +343,6 @@ export class DeadlockDetector {
         const nextOwner = lock.owner
         if (recursionStack.has(nextOwner)) {
           // 循環を発見
-          const cycleStart = path.indexOf(nextOwner)
           return true
         }
 
