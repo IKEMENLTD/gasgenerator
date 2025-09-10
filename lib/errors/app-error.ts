@@ -138,6 +138,10 @@ export class AppError extends Error {
     )
   }
   
+  static conflict(message: string, details?: ErrorDetails): AppError {
+    return new AppError(ErrorCode.CONFLICT, message, 409, details)
+  }
+  
   static rateLimitExceeded(retryAfter?: number): AppError {
     return new AppError(
       ErrorCode.RATE_LIMIT_EXCEEDED,

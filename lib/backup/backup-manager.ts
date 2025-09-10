@@ -6,6 +6,7 @@ import path from 'path'
 import { SecureRandom } from '@/lib/utils/secure-random'
 import { createWriteStream, createReadStream } from 'fs'
 import { pipeline } from 'stream/promises'
+import { Readable } from 'stream'
 import zlib from 'zlib'
 
 interface BackupMetadata {
@@ -339,7 +340,7 @@ export class BackupManager {
     for (let i = 0; i < data.length; i += batchSize) {
       const batch = data.slice(i, i + batchSize)
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from(table)
         .upsert(batch, { onConflict: 'id' })
 
@@ -353,7 +354,7 @@ export class BackupManager {
    * テーブルのトランケート
    */
   private async truncateTable(table: string): Promise<void> {
-    const { error } = await supabase.rpc('truncate_table', { 
+    const { error } = await (supabase as any).rpc('truncate_table', { 
       table_name: table 
     })
     
@@ -379,13 +380,10 @@ export class BackupManager {
     const gzip = zlib.createGzip()
     const writeStream = createWriteStream(filePath)
     
+    // Buffer -> Gzip -> File
+    const readable = Readable.from([jsonData])
     await pipeline(
-      fs.open(filePath, 'w').then(() => {
-        const stream = createWriteStream(filePath)
-        stream.write(jsonData)
-        stream.end()
-        return stream
-      }),
+      readable,
       gzip,
       writeStream
     )
@@ -416,7 +414,7 @@ export class BackupManager {
       }
     )
     
-    const jsonData = Buffer.concat(chunks).toString()
+    const jsonData = Buffer.concat(chunks as any[]).toString()
     return JSON.parse(jsonData)
   }
 
@@ -474,7 +472,7 @@ export class BackupManager {
    */
   private async calculateChecksum(filePath: string): Promise<string> {
     const fileBuffer = await fs.readFile(filePath)
-    const hashBuffer = await crypto.subtle.digest('SHA-256', fileBuffer)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', fileBuffer as any)
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
   }

@@ -35,10 +35,10 @@ export class ClaudeUsageTracker {
           .eq('display_name', userId)
           .maybeSingle()
         
-        if (!error && user && user.subscription_status === 'premium') {
+        if (!error && user && (user as any).subscription_status === 'premium') {
           // 有効期限チェック
-          if (user.subscription_end_date) {
-            const endDate = new Date(user.subscription_end_date)
+          if ((user as any).subscription_end_date) {
+            const endDate = new Date((user as any).subscription_end_date)
             if (endDate > new Date()) {
               // プレミアムユーザーは制限なし
               return { allowed: true }
@@ -231,7 +231,7 @@ export class ClaudeUsageTracker {
         .eq(userId ? 'user_id' : 'service_type', userId || 'global')
       
       const monthlyRequests = monthlyData?.length || dailyRequests
-      const monthlyCost = monthlyData?.reduce((sum, row) => sum + (row.total_cost || 0), 0) || dailyCost
+      const monthlyCost = monthlyData?.reduce((sum, row) => sum + ((row as any).total_cost || 0), 0) || dailyCost
 
       return {
         daily: {
@@ -318,7 +318,7 @@ export class ClaudeUsageTracker {
     try {
       // Supabaseに通知を記録
       const { supabaseAdmin } = await import('@/lib/supabase/client')
-      await supabaseAdmin
+      await (supabaseAdmin as any)
         .from('admin_notifications')
         .insert({
           type: notification.type,

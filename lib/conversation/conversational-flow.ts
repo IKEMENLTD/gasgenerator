@@ -240,7 +240,7 @@ ${conversationHistory}
       if (isReadyForCode) {
         context.readyForCode = true
         const confirmMessage = `\n\n📝 要件を確認させていただきます：\n\n${Object.entries(context.requirements)
-          .filter(([k, v]) => v)
+          .filter(([, v]) => v)
           .map(([k, v]) => `・${k}: ${v}`)
           .join('\n')}\n\nこの内容でコードを生成してよろしいですか？\n\n「はい」または「修正」とお答えください。`
         

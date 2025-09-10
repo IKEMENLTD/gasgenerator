@@ -69,12 +69,12 @@ export class CacheStrategy {
    * キャッシュの作成
    */
   private createCache(name: string, defaultOptions: CacheOptions): void {
-    const cache = memoryManager.createCache<CacheEntry<any>>(name, {
+    const cache = memoryManager.createCache<any>(name, {
       maxSize: defaultOptions.maxSize,
       ttl: defaultOptions.ttl,
       cleanupInterval: 60000 // 1分ごとにクリーンアップ
     })
-    this.caches.set(name, cache)
+    this.caches.set(name, cache as unknown as Map<string, CacheEntry<any>>)
   }
 
   /**
@@ -280,7 +280,7 @@ export class CacheStrategy {
         logger.info('Cache cleared', { cacheName })
       }
     } else {
-      for (const [name, cache] of this.caches.entries()) {
+      for (const [, cache] of this.caches.entries()) {
         cache.clear()
       }
       this.tagIndex.clear()

@@ -3,7 +3,6 @@ import { logger } from '@/lib/utils/logger'
 import { CLAUDE_CONFIG } from '@/lib/constants/config'
 import type { 
   CodeGenerationRequest, 
-  UserCodeHistory, 
   PromptComponents 
 } from '@/types/claude'
 
@@ -171,7 +170,7 @@ SpreadsheetApp, GmailApp, CalendarApp, UrlFetchApp, DriveApp
   /**
    * カテゴリ別コンテキスト（300トークン以内）
    */
-  private static buildCategoryContext(category: string, subcategory?: string): string {
+  private static buildCategoryContext(category: string, _subcategory?: string): string {
     const contexts: Record<string, string> = {
       spreadsheet: `【スプレッドシート専用】
 - getLastRow(), getLastColumn() で動的範囲取得
@@ -212,7 +211,7 @@ SpreadsheetApp, GmailApp, CalendarApp, UrlFetchApp, DriveApp
   private static buildRequestDetails(request: CodeGenerationRequest): string {
     // detailsまたはrequirementsの内容を取得（nullチェック付き）
     const rawDetails = request.requirements?.details || 
-                      request.requirements?.requirements || 
+                      (request.requirements as any)?.requirements || 
                       request.requirements || 
                       '詳細なし'
     

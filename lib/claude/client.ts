@@ -4,8 +4,7 @@ import { CLAUDE_CONFIG, TIMEOUTS, EXTERNAL_API_CONFIG } from '@/lib/constants/co
 import EnvironmentValidator from '@/lib/config/environment'
 import type { 
   ClaudeApiRequest, 
-  ClaudeApiResponse, 
-  ClaudeApiError,
+  ClaudeApiResponse,
   ClaudeConfig 
 } from '@/types/claude'
 
@@ -76,7 +75,7 @@ export class ClaudeApiClient {
         return response
 
       } catch (error) {
-        lastError = error
+        lastError = error instanceof Error ? error : new Error(String(error))
         const processingTime = Date.now() - startTime
 
         logger.warn('Claude API request failed', { 
@@ -139,7 +138,7 @@ export class ClaudeApiClient {
       id: 'fallback-' + Date.now(),
       model: this.config.model,
       role: 'assistant',
-      stop_reason: 'error',
+      stop_reason: 'end_turn' as const,
       stop_sequence: null,
       type: 'message',
       usage: {
@@ -177,10 +176,10 @@ export class ClaudeApiClient {
    */
   private async logUsage(
     usage: { input_tokens: number; output_tokens: number } | null,
-    success: boolean,
-    processingTimeMs: number,
+    _success: boolean,
+    _processingTimeMs: number,
     userId?: string,
-    errorType?: string
+    _errorType?: string
   ): Promise<void> {
     try {
       const inputTokens = usage?.input_tokens || 0
@@ -190,14 +189,12 @@ export class ClaudeApiClient {
         (outputTokens * CLAUDE_CONFIG.COST_PER_OUTPUT_TOKEN)
 
       await UsageQueries.logClaudeUsage({
-        user_id: userId || null,
-        request_type: 'code_generation',
-        input_tokens: inputTokens,
-        output_tokens: outputTokens,
-        estimated_cost: estimatedCost,
-        success,
-        error_type: errorType || null,
-        processing_time_ms: processingTimeMs
+        userId: userId || '',
+        model: this.config.model,
+        promptTokens: inputTokens,
+        completionTokens: outputTokens,
+        totalTokens: inputTokens + outputTokens,
+        cost: estimatedCost
       })
 
     } catch (error) {

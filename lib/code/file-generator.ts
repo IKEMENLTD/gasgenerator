@@ -1,23 +1,18 @@
-import { LineApiClient } from '../line/client'
-import { logger } from '../utils/logger'
-
 /**
  * 生成したコードをファイルとして送信
  */
 export class CodeFileGenerator {
-  private lineClient: LineApiClient
-  
   constructor() {
-    this.lineClient = new LineApiClient()
+    // Initialization if needed
   }
   
   /**
    * コードをGoogle Drive経由で共有
    */
   async shareViaGoogleDrive(
-    code: string,
-    fileName: string,
-    userId: string
+    _code: string,
+    _fileName: string,
+    _userId: string
   ): Promise<string> {
     // Google Drive APIを使用してファイルをアップロード
     // 実装は省略（実際にはGoogle Drive APIの設定が必要）
@@ -31,8 +26,8 @@ export class CodeFileGenerator {
    * コードを一時的なダウンロードリンクとして提供
    */
   async createTemporaryDownloadLink(
-    code: string,
-    fileName: string
+    _code: string,
+    _fileName: string
   ): Promise<string> {
     // Supabase Storageまたは一時ファイルサービスを使用
     // 実装は省略
@@ -171,8 +166,8 @@ export class CodeFileGenerator {
    * Excelファイルからの要件抽出
    */
   async extractRequirementsFromExcel(
-    fileBuffer: Buffer,
-    fileName: string
+    _fileBuffer: Buffer,
+    _fileName: string
   ): Promise<{
     structure: string
     sampleData: any[]

@@ -158,22 +158,6 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * タイミング攻撃を防ぐための固定時間文字列比較
- */
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    return false
-  }
-  
-  let result = 0
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  }
-  
-  return result === 0
-}
-
-/**
  * テキストメッセージ処理
  */
 async function processTextMessage(event: any, requestId: string): Promise<boolean> {
@@ -250,7 +234,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       sessionStore.set(userId, {
         ...existingContext,
         waitingForScreenshot: true,
-        lastGeneratedCode: existingContext.lastGeneratedCode || null
+        lastGeneratedCode: ('lastGeneratedCode' in existingContext ? existingContext.lastGeneratedCode : null)
       } as any)
       
       return true
@@ -341,7 +325,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       }
       
       // lastGeneratedCodeがない場合でも修正モードに入る
-      if (context.lastGeneratedCode || messageText === '修正したい') {
+      if (context && (context.lastGeneratedCode || messageText === '修正したい')) {
         context.isModifying = true
         context.lastGeneratedCode = false
         sessionStore.set(userId, context)
@@ -706,9 +690,9 @@ async function startCodeGeneration(
       category: context.category,
       subcategory: 'conversational',
       requirements: {
-        conversation: context.messages,
-        extractedRequirements: context.requirements,
-        prompt: ConversationalFlow.generateCodePrompt(context)
+        category: context.category,
+        subcategory: 'conversational',
+        details: ConversationalFlow.generateCodePrompt(context)
       }
     })
 
@@ -742,9 +726,9 @@ async function handleFollowEvent(event: any): Promise<void> {
     const user = await UserQueries.createOrUpdate(userId)
     
     // 既にプレミアムユーザーかチェック
-    const isPremium = user?.subscription_status === 'premium' && 
-                     user?.subscription_end_date && 
-                     new Date(user.subscription_end_date) > new Date()
+    const isPremium = (user as any)?.subscription_status === 'premium' && 
+                     (user as any)?.subscription_end_date && 
+                     new Date((user as any).subscription_end_date) > new Date()
     
     if (isPremium) {
       // プレミアムユーザーには通常のウェルカムメッセージ
@@ -818,7 +802,7 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
     let context = sessionStore.get(userId)
     const isWaitingForScreenshot = context && (context as any).waitingForScreenshot
     
-    if (isWaitingForScreenshot) {
+    if (isWaitingForScreenshot && context) {
       logger.info('Processing screenshot in waiting mode', { userId })
       // waitingForScreenshotフラグをクリア
       delete (context as any).waitingForScreenshot
@@ -838,7 +822,7 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
           content: `[エラースクリーンショット] ${result.description}\nこのエラーを解決するコードを生成してください。`
         })
         context.requirements.errorScreenshot = result.description
-        context.requirements.isErrorFix = true
+        context.requirements.isErrorFix = 'true'
       } else {
         context.messages.push({
           role: 'user',
@@ -847,7 +831,7 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
         context.requirements.imageContent = result.description
       }
       
-      context.requirements.hasScreenshot = true
+      context.requirements.hasScreenshot = 'true'
       sessionStore.set(userId, context)
     }
     

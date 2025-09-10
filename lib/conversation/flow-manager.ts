@@ -5,7 +5,7 @@ import { getCategoryIdByName, getSubcategoryIdByName, CATEGORY_DEFINITIONS } fro
 import { sanitizeUserInput } from '@/lib/utils/validators'
 import { logger } from '@/lib/utils/logger'
 import { CONVERSATION_CONFIG } from '@/lib/constants/config'
-import type { MessageProcessResult, ConversationInput } from '@/types/conversation'
+import type { MessageProcessResult } from '@/types/conversation'
 import type { LineWebhookEvent } from '@/types/line'
 
 export class ConversationFlowManager {
@@ -286,7 +286,7 @@ export class ConversationFlowManager {
     await SessionHandler.markReadyForGeneration(currentState.sessionId, finalRequirements)
 
     // キューに追加
-    const QueueQueries = (await import('@/lib/supabase/queue-queries')).QueueQueries
+    const QueueQueries = (await import('@/lib/supabase/queries')).QueueQueries
     await QueueQueries.addToQueue({
       user_id: lineUserId,
       category: currentState.category,
