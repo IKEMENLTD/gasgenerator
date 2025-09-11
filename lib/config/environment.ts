@@ -25,11 +25,12 @@ const REQUIRED_ENV_VARS = {
   
   // Security
   CRON_SECRET: 'Cronジョブ認証用シークレット',
-  ADMIN_API_TOKEN: '管理API認証トークン',
 } as const
 
 // オプション環境変数の定義
 const OPTIONAL_ENV_VARS = {
+  // Security
+  ADMIN_API_TOKEN: '管理API認証トークン',
   
   // Engineer Support
   ENGINEER_SUPPORT_GROUP_ID: 'エンジニアサポートグループID',
