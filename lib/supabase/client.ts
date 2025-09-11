@@ -78,7 +78,7 @@ export const supabaseAdmin: SupabaseClient<Database> =
 // 接続テスト関数
 export async function testDatabaseConnection(): Promise<boolean> {
   try {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('users')
       .select('count')
       .limit(1)

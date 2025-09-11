@@ -296,7 +296,7 @@ export class DatabaseConnectionPool {
     avgUseCount: number
   } {
     const inUse = this.connections.filter(c => c.inUse).length
-    const totalUseCount = this.connections.reduce((sum, c) => sum + c.useCount, 0)
+    const totalUseCount = this.connections.reduce((sum: number, c) => sum + c.useCount, 0)
     
     return {
       total: this.connections.length,

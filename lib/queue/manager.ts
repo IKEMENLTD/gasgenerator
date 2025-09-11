@@ -130,7 +130,7 @@ export class QueueManager {
     try {
       // ジョブ情報を取得（直接Supabaseクエリ）
       const { supabaseAdmin } = await import('@/lib/supabase/client')
-      const { data: job, error: fetchError } = await supabaseAdmin
+      const { data: job, error: fetchError } = await (supabaseAdmin as any)
         .from('generation_queue')
         .select('*')
         .eq('id', jobId)
@@ -226,7 +226,7 @@ export class QueueManager {
       
       // 古いジョブを削除
       const { supabaseAdmin } = await import('@/lib/supabase/client')
-      const { data: oldJobs, error } = await supabaseAdmin
+      const { data: oldJobs, error } = await (supabaseAdmin as any)
         .from('generation_queue')
         .delete()
         .or(`status.eq.completed,status.eq.failed`)
@@ -299,7 +299,7 @@ export class QueueManager {
     try {
       // セキュリティ：ユーザーは自分のジョブのみ取り消し可能
       const { supabaseAdmin } = await import('@/lib/supabase/client')
-      const { data: job, error: fetchError } = await supabaseAdmin
+      const { data: job, error: fetchError } = await (supabaseAdmin as any)
         .from('generation_queue')
         .select('user_id')
         .eq('id', jobId)

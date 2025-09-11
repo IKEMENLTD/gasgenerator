@@ -283,7 +283,7 @@ export class BackupManager {
    * テーブル一覧の取得
    */
   private async getTables(): Promise<string[]> {
-    const { data, error } = await supabase.rpc('get_tables')
+    const { data, error } = await (supabase as any).rpc('get_tables')
     
     if (error) {
       throw new Error(`Failed to get tables: ${error.message}`)
@@ -296,7 +296,7 @@ export class BackupManager {
    * テーブルデータのエクスポート
    */
   private async exportTable(table: string): Promise<any[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(table)
       .select('*')
       .order('created_at', { ascending: true })
@@ -315,7 +315,7 @@ export class BackupManager {
     table: string,
     since: Date
   ): Promise<any[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(table)
       .select('*')
       .gte('updated_at', since.toISOString())

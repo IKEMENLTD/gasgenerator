@@ -14,7 +14,7 @@ export class UserQueries {
       }
       
       // まず既存ユーザーを検索（display_nameにLINE IDを格納）
-      const { data: existingUser, error: findError } = await supabaseAdmin
+      const { data: existingUser, error: findError } = await (supabaseAdmin as any)
         .from('users')
         .select('*')
         .eq('display_name', lineUserId)
@@ -86,7 +86,7 @@ export class UserQueries {
   }
   
   static async incrementUsageCount(userId: string) {
-    const { data: user, error: fetchError } = await supabaseAdmin
+    const { data: user, error: fetchError } = await (supabaseAdmin as any)
       .from('users')
       .select('monthly_usage_count')
       .eq('display_name', userId)  // display_nameにLINE IDが格納されている
@@ -114,7 +114,7 @@ export class UserQueries {
 export class QueueQueries {
   static async addToQueue(jobData: any) {
     try {
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await (supabaseAdmin as any)
         .from('generation_queue')
         .insert(jobData)
         .select()
@@ -135,7 +135,7 @@ export class QueueQueries {
   
   static async getNextJobs(batchSize: number) {
     try {
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await (supabaseAdmin as any)
         .from('generation_queue')
         .select('*')
         .eq('status', 'pending')
@@ -157,7 +157,7 @@ export class QueueQueries {
   
   static async getPendingJobsCount() {
     try {
-      const { count, error } = await supabaseAdmin
+      const { count, error } = await (supabaseAdmin as any)
         .from('generation_queue')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'pending')
@@ -213,7 +213,7 @@ export class QueueQueries {
   static async markJobFailed(jobId: string, errorMessage: string) {
     try {
       // リトライカウントを増やす
-      const { data: job, error: fetchError } = await supabaseAdmin
+      const { data: job, error: fetchError } = await (supabaseAdmin as any)
         .from('generation_queue')
         .select('retry_count, max_retries')
         .eq('id', jobId)
@@ -268,7 +268,7 @@ export class UsageQueries {
       today.setHours(0, 0, 0, 0)
       
       // userIdがない場合は全体の使用量を取得
-      let query = supabaseAdmin
+      let query = (supabaseAdmin as any)
         .from('claude_usage')
         .select('total_tokens, total_cost')
         .gte('created_at', today.toISOString())
@@ -285,8 +285,8 @@ export class UsageQueries {
         return { tokens: 0, cost: 0, requests: 0 }
       }
       
-      const totalTokens = data?.reduce((sum, row) => sum + ((row as any).total_tokens || 0), 0) || 0
-      const totalCost = data?.reduce((sum, row) => sum + ((row as any).total_cost || 0), 0) || 0
+      const totalTokens = data?.reduce((sum: number, row: any) => sum + ((row as any).total_tokens || 0), 0) || 0
+      const totalCost = data?.reduce((sum: number, row: any) => sum + ((row as any).total_cost || 0), 0) || 0
       const totalRequests = data?.length || 0
       
       return { tokens: totalTokens, cost: totalCost, requests: totalRequests }
@@ -333,7 +333,7 @@ export class UsageQueries {
       startOfMonth.setDate(1)
       startOfMonth.setHours(0, 0, 0, 0)
       
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await (supabaseAdmin as any)
         .from('claude_usage')
         .select('total_tokens, total_cost')
         .eq('user_id', userId)
@@ -344,8 +344,8 @@ export class UsageQueries {
         return { tokens: 0, cost: 0 }
       }
       
-      const totalTokens = data?.reduce((sum, row) => sum + ((row as any).total_tokens || 0), 0) || 0
-      const totalCost = data?.reduce((sum, row) => sum + ((row as any).total_cost || 0), 0) || 0
+      const totalTokens = data?.reduce((sum: number, row: any) => sum + ((row as any).total_tokens || 0), 0) || 0
+      const totalCost = data?.reduce((sum: number, row: any) => sum + ((row as any).total_cost || 0), 0) || 0
       
       return { tokens: totalTokens, cost: totalCost }
     } catch (error) {
@@ -444,7 +444,7 @@ export class CodeQueries {
 export class ClaudeUsageQueries {
   static async logUsage(usageData: any) {
     try {
-      await supabaseAdmin
+      await (supabaseAdmin as any)
         .from('claude_usage_logs')
         .insert(usageData)
     } catch (error) {
@@ -454,7 +454,7 @@ export class ClaudeUsageQueries {
 
   static async getUsageSummary(userId: string) {
     try {
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await (supabaseAdmin as any)
         .from('claude_usage_logs')
         .select('estimated_cost')
         .eq('user_id', userId)
@@ -476,7 +476,7 @@ export class ClaudeUsageQueries {
 export class ProcessingQueueQueries {
   static async addToQueue(jobData: any) {
     try {
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await (supabaseAdmin as any)
         .from('processing_queue')
         .insert({
           ...jobData,
@@ -497,7 +497,7 @@ export class ProcessingQueueQueries {
 
   static async getNextJob() {
     try {
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await (supabaseAdmin as any)
         .from('processing_queue')
         .select('*')
         .eq('status', 'pending')

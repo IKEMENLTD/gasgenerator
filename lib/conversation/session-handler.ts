@@ -195,7 +195,7 @@ export class SessionHandler {
       
       // 期限切れセッションを削除
       const { supabaseAdmin } = await import('@/lib/supabase/client')
-      const { data: deletedSessions, error } = await supabaseAdmin
+      const { data: deletedSessions, error } = await (supabaseAdmin as any)
         .from('sessions')
         .delete()
         .lt('updated_at', cutoffTime.toISOString())
@@ -232,7 +232,7 @@ export class SessionHandler {
 
       // 詳細な統計を取得
       const { supabaseAdmin } = await import('@/lib/supabase/client')
-      const { data: sessionStats, error } = await supabaseAdmin
+      const { data: sessionStats, error } = await (supabaseAdmin as any)
         .from('sessions')
         .select('status, step_data')
         .eq('user_id', (user as any).id || lineUserId)
@@ -248,7 +248,7 @@ export class SessionHandler {
       }
       
       const completedSessions = sessionStats?.filter((s: any) => s.status === 'completed').length || 0
-      const totalSteps = sessionStats?.reduce((sum, s: any) => {
+      const totalSteps = sessionStats?.reduce((sum: number, s: any) => {
         const steps = s.step_data?.currentStep || 0
         return sum + steps
       }, 0) || 0

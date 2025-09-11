@@ -162,7 +162,7 @@ export class PerformanceMonitor {
     }
 
     const durations = filteredMetrics.map(m => m.duration).sort((a, b) => a - b)
-    const total = durations.reduce((sum, d) => sum + d, 0)
+    const total = durations.reduce((sum: number, d) => sum + d, 0)
 
     return {
       count: durations.length,

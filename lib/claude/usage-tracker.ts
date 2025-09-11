@@ -29,7 +29,7 @@ export class ClaudeUsageTracker {
       // プレミアムユーザーのチェック
       if (userId) {
         const { supabaseAdmin } = await import('@/lib/supabase/client')
-        const { data: user, error } = await supabaseAdmin
+        const { data: user, error } = await (supabaseAdmin as any)
           .from('users')
           .select('subscription_status, subscription_end_date')
           .eq('display_name', userId)
@@ -124,7 +124,7 @@ export class ClaudeUsageTracker {
     
     // 時間単位での使用量を取得
     const { supabaseAdmin } = await import('@/lib/supabase/client')
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await (supabaseAdmin as any)
       .from('claude_usage')
       .select('total_tokens')
       .gte('created_at', oneHourAgo)
@@ -224,14 +224,14 @@ export class ClaudeUsageTracker {
       startOfMonth.setHours(0, 0, 0, 0)
       
       const { supabaseAdmin } = await import('@/lib/supabase/client')
-      const { data: monthlyData } = await supabaseAdmin
+      const { data: monthlyData } = await (supabaseAdmin as any)
         .from('claude_usage')
         .select('total_tokens, total_cost')
         .gte('created_at', startOfMonth.toISOString())
         .eq(userId ? 'user_id' : 'service_type', userId || 'global')
       
       const monthlyRequests = monthlyData?.length || dailyRequests
-      const monthlyCost = monthlyData?.reduce((sum, row) => sum + ((row as any).total_cost || 0), 0) || dailyCost
+      const monthlyCost = monthlyData?.reduce((sum: number, row: any) => sum + ((row as any).total_cost || 0), 0) || dailyCost
 
       return {
         daily: {

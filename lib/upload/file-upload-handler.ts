@@ -155,7 +155,7 @@ export class FileUploadHandler {
 
       logger.info('Files uploaded successfully', {
         count: files.length,
-        totalSize: files.reduce((sum, f) => sum + f.size, 0)
+        totalSize: files.reduce((sum: number, f) => sum + f.size, 0)
       })
 
       return files
@@ -345,7 +345,7 @@ export class FileUploadHandler {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const { error } = await supabase.storage
+    const { error } = await (supabase as any).storage
       .from('uploads')
       .upload(filePath, buffer, {
         contentType: file.type,
@@ -357,7 +357,7 @@ export class FileUploadHandler {
     }
 
     // 公開URLの取得
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl } } = (supabase as any).storage
       .from('uploads')
       .getPublicUrl(filePath)
 
@@ -429,7 +429,7 @@ export class FileUploadHandler {
     const chunkPath = `chunks/${chunkInfo.fileId}/${chunkInfo.chunkIndex}`
     const arrayBuffer = await chunk.arrayBuffer()
     
-    const { error } = await supabase.storage
+    const { error } = await (supabase as any).storage
       .from('uploads')
       .upload(chunkPath, arrayBuffer, {
         upsert: false
@@ -467,7 +467,7 @@ export class FileUploadHandler {
     
     for (let i = 0; i < chunkInfo.totalChunks; i++) {
       const chunkPath = `chunks/${chunkInfo.fileId}/${i}`
-      const { data, error } = await supabase.storage
+      const { data, error } = await (supabase as any).storage
         .from('uploads')
         .download(chunkPath)
 
@@ -479,7 +479,7 @@ export class FileUploadHandler {
     }
 
     // チャンクを結合
-    const totalSize = chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0)
+    const totalSize = chunks.reduce((sum: number, chunk) => sum + chunk.byteLength, 0)
     const mergedBuffer = new Uint8Array(totalSize)
     let offset = 0
 
@@ -490,7 +490,7 @@ export class FileUploadHandler {
 
     // 結合したファイルを保存
     const filePath = `uploads/${chunkInfo.fileName}`
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await (supabase as any).storage
       .from('uploads')
       .upload(filePath, mergedBuffer)
 
@@ -521,7 +521,7 @@ export class FileUploadHandler {
       paths.push(`chunks/${fileId}/${i}`)
     }
 
-    const { error } = await supabase.storage
+    const { error } = await (supabase as any).storage
       .from('uploads')
       .remove(paths)
 
@@ -559,7 +559,7 @@ export class FileUploadHandler {
    */
   async deleteFile(fileId: string): Promise<void> {
     // データベースから情報取得
-    const { data: fileRecord, error: fetchError } = await supabase
+    const { data: fileRecord, error: fetchError } = await (supabase as any)
       .from('uploaded_files')
       .select('*')
       .eq('id', fileId)
@@ -570,7 +570,7 @@ export class FileUploadHandler {
     }
 
     // ストレージから削除
-    const { error: deleteError } = await supabase.storage
+    const { error: deleteError } = await (supabase as any).storage
       .from('uploads')
       .remove([(fileRecord as any).path])
 
@@ -579,7 +579,7 @@ export class FileUploadHandler {
     }
 
     // データベースから削除
-    await supabase
+    await (supabase as any)
       .from('uploaded_files')
       .delete()
       .eq('id', fileId)

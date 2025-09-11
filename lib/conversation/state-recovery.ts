@@ -49,7 +49,7 @@ export class StateRecovery {
    */
   static async restoreState(userId: string): Promise<ConversationContext | null> {
     try {
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await (supabaseAdmin as any)
         .from(this.TABLE_NAME)
         .select('context')
         .eq('user_id', userId)
@@ -74,7 +74,7 @@ export class StateRecovery {
    */
   static async cleanup(): Promise<void> {
     try {
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from(this.TABLE_NAME)
         .delete()
         .lt('expires_at', new Date().toISOString())

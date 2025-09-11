@@ -121,7 +121,7 @@ export class VisionRateLimiter {
     try {
       // 1. 同じ画像の重複チェック（エラースクショは除外）
       // エラースクリーンショットは何度でも送信できるようにする
-      const { data: duplicates } = await supabaseAdmin
+      const { data: duplicates } = await (supabaseAdmin as any)
         .from('vision_usage')
         .select('id, analysis_result, status')
         .eq('image_hash', imageHash)
@@ -154,7 +154,7 @@ export class VisionRateLimiter {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
       
       // completedの数 + 5分以内のprocessingの数
-      const { data: usageRecords, error: todayError } = await supabaseAdmin
+      const { data: usageRecords, error: todayError } = await (supabaseAdmin as any)
         .from('vision_usage')
         .select('status, created_at')
         .eq('user_id', userId)
@@ -206,7 +206,7 @@ export class VisionRateLimiter {
       // 3. 月間使用回数チェック（ユーザー）
       const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
       
-      const { data: monthRecords, error: monthError } = await supabaseAdmin
+      const { data: monthRecords, error: monthError } = await (supabaseAdmin as any)
         .from('vision_usage')
         .select('status, created_at')
         .eq('user_id', userId)
@@ -254,7 +254,7 @@ export class VisionRateLimiter {
       
       // 4. 全体の月間使用量チェック（動的計算）
       // プレミアムユーザー数を取得
-      const { count: premiumUserCount } = await supabaseAdmin
+      const { count: premiumUserCount } = await (supabaseAdmin as any)
         .from('users')
         .select('*', { count: 'exact', head: true })
         .eq('subscription_status', 'premium')
@@ -264,7 +264,7 @@ export class VisionRateLimiter {
       const dynamicMonthlyLimit = Math.max(1500, (premiumUserCount || 0) * 1500)
       const dynamicAlertLimit = Math.floor(dynamicMonthlyLimit * 0.8) // 80%で警告
       
-      const { data: globalRecords } = await supabaseAdmin
+      const { data: globalRecords } = await (supabaseAdmin as any)
         .from('vision_usage')
         .select('status, created_at')
         .gte('created_at', startOfMonth.toISOString())
@@ -350,7 +350,7 @@ export class VisionRateLimiter {
       for (let i = 0; i < maxRetries; i++) {
         try {
           // レースコンディション対策: 同じユーザーが同時にprocessingを作ろうとしていないか確認
-          const { data: existing } = await supabaseAdmin
+          const { data: existing } = await (supabaseAdmin as any)
             .from('vision_usage')
             .select('id')
             .eq('user_id', userId)
@@ -450,7 +450,7 @@ export class VisionRateLimiter {
     }
     
     try {
-      const { error } = await supabaseAdmin
+      const { error } = await (supabaseAdmin as any)
         .from('vision_usage')
         .delete()
         .eq('id', placeholderId)
@@ -482,7 +482,7 @@ export class VisionRateLimiter {
       // 5分以上前のprocessing状態のレコードを削除
       const staleTime = new Date(Date.now() - 5 * 60 * 1000).toISOString()
       
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await (supabaseAdmin as any)
         .from('vision_usage')
         .delete()
         .eq('status', 'processing')

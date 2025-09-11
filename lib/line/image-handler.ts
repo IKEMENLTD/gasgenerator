@@ -99,7 +99,7 @@ export class LineImageHandler {
       const imageHash = crypto.createHash('sha256').update(buffer).digest('hex')
       
       // 3. ユーザーのプレミアムステータス確認
-      const { data: user } = await supabaseAdmin
+      const { data: user } = await (supabaseAdmin as any)
         .from('users')
         .select('subscription_status, subscription_end_date')
         .eq('display_name', userId)

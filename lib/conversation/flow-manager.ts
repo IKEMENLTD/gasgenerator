@@ -325,7 +325,7 @@ export class ConversationFlowManager {
 
       // データベース接続テスト
       const supabase = (await import('@/lib/supabase/client')).supabaseAdmin
-      const { error: dbError } = await supabase.from('users').select('id').limit(1)
+      const { error: dbError } = await (supabase as any).from('users').select('id').limit(1)
       if (dbError) {
         issues.push('Database connection failed')
       }

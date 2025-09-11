@@ -106,7 +106,7 @@ export class MigrationManager {
    * 実行済みマイグレーションの取得
    */
   private async getAppliedMigrations(): Promise<Set<string>> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.migrationsTable)
       .select('version')
       .eq('success', true)
@@ -267,7 +267,7 @@ export class MigrationManager {
   async rollback(version?: string): Promise<void> {
     logger.info('Starting rollback', { targetVersion: version })
 
-    const { data: migrations, error } = await supabase
+    const { data: migrations, error } = await (supabase as any)
       .from(this.migrationsTable)
       .select('*')
       .eq('success', true)
@@ -319,7 +319,7 @@ export class MigrationManager {
       }
 
       // 履歴から削除
-      await supabase
+      await (supabase as any)
         .from(this.migrationsTable)
         .delete()
         .eq('version', migration.version)
@@ -359,7 +359,7 @@ export class MigrationManager {
    * 実行済みマイグレーションの詳細取得
    */
   private async getAppliedMigrationDetails(): Promise<MigrationHistory[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.migrationsTable)
       .select('*')
       .eq('success', true)

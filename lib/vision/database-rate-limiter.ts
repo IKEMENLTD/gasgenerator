@@ -37,7 +37,7 @@ export class DatabaseRateLimiter {
       const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
       
       // 1. 重複チェック（同じ画像は再解析しない）
-      const { data: existing } = await supabaseAdmin
+      const { data: existing } = await (supabaseAdmin as any)
         .from('vision_usage')
         .select('analysis_result')
         .eq('user_id', userId)
@@ -59,14 +59,14 @@ export class DatabaseRateLimiter {
       }
       
       // 2. 現在の使用量を取得（トランザクション的に）
-      const { data: todayUsage } = await supabaseAdmin
+      const { data: todayUsage } = await (supabaseAdmin as any)
         .from('vision_usage')
         .select('id', { count: 'exact' })
         .eq('user_id', userId)
         .gte('created_at', `${today}T00:00:00`)
         .lte('created_at', `${today}T23:59:59`)
       
-      const { data: monthUsage } = await supabaseAdmin
+      const { data: monthUsage } = await (supabaseAdmin as any)
         .from('vision_usage')
         .select('id', { count: 'exact' })
         .eq('user_id', userId)
@@ -225,7 +225,7 @@ export class DatabaseRateLimiter {
       const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
       
       // 今日の使用量
-      const { count: todayCount } = await supabaseAdmin
+      const { count: todayCount } = await (supabaseAdmin as any)
         .from('vision_usage')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
@@ -233,7 +233,7 @@ export class DatabaseRateLimiter {
         .gte('created_at', `${today}T00:00:00`)
       
       // 今月の使用量
-      const { count: monthCount } = await supabaseAdmin
+      const { count: monthCount } = await (supabaseAdmin as any)
         .from('vision_usage')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
@@ -241,7 +241,7 @@ export class DatabaseRateLimiter {
         .gte('created_at', `${thisMonth}-01T00:00:00`)
       
       // 全期間の使用量
-      const { count: totalCount } = await supabaseAdmin
+      const { count: totalCount } = await (supabaseAdmin as any)
         .from('vision_usage')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
@@ -276,14 +276,14 @@ export class DatabaseRateLimiter {
       const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
       
       // 今月の全ユーザー使用量
-      const { count: totalUsage } = await supabaseAdmin
+      const { count: totalUsage } = await (supabaseAdmin as any)
         .from('vision_usage')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'completed')
         .gte('created_at', `${thisMonth}-01T00:00:00`)
       
       // プレミアムユーザー数を取得
-      const { count: premiumUsers } = await supabaseAdmin
+      const { count: premiumUsers } = await (supabaseAdmin as any)
         .from('users')
         .select('*', { count: 'exact', head: true })
         .eq('subscription_status', 'premium')
@@ -339,13 +339,13 @@ export const databaseRateLimiter = new DatabaseRateLimiter()
     )
     
     // 月間使用量
-    const { count: monthTotal } = await supabaseAdmin
+    const { count: monthTotal } = await (supabaseAdmin as any)
       .from('vision_usage')
       .select('*', { count: 'exact', head: true })
       .gte('created_at', startOfMonth.toISOString())
     
     // 本日の使用量
-    const { count: todayTotal } = await supabaseAdmin
+    const { count: todayTotal } = await (supabaseAdmin as any)
       .from('vision_usage')
       .select('*', { count: 'exact', head: true })
       .gte('created_at', startOfDay.toISOString())

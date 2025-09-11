@@ -180,7 +180,7 @@ ${request.context.errorMessage ? `\n⚠️ エラー:\n${request.context.errorMe
   private async getUserContext(userId: string): Promise<any> {
     try {
       // 最新の生成コードを取得
-      const { data: codes } = await supabaseAdmin
+      const { data: codes } = await (supabaseAdmin as any)
         .from('generated_codes')
         .select('*')
         .eq('user_id', userId)
@@ -188,7 +188,7 @@ ${request.context.errorMessage ? `\n⚠️ エラー:\n${request.context.errorMe
         .limit(1)
       
       // 最新のエラーログを取得
-      const { data: errors } = await supabaseAdmin
+      const { data: errors } = await (supabaseAdmin as any)
         .from('error_logs')
         .select('*')
         .eq('user_id', userId)
@@ -196,7 +196,7 @@ ${request.context.errorMessage ? `\n⚠️ エラー:\n${request.context.errorMe
         .limit(1)
       
       // 会話履歴を取得
-      const { data: conversations } = await supabaseAdmin
+      const { data: conversations } = await (supabaseAdmin as any)
         .from('conversation_sessions')
         .select('*')
         .eq('user_id', userId)

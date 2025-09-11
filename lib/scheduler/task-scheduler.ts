@@ -385,7 +385,7 @@ export class TaskScheduler {
    * タスクの読み込み
    */
   private async loadTasks(): Promise<void> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('scheduled_tasks')
       .select('*')
       .eq('enabled', true)
@@ -408,7 +408,7 @@ export class TaskScheduler {
    * タスクの削除（DB）
    */
   private async deleteTaskFromDB(taskId: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('scheduled_tasks')
       .delete()
       .eq('id', taskId)

@@ -8,7 +8,7 @@ export class SessionQueries {
    */
   static async getSession(userId: string): Promise<ConversationContext | null> {
     try {
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await (supabaseAdmin as any)
         .from('conversation_sessions')
         .select('*')
         .eq('user_id', userId)
@@ -54,7 +54,7 @@ export class SessionQueries {
   static async setSession(userId: string, context: ConversationContext): Promise<boolean> {
     try {
       // 既存のアクティブセッションを確認
-      const { data: existing } = await supabaseAdmin
+      const { data: existing } = await (supabaseAdmin as any)
         .from('conversation_sessions')
         .select('id')
         .eq('user_id', userId)
@@ -176,7 +176,7 @@ export class SessionQueries {
    */
   static async getActiveSessionCount(): Promise<number> {
     try {
-      const { count, error } = await supabaseAdmin
+      const { count, error } = await (supabaseAdmin as any)
         .from('conversation_sessions')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'active')

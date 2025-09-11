@@ -19,7 +19,7 @@ export class PremiumChecker {
   static async checkPremiumStatus(userId: string): Promise<PremiumStatus> {
     try {
       // ユーザー情報を取得（display_nameをLINE IDとして使用）
-      let { data: user, error: userError } = await supabaseAdmin
+      let { data: user, error: userError } = await (supabaseAdmin as any)
         .from('users')
         .select('display_name, subscription_status, subscription_end_date, monthly_usage_count, last_reset_date')
         .eq('display_name', userId)
@@ -123,7 +123,7 @@ export class PremiumChecker {
   static async incrementUsage(userId: string): Promise<boolean> {
     try {
       // 直接更新（RPCは使用しない）
-      const { data: user } = await supabaseAdmin
+      const { data: user } = await (supabaseAdmin as any)
         .from('users')
         .select('monthly_usage_count, total_requests')
         .eq('display_name', userId)

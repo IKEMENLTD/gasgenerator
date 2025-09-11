@@ -66,7 +66,7 @@ export class SupabaseTransaction {
   ): Promise<void> {
     try {
       // 1. ユーザーの現在の状態を確認（排他ロック的な動作）
-      const { data: currentUser, error: fetchError } = await supabaseAdmin
+      const { data: currentUser, error: fetchError } = await (supabaseAdmin as any)
         .from('users')
         .select('subscription_status, stripe_customer_id')
         .eq('display_name', userId)
