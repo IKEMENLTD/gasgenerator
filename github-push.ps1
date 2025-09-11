@@ -4,7 +4,7 @@ Write-Host "================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Configuration
-$GITHUB_TOKEN = "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"
+$GITHUB_TOKEN = $env:GITHUB_TOKEN  # 環境変数から取得
 $OWNER = "IKEMENLTD"
 $REPO = "gasgenerator"
 $BRANCH = "main"

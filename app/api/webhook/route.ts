@@ -680,7 +680,10 @@ async function startCodeGeneration(
     await PremiumChecker.incrementUsage(userId)
     
     // ローディングアニメーションを開始（30秒）
-    await lineClient.showLoadingAnimation(userId, 30)
+    const loadingStarted = await lineClient.showLoadingAnimation(userId, 30)
+    if (!loadingStarted) {
+      logger.warn('Loading animation failed to start', { userId })
+    }
     
     // キューに追加
     const job = await QueueManager.addJob({

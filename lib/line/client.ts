@@ -17,7 +17,8 @@ export class LineApiClient {
    */
   async showLoadingAnimation(userId: string, durationSeconds: number = 20): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/chat/loading/start`, {
+      // LINE Loading API の正しいエンドポイント
+      const response = await fetch('https://api.line.me/v2/bot/chat/loading/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,8 +34,12 @@ export class LineApiClient {
         const errorText = await response.text()
         logger.error('Loading animation API error', {
           status: response.status,
-          error: errorText
+          error: errorText,
+          userId,
+          endpoint: 'https://api.line.me/v2/bot/chat/loading/start'
         })
+        
+        // エラーでも処理は続行
         return false
       }
 

@@ -3,7 +3,7 @@ echo GitHub API Update Script for Windows
 echo =====================================
 echo.
 
-set GITHUB_TOKEN=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
+REM set GITHUB_TOKEN=YOUR_TOKEN_HERE
 set OWNER=IKEMENLTD
 set REPO=gasgenerator
 set BRANCH=main
