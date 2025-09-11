@@ -30,11 +30,15 @@ export class PremiumChecker {
         const { data: newUser, error: insertError } = await (supabaseAdmin as any)
           .from('users')
           .insert({
-            display_name: userId,  // display_nameにLINE IDを保存
+            line_user_id: userId,  // LINE IDを必須フィールドに設定
+            display_name: userId,  // display_nameにもLINE IDを保存
             subscription_status: 'free',
             monthly_usage_count: 0,
             total_requests: 0,
-            created_at: new Date().toISOString()
+            skill_level: 'beginner',  // デフォルト値
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            last_active_at: new Date().toISOString()
           })
           .select()
           .single()
