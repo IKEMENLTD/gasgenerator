@@ -683,7 +683,7 @@ async function startCodeGeneration(
     await lineClient.showLoadingAnimation(userId, 30)
     
     // キューに追加
-    await QueueManager.addJob({
+    const job = await QueueManager.addJob({
       userId: userId,  // LINE User IDを使用（外部キー制約を回避）
       lineUserId: userId,  // LINE User IDも保存
       sessionId: generateUUID(),
@@ -695,6 +695,17 @@ async function startCodeGeneration(
         details: ConversationalFlow.generateCodePrompt(context)
       }
     })
+    
+    // 【重要】即座に処理を開始（キューを待たない）
+    setTimeout(async () => {
+      try {
+        const { QueueProcessor } = await import('../../../lib/queue/processor')
+        await QueueProcessor.processJob(job.id)
+        logger.info('Job processed immediately', { jobId: job.id, userId })
+      } catch (error) {
+        logger.error('Immediate job processing failed', { error, jobId: job.id })
+      }
+    }, 2000) // 2秒後に処理開始
 
     // 確認メッセージを送信
     await lineClient.replyMessage(replyToken, [{
