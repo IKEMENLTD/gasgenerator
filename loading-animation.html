@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コード生成中...</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status-message {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .loader {
+            margin: 30px auto;
+            width: 70px;
+            height: 70px;
+            position: relative;
+        }
+
+        .loader-inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 4px solid transparent;
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loader-inner:nth-child(2) {
+            border-top-color: rgba(255, 255, 255, 0.7);
+            animation: spin 1.5s linear infinite;
+        }
+
+        .loader-inner:nth-child(3) {
+            border-top-color: rgba(255, 255, 255, 0.4);
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #fff, #f0f0f0);
+            border-radius: 3px;
+            animation: progress 3s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        .details {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .detail-label {
+            opacity: 0.7;
+        }
+
+        .detail-value {
+            font-weight: 600;
+        }
+
+        .dots {
+            display: inline-block;
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .processing-text {
+            font-size: 16px;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+
+        .processing-text::after {
+            content: '...';
+            animation: ellipsis 1.5s infinite;
+        }
+
+        @keyframes ellipsis {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+
+        .tips {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .tip-icon {
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        /* アニメーションステップ */
+        .step-indicator {
+            margin: 20px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .step.active {
+            opacity: 1;
+        }
+
+        .step-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .step.active .step-icon {
+            background: white;
+            color: #667eea;
+        }
+
+        .step.completed .step-icon {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="status-icon">🚀</div>
+        <h1>コードを生成中です</h1>
+        
+        <div class="loader">
+            <div class="loader-inner"></div>
+            <div class="loader-inner"></div>
+            <div class="loader-inner"></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+
+        <div class="status-message">
+            ✅ キューに追加済み
+        </div>
+
+        <div class="details">
+            <div class="detail-item">
+                <span class="detail-label">⏰ 予想時間</span>
+                <span class="detail-value">2-3分</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">📊 ステータス</span>
+                <span class="detail-value">処理中 <span class="spinner"></span></span>
+            </div>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step completed" id="step1">
+                <div class="step-icon">✓</div>
+                <span>リクエスト受信</span>
+            </div>
+            <div class="step active" id="step2">
+                <div class="step-icon">2</div>
+                <span>コード解析中<span class="dots"></span></span>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-icon">3</div>
+                <span>最適化処理</span>
+            </div>
+            <div class="step" id="step4">
+                <div class="step-icon">4</div>
+                <span>完了</span>
+            </div>
+        </div>
+
+        <div class="processing-text">
+            処理中はローディングが表示されます
+        </div>
+
+        <div class="tips">
+            <span class="tip-icon">💡</span>
+            生成が完了したら自動で通知します！
+        </div>
+    </div>
+
+    <script>
+        // ステップを順番に進める
+        let currentStep = 2;
+        const totalSteps = 4;
+        
+        setInterval(() => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateSteps();
+            }
+        }, 30000); // 30秒ごとに次のステップへ
+
+        function updateSteps() {
+            for (let i = 1; i <= totalSteps; i++) {
+                const step = document.getElementById(`step${i}`);
+                if (i < currentStep) {
+                    step.className = 'step completed';
+                    step.querySelector('.step-icon').innerHTML = '✓';
+                } else if (i === currentStep) {
+                    step.className = 'step active';
+                } else {
+                    step.className = 'step';
+                }
+            }
+        }
+
+        // ランダムなメッセージを表示
+        const messages = [
+            "コードを解析中...",
+            "最適化を実行中...",
+            "依存関係を確認中...",
+            "テストケースを生成中...",
+            "ドキュメントを作成中..."
+        ];
+
+        let messageIndex = 0;
+        setInterval(() => {
+            const stepText = document.querySelector('#step2 span');
+            if (stepText && currentStep === 2) {
+                messageIndex = (messageIndex + 1) % messages.length;
+                stepText.innerHTML = messages[messageIndex] + '<span class="dots"></span>';
+            }
+        }, 5000);
+
+        // 完了時のシミュレーション（実際は外部からトリガー）
+        // setTimeout(() => {
+        //     currentStep = 4;
+        //     updateSteps();
+        //     document.querySelector('.status-icon').textContent = '✅';
+        //     document.querySelector('h1').textContent = 'コード生成完了！';
+        //     document.querySelector('.processing-text').textContent = 'コードが正常に生成されました';
+        // }, 120000); // 2分後に完了
+    </script>
+</body>
+</html>
