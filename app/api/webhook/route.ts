@@ -703,7 +703,8 @@ async function startCodeGeneration(
     setTimeout(async () => {
       try {
         const { QueueProcessor } = await import('../../../lib/queue/processor')
-        await QueueProcessor.processJob(job.id)
+        const processor = new QueueProcessor()
+        await processor.processJob(job)
         logger.info('Job processed immediately', { jobId: job.id, userId })
       } catch (error) {
         logger.error('Immediate job processing failed', { error, jobId: job.id })

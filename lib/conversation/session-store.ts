@@ -352,7 +352,7 @@ export class ConversationSessionStore {
   /**
    * 定期クリーンアップ
    */
-  private cleanup(): void {
+  public cleanup(): void {
     const now = Date.now()
     const toDelete: string[] = []
     
