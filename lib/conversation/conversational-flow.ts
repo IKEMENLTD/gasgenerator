@@ -19,7 +19,9 @@ const anthropic = new Anthropic({
 })
 
 export interface ConversationContext {
+  sessionId?: string
   category: string
+  subcategory?: string
   messages: Array<{
     role: 'user' | 'assistant'
     content: string
@@ -33,6 +35,7 @@ export interface ConversationContext {
     frequency?: string
     [key: string]: string | string[] | undefined
   }
+  extractedRequirements?: Record<string, any>
   readyForCode: boolean
   // 最後に生成したコード関連の情報
   lastGeneratedCode?: boolean
@@ -40,6 +43,11 @@ export interface ConversationContext {
   lastGeneratedRequirements?: Record<string, string | string[] | undefined>
   isModifying?: boolean
   isAddingDescription?: boolean
+  waitingForScreenshot?: boolean
+  waitingForConfirmation?: boolean
+  imageContent?: string
+  errorScreenshot?: string
+  currentStep?: number
 }
 
 // カテゴリ別の質問テンプレート

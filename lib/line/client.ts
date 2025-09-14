@@ -54,9 +54,12 @@ export class LineApiClient {
 
   /**
    * Reply APIを使った返信（replyTokenが必要）
+   * 5メッセージを超える場合は、Push APIを使って追加送信
    */
-  async replyMessage(replyToken: string, messages: any[]): Promise<boolean> {
+  async replyMessage(replyToken: string, messages: any[], userId?: string): Promise<boolean> {
     try {
+      // 最初の5メッセージをReply APIで送信
+      const firstBatch = messages.slice(0, 5)
       const response = await fetch(`${this.baseUrl}/message/reply`, {
         method: 'POST',
         headers: {
@@ -65,7 +68,7 @@ export class LineApiClient {
         },
         body: JSON.stringify({
           replyToken,
-          messages: messages.slice(0, 5) // LINE APIは最大5メッセージまで
+          messages: firstBatch
         }),
         signal: AbortSignal.timeout(TIMEOUTS.HTTP_REQUEST)
       })
@@ -82,8 +85,24 @@ export class LineApiClient {
 
       logger.info('LINE reply sent successfully', {
         replyToken,
-        messageCount: messages.length
+        messageCount: firstBatch.length
       })
+
+      // 5メッセージを超える場合は、Push APIで追加送信
+      if (messages.length > 5 && userId) {
+        const remainingMessages = messages.slice(5)
+        
+        // 残りのメッセージを5個ずつのバッチで送信
+        for (let i = 0; i < remainingMessages.length; i += 5) {
+          const batch = remainingMessages.slice(i, i + 5)
+          await this.pushMessage(userId, batch)
+          
+          // レート制限を避けるため少し待機
+          if (i + 5 < remainingMessages.length) {
+            await new Promise(resolve => setTimeout(resolve, 100))
+          }
+        }
+      }
 
       return true
 

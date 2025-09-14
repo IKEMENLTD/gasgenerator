@@ -3,8 +3,10 @@ import { ClaudeApiClient } from '@/lib/claude/client'
 import { PromptBuilder } from '@/lib/claude/prompt-builder'
 import { ResponseParser } from '@/lib/claude/response-parser'
 import { ClaudeUsageTracker } from '@/lib/claude/usage-tracker'
+import { CodeValidator } from '@/lib/claude/code-validator'
 import { LineApiClient } from '@/lib/line/client'
 import { MessageTemplates } from '@/lib/line/message-templates'
+import { MessageFormatter } from '@/lib/line/message-formatter'
 import { CodeQueries } from '@/lib/supabase/queries'
 import { logger } from '@/lib/utils/logger'
 import { QUEUE_CONFIG } from '@/lib/constants/config'
@@ -179,6 +181,83 @@ export class QueueProcessor {
         })
       }
 
+      // 3.5. コード検証と自動修正
+      const validator = new CodeValidator()
+      
+      // ユーザーのメッセージ履歴を取得
+      const userMessages: string[] = []
+      if (job.requirements?.conversation) {
+        // 会話型の場合
+        const sessionStore = ConversationSessionStore.getInstance()
+        const context = await sessionStore.getAsync(job.line_user_id)
+        if (context?.messages) {
+          userMessages.push(...context.messages.filter(m => m.role === 'user').map(m => m.content))
+        }
+      } else if (job.requirements?.details) {
+        userMessages.push(job.requirements.details)
+      }
+
+      // コードを検証
+      const validation = await validator.validateCode(
+        codeResponse.code,
+        job.requirements,
+        userMessages
+      )
+
+      logger.info('Code validation completed', {
+        jobId,
+        validationScore: validation.score,
+        needsRevision: validation.needsRevision,
+        issues: validation.issues
+      })
+
+      // 修正が必要な場合
+      if (validation.needsRevision && validation.score < 70) {
+        logger.info('Code needs revision, attempting automatic fix', { jobId })
+        
+        // 自動修正を試みる
+        const revisedCode = await validator.reviseCode(
+          codeResponse.code,
+          validation.issues,
+          job.requirements
+        )
+        
+        // 修正後のコードを再検証
+        const revalidation = await validator.validateCode(
+          revisedCode,
+          job.requirements,
+          userMessages
+        )
+        
+        if (revalidation.score > validation.score) {
+          logger.info('Code successfully revised', {
+            jobId,
+            oldScore: validation.score,
+            newScore: revalidation.score
+          })
+          codeResponse.code = revisedCode
+          
+          // 修正内容を説明に追加
+          if (!codeResponse.notes) {
+            codeResponse.notes = []
+          }
+          codeResponse.notes.push('✅ コードは要件に合わせて自動調整されました')
+        } else {
+          logger.warn('Revision did not improve code', { jobId })
+          // 元のコードを使用し、警告を追加
+          if (!codeResponse.notes) {
+            codeResponse.notes = []
+          }
+          codeResponse.notes.push('⚠️ 一部要件と異なる可能性があります。動作確認後、必要に応じて修正してください')
+        }
+      } else if (validation.suggestions.length > 0) {
+        // 提案がある場合は注意点に追加
+        if (!codeResponse.notes) {
+          codeResponse.notes = []
+        }
+        codeResponse.notes.push(...validation.suggestions.map(s => `💡 ${s}`))
+      }
+
       // 4. データベースに保存（エラーハンドリング強化）
       try {
         await CodeQueries.saveGeneratedCode({
@@ -290,55 +369,99 @@ export class QueueProcessor {
     category?: string
   ): Promise<void> {
     try {
-      // 構造化レスポンスフォーマットを使用
-      let fullResponseText = ''
+      const messages: any[] = []
       
-      // カテゴリと概要
-      fullResponseText = `コード生成が完了しました！【${category || '汎用'}】\n`
-      if (codeResponse.summary) {
-        fullResponseText += codeResponse.summary + '\n\n'
+      // 1. 完了通知メッセージ
+      messages.push({
+        type: 'text',
+        text: `✅ コード生成が完了しました！【${category || '汎用'}】`
+      })
+      
+      // 2. 説明メッセージ
+      if (codeResponse.summary || codeResponse.explanation) {
+        const explanation = (codeResponse.summary || '') + '\n\n' + (codeResponse.explanation || '')
+        const splitExplanation = MessageFormatter.splitLongMessage(explanation.trim())
+        for (const chunk of splitExplanation) {
+          messages.push({
+            type: 'text',
+            text: chunk
+          })
+        }
       }
       
-      // 説明
-      if (codeResponse.explanation) {
-        fullResponseText += codeResponse.explanation + '\n\n'
-      }
-      
-      // コード
+      // 3. コード部分（フォーマット済み、分割対応）
       if (codeResponse.code) {
-        fullResponseText += `コード:\n\`\`\`javascript\n${codeResponse.code}\n\`\`\`\n\n`
+        const codeMessages = MessageFormatter.formatGASCode(
+          codeResponse.code,
+          'Google Apps Script コード'
+        )
+        
+        // コードメッセージを追加
+        for (const codeMsg of codeMessages) {
+          messages.push({
+            type: 'text',
+            text: codeMsg
+          })
+        }
       }
       
-      // 設定方法（手順）
+      // 4. 設定方法（手順）
       if (codeResponse.steps && codeResponse.steps.length > 0) {
-        fullResponseText += `設定方法:\n`
+        let stepsText = '📝 設定方法:\n'
         codeResponse.steps.forEach((step: string, index: number) => {
-          fullResponseText += `${index + 1}. ${step}\n`
+          stepsText += `${index + 1}. ${step}\n`
         })
-        fullResponseText += '\n'
+        
+        // 手順が長い場合は分割
+        const splitSteps = MessageFormatter.splitLongMessage(stepsText)
+        for (const chunk of splitSteps) {
+          messages.push({
+            type: 'text',
+            text: chunk
+          })
+        }
       }
       
-      // 注意点（もしあれば）
+      // 5. 注意点
+      let notesText = '⚠️ 注意点:\n'
       if (codeResponse.notes && Array.isArray(codeResponse.notes)) {
-        fullResponseText += `注意点:\n`
         codeResponse.notes.forEach((note: string) => {
-          fullResponseText += `• ${note}\n`
+          notesText += `• ${note}\n`
         })
+      } else {
+        notesText += `• 初回実行時は承認が必要です\n`
+        notesText += `• コードはGoogle Apps Scriptエディタに貼り付けてください\n`
+        notesText += `• エラーが出た場合はスクリーンショットを送信してください\n`
       }
       
-      // デフォルトの注意点を追加
-      if (!codeResponse.notes || codeResponse.notes.length === 0) {
-        fullResponseText += `注意点:\n`
-        fullResponseText += `• 初回実行時は承認が必要です\n`
-        fullResponseText += `• コードはGoogle Apps Scriptエディタに貼り付けてください\n`
-        fullResponseText += `• エラーが出た場合はスクリーンショットを送信してください\n`
+      messages.push({
+        type: 'text',
+        text: notesText
+      })
+      
+      // 6. アクションボタン
+      messages.push({
+        type: 'text',
+        text: '次のアクション',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }},
+            { type: 'action', action: { type: 'message', label: '📷 エラースクショ', text: 'エラーのスクショを送る' }},
+            { type: 'action', action: { type: 'message', label: '🔄 新規作成', text: '新しいコードを作りたい' }}
+          ]
+        }
+      })
+      
+      // メッセージを送信（5個ずつのバッチで送信）
+      for (let i = 0; i < messages.length; i += 5) {
+        const batch = messages.slice(i, i + 5)
+        await this.lineClient.pushMessage(lineUserId, batch)
+        
+        // レート制限を避けるため少し待機
+        if (i + 5 < messages.length) {
+          await new Promise(resolve => setTimeout(resolve, 200))
+        }
       }
-      
-      // 構造化されたメッセージを生成
-      const messages = MessageTemplates.createStructuredCodeResult(fullResponseText)
-      
-      // メッセージを送信（最大5つまで）
-      await this.lineClient.pushMessage(lineUserId, messages.slice(0, 5))
       
     } catch (error) {
       logger.error('Failed to send result to LINE', { 

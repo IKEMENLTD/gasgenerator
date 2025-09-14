@@ -8,7 +8,7 @@ import { logger } from '../../../lib/utils/logger'
 import { generateRequestId, generateUUID, validateLineSignature } from '../../../lib/utils/crypto'
 import { getCategoryIdByName } from '../../../lib/conversation/category-definitions'
 import { ConversationalFlow, ConversationContext } from '../../../lib/conversation/conversational-flow'
-import { ConversationSessionStore } from '../../../lib/conversation/session-store'
+import { SessionManager } from '../../../lib/conversation/session-manager'
 import { LineImageHandler } from '../../../lib/line/image-handler'
 import { rateLimiters } from '../../../lib/middleware/rate-limiter'
 import { engineerSupport } from '../../../lib/line/engineer-support'
@@ -18,19 +18,19 @@ export const runtime = 'nodejs'
 export const maxDuration = 30  // Webhookは30秒で応答
 
 const lineClient = new LineApiClient()
-const sessionStore = ConversationSessionStore.getInstance()
+const sessionManager = SessionManager.getInstance()
 const imageHandler = new LineImageHandler()
 
 // プロセス終了時のクリーンアップ
 if (typeof process !== 'undefined') {
   process.on('SIGTERM', () => {
     logger.info('SIGTERM received, cleaning up...')
-    sessionStore.destroy()
+    // SessionManagerが内部でクリーンアップを処理
   })
   
   process.on('SIGINT', () => {
     logger.info('SIGINT received, cleaning up...')
-    sessionStore.destroy()
+    // SessionManagerが内部でクリーンアップを処理
   })
 }
 
@@ -207,8 +207,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
   logger.info('Processing message', { userId, messageText, requestId })
 
   try {
-    // 会話コンテキスト取得
-    let context = sessionStore.get(userId)
+    // SessionManagerを使用してコンテキストを取得（キャッシュ優先、自動フォールバック）
+    let context = await sessionManager.getContext(userId)
 
     // エラースクリーンショット待ち受けモード
     if (messageText === 'エラーのスクリーンショットを送る' || 
@@ -230,8 +230,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: '📸 エラーのスクリーンショットを送信してください。\n\n画像を確認後、エラーの原因と解決方法をお伝えします。\n\n※画像を送信するか、「キャンセル」と入力してください。'
       }])
       
-      // スクショ待ちモードをセット（既存コンテキストを保持）
-      sessionStore.set(userId, {
+      // スクショ待ちモードをセット（SessionManager経由）
+      await sessionManager.saveContext(userId, {
         ...existingContext,
         waitingForScreenshot: true,
         lastGeneratedCode: ('lastGeneratedCode' in existingContext ? existingContext.lastGeneratedCode : null)
@@ -252,7 +252,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     // エンジニアに相談
     if (messageText === 'エンジニアに相談する' || 
         messageText === 'エンジニアに相談' || 
+        messageText === 'エンジニアへの相談' ||
         messageText === '👨‍💻 エンジニアに相談' ||
+        messageText.includes('エンジニア') && messageText.includes('相談') ||
         messageText.includes('人間') && messageText.includes('相談')) {
       
       await engineerSupport.handleSupportRequest(userId, messageText, replyToken)
@@ -296,9 +298,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
     // コード生成後の修正モード（最優先でチェック）
     if (messageText === '修正' || messageText === '修正したい' || messageText === 'やり直し') {
-      // Supabaseから最新のセッションを取得（別プロセスで保存された可能性があるため）
+      // SessionManagerから最新のセッションを再取得
       if (!context) {
-        context = await sessionStore.getAsync(userId)
+        context = await sessionManager.getContext(userId)
       }
       
       // デバッグログ追加
@@ -328,7 +330,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       if (context && (context.lastGeneratedCode || messageText === '修正したい')) {
         context.isModifying = true
         context.lastGeneratedCode = false
-        sessionStore.set(userId, context)
+        
+        // SessionManager経由で保存
+        await sessionManager.saveContext(userId, context)
         
         await lineClient.replyMessage(replyToken, [{
           type: 'text',
@@ -346,16 +350,33 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     
     // リセットコマンド
     if (isResetCommand(messageText)) {
-      sessionStore.delete(userId)
+      await sessionManager.deleteSession(userId)
       context = null
     }
 
     // 新規会話開始
     if (!context) {
+      // 新規会話でも過去の履歴を確認
+      const recentMessages = await sessionManager.getRecentMessages(userId, 5)
+      if (recentMessages.length > 0) {
+        logger.info('Found recent messages, continuing conversation', { 
+          userId, 
+          messageCount: recentMessages.length 
+        })
+      }
       return await startNewConversation(userId, messageText, replyToken)
     }
 
     // 既存会話の継続
+    // メッセージをSessionManager経由で保存
+    await sessionManager.saveMessage(
+      userId,
+      context.sessionId || generateUUID(),
+      'user',
+      messageText,
+      { timestamp: Date.now() }
+    )
+    
     return await continueConversation(userId, context, messageText, replyToken)
     
   } catch (error) {
@@ -449,13 +470,14 @@ async function startNewConversation(
     return true
   }
 
-  // 新しい会話コンテキスト作成
-  const context = ConversationalFlow.resetConversation(categoryId)
-  sessionStore.set(userId, context)
+  // SessionManager経由で新しいセッションを作成
+  const context = await sessionManager.createSession(userId, categoryId, messageText)
   
   // 最初の質問を送信
   const result = await ConversationalFlow.processConversation(context, messageText)
-  sessionStore.set(userId, result.updatedContext)
+  
+  // 更新されたコンテキストをSessionManager経由で保存
+  await sessionManager.saveContext(userId, result.updatedContext)
   
   await lineClient.replyMessage(replyToken, [{
     type: 'text',
@@ -481,7 +503,7 @@ async function continueConversation(
 ): Promise<boolean> {
   // キャンセル処理（どの段階でも有効）
   if (messageText === 'キャンセル') {
-    sessionStore.delete(userId)
+    await sessionManager.deleteSession(userId)
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
       text: '❌ キャンセルしました。\n\n新しくコードを生成したい場合は、カテゴリを選んでください：',
@@ -508,14 +530,18 @@ async function continueConversation(
       // セッションを削除せず、コード生成後モードに変更
       context.lastGeneratedCode = true
       context.readyForCode = false
-      sessionStore.set(userId, context)
+      
+      // SessionManager経由で更新を保存
+      await sessionManager.saveContext(userId, context)
       return true
     }
     // 「追加で説明します」ボタン
     else if (messageText === '追加で説明します') {
       // 追加説明モードに切り替え
       context.isAddingDescription = true
-      sessionStore.set(userId, context)
+      
+      // SessionManager経由で更新
+      await sessionManager.saveContext(userId, context)
       
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
@@ -539,7 +565,9 @@ async function continueConversation(
     context.requirements.additionalDescription = messageText
     context.readyForCode = true
     ;(context as any).isAddingDescription = false
-    sessionStore.set(userId, context)
+    
+    // SessionManager経由で更新
+    await sessionManager.saveContext(userId, context)
     
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
@@ -563,13 +591,15 @@ async function continueConversation(
       // セッションを削除せず、コード生成後モードに変更
       context.lastGeneratedCode = true
       context.readyForCode = false
-      sessionStore.set(userId, context)
+      
+      // SessionManager経由で更新を保存
+      await sessionManager.saveContext(userId, context)
       return true
     } else if (messageText === '修正' || messageText === 'やり直し' || messageText === '修正したい') {
       // 要件の修正
       context.readyForCode = false
       context.isModifying = true  // 修正モードフラグ
-      sessionStore.set(userId, context)
+      await sessionManager.saveContext(userId, context)
       
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
@@ -594,7 +624,9 @@ async function continueConversation(
     (context.requirements as any).modifications = messageText
     context.readyForCode = true
     ;(context as any).isModifying = false
-    sessionStore.set(userId, context)
+    
+    // SessionManager経由で更新
+    await sessionManager.saveContext(userId, context)
     
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
@@ -613,7 +645,19 @@ async function continueConversation(
   // 会話継続
   try {
     const result = await ConversationalFlow.processConversation(context, messageText)
-    sessionStore.set(userId, result.updatedContext)
+    
+    // SessionManager経由で更新
+    await sessionManager.saveContext(userId, result.updatedContext)
+    
+    // アシスタントの応答も保存
+    if (result.reply) {
+      await sessionManager.saveMessage(
+        userId,
+        context.sessionId || generateUUID(),
+        'assistant',
+        result.reply
+      )
+    }
 
     // 応答送信
     const quickReplyItems = result.isComplete ? [
@@ -685,19 +729,27 @@ async function startCodeGeneration(
       logger.warn('Loading animation failed to start', { userId })
     }
     
-    // キューに追加
+    // セッションIDを確保
+    const sessionId = context.sessionId || generateUUID()
+    
+    // キューに追加（セッションIDを含める）
     const job = await QueueManager.addJob({
       userId: userId,  // LINE User IDを使用（外部キー制約を回避）
       lineUserId: userId,  // LINE User IDも保存
-      sessionId: generateUUID(),
+      sessionId: sessionId,
       category: context.category,
       subcategory: 'conversational',
       requirements: {
         category: context.category,
         subcategory: 'conversational',
-        details: ConversationalFlow.generateCodePrompt(context)
-      }
+        details: ConversationalFlow.generateCodePrompt(context),
+        prompt: ConversationalFlow.generateCodePrompt(context),  // プロンプトとして保存
+        conversation: true  // 会話型フラグ
+      } as any
     })
+    
+    // チェックポイントを作成（バックグラウンド）
+    sessionManager.createCheckpoint(userId)
     
     // 【重要】即座に処理を開始（キューを待たない）
     setTimeout(async () => {
@@ -794,7 +846,7 @@ async function handleUnfollowEvent(event: any): Promise<void> {
   logger.info('User unfollowed', { userId })
   
   // セッションクリーンアップ
-  sessionStore.delete(userId)
+  await sessionManager.deleteSession(userId)
 }
 
 /**
@@ -813,41 +865,59 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
   logger.info('Processing image message', { userId, messageId, requestId })
 
   try {
-    // スクリーンショット待機モードのチェック
-    let context = sessionStore.get(userId)
+    // SessionManagerから完全なコンテキストを取得
+    let context = await sessionManager.getContext(userId)
+    
     const isWaitingForScreenshot = context && (context as any).waitingForScreenshot
     
     if (isWaitingForScreenshot && context) {
       logger.info('Processing screenshot in waiting mode', { userId })
       // waitingForScreenshotフラグをクリア
       delete (context as any).waitingForScreenshot
-      sessionStore.set(userId, context)
+      
+      // SessionManager経由で更新を保存
+      await sessionManager.saveContext(userId, context)
     }
     
     const result = await imageHandler.handleImageMessage(messageId, replyToken, userId)
     
     if (result.success && result.description) {
-      // 画像の解析結果をコンテキストに保存
-      context = sessionStore.get(userId) || ConversationalFlow.resetConversation('spreadsheet')
+      // コンテキストがない場合は新規作成
+      if (!context) {
+        context = await sessionManager.createSession(userId, 'spreadsheet', `[画像アップロード] ${result.description}`)
+      }
       
-      // スクリーンショット待機モードだった場合は、エラー解決のコンテキストとして保存
+      // メッセージ内容を決定
+      const messageContent = isWaitingForScreenshot
+        ? `[エラースクリーンショット] ${result.description}\nこのエラーを解決するコードを生成してください。`
+        : `[画像アップロード] ${result.description}`
+      
+      // SessionManager経由でメッセージを保存
+      await sessionManager.saveMessage(
+        userId,
+        context.sessionId || generateUUID(),
+        'user',
+        messageContent,
+        { type: 'image', messageId, analysisResult: result.description }
+      )
+      
+      // コンテキストを更新
+      context.messages.push({
+        role: 'user',
+        content: messageContent
+      })
+      
       if (isWaitingForScreenshot) {
-        context.messages.push({
-          role: 'user',
-          content: `[エラースクリーンショット] ${result.description}\nこのエラーを解決するコードを生成してください。`
-        })
         context.requirements.errorScreenshot = result.description
         context.requirements.isErrorFix = 'true'
       } else {
-        context.messages.push({
-          role: 'user',
-          content: `[画像アップロード] ${result.description}`
-        })
         context.requirements.imageContent = result.description
       }
       
       context.requirements.hasScreenshot = 'true'
-      sessionStore.set(userId, context)
+      
+      // SessionManager経由で更新を保存
+      await sessionManager.saveContext(userId, context)
     }
     
     return result.success
@@ -881,17 +951,42 @@ async function processFileMessage(event: any, requestId: string): Promise<boolea
   try {
     await imageHandler.handleFileMessage(messageId, fileName || 'unknown', replyToken, userId)
     
-    // ファイル情報をコンテキストに保存
-    let context = sessionStore.get(userId) || ConversationalFlow.resetConversation('spreadsheet')
+    // SessionManagerから完全なコンテキストを取得
+    let context = await sessionManager.getContext(userId)
+    if (!context) {
+      // 新規セッション作成
+      context = await sessionManager.createSession(
+        userId, 
+        'spreadsheet', 
+        `[ファイルアップロード] ${fileName}`
+      )
+    }
+    
+    // SessionManager経由でメッセージを保存
+    await sessionManager.saveMessage(
+      userId,
+      context.sessionId || generateUUID(),
+      'user',
+      `[ファイルアップロード] ${fileName}`,
+      { type: 'file', messageId, fileName }
+    )
+    
+    // コンテキストを更新
     context.messages.push({
       role: 'user',
       content: `[ファイルアップロード] ${fileName}`
     })
-    sessionStore.set(userId, context)
+    
+    // SessionManager経由で更新
+    await sessionManager.saveContext(userId, context)
     
     return true
   } catch (error) {
-    logger.error('File processing error', { error })
+    logger.error('File processing error', { 
+      userId,
+      fileName,
+      error: error instanceof Error ? error.message : String(error)
+    })
     return false
   }
 }
