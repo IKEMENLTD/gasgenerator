@@ -60,7 +60,7 @@ export class EngineerSupportSystem {
       await this.lineClient.replyMessage(replyToken, [
         {
           type: 'text',
-          text: '👨‍💻 エンジニアへの相談を受け付けました！\n\n弊社のエンジニアチームに通知を送信しました。\n営業時間内（平日9:00-18:00）であれば、30分以内に返信させていただきます。\n\nしばらくお待ちください。'
+          text: '👨‍💻 エンジニアへの相談を受け付けました！\n\n弊社のエンジニアチームに通知を送信しました。\n営業時間内（平日10:00-19:00）であれば、数分以内に返信させていただきます。\n\nしばらくお待ちください。'
         },
         {
           type: 'sticker',
