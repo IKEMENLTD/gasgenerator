@@ -463,7 +463,8 @@ async function startNewConversation(
           { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
           { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
           { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }}
+          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
+          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談' }}
         ]
       }
     }])
@@ -513,7 +514,8 @@ async function continueConversation(
           { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
           { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
           { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }}
+          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
+          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談' }}
         ]
       }
     }] as any)
