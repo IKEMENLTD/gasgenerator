@@ -144,32 +144,40 @@ ${request.context.errorMessage ? `\n⚠️ エラー:\n${request.context.errorMe
       })
     }
     
-    // クイックアクションボタン
-    messages.push({
-      type: 'template',
-      altText: 'サポートアクション',
-      template: {
-        type: 'buttons',
-        text: '対応アクション',
-        actions: [
-          {
-            type: 'uri',
-            label: '📊 ユーザー履歴確認',
-            uri: `${process.env.ADMIN_DASHBOARD_URL}/users/${request.userId}`
-          },
-          {
-            type: 'message',
-            label: '✅ 対応開始',
-            text: `/support start ${request.userId}`
-          },
-          {
-            type: 'message',
-            label: '📝 メモ追加',
-            text: `/support note ${request.userId}`
-          }
-        ]
-      }
-    })
+    // クイックアクションボタン（ADMIN_DASHBOARD_URLが設定されている場合のみ）
+    if (process.env.ADMIN_DASHBOARD_URL) {
+      messages.push({
+        type: 'template',
+        altText: 'サポートアクション',
+        template: {
+          type: 'buttons',
+          text: '対応アクション',
+          actions: [
+            {
+              type: 'uri',
+              label: '📊 ユーザー履歴確認',
+              uri: `${process.env.ADMIN_DASHBOARD_URL}/users/${request.userId}`
+            },
+            {
+              type: 'message',
+              label: '✅ 対応開始',
+              text: `/support start ${request.userId}`
+            },
+            {
+              type: 'message',
+              label: '📝 メモ追加',
+              text: `/support note ${request.userId}`
+            }
+          ]
+        }
+      })
+    } else {
+      // URLが設定されていない場合はテキストメッセージのみ
+      messages.push({
+        type: 'text',
+        text: `📋 対応用情報:\nユーザーID: ${request.userId}\n\n返信する場合は以下のコマンドを使用:\n/support reply ${request.userId} [メッセージ]`
+      })
+    }
     
     return messages
   }
