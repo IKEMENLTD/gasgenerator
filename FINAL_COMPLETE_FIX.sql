@@ -71,16 +71,24 @@ ADD COLUMN IF NOT EXISTS user_id TEXT;
 ALTER TABLE user_code_history
 ADD COLUMN IF NOT EXISTS action VARCHAR(50);
 
--- conversation_contexts（エラー修正用）
+-- conversation_contexts（テーブルが存在する場合のみ処理）
 DO $$
 BEGIN
-  IF NOT EXISTS (
+  -- テーブルが存在するか確認
+  IF EXISTS (
     SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'conversation_contexts_user_id_key'
+    FROM information_schema.tables
+    WHERE table_name = 'conversation_contexts'
   ) THEN
-    ALTER TABLE conversation_contexts
-    ADD CONSTRAINT conversation_contexts_user_id_key UNIQUE (user_id);
+    -- 制約が存在しない場合のみ追加
+    IF NOT EXISTS (
+      SELECT 1
+      FROM pg_constraint
+      WHERE conname = 'conversation_contexts_user_id_key'
+    ) THEN
+      ALTER TABLE conversation_contexts
+      ADD CONSTRAINT conversation_contexts_user_id_key UNIQUE (user_id);
+    END IF;
   END IF;
 END $$;
 
