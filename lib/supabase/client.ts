@@ -76,7 +76,7 @@ export const supabaseAdmin: SupabaseClient<Database> =
     : new DummySupabaseClient() as any
 
 // Supabaseクライアント作成関数をエクスポート
-export function createClient(): SupabaseClient<Database> {
+export function createSupabaseClient(): SupabaseClient<Database> {
   return supabase
 }
 
