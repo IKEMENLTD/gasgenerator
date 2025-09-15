@@ -2,49 +2,6 @@ import { createClient as createSupabaseClientLib, SupabaseClient } from '@supaba
 import { Database } from '@/types/database'
 import { logger } from '@/lib/utils/logger'
 
-// ダミークライアント（環境変数がない場合のフォールバック）
-class DummySupabaseClient {
-  from() {
-    const errorResult = { data: null, error: new Error('Supabase not configured') }
-    const chainableMethods = {
-      select: () => chainableMethods,
-      insert: () => chainableMethods,
-      update: () => chainableMethods,
-      delete: () => chainableMethods,
-      upsert: () => chainableMethods,
-      eq: () => chainableMethods,
-      neq: () => chainableMethods,
-      gt: () => chainableMethods,
-      gte: () => chainableMethods,
-      lt: () => chainableMethods,
-      lte: () => chainableMethods,
-      like: () => chainableMethods,
-      ilike: () => chainableMethods,
-      is: () => chainableMethods,
-      in: () => chainableMethods,
-      contains: () => chainableMethods,
-      containedBy: () => chainableMethods,
-      range: () => chainableMethods,
-      overlaps: () => chainableMethods,
-      match: () => chainableMethods,
-      not: () => chainableMethods,
-      or: () => chainableMethods,
-      filter: () => chainableMethods,
-      order: () => chainableMethods,
-      limit: () => chainableMethods,
-      offset: () => chainableMethods,
-      single: () => Promise.resolve(errorResult),
-      maybeSingle: () => Promise.resolve(errorResult),
-      then: (resolve: any) => resolve(errorResult)
-    }
-    return chainableMethods
-  }
-  
-  rpc() {
-    return Promise.resolve({ data: null, error: new Error('Supabase not configured') })
-  }
-}
-
 // 環境変数のチェック（エラーは投げない）
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
@@ -54,26 +11,23 @@ if (!supabaseUrl || !supabaseAnonKey) {
   logger.warn('Supabase environment variables are missing. Database operations will be disabled.')
 }
 
-// 通常のクライアント（RLS有効）
-export const supabase: SupabaseClient<Database> =
-  (supabaseUrl && supabaseAnonKey)
-    ? createSupabaseClientLib<Database>(supabaseUrl, supabaseAnonKey)
-    : new DummySupabaseClient() as any
+// 通常のクライアント（RLS有効）- 必ず実際のクライアントを返す
+export const supabase: SupabaseClient<Database> = createSupabaseClientLib<Database>(
+  supabaseUrl || 'https://dummy.supabase.co',
+  supabaseAnonKey || 'dummy-anon-key'
+)
 
 // 管理者権限クライアント（RLS無効）
-export const supabaseAdmin: SupabaseClient<Database> =
-  (supabaseUrl && supabaseServiceRoleKey)
-    ? createSupabaseClientLib<Database>(
-        supabaseUrl,
-        supabaseServiceRoleKey,
-        {
-          auth: {
-            autoRefreshToken: false,
-            persistSession: false
-          }
-        }
-      )
-    : new DummySupabaseClient() as any
+export const supabaseAdmin: SupabaseClient<Database> = createSupabaseClientLib<Database>(
+  supabaseUrl || 'https://dummy.supabase.co',
+  supabaseServiceRoleKey || 'dummy-service-key',
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+)
 
 // Supabaseクライアント作成関数をエクスポート
 export function createSupabaseClient(): SupabaseClient<Database> {
