@@ -1,4 +1,4 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { createClient as createSupabaseClientLib, SupabaseClient } from '@supabase/supabase-js'
 import { Database } from '@/types/database'
 import { logger } from '@/lib/utils/logger'
 
@@ -55,15 +55,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // 通常のクライアント（RLS有効）
-export const supabase: SupabaseClient<Database> = 
-  (supabaseUrl && supabaseAnonKey) 
-    ? createClient<Database>(supabaseUrl, supabaseAnonKey)
+export const supabase: SupabaseClient<Database> =
+  (supabaseUrl && supabaseAnonKey)
+    ? createSupabaseClientLib<Database>(supabaseUrl, supabaseAnonKey)
     : new DummySupabaseClient() as any
 
 // 管理者権限クライアント（RLS無効）
-export const supabaseAdmin: SupabaseClient<Database> = 
+export const supabaseAdmin: SupabaseClient<Database> =
   (supabaseUrl && supabaseServiceRoleKey)
-    ? createClient<Database>(
+    ? createSupabaseClientLib<Database>(
         supabaseUrl,
         supabaseServiceRoleKey,
         {

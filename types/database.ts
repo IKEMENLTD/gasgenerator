@@ -359,6 +359,185 @@ export interface Database {
           recorded_at?: string
         }
       }
+      code_shares: {
+        Row: {
+          id: string
+          short_id: string
+          user_id: string
+          job_id: string | null
+          session_id: string | null
+          parent_id: string | null
+          version: number
+          title: string
+          description: string | null
+          code_content: string
+          language: string
+          file_name: string
+          is_public: boolean
+          is_deleted: boolean
+          deletion_reason: string | null
+          password_hash: string | null
+          max_views: number | null
+          view_count: number
+          copy_count: number
+          last_viewed_at: string | null
+          tags: string[] | null
+          conversation_context: any | null
+          requirements: string | null
+          is_premium: boolean
+          expires_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          short_id: string
+          user_id: string
+          job_id?: string | null
+          session_id?: string | null
+          parent_id?: string | null
+          version?: number
+          title: string
+          description?: string | null
+          code_content: string
+          language?: string
+          file_name?: string
+          is_public?: boolean
+          is_deleted?: boolean
+          deletion_reason?: string | null
+          password_hash?: string | null
+          max_views?: number | null
+          view_count?: number
+          copy_count?: number
+          last_viewed_at?: string | null
+          tags?: string[] | null
+          conversation_context?: any | null
+          requirements?: string | null
+          is_premium?: boolean
+          expires_at: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          short_id?: string
+          user_id?: string
+          job_id?: string | null
+          session_id?: string | null
+          parent_id?: string | null
+          version?: number
+          title?: string
+          description?: string | null
+          code_content?: string
+          language?: string
+          file_name?: string
+          is_public?: boolean
+          is_deleted?: boolean
+          deletion_reason?: string | null
+          password_hash?: string | null
+          max_views?: number | null
+          view_count?: number
+          copy_count?: number
+          last_viewed_at?: string | null
+          tags?: string[] | null
+          conversation_context?: any | null
+          requirements?: string | null
+          is_premium?: boolean
+          expires_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      code_share_access_logs: {
+        Row: {
+          id: string
+          share_id: string
+          access_type: string
+          ip_address: string | null
+          user_agent: string | null
+          referer: string | null
+          device_type: string | null
+          browser: string | null
+          os: string | null
+          accessed_at: string
+        }
+        Insert: {
+          id?: string
+          share_id: string
+          access_type: string
+          ip_address?: string | null
+          user_agent?: string | null
+          referer?: string | null
+          device_type?: string | null
+          browser?: string | null
+          os?: string | null
+          accessed_at?: string
+        }
+        Update: {
+          id?: string
+          share_id?: string
+          access_type?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          referer?: string | null
+          device_type?: string | null
+          browser?: string | null
+          os?: string | null
+          accessed_at?: string
+        }
+      }
+      conversation_code_relations: {
+        Row: {
+          id: string
+          user_id: string
+          session_id: string
+          share_id: string
+          relation_type: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          session_id: string
+          share_id: string
+          relation_type: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          session_id?: string
+          share_id?: string
+          relation_type?: string
+          created_at?: string
+        }
+      }
+      user_code_history: {
+        Row: {
+          id: string
+          user_id: string
+          share_id: string
+          action: string
+          action_details: any | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          share_id: string
+          action: string
+          action_details?: any | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          share_id?: string
+          action?: string
+          action_details?: any | null
+          created_at?: string
+        }
+      }
     }
   }
 }
