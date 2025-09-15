@@ -289,7 +289,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           actions: [{
             type: 'uri',
             label: '今すぐ申し込む',
-            uri: `https://buy.stripe.com/8wMdTAc9m8zQgmI9AA?client_reference_id=${encodedUserId}`
+            uri: `${process.env.STRIPE_PAYMENT_LINK || 'https://example.com/upgrade'}?client_reference_id=${encodedUserId}`
           }]
         }
       }] as any)

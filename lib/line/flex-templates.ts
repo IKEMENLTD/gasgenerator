@@ -106,7 +106,7 @@ export class FlexTemplates {
               action: {
                 type: 'uri',
                 label: '🎯 今すぐ購入（¥10,000/月）',
-                uri: 'https://buy.stripe.com/7sY3cv2So0v78ICbSz6oo09'
+                uri: process.env.STRIPE_PAYMENT_LINK || 'https://example.com/upgrade'
               },
               style: 'primary',
               color: '#4F46E5',
@@ -133,7 +133,7 @@ export class FlexTemplates {
    */
   static createLimitReachedFlexMessage(lineUserId: string): FlexMessage {
     const encoded = Buffer.from(lineUserId).toString('base64')
-    const paymentUrl = `https://buy.stripe.com/7sY3cv2So0v78ICbSz6oo09?client_reference_id=${encoded}`
+    const paymentUrl = `${process.env.STRIPE_PAYMENT_LINK || 'https://example.com/upgrade'}?client_reference_id=${encoded}`
     
     return {
       type: 'flex',

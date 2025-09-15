@@ -39,9 +39,23 @@ ON generated_codes(gas_url)
 WHERE gas_url IS NOT NULL;
 
 -- 3. メモリ使用量改善のための古いデータクリーンアップ
--- 30日以上前のアクセスログを削除
-DELETE FROM code_share_access_logs
-WHERE created_at < NOW() - INTERVAL '30 days';
+-- code_share_access_logsテーブルにcreated_atカラムを追加（存在しない場合）
+ALTER TABLE code_share_access_logs
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
+
+-- 30日以上前のアクセスログを削除（カラムが存在する場合のみ）
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_name = 'code_share_access_logs'
+    AND column_name = 'created_at'
+  ) THEN
+    DELETE FROM code_share_access_logs
+    WHERE created_at < NOW() - INTERVAL '30 days';
+  END IF;
+END $$;
 
 -- 期限切れのコード共有を論理削除
 UPDATE code_shares

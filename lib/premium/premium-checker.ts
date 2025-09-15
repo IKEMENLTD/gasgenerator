@@ -164,6 +164,6 @@ export class PremiumChecker {
    */
   static getUpgradeUrl(userId: string): string {
     const encodedUserId = Buffer.from(userId).toString('base64')
-    return `https://buy.stripe.com/8wMdTAc9m8zQgmI9AA?client_reference_id=${encodedUserId}`
+    return `${process.env.STRIPE_PAYMENT_LINK || 'https://example.com/upgrade'}?client_reference_id=${encodedUserId}`
   }
 }
