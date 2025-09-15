@@ -2,7 +2,7 @@
  * コード共有機能のSupabaseクエリ関数
  */
 
-import { createSupabaseClient } from './client'
+import { supabase } from './client'
 import { logger } from '@/lib/utils/logger'
 import { customAlphabet } from 'nanoid'
 import * as bcrypt from 'bcryptjs'
@@ -28,7 +28,6 @@ export class CodeShareQueries {
    * ユニークな短縮IDを生成
    */
   private static async generateUniqueShortId(maxRetries: number = 5): Promise<string> {
-    const supabase = createSupabaseClient()
 
     for (let i = 0; i < maxRetries; i++) {
       const shortId = generateShortId()
@@ -62,7 +61,6 @@ export class CodeShareQueries {
    * コード共有を作成
    */
   static async create(params: CreateCodeShareParams): Promise<CodeShare> {
-    const supabase = createSupabaseClient()
 
     try {
       // 短縮IDを生成
@@ -147,7 +145,7 @@ export class CodeShareQueries {
    * 短縮IDでコード共有を取得
    */
   static async getByShortId(shortId: string): Promise<CodeShare | null> {
-    const supabase = createSupabaseClient()
+
 
     try {
       const { data, error } = await supabase
@@ -189,7 +187,7 @@ export class CodeShareQueries {
     userId: string,
     updates: Partial<CodeShare>
   ): Promise<CodeShare> {
-    const supabase = createSupabaseClient()
+
 
     try {
       const { data, error } = await supabase
@@ -222,7 +220,7 @@ export class CodeShareQueries {
     userId: string,
     reason?: string
   ): Promise<void> {
-    const supabase = createSupabaseClient()
+
 
     try {
       const { error } = await supabase
@@ -259,7 +257,7 @@ export class CodeShareQueries {
     shortId: string,
     accessLog?: Partial<CodeShareAccessLog>
   ): Promise<void> {
-    const supabase = createSupabaseClient()
+
 
     try {
       // トランザクション的な処理
@@ -302,7 +300,7 @@ export class CodeShareQueries {
    * コピー回数をインクリメント
    */
   static async incrementCopyCount(shortId: string): Promise<void> {
-    const supabase = createSupabaseClient()
+
 
     try {
       const codeShare = await this.getByShortId(shortId)
@@ -337,7 +335,7 @@ export class CodeShareQueries {
     userId: string,
     criteria?: CodeShareSearchCriteria
   ): Promise<CodeShare[]> {
-    const supabase = createSupabaseClient()
+
 
     try {
       let query = supabase
@@ -406,7 +404,6 @@ export class CodeShareQueries {
    * 関連コードを取得
    */
   static async getRelatedShares(shareId: string): Promise<CodeShare[]> {
-    const supabase = createSupabaseClient()
 
     try {
       // 親コードまたは子コードを取得
@@ -451,7 +448,6 @@ export class CodeShareQueries {
     accessType: AccessType,
     details?: Partial<CodeShareAccessLog>
   ): Promise<void> {
-    const supabase = createSupabaseClient()
 
     try {
       await supabase
@@ -477,7 +473,6 @@ export class CodeShareQueries {
     action: HistoryAction,
     details?: Record<string, any>
   ): Promise<void> {
-    const supabase = createSupabaseClient()
 
     try {
       await supabase
@@ -503,7 +498,6 @@ export class CodeShareQueries {
     shareId: string,
     relationType: RelationType
   ): Promise<void> {
-    const supabase = createSupabaseClient()
 
     try {
       await supabase
@@ -524,7 +518,6 @@ export class CodeShareQueries {
    * 期限切れコードをクリーンアップ
    */
   static async cleanupExpired(): Promise<number> {
-    const supabase = createSupabaseClient()
 
     try {
       // 論理削除
@@ -572,7 +565,6 @@ export class CodeShareQueries {
     uniqueVisitors: number
     deviceStats: Record<string, number>
   }> {
-    const supabase = createSupabaseClient()
 
     try {
       // コード共有の基本情報
