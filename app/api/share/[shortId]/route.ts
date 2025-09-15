@@ -188,7 +188,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
  * コピー回数をインクリメント
  * POST /api/share/[shortId]/copy
  */
-export async function POST(req: NextRequest, { params }: RouteParams) {
+export async function POST(_req: NextRequest, { params }: RouteParams) {
   const { shortId } = params
 
   try {
