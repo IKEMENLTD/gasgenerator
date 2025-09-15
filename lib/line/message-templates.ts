@@ -380,6 +380,31 @@ export function getExamplePrompts(category: string): string[] {
   return EXAMPLE_PROMPTS[category as keyof typeof EXAMPLE_PROMPTS] || []
 }
 
+// コード共有URL付きメッセージを作成
+export function createCodeShareMessage(shareUrl: string, title: string, expiresInDays: number = 7): Message[] {
+  return [
+    {
+      type: 'text',
+      text: `✅ コードが完成しました！\n\n📝 ${title}`
+    },
+    {
+      type: 'template',
+      altText: 'コードを確認する',
+      template: {
+        type: 'buttons',
+        text: `コードの確認はこちら\n\n📎 ブラウザで開いてコピーできます\n⏰ 有効期限: ${expiresInDays}日間`,
+        actions: [
+          {
+            type: 'uri',
+            label: '📋 コードを見る',
+            uri: shareUrl
+          }
+        ]
+      }
+    } as any
+  ]
+}
+
 // 別名メソッド（互換性のため）
 export const createDetailPrompt = MessageTemplates.createDetailInputPrompt
 export const createSubCategorySelection = MessageTemplates.createSubcategorySelection

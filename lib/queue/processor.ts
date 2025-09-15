@@ -8,6 +8,7 @@ import { LineApiClient } from '@/lib/line/client'
 import { MessageTemplates } from '@/lib/line/message-templates'
 import { MessageFormatter } from '@/lib/line/message-formatter'
 import { CodeQueries } from '@/lib/supabase/queries'
+import { CodeShareQueries } from '@/lib/supabase/code-share-queries'
 import { logger } from '@/lib/utils/logger'
 import { QUEUE_CONFIG } from '@/lib/constants/config'
 import { ConversationSessionStore } from '@/lib/conversation/session-store'
@@ -276,8 +277,8 @@ export class QueueProcessor {
           }
         })
       } catch (dbError: any) {
-        logger.error('Failed to save to database', { 
-          jobId, 
+        logger.error('Failed to save to database', {
+          jobId,
           error: dbError instanceof Error ? dbError.message : String(dbError),
           code: dbError?.code,
           hint: dbError?.hint,
@@ -286,8 +287,50 @@ export class QueueProcessor {
         // DBエラーでも続行
       }
 
-      // 5. LINEに結果を送信（文字数制限対応）
-      await this.sendResultToUser(job.line_user_id, codeResponse, job.requirements?.category)
+      // 4.5. コード共有URLを作成
+      let codeShareUrl: string | undefined
+      try {
+        // タイトルを生成（カテゴリと要約から）
+        const title = this.generateCodeTitle(job.requirements?.category, codeResponse.summary)
+
+        // プレミアムステータスを確認
+        const isPremium = await this.checkUserPremiumStatus(job.line_user_id)
+
+        // コード共有を作成
+        const codeShare = await CodeShareQueries.create({
+          userId: job.line_user_id,
+          code: codeResponse.code,
+          title: title,
+          description: codeResponse.explanation || codeResponse.summary,
+          jobId: jobId,
+          sessionId: typeof job.session_id === 'string' ? job.session_id : undefined,
+          requirements: job.requirements,
+          conversationContext: undefined, // 後で会話コンテキストを追加可能
+          expiresInDays: isPremium ? 30 : 7,
+          isPremium: isPremium,
+          tags: this.generateTags(job.requirements?.category, job.requirements?.subcategory)
+        })
+
+        // URLを生成
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://gasgenerator.onrender.com'
+        codeShareUrl = `${baseUrl}/s/${codeShare.short_id}`
+
+        logger.info('Code share URL created', {
+          jobId,
+          shortId: codeShare.short_id,
+          url: codeShareUrl
+        })
+
+      } catch (shareError) {
+        logger.error('Failed to create code share', {
+          jobId,
+          error: shareError instanceof Error ? shareError.message : String(shareError)
+        })
+        // 共有URL作成に失敗してもジョブは継続
+      }
+
+      // 5. LINEに結果を送信（共有URL付き）
+      await this.sendResultToUser(job.line_user_id, codeResponse, job.requirements?.category, codeShareUrl)
 
       // 6. セッションを更新（コード生成完了フラグを立てる）
       const sessionStore = ConversationSessionStore.getInstance()
@@ -364,19 +407,27 @@ export class QueueProcessor {
    * LINEへの結果送信（構造化フォーマット対応）
    */
   private async sendResultToUser(
-    lineUserId: string, 
+    lineUserId: string,
     codeResponse: any,
-    category?: string
+    category?: string,
+    codeShareUrl?: string
   ): Promise<void> {
     try {
       const messages: any[] = []
       
-      // 1. 完了通知メッセージ
-      messages.push({
-        type: 'text',
-        text: `✅ コード生成が完了しました！【${category || '汎用'}】`
-      })
-      
+      // 1. 完了通知メッセージ（共有URL付き）
+      if (codeShareUrl) {
+        messages.push({
+          type: 'text',
+          text: `✅ コード生成が完了しました！【${category || '汎用'}】\n\n📎 コードを確認する:\n${codeShareUrl}\n\n※ブラウザで開いてコピーできます`
+        })
+      } else {
+        messages.push({
+          type: 'text',
+          text: `✅ コード生成が完了しました！【${category || '汎用'}】`
+        })
+      }
+
       // 2. 説明メッセージ
       if (codeResponse.summary || codeResponse.explanation) {
         const explanation = (codeResponse.summary || '') + '\n\n' + (codeResponse.explanation || '')
@@ -389,13 +440,13 @@ export class QueueProcessor {
         }
       }
       
-      // 3. コード部分（フォーマット済み、分割対応）
-      if (codeResponse.code) {
+      // 3. コード部分（URLがない場合のみ直接送信）
+      if (codeResponse.code && !codeShareUrl) {
         const codeMessages = MessageFormatter.formatGASCode(
           codeResponse.code,
           'Google Apps Script コード'
         )
-        
+
         // コードメッセージを追加
         for (const codeMsg of codeMessages) {
           messages.push({
@@ -403,6 +454,12 @@ export class QueueProcessor {
             text: codeMsg
           })
         }
+      } else if (codeResponse.code && codeShareUrl) {
+        // URLがある場合は簡略メッセージ
+        messages.push({
+          type: 'text',
+          text: '💻 コードが長いため、上記URLからご確認ください。\nブラウザで開くとコピーボタンが使えます。'
+        })
       }
       
       // 4. 設定方法（手順）
@@ -495,5 +552,39 @@ export class QueueProcessor {
     if (requirements.details) parts.push(`詳細: ${requirements.details.substring(0, 100)}`)
     
     return parts.join(' / ') || '要件なし'
+  }
+
+  /**
+   * コードのタイトルを生成
+   */
+  private generateCodeTitle(category?: string, summary?: string): string {
+    const categoryPart = category || 'GAS'
+    const summaryPart = summary ? summary.substring(0, 50) : 'コード'
+    return `${categoryPart} - ${summaryPart}`
+  }
+
+  /**
+   * タグを生成
+   */
+  private generateTags(category?: string, subcategory?: string): string[] {
+    const tags: string[] = []
+    if (category) tags.push(category.toLowerCase())
+    if (subcategory) tags.push(subcategory.toLowerCase())
+    tags.push('gas', 'google-apps-script')
+    return [...new Set(tags)] // 重複を除去
+  }
+
+  /**
+   * ユーザーのプレミアムステータスを確認
+   */
+  private async checkUserPremiumStatus(userId: string): Promise<boolean> {
+    try {
+      const { PremiumChecker } = await import('@/lib/premium/premium-checker')
+      const status = await PremiumChecker.checkPremiumStatus(userId)
+      return status.isPremium || false
+    } catch (error) {
+      logger.warn('Failed to check premium status', { userId, error })
+      return false
+    }
   }
 }

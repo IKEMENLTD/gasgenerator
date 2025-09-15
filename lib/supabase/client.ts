@@ -75,6 +75,11 @@ export const supabaseAdmin: SupabaseClient<Database> =
       )
     : new DummySupabaseClient() as any
 
+// Supabaseクライアント作成関数をエクスポート
+export function createClient(): SupabaseClient<Database> {
+  return supabase
+}
+
 // 接続テスト関数
 export async function testDatabaseConnection(): Promise<boolean> {
   try {
@@ -82,7 +87,7 @@ export async function testDatabaseConnection(): Promise<boolean> {
       .from('users')
       .select('count')
       .limit(1)
-      
+
     return !error
   } catch {
     return false
