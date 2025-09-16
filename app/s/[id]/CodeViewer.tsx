@@ -272,7 +272,7 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
                 </ol>
               </div>
 
-              <div className="feature-card" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
+              <div className="feature-card">
                 <div className="feature-icon">
                   <i className="ti ti-star-filled"></i>
                 </div>

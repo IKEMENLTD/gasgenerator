@@ -99,14 +99,14 @@ p:lang(ja) {
   font-feature-settings: 'palt' 1;
   letter-spacing: 0.05em;
   line-height: 1.8;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 /* List Styling */
 ul, ol {
-  padding-left: 3rem;
-  padding-right: 2rem;
+  padding-left: 2.5rem;
+  padding-right: 1.5rem;
   margin-bottom: 1rem;
 }
 
@@ -114,6 +114,12 @@ li {
   line-height: 1.75;
   margin-bottom: 0.5rem;
   color: var(--text-secondary);
+  padding-right: 0.5rem;
+}
+
+.feature-description li {
+  padding-left: 0;
+  padding-right: 1rem;
 }
 
 /* Typography System */
@@ -133,10 +139,10 @@ li {
   --text-5xl: 3rem;
 
   /* Refined Minimal Color Palette */
-  --primary-gradient: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-  --secondary-gradient: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
-  --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --primary-gradient: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+  --secondary-gradient: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  --success-gradient: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  --accent-gradient: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
 
   /* Clean Colors */
   --bg-primary: #ffffff;
@@ -313,9 +319,9 @@ svg.icon-lg {
 
 /* Gradient Headers */
 .gradient-header {
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  background: #ffffff;
   color: #111827;
-  padding: var(--space-2xl) var(--space-xl);
+  padding: 2rem 1.5rem;
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid #e5e7eb;
@@ -376,15 +382,16 @@ svg.icon-lg {
 /* Removed button shimmer effect for cleaner look */
 
 .btn-primary {
-  background: #111827;
+  background: #374151;
   color: white;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+  border: 1px solid #374151;
 }
 
 .btn-primary:hover {
   background: #1f2937;
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .btn-secondary {
@@ -505,12 +512,12 @@ code:not(pre code) {
 }
 
 .stat-item {
-  background: #ffffff;
+  background: #fafafa;
   border-radius: 0.5rem;
-  padding: var(--space-md) var(--space-sm);
+  padding: 0.625rem 0.5rem;
   text-align: center;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid #e5e7eb;
+  border: 1px solid #f3f4f6;
 }
 
 .stat-item:hover {
@@ -520,10 +527,10 @@ code:not(pre code) {
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
-  margin-bottom: 0.25rem;
+  color: #374151;
+  margin-bottom: 0.125rem;
 }
 
 .stat-label {
@@ -546,7 +553,7 @@ code:not(pre code) {
 .feature-card {
   background: #ffffff;
   border-radius: 0.75rem;
-  padding: var(--space-xl);
+  padding: 1.25rem;
   color: #111827;
   position: relative;
   overflow: hidden;
@@ -566,30 +573,32 @@ code:not(pre code) {
 }
 
 .feature-icon {
-  width: 40px;
-  height: 40px;
-  background: #f3f4f6;
+  width: 36px;
+  height: 36px;
+  background: #f9fafb;
   border-radius: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-md);
-  color: #6b7280;
+  margin-bottom: 0.75rem;
+  color: #9ca3af;
+  border: 1px solid #e5e7eb;
 }
 
 .feature-title {
-  font-size: var(--text-lg);
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: var(--space-sm);
-  color: #111827;
-  padding: 0 0.5rem;
+  margin-bottom: 0.75rem;
+  color: #374151;
+  padding: 0;
 }
 
 .feature-description {
-  font-size: var(--text-sm);
+  font-size: 0.875rem;
   color: #6b7280;
-  line-height: 1.7;
-  padding: 0 0.5rem;
+  line-height: 1.6;
+  padding: 0;
+  margin: 0;
 }
 
 /* Tags */
@@ -668,9 +677,25 @@ code:not(pre code) {
     font-size: var(--text-base);
   }
 
-  p, .ja-text {
+  p, .ja-text, li {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+
+  ul, ol {
+    padding-left: 2rem;
+    padding-right: 1rem;
+  }
+
+  .feature-description {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .feature-description li {
+    padding-left: 0;
+    padding-right: 0.5rem;
+    font-size: 0.813rem;
   }
 
   h1 { font-size: var(--text-2xl); }
@@ -695,7 +720,12 @@ code:not(pre code) {
 
   .feature-grid {
     grid-template-columns: 1fr;
-    gap: var(--space-md);
+    gap: 0.75rem;
+    padding: 0 0.5rem;
+  }
+
+  .feature-card {
+    padding: 1rem;
   }
 
   .btn {
