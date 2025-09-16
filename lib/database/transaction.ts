@@ -126,7 +126,7 @@ export class DatabaseTransaction {
           prompt_tokens: 0, // 実際の値は呼び出し元から渡す
           completion_tokens: 0,
           total_tokens: 0,
-          model: 'claude-3-sonnet-20240229',
+          model: 'claude-sonnet-4-20250514',
           created_at: new Date().toISOString()
         })
       

@@ -138,11 +138,11 @@ export class QueueProcessor {
         // 会話型: すでに生成されたプロンプトを使用
         prompt = job.requirements.prompt
         
-        // Claude API呼び出し
+        // Claude API呼び出し（コード生成用に最大32Kトークンを使用）
         const claudeResponse = await this.claudeClient.sendMessage([{
           role: 'user',
           content: prompt
-        }], job.line_user_id)
+        }], job.line_user_id, 3, 32000)
 
         // レスポンス解析
         codeResponse = ResponseParser.parseCodeResponse(claudeResponse)
@@ -162,11 +162,11 @@ export class QueueProcessor {
         // プロンプト構築
         prompt = await PromptBuilder.buildCodeGenerationPrompt(request)
 
-        // Claude API呼び出し
+        // Claude API呼び出し（コード生成用に最大32Kトークンを使用）
         const claudeResponse = await this.claudeClient.sendMessage([{
           role: 'user',
           content: prompt
-        }], job.line_user_id)
+        }], job.line_user_id, 3, 32000)
 
         // レスポンス解析
         codeResponse = ResponseParser.parseCodeResponse(claudeResponse)
@@ -414,111 +414,78 @@ export class QueueProcessor {
   ): Promise<void> {
     try {
       const messages: any[] = []
-      
-      // 1. 完了通知メッセージ（共有URL付き）
+
+      // メッセージ1: コード完成通知 + URL + 簡潔な説明
+      let firstMessage = `✅ コード生成が完了しました！【${category || 'GAS'}】\n\n`
+
+      // URL追加
       if (codeShareUrl) {
-        messages.push({
-          type: 'text',
-          text: `✅ コード生成が完了しました！【${category || '汎用'}】\n\n📎 コードを確認する:\n${codeShareUrl}\n\n※ブラウザで開いてコピーできます`
-        })
-      } else {
-        messages.push({
-          type: 'text',
-          text: `✅ コード生成が完了しました！【${category || '汎用'}】`
-        })
+        firstMessage += `📎 コードはこちら:\n${codeShareUrl}\n\n`
       }
 
-      // 2. 説明メッセージ
-      if (codeResponse.summary || codeResponse.explanation) {
-        const explanation = (codeResponse.summary || '') + '\n\n' + (codeResponse.explanation || '')
-        const splitExplanation = MessageFormatter.splitLongMessage(explanation.trim())
-        for (const chunk of splitExplanation) {
-          messages.push({
-            type: 'text',
-            text: chunk
-          })
-        }
+      // 簡潔な説明（3行以内）
+      if (codeResponse.summary) {
+        const summaryLines = codeResponse.summary.split('\n').slice(0, 3).join('\n')
+        firstMessage += `📝 ${summaryLines}\n\n`
       }
-      
-      // 3. コード部分（URLがない場合のみ直接送信）
-      if (codeResponse.code && !codeShareUrl) {
-        const codeMessages = MessageFormatter.formatGASCode(
-          codeResponse.code,
-          'Google Apps Script コード'
-        )
 
-        // コードメッセージを追加
-        for (const codeMsg of codeMessages) {
-          messages.push({
-            type: 'text',
-            text: codeMsg
-          })
-        }
-      } else if (codeResponse.code && codeShareUrl) {
-        // URLがある場合は簡略メッセージ
-        messages.push({
-          type: 'text',
-          text: '💻 コードが長いため、上記URLからご確認ください。\nブラウザで開くとコピーボタンが使えます。'
-        })
-      }
-      
-      // 4. 設定方法（手順）
-      if (codeResponse.steps && codeResponse.steps.length > 0) {
-        let stepsText = '📝 設定方法:\n'
-        codeResponse.steps.forEach((step: string, index: number) => {
-          stepsText += `${index + 1}. ${step}\n`
-        })
-        
-        // 手順が長い場合は分割
-        const splitSteps = MessageFormatter.splitLongMessage(stepsText)
-        for (const chunk of splitSteps) {
-          messages.push({
-            type: 'text',
-            text: chunk
-          })
-        }
-      }
-      
-      // 5. 注意点
-      let notesText = '⚠️ 注意点:\n'
-      if (codeResponse.notes && Array.isArray(codeResponse.notes)) {
-        codeResponse.notes.forEach((note: string) => {
-          notesText += `• ${note}\n`
-        })
-      } else {
-        notesText += `• 初回実行時は承認が必要です\n`
-        notesText += `• コードはGoogle Apps Scriptエディタに貼り付けてください\n`
-        notesText += `• エラーが出た場合はスクリーンショットを送信してください\n`
-      }
-      
+      // 初心者向けの最重要ステップ
+      firstMessage += '【設定手順】\n'
+      firstMessage += '1️⃣ 上記URLをタップしてコードをコピー\n'
+      firstMessage += '2️⃣ Google Apps Scriptを開く\n'
+      firstMessage += '3️⃣ コードを貼り付けて保存（Ctrl+S）\n'
+      firstMessage += '4️⃣ 実行ボタン▶️をクリック'
+
       messages.push({
         type: 'text',
-        text: notesText
+        text: firstMessage
       })
-      
-      // 6. アクションボタン
+      // メッセージ2: 詳細な注意点とアクションボタン
+      let secondMessage = ''
+
+      // コード直接送信が必要な場合（URLなし）
+      if (codeResponse.code && !codeShareUrl) {
+        secondMessage += '📋 コード:\n```\n'
+        secondMessage += codeResponse.code.substring(0, 800) // 800文字まで
+        if (codeResponse.code.length > 800) {
+          secondMessage += '\n...(省略)...'
+        }
+        secondMessage += '\n```\n\n'
+      }
+
+      // 重要な注意点（初心者向け）
+      secondMessage += '⚠️ よくあるつまずきポイント:\n'
+      secondMessage += '• 初回実行時は「承認が必要です」と出ます→「許可」してください\n'
+      secondMessage += '• トリガー設定が必要な場合は「時計マーク⏰」から設定\n'
+      secondMessage += '• エラーが出たら画面スクショを送ってください、すぐ解決します！\n\n'
+
+      // カスタム注意事項があれば追加
+      if (codeResponse.notes && Array.isArray(codeResponse.notes) && codeResponse.notes.length > 0) {
+        secondMessage += '💡 このコード特有の設定:\n'
+        codeResponse.notes.slice(0, 2).forEach((note: string) => {
+          secondMessage += `• ${note}\n`
+        })
+        secondMessage += '\n'
+      }
+
+      // サポート情報
+      secondMessage += '困ったら遠慮なく聞いてください！'
+
       messages.push({
         type: 'text',
-        text: '次のアクション',
+        text: secondMessage,
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }},
-            { type: 'action', action: { type: 'message', label: '📷 エラースクショ', text: 'エラーのスクショを送る' }},
-            { type: 'action', action: { type: 'message', label: '🔄 新規作成', text: '新しいコードを作りたい' }}
+            { type: 'action', action: { type: 'message', label: '✏️ 修正したい', text: '修正' }},
+            { type: 'action', action: { type: 'message', label: '📷 エラー画面', text: 'エラーのスクショを送る' }},
+            { type: 'action', action: { type: 'message', label: '🔄 別のコード', text: '新しいコードを作りたい' }},
+            { type: 'action', action: { type: 'message', label: '❓ 使い方', text: '使い方を教えて' }}
           ]
         }
       })
       
-      // メッセージを送信（5個ずつのバッチで送信）
-      for (let i = 0; i < messages.length; i += 5) {
-        const batch = messages.slice(i, i + 5)
-        await this.lineClient.pushMessage(lineUserId, batch)
-        
-        // レート制限を避けるため少し待機
-        if (i + 5 < messages.length) {
-          await new Promise(resolve => setTimeout(resolve, 200))
-        }
-      }
+      // 2通のメッセージを送信（まとめて送信）
+      await this.lineClient.pushMessage(lineUserId, messages)
       
     } catch (error) {
       logger.error('Failed to send result to LINE', { 

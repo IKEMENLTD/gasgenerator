@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { ConversationContext } from './conversational-flow'
 import { logger } from '@/lib/utils/logger'
-import { generateUUID } from '@/lib/utils/crypto'
+import { generateSessionId } from '@/lib/utils/crypto'
 
 export interface Message {
   role: 'user' | 'assistant' | 'system'
@@ -104,6 +104,7 @@ export class SupabaseSessionStore {
 
       // 3. ConversationContext形式に変換
       const conversationContext: ConversationContext = {
+        userId,  // userIdを追加
         category: context.category,
         subcategory: context.subcategory,
         messages: (messages || []).map((m: any) => ({
@@ -255,12 +256,13 @@ export class SupabaseSessionStore {
     category: string,
     initialMessage?: string
   ): Promise<ConversationContext> {
-    const sessionId = generateUUID()
-    
+    const sessionId = generateSessionId()  // TEXT型のセッションID生成
+
     if (!this.supabase) {
       logger.debug('Supabase not configured, returning local session')
       return {
         sessionId,
+        userId,  // userIdを追加
         category,
         messages: initialMessage ? [{ role: 'user', content: initialMessage }] : [],
         requirements: {},
@@ -270,7 +272,7 @@ export class SupabaseSessionStore {
     }
 
     try {
-      const sessionId = generateUUID()
+      // sessionIdは上で生成済みなので削除
       
       // コンテキストを作成（conversation_sessions テーブルを使用）
       const contextData = {
@@ -391,7 +393,7 @@ export class SupabaseSessionStore {
         .from('session_checkpoints')
         .insert({
           user_id: userId,
-          session_id: context.sessionId || generateUUID(),
+          session_id: context.sessionId || generateSessionId(),
           context_snapshot: JSON.stringify(context),
           checkpoint_type: checkpointType,
           created_at: new Date().toISOString()

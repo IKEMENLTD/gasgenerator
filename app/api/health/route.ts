@@ -39,7 +39,21 @@ interface HealthStatus {
 
 const startTime = Date.now()
 
+// グローバルメモリキャッシュの管理
+declare global {
+  var memoryCleanupCount: number
+}
+
+if (!global.memoryCleanupCount) {
+  global.memoryCleanupCount = 0
+}
+
 export async function GET() {
+  // ガベージコレクション強制実行（可能な場合）
+  if (global.gc) {
+    global.gc()
+  }
+
   // メモリ使用状況を先にチェック
   const memoryUsage = process.memoryUsage()
   const heapUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024)
@@ -49,10 +63,28 @@ export async function GET() {
 
   // メモリステータスの判定 (Render無料プラン: 512MB)
   let memoryStatus: 'ok' | 'warning' | 'critical' = 'ok'
+  let shouldCleanup = false
+
   if (rssMB > 450 || heapUsagePercent > 90) {
     memoryStatus = 'critical'
+    shouldCleanup = true
   } else if (rssMB > 400 || heapUsagePercent > 80) {
     memoryStatus = 'warning'
+    shouldCleanup = true
+  }
+
+  // メモリクリーンアップ
+  if (shouldCleanup) {
+    global.memoryCleanupCount++
+    // 再度GC実行
+    if (global.gc) {
+      global.gc()
+    }
+    logger.info('Memory cleanup executed', {
+      count: global.memoryCleanupCount,
+      rss: rssMB,
+      heapUsage: heapUsagePercent
+    })
   }
 
   const healthStatus: HealthStatus = {

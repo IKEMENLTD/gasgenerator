@@ -1,5 +1,6 @@
 import { Anthropic } from '@anthropic-ai/sdk'
 import { logger } from '../utils/logger'
+import { AIRequirementsExtractor } from './ai-requirements-extractor'
 
 // Anthropic SDKの型定義
 interface AnthropicMessage {
@@ -20,6 +21,7 @@ const anthropic = new Anthropic({
 
 export interface ConversationContext {
   sessionId?: string
+  userId?: string  // AI要件抽出用に追加
   category: string
   subcategory?: string
   messages: Array<{
@@ -104,31 +106,79 @@ export class ConversationalFlow {
   ): Record<string, string | string[] | undefined> | null {
     const requirements: Record<string, string | string[] | undefined> = {}
     
-    // 会話全体から要件を抽出するシンプルなロジック
+    // 会話全体から要件を抽出
     const allText = messages.map(m => m.content).join(' ') + ' ' + latestReply
-    
-    // スプレッドシート関連
-    if (allText.includes('A列') || allText.includes('B列') || allText.includes('C列')) {
-      requirements.columns = allText.match(/[A-Z]列/g)?.join(', ')
+    const userText = messages.filter(m => m.role === 'user').map(m => m.content).join(' ')
+
+    // グラフ関連（優先度高）
+    if (allText.includes('グラフ') || allText.includes('チャート') || allText.includes('chart') || allText.includes('graph')) {
+      requirements['処理種別'] = 'グラフ作成'
+      // グラフの種類
+      if (allText.includes('棒グラフ') || allText.includes('棒')) {
+        requirements['グラフタイプ'] = '棒グラフ'
+      } else if (allText.includes('円グラフ') || allText.includes('円')) {
+        requirements['グラフタイプ'] = '円グラフ'
+      } else if (allText.includes('折れ線')) {
+        requirements['グラフタイプ'] = '折れ線グラフ'
+      }
     }
-    
+
+    // スプレッドシート関連
+    if (allText.includes('スプレッドシート') || allText.includes('シート') || allText.includes('sheet')) {
+      // 列の指定
+      const columnMatch = allText.match(/[A-Z]列/g)
+      if (columnMatch) {
+        requirements['対象列'] = columnMatch.join(', ')
+      }
+      // シート名
+      const sheetMatch = allText.match(/「([^」]+)」/g)
+      if (sheetMatch) {
+        requirements['シート名'] = sheetMatch.map(s => s.replace(/[「」]/g, '')).join(', ')
+      }
+    }
+
+    // データ処理関連
+    if (allText.includes('集計') || allText.includes('合計') || allText.includes('平均')) {
+      requirements['処理内容'] = 'データ集計'
+    } else if (allText.includes('転記') || allText.includes('コピー')) {
+      requirements['処理内容'] = 'データ転記'
+    } else if (allText.includes('抜き出') || allText.includes('抽出')) {
+      requirements['処理内容'] = 'データ抽出'
+    } else if (allText.includes('比較')) {
+      requirements['処理内容'] = 'データ比較'
+    }
+
     // 実行タイミング
     if (allText.includes('毎日') || allText.includes('毎週') || allText.includes('毎月')) {
-      requirements.frequency = allText.match(/(毎日|毎週|毎月)/)?.[0]
+      requirements['実行頻度'] = allText.match(/(毎日|毎週|毎月)/)?.[0]
     }
-    
+
     // 時刻
     const timeMatch = allText.match(/(\d{1,2}時)/g)
     if (timeMatch) {
-      requirements.executionTime = timeMatch[0]
+      requirements['実行時刻'] = timeMatch[0]
     }
-    
-    // 処理内容
-    if (allText.includes('集計')) requirements.action = '集計'
-    if (allText.includes('転記')) requirements.action = '転記'
-    if (allText.includes('比較')) requirements.action = '比較'
-    if (allText.includes('メール')) requirements.action = 'メール送信'
-    
+
+    // ユーザーの具体的な要求を抽出
+    const requestPatterns = [
+      /([^。、]+(?:したい|してください|してほしい|お願い))/g,
+      /([^。、]+(?:できる|できますか))/g,
+      /([^。、]+を(?:作る|作成|生成))/g
+    ]
+
+    for (const pattern of requestPatterns) {
+      const matches = userText.match(pattern)
+      if (matches) {
+        requirements['ユーザー要求'] = matches.join('、')
+        break
+      }
+    }
+
+    // 要件が空の場合、ユーザーの最新メッセージをそのまま保存
+    if (Object.keys(requirements).length === 0 && userText.length > 0) {
+      requirements['ユーザー入力'] = userText.substring(0, 200)
+    }
+
     return Object.keys(requirements).length > 0 ? requirements : null
   }
   /**
@@ -224,17 +274,68 @@ ${conversationHistory}
       // マーカーを除去した返信テキスト
       let cleanReply = aiReply.replace('[READY_FOR_CODE]', '').trim()
       
-      // 要件の抽出（会話から自然に抽出）
-      const extractedRequirements = this.extractRequirementsFromConversation(
-        context.messages,
-        cleanReply
-      )
-      
-      // 要件を更新
-      if (extractedRequirements) {
+      // AIを使って要件を抽出（LLMに完全に任せる）
+      try {
+        const aiExtracted = await AIRequirementsExtractor.extractFromConversation(
+          context.messages,
+          context.userId  // userIdのみを渡す（userInputは間違い）
+        )
+
+        // 要件を構造化して保存（空白対策を強化）
         context.requirements = {
-          ...context.requirements,
-          ...extractedRequirements
+          '主要目的': aiExtracted.mainPurpose || '要件を確認中です',
+          'データソース': aiExtracted.dataSource || '未指定',
+          '処理タイプ': aiExtracted.processingType || '未指定',
+          '出力形式': aiExtracted.outputFormat || '未指定',
+          '実行タイミング': aiExtracted.schedule || '手動実行',
+          '詳細要件': (aiExtracted.specificRequirements && aiExtracted.specificRequirements.length > 0)
+            ? aiExtracted.specificRequirements.join('、')
+            : '詳細確認中',
+          'AI理解度': `${aiExtracted.confidenceLevel || 50}%`
+        }
+
+        // 理解度が低い場合は追加質問
+        if (aiExtracted.confidenceLevel < 70 && !isReadyForCode) {
+          const missingInfo = AIRequirementsExtractor.identifyMissingInfo(aiExtracted)
+          if (missingInfo.length > 0) {
+            const smartQuestion = await AIRequirementsExtractor.generateSmartQuestion(
+              missingInfo,
+              aiExtracted
+            )
+            cleanReply += `\n\n${smartQuestion}`
+          }
+        }
+
+        logger.info('AI requirements extraction successful', {
+          confidence: aiExtracted.confidenceLevel,
+          mainPurpose: aiExtracted.mainPurpose
+        })
+
+      } catch (extractError) {
+        logger.error('AI extraction failed, falling back to old method', { extractError })
+
+        // フォールバック：古い方法を使用
+        const extractedRequirements = this.extractRequirementsFromConversation(
+          context.messages,
+          cleanReply
+        )
+
+        if (extractedRequirements && Object.keys(extractedRequirements).length > 0) {
+          context.requirements = {
+            ...context.requirements,
+            ...extractedRequirements
+          }
+        } else {
+          // 完全にフォールバック：最低限の要件を設定（より親切に）
+          context.requirements = {
+            '主要目的': userInput.substring(0, 100),
+            'データソース': 'どのシートやファイルを使うか教えてください',
+            '処理タイプ': 'どんな処理をしたいか詳しく教えてください',
+            '出力形式': '結果の出力先を教えてください',
+            '実行タイミング': '手動実行を予定',
+            '詳細要件': 'もう少し詳しくお聞かせください',
+            'AI理解度': '追加情報が必要です'
+          }
         }
       }
 
@@ -247,12 +348,38 @@ ${conversationHistory}
       // 要件収集が完了した場合
       if (isReadyForCode) {
         context.readyForCode = true
-        const confirmMessage = `\n\n📝 要件を確認させていただきます：\n\n${Object.entries(context.requirements)
-          .filter(([, v]) => v)
-          .map(([k, v]) => `・${k}: ${v}`)
-          .join('\n')}\n\nこの内容でコードを生成してよろしいですか？\n\n「はい」または「修正」とお答えください。`
-        
-        cleanReply += confirmMessage
+
+        // 要件が空または不十分な場合の処理
+        if (!context.requirements || Object.keys(context.requirements).length === 0) {
+          // 会話履歴から要件を再構築
+          const userMessages = context.messages
+            .filter(m => m.role === 'user')
+            .map(m => m.content)
+
+          if (userMessages.length > 0) {
+            context.requirements = {
+              'ユーザー要求': userMessages.join('、'),
+              'AI理解内容': cleanReply.substring(0, 150)
+            }
+          }
+        }
+
+        // 要件リストの作成（簡潔版）
+        const requirementEntries = Object.entries(context.requirements)
+          .filter(([k, v]) => v && k !== 'AI理解度' && k !== '詳細要件')
+          .slice(0, 3) // 最大3項目
+
+        if (requirementEntries.length > 0) {
+          const mainPurpose = context.requirements['主要目的'] || requirementEntries[0]?.[1] || '要件確認中'
+
+          // 1行で完結する確認メッセージ
+          const confirmMessage = `\n\n✅ 「${mainPurpose}」を実現するコードを生成します。\n\nよろしければ「はい」、変更があれば内容をお知らせください。`
+          cleanReply += confirmMessage
+        } else {
+          // 万が一要件が全く取得できない場合
+          const confirmMessage = `\n\n✅ ご要望に沿ったコードを生成します。\n\n「はい」で続行、追加要望があればお知らせください。`
+          cleanReply += confirmMessage
+        }
       }
 
       return {

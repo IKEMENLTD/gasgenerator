@@ -157,14 +157,18 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ received: true, alreadyPremium: true })
           }
           
-          // ユーザーのステータスを更新
+          // ユーザーのステータスを更新（決済日を基準に1ヶ月更新）
+          const now = new Date()
           const { error } = await (supabaseAdmin as any)
             .from('users')
             .update({
               subscription_status: 'premium',
               stripe_customer_id: session.customer,
               subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-              subscription_started_at: new Date().toISOString()
+              subscription_started_at: now.toISOString(),
+              payment_start_date: now.toISOString(),  // 決済日を記録（月次更新の基準）
+              last_reset_month: 0,  // リセット月数を初期化
+              monthly_usage_count: 0  // 使用回数もリセット
             })
             .eq('display_name', decodedLineUserId)  // display_nameにLINE IDが格納されている
           

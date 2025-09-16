@@ -6,7 +6,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
-import CodeViewer from './CodeViewer'
+import CodeViewer from './CodeViewerNew'
 
 interface PageProps {
   params: {

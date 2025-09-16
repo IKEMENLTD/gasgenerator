@@ -104,7 +104,7 @@ export function generateRequestId(): string {
   return `req_${timestamp}_${randomPart}`
 }
 
-// セッションIDの生成
+// セッションIDの生成（TEXT型で統一）
 export function generateSessionId(): string {
   const timestamp = Date.now().toString(36)
   // 暗号学的に安全な乱数を使用

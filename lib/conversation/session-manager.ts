@@ -128,6 +128,7 @@ export class SessionManager {
       // ローカルでセッション作成
       const context: ConversationContext = {
         sessionId: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId,  // userIdを追加
         category,
         messages: initialMessage ? [{ role: 'user', content: initialMessage }] : [],
         requirements: {},

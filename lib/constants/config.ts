@@ -18,13 +18,13 @@ export const TIMEOUTS = {
 
 // Claude API設定
 export const CLAUDE_CONFIG = {
-  MODEL: 'claude-3-5-sonnet-20241022',
-  MAX_TOKENS: 2048,
+  MODEL: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514', // Claude Sonnet 4 (環境変数で上書き可能)
+  MAX_TOKENS: 32000, // コスト制御のため32Kに制限（それでも十分大きい）
   TEMPERATURE: 0.1,
-  MAX_INPUT_TOKENS: 1500,
-  // コスト計算（USD per 1000 tokens）
-  COST_PER_INPUT_TOKEN: 0.003 / 1000,
-  COST_PER_OUTPUT_TOKEN: 0.015 / 1000
+  MAX_INPUT_TOKENS: 100000, // 100Kに制限（効率的な使用）
+  // コスト計算（USD per 1000 tokens - Claude Sonnet 4料金）
+  COST_PER_INPUT_TOKEN: 0.003 / 1000, // $3 per million tokens
+  COST_PER_OUTPUT_TOKEN: 0.015 / 1000 // $15 per million tokens
 } as const
 
 // データベース設定

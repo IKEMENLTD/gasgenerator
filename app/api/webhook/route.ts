@@ -5,7 +5,7 @@ import { QueueManager } from '../../../lib/queue/manager'
 import { UserQueries } from '../../../lib/supabase/queries'
 import { PremiumChecker } from '../../../lib/premium/premium-checker'
 import { logger } from '../../../lib/utils/logger'
-import { generateRequestId, generateUUID, validateLineSignature } from '../../../lib/utils/crypto'
+import { generateRequestId, generateSessionId, validateLineSignature } from '../../../lib/utils/crypto'
 import { getCategoryIdByName } from '../../../lib/conversation/category-definitions'
 import { ConversationalFlow, ConversationContext } from '../../../lib/conversation/conversational-flow'
 import { SessionManager } from '../../../lib/conversation/session-manager'
@@ -655,7 +655,7 @@ async function continueConversation(
     if (result.reply) {
       await sessionManager.saveMessage(
         userId,
-        context.sessionId || generateUUID(),
+        context.sessionId || generateSessionId(),
         'assistant',
         result.reply
       )
@@ -768,7 +768,7 @@ async function startCodeGeneration(
     // 確認メッセージを送信
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
-      text: '🚀 承知しました！\n\nコードを生成中です...\n\n✅ キューに追加済み\n⏰ 予想時間：2-3分\n\n生成が完了したら自動で通知します！'
+      text: '🚀 コード生成を開始しました！\n\n⏰ 2-3分で完成します\n完了したら自動通知でお知らせします'
     }])
     
   } catch (error) {

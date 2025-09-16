@@ -33,7 +33,8 @@ export class ClaudeApiClient {
   async sendMessage(
     messages: Array<{ role: 'user' | 'assistant', content: string }>,
     userId?: string,
-    maxRetries: number = 3
+    maxRetries: number = 3,
+    customMaxTokens?: number
   ): Promise<ClaudeApiResponse> {
     const startTime = Date.now()
     let lastError: Error | null = null
@@ -47,9 +48,156 @@ export class ClaudeApiClient {
           messageCount: messages.length
         })
 
+        // 動的トークン割り当て（入力トークン数に基づいて出力を最大化）
+        const inputLength = JSON.stringify(messages).length
+        const estimatedInputTokens = Math.ceil(inputLength / 4) // 約4文字で1トークン
+
+        // カスタムトークンが指定されている場合はそれを使用
+        if (customMaxTokens) {
+          logger.debug('Using custom token allocation', { customMaxTokens })
+          const optimalMaxTokens = customMaxTokens
+          const response = await this.makeApiRequest({
+            model: this.config.model,
+            max_tokens: optimalMaxTokens,
+            temperature: this.config.temperature,
+            messages
+          })
+          const processingTime = Date.now() - startTime
+          await this.logUsage(response.usage, true, processingTime, userId)
+          logger.info('Claude API request successful', {
+            attempt,
+            processingTime,
+            inputTokens: response.usage.input_tokens,
+            outputTokens: response.usage.output_tokens,
+            userId
+          })
+          return response
+        }
+
+        // コンテンツタイプの詳細分析
+        const content = messages.map(m => m.content).join(' ').toLowerCase()
+
+        // タスクタイプの判定（優先度順）
+        const taskType = this.detectTaskType(content)
+
+        // タスクタイプに応じた最適なトークン割り当て
+        let optimalMaxTokens: number
+
+        switch (taskType) {
+          case 'full_code_generation':
+            // 完全なコード生成（複雑なスクリプト）
+            if (estimatedInputTokens < 500) {
+              optimalMaxTokens = 16000  // シンプルな要件
+            } else if (estimatedInputTokens < 2000) {
+              optimalMaxTokens = 24000  // 中程度の要件
+            } else if (estimatedInputTokens < 5000) {
+              optimalMaxTokens = 32000  // 詳細な要件
+            } else {
+              optimalMaxTokens = 48000  // 非常に複雑な要件
+            }
+            break
+
+          case 'code_modification':
+            // コードの修正・改善
+            if (estimatedInputTokens < 1000) {
+              optimalMaxTokens = 8000   // 小さな修正
+            } else if (estimatedInputTokens < 3000) {
+              optimalMaxTokens = 12000  // 中規模な修正
+            } else {
+              optimalMaxTokens = 20000  // 大規模な修正
+            }
+            break
+
+          case 'data_processing':
+            // データ処理・集計系
+            if (estimatedInputTokens < 500) {
+              optimalMaxTokens = 6000   // 簡単な処理
+            } else if (estimatedInputTokens < 2000) {
+              optimalMaxTokens = 12000  // 複雑な処理
+            } else {
+              optimalMaxTokens = 24000  // 大規模データ処理
+            }
+            break
+
+          case 'api_integration':
+            // API連携・外部サービス統合
+            if (estimatedInputTokens < 1000) {
+              optimalMaxTokens = 10000  // シンプルなAPI
+            } else if (estimatedInputTokens < 3000) {
+              optimalMaxTokens = 18000  // 複数API連携
+            } else {
+              optimalMaxTokens = 28000  // 複雑な統合
+            }
+            break
+
+          case 'automation':
+            // 自動化・トリガー系
+            if (estimatedInputTokens < 800) {
+              optimalMaxTokens = 8000   // 基本的な自動化
+            } else if (estimatedInputTokens < 2500) {
+              optimalMaxTokens = 14000  // 条件分岐あり
+            } else {
+              optimalMaxTokens = 22000  // 複雑なワークフロー
+            }
+            break
+
+          case 'explanation':
+            // 説明・解説系
+            if (estimatedInputTokens < 500) {
+              optimalMaxTokens = 3000   // 簡単な説明
+            } else if (estimatedInputTokens < 1500) {
+              optimalMaxTokens = 5000   // 詳細な説明
+            } else {
+              optimalMaxTokens = 8000   // 包括的な解説
+            }
+            break
+
+          case 'debugging':
+            // デバッグ・エラー解決
+            if (estimatedInputTokens < 1000) {
+              optimalMaxTokens = 6000   // 簡単なエラー
+            } else if (estimatedInputTokens < 3000) {
+              optimalMaxTokens = 10000  // 複雑なバグ
+            } else {
+              optimalMaxTokens = 16000  // システムレベルの問題
+            }
+            break
+
+          case 'simple_query':
+            // 簡単な質問・確認
+            optimalMaxTokens = 2000
+            break
+
+          default:
+            // デフォルト（入力長に基づく）
+            if (estimatedInputTokens < 300) {
+              optimalMaxTokens = 4000
+            } else if (estimatedInputTokens < 1000) {
+              optimalMaxTokens = 8000
+            } else if (estimatedInputTokens < 3000) {
+              optimalMaxTokens = 12000
+            } else if (estimatedInputTokens < 5000) {
+              optimalMaxTokens = 20000
+            } else if (estimatedInputTokens < 10000) {
+              optimalMaxTokens = 32000
+            } else {
+              optimalMaxTokens = 48000
+            }
+        }
+
+        // 最大値制限（Claude Sonnet 4は64Kまで）
+        optimalMaxTokens = Math.min(optimalMaxTokens, this.config.maxTokens)
+
+        logger.debug('Advanced token allocation', {
+          estimatedInputTokens,
+          taskType,
+          optimalMaxTokens,
+          contentLength: inputLength
+        })
+
         const response = await this.makeApiRequest({
           model: this.config.model,
-          max_tokens: this.config.maxTokens,
+          max_tokens: optimalMaxTokens,
           temperature: this.config.temperature,
           messages
         })
@@ -146,6 +294,65 @@ export class ClaudeApiClient {
         output_tokens: 0
       }
     }
+  }
+
+  /**
+   * タスクタイプを検出
+   */
+  private detectTaskType(content: string): string {
+    // コード生成関連のキーワード
+    const codeGenerationKeywords = ['作成', '作って', '生成', 'create', 'make', 'build', 'generate', '新しい', 'new']
+    const codeModificationKeywords = ['修正', '変更', '改善', 'fix', 'modify', 'update', 'change', 'refactor', '直して']
+    const dataProcessingKeywords = ['集計', 'データ', '抽出', 'aggregate', 'data', 'extract', 'process', 'calculate', '計算']
+    const apiKeywords = ['api', 'webhook', 'fetch', 'http', 'request', '外部', 'external', '連携']
+    const automationKeywords = ['自動', 'trigger', 'schedule', 'cron', '定期', 'automatic', '毎日', '毎週', '毎月']
+    const debugKeywords = ['エラー', 'error', 'bug', 'debug', '動かない', 'not working', '失敗', 'fail']
+    const explainKeywords = ['説明', 'explain', 'what', 'なに', 'どう', 'how', '教えて']
+
+    // フルコード生成（新規作成）
+    if (codeGenerationKeywords.some(keyword => content.includes(keyword)) &&
+        !codeModificationKeywords.some(keyword => content.includes(keyword))) {
+      if (content.includes('gas') || content.includes('script') || content.includes('コード')) {
+        return 'full_code_generation'
+      }
+    }
+
+    // コード修正
+    if (codeModificationKeywords.some(keyword => content.includes(keyword))) {
+      return 'code_modification'
+    }
+
+    // データ処理
+    if (dataProcessingKeywords.some(keyword => content.includes(keyword))) {
+      return 'data_processing'
+    }
+
+    // API連携
+    if (apiKeywords.some(keyword => content.includes(keyword))) {
+      return 'api_integration'
+    }
+
+    // 自動化
+    if (automationKeywords.some(keyword => content.includes(keyword))) {
+      return 'automation'
+    }
+
+    // デバッグ
+    if (debugKeywords.some(keyword => content.includes(keyword))) {
+      return 'debugging'
+    }
+
+    // 説明・解説
+    if (explainKeywords.some(keyword => content.includes(keyword))) {
+      return 'explanation'
+    }
+
+    // 簡単な質問（短い入力）
+    if (content.length < 100) {
+      return 'simple_query'
+    }
+
+    return 'general'
   }
 
   /**

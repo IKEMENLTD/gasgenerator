@@ -60,30 +60,55 @@ export class PremiumChecker {
         }
       }
 
-      // 月次リセットチェック
+      // プレミアムユーザーの月次更新チェック（決済日から1ヶ月）
       const now = new Date()
-      const lastReset = (user as any).last_reset_date ? new Date((user as any).last_reset_date) : null
-      const needsReset = !lastReset || 
-        lastReset.getMonth() !== now.getMonth() || 
-        lastReset.getFullYear() !== now.getFullYear()
+      const subscriptionEndDate = (user as any).subscription_end_date ? new Date((user as any).subscription_end_date) : null
+      const paymentStartDate = (user as any).payment_start_date ? new Date((user as any).payment_start_date) : null
 
-      if (needsReset) {
-        // 月が変わったので使用回数をリセット
-        await (supabaseAdmin as any)
-          .from('users')
-          .update({
-            monthly_usage_count: 0,
-            last_reset_date: now.toISOString().split('T')[0]
-          })
-          .eq('display_name', userId)
+      // プレミアムユーザーの場合、決済日から1ヶ月ごとにリセット
+      if ((user as any).subscription_status === 'premium' && paymentStartDate) {
+        const daysSincePayment = Math.floor((now.getTime() - paymentStartDate.getTime()) / (1000 * 60 * 60 * 24))
+        const monthsSincePayment = Math.floor(daysSincePayment / 30)
+        const lastResetMonth = (user as any).last_reset_month || 0
 
-        ;(user as any).monthly_usage_count = 0
-        logger.info('Monthly usage reset for user', { userId })
+        if (monthsSincePayment > lastResetMonth) {
+          // 決済日から1ヶ月経過したのでリセット
+          await (supabaseAdmin as any)
+            .from('users')
+            .update({
+              monthly_usage_count: 0,
+              last_reset_date: now.toISOString().split('T')[0],
+              last_reset_month: monthsSincePayment
+            })
+            .eq('display_name', userId)
+
+          ;(user as any).monthly_usage_count = 0
+          logger.info('Premium monthly usage reset (payment cycle)', { userId, monthsSincePayment })
+        }
+      } else {
+        // 無料ユーザーの場合、カレンダー月でリセット
+        const lastReset = (user as any).last_reset_date ? new Date((user as any).last_reset_date) : null
+        const needsReset = !lastReset ||
+          lastReset.getMonth() !== now.getMonth() ||
+          lastReset.getFullYear() !== now.getFullYear()
+
+        if (needsReset) {
+          await (supabaseAdmin as any)
+            .from('users')
+            .update({
+              monthly_usage_count: 0,
+              last_reset_date: now.toISOString().split('T')[0]
+            })
+            .eq('display_name', userId)
+
+          ;(user as any).monthly_usage_count = 0
+          logger.info('Free user monthly usage reset', { userId })
+        }
       }
 
-      // プレミアムステータスチェック
-      const isPremium = (user as any).subscription_status === 'premium' && 
-                       (user as any).subscription_end_date && 
+      // プレミアムステータスチェック（subscription_end_dateが現在より後）
+      const isPremium = (user as any).subscription_status === 'premium' &&
+                       (user as any).subscription_end_date &&
                        new Date((user as any).subscription_end_date) > now
 
       const usageCount = (user as any).monthly_usage_count || 0
