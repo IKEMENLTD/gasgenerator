@@ -114,7 +114,7 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
 
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <span className="emoji">⭐</span>
+                <i className="ti ti-sparkles text-yellow-300"></i>
                 <span className="text-sm font-medium text-blue-100">AI Generated Code</span>
               </div>
 
@@ -127,19 +127,19 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
               <div className="stats-grid">
                 <div className="stat-item">
                   <div className="stat-value">{initialData.viewCount || 0}</div>
-                  <div className="stat-label">👁️ Views</div>
+                  <div className="stat-label">Views</div>
                 </div>
                 <div className="stat-item">
                   <div className="stat-value">{copyCount}</div>
-                  <div className="stat-label">📋 Copies</div>
+                  <div className="stat-label">Copies</div>
                 </div>
                 <div className="stat-item">
                   <div className="stat-value" style={{fontSize: '1rem'}}>{new Date(initialData.createdAt).toLocaleDateString('ja-JP')}</div>
-                  <div className="stat-label">📅 Created</div>
+                  <div className="stat-label">Created</div>
                 </div>
                 <div className="stat-item">
                   <div className="stat-value">{lineCount}</div>
-                  <div className="stat-label">💻 Lines</div>
+                  <div className="stat-label">Lines</div>
                 </div>
               </div>
             </div>
@@ -156,12 +156,12 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
               >
                 {copied ? (
                   <>
-                    <span className="emoji">✅</span>
-                    コピー完了！
+                    <i className="ti ti-check"></i>
+                    コピー完了
                   </>
                 ) : (
                   <>
-                    <span className="emoji">📋</span>
+                    <i className="ti ti-copy"></i>
                     コードをコピー
                   </>
                 )}
@@ -173,7 +173,7 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
                 rel="noopener noreferrer"
                 className="btn btn-secondary"
               >
-                <span className="emoji">🚀</span>
+                <i className="ti ti-external-link"></i>
                 Apps Scriptで開く
               </a>
 
@@ -184,12 +184,12 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
               >
                 {downloading ? (
                   <>
-                    <span className="emoji animate-pulse">⏳</span>
+                    <i className="ti ti-loader-2 animate-spin"></i>
                     ダウンロード中...
                   </>
                 ) : (
                   <>
-                    <span className="emoji">💾</span>
+                    <i className="ti ti-download"></i>
                     ファイル保存
                   </>
                 )}
@@ -200,7 +200,7 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
                   onClick={() => setShowFullCode(!showFullCode)}
                   className="btn btn-secondary"
                 >
-                  <span className="emoji">👁️</span>
+                  <i className="ti ti-code"></i>
                   {showFullCode ? 'コードを折りたたむ' : 'すべて表示'}
                 </button>
               )}
@@ -218,7 +218,7 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
                       <div className="code-dot green" />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="emoji">📝</span>
+                      <i className="ti ti-file-code-2 text-blue-400"></i>
                       <span className="text-gray-300 text-sm font-mono">code.gs</span>
                     </div>
                   </div>
@@ -249,7 +249,7 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
             <div className="feature-grid">
               <div className="feature-card">
                 <div className="feature-icon">
-                  <span className="emoji">✅</span>
+                  <i className="ti ti-circle-check"></i>
                 </div>
                 <h3 className="feature-title">使用方法</h3>
                 <ol className="feature-description space-y-2">
@@ -274,24 +274,24 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
 
               <div className="feature-card" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
                 <div className="feature-icon">
-                  <span className="emoji">⭐</span>
+                  <i className="ti ti-star-filled"></i>
                 </div>
                 <h3 className="feature-title">特徴</h3>
                 <ul className="feature-description space-y-2">
                   <li className="flex items-start gap-2">
-                    <span className="emoji mt-1">✓</span>
+                    <i className="ti ti-check text-xs mt-1"></i>
                     <span>AI が要件に合わせて自動生成</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="emoji mt-1">✓</span>
+                    <i className="ti ti-check text-xs mt-1"></i>
                     <span>エラーハンドリング実装済み</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="emoji mt-1">✓</span>
+                    <i className="ti ti-check text-xs mt-1"></i>
                     <span>Google 公式 API に準拠</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="emoji mt-1">✓</span>
+                    <i className="ti ti-check text-xs mt-1"></i>
                     <span>すぐに使える実用的なコード</span>
                   </li>
                 </ul>
