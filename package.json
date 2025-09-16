@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "node --max-old-space-size=400 --expose-gc --optimize-for-size --expose-gc --optimize-for-size node_modules/.bin/next start -p ${PORT:-10000}",
+    "start": "node --max-old-space-size=384 --optimize-for-size --no-deprecation node_modules/.bin/next start -p ${PORT:-10000}",
     "lint": "next lint",
     "type-check": "tsc --noEmit || true"
   },

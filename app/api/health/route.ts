@@ -9,6 +9,13 @@ interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy'
   timestamp: string
   uptime: number
+  memory: {
+    heapUsed: string
+    heapTotal: string
+    rss: string
+    usage: string
+    status: 'ok' | 'warning' | 'critical'
+  }
   checks: {
     database: {
       status: 'ok' | 'error'
@@ -33,16 +40,45 @@ interface HealthStatus {
 const startTime = Date.now()
 
 export async function GET() {
+  // メモリ使用状況を先にチェック
+  const memoryUsage = process.memoryUsage()
+  const heapUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024)
+  const heapTotalMB = Math.round(memoryUsage.heapTotal / 1024 / 1024)
+  const rssMB = Math.round(memoryUsage.rss / 1024 / 1024)
+  const heapUsagePercent = Math.round((heapUsedMB / heapTotalMB) * 100)
+
+  // メモリステータスの判定 (Render無料プラン: 512MB)
+  let memoryStatus: 'ok' | 'warning' | 'critical' = 'ok'
+  if (rssMB > 450 || heapUsagePercent > 90) {
+    memoryStatus = 'critical'
+  } else if (rssMB > 400 || heapUsagePercent > 80) {
+    memoryStatus = 'warning'
+  }
+
   const healthStatus: HealthStatus = {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: Math.floor((Date.now() - startTime) / 1000),
+    memory: {
+      heapUsed: `${heapUsedMB}MB`,
+      heapTotal: `${heapTotalMB}MB`,
+      rss: `${rssMB}MB`,
+      usage: `${heapUsagePercent}%`,
+      status: memoryStatus
+    },
     checks: {
       database: { status: 'ok' },
       lineApi: { status: 'ok' },
       anthropicApi: { status: 'ok' },
       environment: { status: 'ok' }
     }
+  }
+
+  // メモリが critical の場合は unhealthy に
+  if (memoryStatus === 'critical') {
+    healthStatus.status = 'unhealthy'
+  } else if (memoryStatus === 'warning') {
+    healthStatus.status = 'degraded'
   }
 
   // 1. データベース接続チェック
