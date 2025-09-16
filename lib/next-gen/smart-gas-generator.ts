@@ -82,7 +82,7 @@ export class SmartGASGenerator {
    */
   private async generateOptimizedCode(
     requirements: ExtractedRequirements,
-    sessionId: string
+    _sessionId: string  // 将来的にログ用に使用予定
   ): Promise<string> {
     const prompt = `あなたは Google Apps Script のエキスパートです。
 以下の要件を完全に満たすコードを生成してください。
