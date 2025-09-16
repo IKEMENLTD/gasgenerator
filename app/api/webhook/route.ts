@@ -371,7 +371,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     // メッセージをSessionManager経由で保存
     await sessionManager.saveMessage(
       userId,
-      context.sessionId || generateUUID(),
+      context.sessionId || generateSessionId(),
       'user',
       messageText,
       { timestamp: Date.now() }
@@ -732,7 +732,7 @@ async function startCodeGeneration(
     }
     
     // セッションIDを確保
-    const sessionId = context.sessionId || generateUUID()
+    const sessionId = context.sessionId || generateSessionId()
     
     // キューに追加（セッションIDを含める）
     const job = await QueueManager.addJob({
@@ -897,7 +897,7 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
       // SessionManager経由でメッセージを保存
       await sessionManager.saveMessage(
         userId,
-        context.sessionId || generateUUID(),
+        context.sessionId || generateSessionId(),
         'user',
         messageContent,
         { type: 'image', messageId, analysisResult: result.description }
@@ -967,7 +967,7 @@ async function processFileMessage(event: any, requestId: string): Promise<boolea
     // SessionManager経由でメッセージを保存
     await sessionManager.saveMessage(
       userId,
-      context.sessionId || generateUUID(),
+      context.sessionId || generateSessionId(),
       'user',
       `[ファイルアップロード] ${fileName}`,
       { type: 'file', messageId, fileName }
