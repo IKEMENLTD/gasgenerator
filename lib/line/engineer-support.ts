@@ -89,7 +89,7 @@ export class EngineerSupportSystem {
    * エンジニアグループに通知を送信
    */
   private async notifyEngineers(request: EngineerSupportRequest): Promise<void> {
-    const notificationMessage = this.createNotificationMessage(request)
+    const notificationMessage = await this.createNotificationMessage(request)
     
     // グループチャットに送信
     if (this.supportGroupId) {
@@ -116,9 +116,12 @@ export class EngineerSupportSystem {
   /**
    * 通知メッセージを作成
    */
-  private createNotificationMessage(request: EngineerSupportRequest): any[] {
+  private async createNotificationMessage(request: EngineerSupportRequest): Promise<any[]> {
     const messages = []
-    
+
+    // ユーザーの課金状況を取得
+    const subscriptionStatus = await this.getUserSubscriptionStatus(request.userId)
+
     // メインの通知メッセージ
     messages.push({
       type: 'text',
@@ -127,6 +130,7 @@ export class EngineerSupportSystem {
 👤 ユーザー: ${request.userName}
 🆔 ID: ${request.userId}
 📅 時刻: ${request.timestamp.toLocaleString('ja-JP')}
+${subscriptionStatus.icon} 課金状況: ${subscriptionStatus.text}
 
 💬 相談内容:
 ${request.userMessage}
@@ -244,12 +248,83 @@ ${request.context.errorMessage ? `\n⚠️ エラー:\n${request.context.errorMe
   }
 
   /**
+   * ユーザーの課金状況を取得
+   */
+  private async getUserSubscriptionStatus(userId: string): Promise<{ icon: string; text: string; isPremium: boolean }> {
+    try {
+      // ユーザー情報をDBから取得
+      const { data: user, error } = await (supabaseAdmin as any)
+        .from('users')
+        .select('subscription_status, is_premium, subscription_end_date, monthly_usage_count')
+        .eq('display_name', userId)
+        .single()
+
+      if (error || !user) {
+        logger.warn('User not found in database', { userId })
+        return {
+          icon: '🆓',
+          text: '無料ユーザー（未登録）',
+          isPremium: false
+        }
+      }
+
+      // プレミアムステータスを判定
+      if (user.is_premium || user.subscription_status === 'premium') {
+        // 有効期限をチェック
+        if (user.subscription_end_date) {
+          const endDate = new Date(user.subscription_end_date)
+          const now = new Date()
+
+          if (endDate > now) {
+            const daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+            return {
+              icon: '💎',
+              text: `プレミアム会員（残り${daysRemaining}日）`,
+              isPremium: true
+            }
+          } else {
+            return {
+              icon: '⏰',
+              text: 'プレミアム期限切れ',
+              isPremium: false
+            }
+          }
+        }
+        return {
+          icon: '💎',
+          text: 'プレミアム会員（無期限）',
+          isPremium: true
+        }
+      }
+
+      // 無料ユーザーの場合、使用回数も表示
+      const usageCount = user.monthly_usage_count || 0
+      const maxUsage = 10 // 無料枠の上限
+      const remaining = Math.max(0, maxUsage - usageCount)
+
+      return {
+        icon: '🆓',
+        text: `無料ユーザー（残り${remaining}回/月）`,
+        isPremium: false
+      }
+
+    } catch (error) {
+      logger.error('Failed to get user subscription status', { error, userId })
+      return {
+        icon: '❓',
+        text: '確認エラー',
+        isPremium: false
+      }
+    }
+  }
+
+  /**
    * 緊急度を判定
    */
   private isUrgent(request: EngineerSupportRequest): boolean {
     const urgentKeywords = ['緊急', 'エラー', '動かない', '助けて', 'バグ', '本番', 'production']
     const message = request.userMessage.toLowerCase()
-    
+
     return urgentKeywords.some(keyword => message.includes(keyword))
   }
 
