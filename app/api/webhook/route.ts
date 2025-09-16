@@ -8,6 +8,7 @@ import { logger } from '../../../lib/utils/logger'
 import { generateRequestId, generateSessionId, validateLineSignature } from '../../../lib/utils/crypto'
 import { getCategoryIdByName } from '../../../lib/conversation/category-definitions'
 import { ConversationalFlow, ConversationContext } from '../../../lib/conversation/conversational-flow'
+import { CategoryDetector } from '../../../lib/conversation/category-detector'
 import { SessionManager } from '../../../lib/conversation/session-manager'
 import { LineImageHandler } from '../../../lib/line/image-handler'
 import { rateLimiters } from '../../../lib/middleware/rate-limiter'
@@ -445,34 +446,52 @@ function isResetCommand(text: string): boolean {
  * 新規会話開始
  */
 async function startNewConversation(
-  userId: string, 
-  messageText: string, 
+  userId: string,
+  messageText: string,
   replyToken: string
 ): Promise<boolean> {
   // カテゴリ判定
-  const categoryId = getCategoryIdByName(messageText)
-  
+  let categoryId = getCategoryIdByName(messageText)
+  let autoDetected = false
+
   if (!categoryId) {
-    // カテゴリ選択画面を表示
-    await lineClient.replyMessage(replyToken, [{
-      type: 'text',
-      text: '👋 こんにちは！GASコードを自動生成します。\n\n作りたいコードのカテゴリを選んでください：',
-      quickReply: {
-        items: [
-          { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-          { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-          { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-          { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
-          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談' }}
-        ]
-      }
-    }])
-    return true
+    // メッセージ内容から自動的にカテゴリを推測
+    categoryId = await CategoryDetector.detectFromMessage(messageText, userId)
+    if (categoryId) {
+      autoDetected = true
+      logger.info('Category auto-detected', { userId, categoryId, messageText })
+    }
+
+    if (!categoryId) {
+      // それでも判定できない場合のみカテゴリ選択画面を表示
+      await lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '👋 こんにちは！GASコードを自動生成します。\n\n作りたいコードのカテゴリを選んでください：',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
+            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談' }}
+          ]
+        }
+      }])
+      return true
+    }
   }
 
   // SessionManager経由で新しいセッションを作成
   const context = await sessionManager.createSession(userId, categoryId, messageText)
+
+  // 自動検出の場合は、メッセージを要件として扱う
+  if (autoDetected) {
+    context.messages.push({
+      role: 'user',
+      content: messageText
+    })
+  }
   
   // 最初の質問を送信
   const result = await ConversationalFlow.processConversation(context, messageText)
