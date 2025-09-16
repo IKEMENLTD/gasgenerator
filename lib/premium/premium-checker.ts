@@ -62,7 +62,7 @@ export class PremiumChecker {
 
       // プレミアムユーザーの月次更新チェック（決済日から1ヶ月）
       const now = new Date()
-      const subscriptionEndDate = (user as any).subscription_end_date ? new Date((user as any).subscription_end_date) : null
+      // const subscriptionEndDate = (user as any).subscription_end_date ? new Date((user as any).subscription_end_date) : null  // 将来的に使用予定
       const paymentStartDate = (user as any).payment_start_date ? new Date((user as any).payment_start_date) : null
 
       // プレミアムユーザーの場合、決済日から1ヶ月ごとにリセット

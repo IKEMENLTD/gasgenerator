@@ -180,7 +180,7 @@ ${JSON.stringify(requirements, null, 2)}
    */
   private async generateDocumentation(
     code: string,
-    requirements: ExtractedRequirements
+    _requirements: ExtractedRequirements  // 将来的に要件ベースのドキュメント生成に使用
   ): Promise<string> {
     const prompt = `以下のGASコードのドキュメントを生成してください。
 
@@ -211,7 +211,7 @@ ${code.substring(0, 3000)}...
    * テストケース生成
    */
   private async generateTestCases(
-    code: string,
+    _code: string,  // テストケース生成用（実装予定）
     requirements: ExtractedRequirements
   ): Promise<string[]> {
     const prompt = `以下のGASコードのテストケースを生成してください。

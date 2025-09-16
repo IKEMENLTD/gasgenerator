@@ -6,7 +6,7 @@ import { ClaudeUsageTracker } from '@/lib/claude/usage-tracker'
 import { CodeValidator } from '@/lib/claude/code-validator'
 import { LineApiClient } from '@/lib/line/client'
 import { MessageTemplates } from '@/lib/line/message-templates'
-import { MessageFormatter } from '@/lib/line/message-formatter'
+// import { MessageFormatter } from '@/lib/line/message-formatter'  // 未使用（2通メッセージ化で不要になった）
 import { CodeQueries } from '@/lib/supabase/queries'
 import { CodeShareQueries } from '@/lib/supabase/code-share-queries'
 import { logger } from '@/lib/utils/logger'
