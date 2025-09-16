@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Apps Script 初回実行時の承認手順</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .intro-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .intro-card h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            background: #6c757d;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .step-container {
+            display: grid;
+            gap: 30px;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .step-header {
+            background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: white;
+            color: #343a40;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .step-title {
+            flex: 1;
+        }
+
+        .step-title h3 {
+            font-size: 1.2rem;
+            margin-bottom: 3px;
+        }
+
+        .step-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .step-content {
+            padding: 25px;
+        }
+
+        .screenshot {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .screenshot-placeholder {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            height: 250px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-button {
+            display: inline-block;
+            padding: 10px 20px;
+            border: 2px solid #dc3545;
+            color: #dc3545;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 10px 5px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .action-button.primary {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .action-button.secondary {
+            background: white;
+            color: #6c757d;
+            border-color: #dee2e6;
+        }
+
+        .action-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .warning-box strong {
+            color: #856404;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .info-box strong {
+            color: #0c5460;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .checklist li {
+            padding: 10px 0;
+            padding-left: 35px;
+            position: relative;
+            color: #495057;
+        }
+
+        .checklist li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: 10px;
+            width: 24px;
+            height: 24px;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .step-header {
+                padding: 15px 20px;
+            }
+
+            .step-number {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+            }
+
+            .step-title h3 {
+                font-size: 1.1rem;
+            }
+
+            .screenshot-placeholder {
+                height: 180px;
+            }
+        }
+
+        /* アニメーション */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .step-card:nth-child(1) { animation-delay: 0.1s; }
+        .step-card:nth-child(2) { animation-delay: 0.2s; }
+        .step-card:nth-child(3) { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Google Apps Script 承認手順ガイド</h1>
+            <p class="subtitle">初回実行時の権限承認を3ステップで完了</p>
+        </header>
+
+        <div class="intro-card">
+            <h2>
+                <span class="icon">!</span>
+                はじめに
+            </h2>
+            <p>
+                Google Apps Scriptを初めて実行する際は、Googleアカウントへのアクセス権限を承認する必要があります。
+                これは、スクリプトがGmailやスプレッドシートなどのGoogleサービスと連携するためです。
+                以下の手順に従って、安全に承認を完了してください。
+            </p>
+            <div class="info-box">
+                <strong>所要時間：</strong> 約1〜2分<br>
+                <strong>必要なもの：</strong> Googleアカウントのログイン情報
+            </div>
+        </div>
+
+        <div class="step-container">
+            <!-- ステップ1 -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <div class="step-title">
+                        <h3>警告画面の確認</h3>
+                        <p class="step-subtitle">「このアプリはGoogleで確認されていません」と表示されます</p>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <div class="screenshot">
+                        <div class="screenshot-placeholder">
+                            <div style="padding: 20px;">
+                                <div style="font-size: 2rem; color: #dc3545; margin-bottom: 15px;">⚠</div>
+                                <p style="font-size: 1.1rem; color: #333; margin-bottom: 15px;">
+                                    このアプリはGoogleで確認されていません
+                                </p>
+                                <p style="font-size: 0.9rem; color: #6c757d; margin-bottom: 20px;">
+                                    アプリが、Googleアカウントのプライベートな情報へのアクセスを求めています。
+                                </p>
+                                <div style="display: flex; gap: 20px; justify-content: center;">
+                                    <span class="action-button secondary">詳細</span>
+                                    <span class="action-button primary">安全なページに戻る</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p>最初にこの警告画面が表示されます。これは正常な動作です。</p>
+                    <div class="warning-box">
+                        <strong>重要：</strong> 左下の「詳細」リンクをクリックしてください。
+                    </div>
+                </div>
+            </div>
+
+            <!-- ステップ2 -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <div class="step-title">
+                        <h3>詳細オプションの展開</h3>
+                        <p class="step-subtitle">「無題のプロジェクト（安全ではないページ）に移動」をクリック</p>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <div class="screenshot">
+                        <div class="screenshot-placeholder">
+                            <div style="padding: 20px;">
+                                <p style="color: #6c757d; margin-bottom: 10px;">詳細を非表示</p>
+                                <p style="font-size: 0.9rem; color: #495057; margin: 20px 0; text-align: left;">
+                                    リスクを理解し、デベロッパー（あなたのメールアドレス）を信頼できる場合のみ、続行してください。
+                                </p>
+                                <div style="border: 2px solid #dc3545; border-radius: 6px; padding: 12px; margin-top: 20px;">
+                                    <span style="color: #dc3545; text-decoration: underline; cursor: pointer;">
+                                        無題のプロジェクト（安全ではないページ）に移動
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p>「詳細」をクリックすると展開されます。</p>
+                    <div class="info-box">
+                        <strong>注意：</strong> 赤枠で囲まれたリンクをクリックして次のステップへ進みます。
+                    </div>
+                </div>
+            </div>
+
+            <!-- ステップ3 -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <div class="step-title">
+                        <h3>権限の承認</h3>
+                        <p class="step-subtitle">必要な権限を確認して「続行」をクリック</p>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <div class="screenshot">
+                        <div class="screenshot-placeholder">
+                            <div style="padding: 20px; text-align: left;">
+                                <p style="font-size: 1.1rem; color: #333; margin-bottom: 20px;">
+                                    無題のプロジェクト がアクセスできる情報を選択してください
+                                </p>
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                                    <div style="margin-bottom: 12px;">
+                                        <input type="checkbox" checked disabled style="margin-right: 8px;">
+                                        <span>すべて選択</span>
+                                    </div>
+                                    <div style="padding-left: 20px; color: #495057; font-size: 0.9rem;">
+                                        ☑ Gmail のすべてのメールの閲覧、作成、送信、完全な削除<br>
+                                        ☑ Google スプレッドシートのすべての参照、編集、作成、削除
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 20px; justify-content: flex-end; margin-top: 20px;">
+                                    <span class="action-button secondary">キャンセル</span>
+                                    <span class="action-button primary">続行</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p>権限の内容を確認して、右下の「続行」ボタンをクリックします。</p>
+                    <div class="checklist">
+                        <li>Gmail へのアクセス権限</li>
+                        <li>スプレッドシートへのアクセス権限</li>
+                        <li>その他、スクリプトが要求する権限</li>
+                    </div>
+                    <div class="info-box">
+                        <strong>完了：</strong> これでGoogle Apps Scriptの実行準備が整いました！
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="intro-card" style="margin-top: 40px;">
+            <h2>
+                <span class="icon">?</span>
+                よくある質問
+            </h2>
+            <div style="margin-top: 20px;">
+                <p><strong>Q: なぜ「安全ではない」と表示されるのですか？</strong></p>
+                <p style="color: #6c757d; margin-bottom: 20px;">
+                    A: 個人で作成したスクリプトは、Googleの公式認証を受けていないため、このような警告が表示されます。
+                    自分で作成したスクリプトであれば、安全に承認して問題ありません。
+                </p>
+
+                <p><strong>Q: 承認をキャンセルした場合は？</strong></p>
+                <p style="color: #6c757d; margin-bottom: 20px;">
+                    A: スクリプトを再度実行すると、同じ承認画面が表示されます。
+                    必要に応じて承認を行ってください。
+                </p>
+
+                <p><strong>Q: 権限を取り消したい場合は？</strong></p>
+                <p style="color: #6c757d;">
+                    A: Googleアカウントの設定から、いつでもアプリの権限を取り消すことができます。
+                    <a href="https://myaccount.google.com/permissions" target="_blank" style="color: #007bff;">
+                        Googleアカウントの権限管理ページ
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Google Apps Script 承認ガイド</p>
+            <p style="margin-top: 5px;">© 2024 GAS Generator</p>
+        </footer>
+    </div>
+</body>
+</html>

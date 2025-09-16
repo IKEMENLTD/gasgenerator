@@ -389,12 +389,34 @@ export class CodeQueries {
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(limit)
-      
+
       if (error) throw error
       return data || []
     } catch (error) {
       logger.error('CodeQueries.getRecentCodes error:', { error })
       return []
+    }
+  }
+
+  static async isFirstTimeUser(userId: string): Promise<boolean> {
+    try {
+      const { data, error } = await (supabaseAdmin as any)
+        .from('generated_codes')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1)
+        .maybeSingle()
+
+      if (error && error.code !== 'PGRST116') {
+        logger.error('Error checking first time user:', { error })
+        return false
+      }
+
+      // データがなければ初回ユーザー
+      return !data
+    } catch (error) {
+      logger.error('CodeQueries.isFirstTimeUser error:', { error })
+      return false
     }
   }
 

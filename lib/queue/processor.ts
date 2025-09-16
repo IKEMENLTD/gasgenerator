@@ -453,9 +453,19 @@ export class QueueProcessor {
         secondMessage += '\n```\n\n'
       }
 
+      // 初回ユーザーか確認
+      const isFirstTime = await CodeQueries.isFirstTimeUser(lineUserId)
+
       // 重要な注意点（初心者向け）
       secondMessage += '⚠️ よくあるつまずきポイント:\n'
-      secondMessage += '• 初回実行時は「承認が必要です」と出ます→「許可」してください\n'
+      if (isFirstTime) {
+        secondMessage += '• 初回実行時は「承認が必要です」と出ます\n'
+        secondMessage += '  📚 詳しい手順マニュアル: https://gas-manual001.netlify.app\n'
+        secondMessage += '  → 上記URLで画像付きで詳しく解説しています！\n'
+      } else {
+        secondMessage += '• 初回実行時は「承認が必要です」と出ます\n'
+        secondMessage += '  → 手順: https://gas-manual001.netlify.app\n'
+      }
       secondMessage += '• トリガー設定が必要な場合は「時計マーク⏰」から設定\n'
       secondMessage += '• エラーが出たら画面スクショを送ってください、すぐ解決します！\n\n'
 
