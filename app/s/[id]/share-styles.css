@@ -32,9 +32,10 @@ h1::after {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 3rem;
-  height: 3px;
-  background: linear-gradient(90deg, #3b82f6, transparent);
+  width: 2.5rem;
+  height: 2px;
+  background: linear-gradient(90deg, #9ca3af, transparent);
+  opacity: 0.5;
 }
 
 h2 {
@@ -212,21 +213,21 @@ li {
 .btn:focus-visible,
 .tag:focus-visible,
 a:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #9ca3af;
   outline-offset: 2px;
 }
 
 /* Blockquote Styling */
 blockquote {
-  border-left: 4px solid #3b82f6;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  border-left: 3px solid #e5e7eb;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
   margin: 1.5rem 0;
-  background: linear-gradient(90deg, #f8fafc, transparent);
+  background: #fafafa;
   padding-top: 1rem;
   padding-bottom: 1rem;
-  font-style: italic;
-  color: #4b5563;
+  font-style: normal;
+  color: #6b7280;
 }
 
 /* Smooth Transitions */
@@ -314,7 +315,7 @@ svg.icon-lg {
 }
 
 .premium-card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* Gradient Headers */
@@ -382,30 +383,29 @@ svg.icon-lg {
 /* Removed button shimmer effect for cleaner look */
 
 .btn-primary {
-  background: #374151;
+  background: #1f2937;
   color: white;
   box-shadow: none;
-  border: 1px solid #374151;
+  border: 1px solid #1f2937;
 }
 
 .btn-primary:hover {
-  background: #1f2937;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background: #111827;
+  transform: translateY(-0.5px);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .btn-secondary {
   background: var(--bg-primary);
   color: var(--text-secondary);
-  border: 1.5px solid var(--border-color);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  box-shadow: none;
 }
 
 .btn-secondary:hover {
-  background: var(--bg-secondary);
-  border-color: #cbd5e1;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: #fafafa;
+  border-color: #d1d5db;
+  transform: translateY(-0.5px);
 }
 
 .btn-success {
@@ -423,10 +423,10 @@ svg.icon-lg {
 /* Code Display - Keep as is, perfect */
 .code-container {
   background: #1a1b26;
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   overflow: hidden;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
   margin: 0;
 }
 
@@ -521,9 +521,9 @@ code:not(pre code) {
 }
 
 .stat-item:hover {
-  background: #f9fafb;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: #f3f4f6;
+  transform: translateY(-0.5px);
+  border-color: #e5e7eb;
 }
 
 .stat-value {
@@ -568,8 +568,9 @@ code:not(pre code) {
 /* Removed shimmer animation */
 
 .feature-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-color: #d1d5db;
 }
 
 .feature-icon {
@@ -618,10 +619,9 @@ code:not(pre code) {
 }
 
 .tag:hover {
-  background: linear-gradient(135deg, var(--bg-tertiary), #e2e8f0);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  border-color: #cbd5e1;
+  background: #f3f4f6;
+  transform: translateY(-0.5px);
+  border-color: #d1d5db;
 }
 
 /* Animations */
@@ -858,13 +858,13 @@ code:not(pre code) {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: #d1d5db;
   border-radius: 10px;
   border: 2px solid var(--bg-tertiary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  background: #9ca3af;
 }
 
 /* Dark Mode Support (システム設定に従う) */
