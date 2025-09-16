@@ -118,8 +118,8 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
                 <span className="text-sm font-medium text-blue-100">AI Generated Code</span>
               </div>
 
-              <h1 className="text-3xl font-bold mb-3">{initialData.title}</h1>
-              <p className="text-blue-50 text-base leading-relaxed mb-6">
+              <h1>{initialData.title}</h1>
+              <p className="ja-text">
                 {initialData.description || 'カスタマイズされたGoogle Apps Scriptコード'}
               </p>
 
@@ -301,9 +301,9 @@ export default function CodeViewer({ shareId, initialData }: CodeViewerProps) {
 
           {/* タグ */}
           {initialData.tags && initialData.tags.length > 0 && (
-            <div className="px-6 pb-6">
-              <h3 className="text-sm font-bold text-gray-700 mb-3">カテゴリータグ</h3>
-              <div className="flex flex-wrap gap-2">
+            <div className="content-section">
+              <h3>カテゴリータグ</h3>
+              <div className="flex flex-wrap gap-2 px-0">
                 {initialData.tags.map((tag, index) => (
                   <span
                     key={index}
