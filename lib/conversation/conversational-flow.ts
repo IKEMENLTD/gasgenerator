@@ -328,7 +328,7 @@ ${conversationHistory}
         } else {
           // 完全にフォールバック：最低限の要件を設定（より親切に）
           context.requirements = {
-            '主要目的': userInput.substring(0, 100),
+            '主要目的': userMessage.substring(0, 100),
             'データソース': 'どのシートやファイルを使うか教えてください',
             '処理タイプ': 'どんな処理をしたいか詳しく教えてください',
             '出力形式': '結果の出力先を教えてください',
