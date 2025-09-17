@@ -512,9 +512,9 @@ function TermsContent() {
                   <p style={{ fontWeight: 'bold', marginBottom: '0.75rem', fontSize: 'clamp(0.875rem, 2vw, 1rem)' }}>
                     最低契約期間: 3ヶ月（全有料プラン共通）
                   </p>
-                  <div className="list-item">プレミアムプラン: 初回30,000円（3ヶ月分）</div>
-                  <div className="list-item">プロフェッショナルプラン: 初回150,000円（3ヶ月分）</div>
-                  <div className="list-item">3ヶ月経過後は月額自動更新</div>
+                  <div className="list-item">最低3ヶ月間の継続が必要です</div>
+                  <div className="list-item">月額料金のみ（頭金・初期費用なし）</div>
+                  <div className="list-item">3ヶ月経過後はいつでも解約可能</div>
                 </div>
                 <div className="highlight-box">
                   <div className="pricing-table">
@@ -581,7 +581,7 @@ function TermsContent() {
                 <h2 className="section-title">第7条（返金ポリシー）</h2>
                 <div className="section-content">
                   <div className="list-item"><strong>クーリングオフ:</strong> 初回申込から7日間は全額返金可能</div>
-                  <div className="list-item"><strong>最低契約期間:</strong> 3ヶ月経過前の解約でも返金は行いません</div>
+                  <div className="list-item"><strong>最低契約期間:</strong> 3ヶ月未満での解約でも、3ヶ月分の料金が発生します</div>
                   <div className="list-item"><strong>サービス不具合:</strong> 当社起因の重大な不具合の場合、日割り返金</div>
                   <div className="list-item"><strong>返金申請:</strong> support@ikemen.co.jp まで連絡</div>
                   <div className="list-item"><strong>処理期間:</strong> 申請から5営業日以内に処理</div>
