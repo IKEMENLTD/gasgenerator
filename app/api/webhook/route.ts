@@ -273,6 +273,25 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       return true
     }
     
+    // メニュー表示
+    if (messageText === 'メニュー' || messageText === 'MENU' || messageText === 'menu' || messageText === 'Menu') {
+      await lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '📋 メニュー',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' }},
+            { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' }},
+            { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' }},
+            { type: 'action', action: { type: 'message', label: '📸 画像解析ガイド', text: '画像解析の使い方' }},
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談' }},
+            { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }}
+          ] as any
+        }
+      }])
+      return true
+    }
+
     // 使い方ガイド
     if (messageText === '使い方を教えて' || messageText === '使い方' || messageText === 'ヘルプ') {
       await lineClient.replyMessage(replyToken, [{
@@ -576,6 +595,12 @@ async function startNewConversation(
         action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談' }
       })
 
+      // メニューボタンを最後に追加
+      quickReplyItems.push({
+        type: 'action',
+        action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }
+      })
+
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
         text: hasHistory
@@ -645,7 +670,8 @@ async function continueConversation(
           { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
           { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
           { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
-          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談' }}
+          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談' }},
+          { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
         ]
       }
     }] as any)

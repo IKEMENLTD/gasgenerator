@@ -144,6 +144,14 @@ export class MessageTemplates {
                 label: '👨‍💻 エンジニア相談',
                 text: 'エンジニアに相談する'
               }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '📋 メニュー',
+                text: 'メニュー'
+              }
             }
           ]
         }
