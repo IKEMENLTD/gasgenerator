@@ -165,7 +165,6 @@ export async function POST(req: NextRequest) {
           // 支払い金額に基づいてプランを判定
           // Professional: 50,000円, Premium: 10,000円
           const subscriptionType = amountTotal >= 50000 ? 'professional' : 'premium'
-          const planName = subscriptionType === 'professional' ? 'プロフェッショナルプラン' : 'プレミアムプラン'
 
           // ユーザーのステータスを更新（決済日を基準に1ヶ月更新）
           const now = new Date()
