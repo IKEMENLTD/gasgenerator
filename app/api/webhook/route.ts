@@ -208,8 +208,19 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
   logger.info('Processing message', { userId, messageText, requestId })
 
   try {
+    // 即座にローディングアニメーションを開始（最大60秒）
+    // これによりユーザーは処理中であることがすぐにわかる
+    const loadingPromise = lineClient.showLoadingAnimation(userId, 60)
+
     // SessionManagerを使用してコンテキストを取得（キャッシュ優先、自動フォールバック）
     let context = await sessionManager.getContext(userId)
+
+    // ローディング開始の結果を確認（非同期で実行）
+    loadingPromise.then(success => {
+      if (!success) {
+        logger.warn('Loading animation failed to start', { userId })
+      }
+    })
 
     // エラースクリーンショット待ち受けモード
     if (messageText === 'エラーのスクリーンショットを送る' || 
@@ -957,6 +968,11 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
   logger.info('Processing image message', { userId, messageId, requestId })
 
   try {
+    // 画像処理にも即座にローディングアニメーションを開始
+    lineClient.showLoadingAnimation(userId, 60).catch(err => {
+      logger.warn('Failed to show loading for image', { err })
+    })
+
     // SessionManagerから完全なコンテキストを取得
     let context = await sessionManager.getContext(userId)
     

@@ -14,6 +14,14 @@ export class LineApiClient {
 
   /**
    * ローディングアニメーションを表示（最大60秒）
+   *
+   * LINE公式の仕様:
+   * - 最大60秒まで表示可能
+   * - 同じユーザーに対して連続で呼び出し可能
+   * - 返信メッセージが送信されると自動的に停止
+   *
+   * @param userId - LINE User ID
+   * @param durationSeconds - 表示時間（秒）デフォルト20秒、最大60秒
    */
   async showLoadingAnimation(userId: string, durationSeconds: number = 20): Promise<boolean> {
     try {
