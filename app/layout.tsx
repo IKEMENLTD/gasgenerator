@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://gasgenerator.onrender.com'),
   title: 'GAS自動生成システム',
   description: 'LINEから自然言語でGoogle Apps Scriptを自動生成',
   icons: {

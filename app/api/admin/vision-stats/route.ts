@@ -3,6 +3,8 @@ import { databaseRateLimiter } from '@/lib/vision/database-rate-limiter'
 import { logger } from '@/lib/utils/logger'
 import { JWTManager } from '@/lib/auth/jwt-manager'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   try {
     // JWT認証チェック（強化版）
