@@ -599,7 +599,45 @@ function TermsContent() {
               </section>
 
               <section className="section">
-                <h2 className="section-title">第9条（サービスの変更・終了）</h2>
+                <h2 className="section-title">第9条（アカウントの停止・削除）</h2>
+                <div className="section-content">
+                  <div className="list-item">禁止事項違反の場合、事前通知なくアカウント停止可能</div>
+                  <div className="list-item">90日以上利用のないアカウントは削除される場合があります</div>
+                  <div className="list-item">退会希望の場合、support@ikemen.co.jp まで連絡</div>
+                  <div className="list-item">退会後もデータは法定保存期間保持されます</div>
+                </div>
+              </section>
+
+              <section className="section">
+                <h2 className="section-title">第10条（利用者の責任）</h2>
+                <div className="section-content">
+                  <div className="list-item">18歳未満の方は保護者の同意が必要です</div>
+                  <div className="list-item">アカウント情報の管理は利用者の責任です</div>
+                  <div className="list-item">第三者による不正利用も利用者の責任となります</div>
+                  <div className="list-item">生成コードの利用は自己責任で行ってください</div>
+                </div>
+              </section>
+
+              <section className="section">
+                <h2 className="section-title">第11条（損害賠償および責任制限）</h2>
+                <div className="section-content">
+                  <div className="list-item">利用者が本規約に違反した場合、損害賠償責任を負います</div>
+                  <div className="list-item">当社の責任は、利用者が支払った直近1ヶ月分の利用料金を上限とします</div>
+                  <div className="list-item">間接損害、逸失利益等については一切責任を負いません</div>
+                </div>
+              </section>
+
+              <section className="section">
+                <h2 className="section-title">第12条（規約の変更）</h2>
+                <div className="section-content">
+                  <div className="list-item">当社は本規約を変更する場合があります</div>
+                  <div className="list-item">重要な変更は30日前にLINE公式アカウントで通知します</div>
+                  <div className="list-item">変更後も利用を継続した場合、変更に同意したものとみなします</div>
+                </div>
+              </section>
+
+              <section className="section">
+                <h2 className="section-title">第13条（サービスの変更・終了）</h2>
                 <div className="section-content">
                   <div className="list-item">当社は30日前の通知により、サービス内容を変更できます</div>
                   <div className="list-item">サービス終了の場合、60日前に通知します</div>
@@ -608,7 +646,7 @@ function TermsContent() {
               </section>
 
               <section className="section">
-                <h2 className="section-title">第10条（準拠法・管轄）</h2>
+                <h2 className="section-title">第14条（準拠法・管轄）</h2>
                 <div className="section-content">
                   <div className="list-item">本規約は日本法に準拠します</div>
                   <div className="list-item">紛争が生じた場合、東京地方裁判所を専属的合意管轄とします</div>
@@ -616,7 +654,22 @@ function TermsContent() {
               </section>
 
               <section className="section">
-                <h2 className="section-title">第11条（お問い合わせ）</h2>
+                <h2 className="section-title">第15条（分離可能性）</h2>
+                <div className="section-content">
+                  <div className="list-item">本規約の一部が無効となった場合も、他の条項は有効に存続します</div>
+                </div>
+              </section>
+
+              <section className="section">
+                <h2 className="section-title">第16条（完全合意）</h2>
+                <div className="section-content">
+                  <div className="list-item">本規約は当社と利用者間の完全な合意を構成します</div>
+                  <div className="list-item">口頭による合意や約束は、本規約に優先しません</div>
+                </div>
+              </section>
+
+              <section className="section">
+                <h2 className="section-title">第17条（お問い合わせ）</h2>
                 <div className="contact-box">
                   <div className="contact-item"><strong>運営会社:</strong> 株式会社IKEMEN</div>
                   <div className="contact-item"><strong>メール:</strong> support@ikemen.co.jp</div>
