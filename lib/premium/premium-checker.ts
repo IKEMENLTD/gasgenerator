@@ -3,9 +3,11 @@ import { logger } from '../utils/logger'
 
 export interface PremiumStatus {
   isPremium: boolean
+  isProfessional: boolean
   remainingUses: number
   canGenerate: boolean
   message?: string
+  planName?: string
 }
 
 export class PremiumChecker {
@@ -65,8 +67,9 @@ export class PremiumChecker {
       // const subscriptionEndDate = (user as any).subscription_end_date ? new Date((user as any).subscription_end_date) : null  // 将来的に使用予定
       const paymentStartDate = (user as any).payment_start_date ? new Date((user as any).payment_start_date) : null
 
-      // プレミアムユーザーの場合、決済日から1ヶ月ごとにリセット
-      if ((user as any).subscription_status === 'premium' && paymentStartDate) {
+      // プレミアム/プロフェッショナルユーザーの場合、決済日から1ヶ月ごとにリセット
+      const isPaidUser = ((user as any).subscription_status === 'premium' || (user as any).subscription_status === 'professional')
+      if (isPaidUser && paymentStartDate) {
         const daysSincePayment = Math.floor((now.getTime() - paymentStartDate.getTime()) / (1000 * 60 * 60 * 24))
         const monthsSincePayment = Math.floor(daysSincePayment / 30)
         const lastResetMonth = (user as any).last_reset_month || 0
@@ -106,32 +109,48 @@ export class PremiumChecker {
         }
       }
 
-      // プレミアムステータスチェック（subscription_end_dateが現在より後）
+      // プレミアム/プロフェッショナルステータスチェック
       const isPremium = (user as any).subscription_status === 'premium' &&
                        (user as any).subscription_end_date &&
                        new Date((user as any).subscription_end_date) > now
 
+      const isProfessional = (user as any).subscription_status === 'professional' &&
+                            (user as any).subscription_end_date &&
+                            new Date((user as any).subscription_end_date) > now
+
       const usageCount = (user as any).monthly_usage_count || 0
-      const limit = isPremium ? this.PREMIUM_MONTHLY_LIMIT : this.FREE_MONTHLY_LIMIT
+      const limit = (isPremium || isProfessional) ? this.PREMIUM_MONTHLY_LIMIT : this.FREE_MONTHLY_LIMIT
       const remaining = Math.max(0, limit - usageCount)
 
       // 無料ユーザーで制限に達した場合
-      if (!isPremium && usageCount >= this.FREE_MONTHLY_LIMIT) {
+      if (!isPremium && !isProfessional && usageCount >= this.FREE_MONTHLY_LIMIT) {
         return {
           isPremium: false,
+          isProfessional: false,
           remainingUses: 0,
           canGenerate: false,
-          message: '📊 無料プランの月間利用回数（10回）に達しました。\\n\\nプレミアムプランで無制限利用が可能です！'
+          message: '📊 無料プランの月間利用回数（10回）に達しました。\\n\\nプレミアムプランまたはプロフェッショナルプランで無制限利用が可能です！'
         }
+      }
+
+      let planName = '無料プラン'
+      let message = `無料プラン: 残り${remaining}回`
+
+      if (isProfessional) {
+        planName = 'プロフェッショナルプラン'
+        message = '🎆 プロフェッショナルプラン: 無制限 + 優先サポート'
+      } else if (isPremium) {
+        planName = 'プレミアムプラン'
+        message = '💎 プレミアムプラン: 無制限'
       }
 
       return {
         isPremium,
+        isProfessional,
         remainingUses: remaining,
         canGenerate: true,
-        message: isPremium 
-          ? 'プレミアムプラン: 無制限' 
-          : `無料プラン: 残り${remaining}回`
+        message,
+        planName
       }
 
     } catch (error) {

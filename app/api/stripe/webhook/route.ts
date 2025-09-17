@@ -122,11 +122,13 @@ export async function POST(req: NextRequest) {
         // 決済完了時の処理
         const session = event.data.object
         const lineUserId = session.client_reference_id // URLパラメータから取得
-        
-        logger.info('Payment completed', { 
-          sessionId: session.id, 
+        const amountTotal = session.amount_total // 支払い金額を取得
+
+        logger.info('Payment completed', {
+          sessionId: session.id,
           clientReferenceId: lineUserId,
-          customerId: session.customer 
+          customerId: session.customer,
+          amountTotal: amountTotal
         })
         
         if (lineUserId) {
@@ -151,18 +153,26 @@ export async function POST(req: NextRequest) {
             .eq('display_name', decodedLineUserId)
             .single()
           
-          // 既にプレミアムの場合はスキップ（重複課金防止）
-          if (existingUser?.subscription_status === 'premium') {
-            logger.warn('User already has premium subscription', { lineUserId: decodedLineUserId })
-            return NextResponse.json({ received: true, alreadyPremium: true })
+          // 既にプレミアムまたはプロフェッショナルの場合はスキップ（重複課金防止）
+          if (existingUser?.subscription_status === 'premium' || existingUser?.subscription_status === 'professional') {
+            logger.warn('User already has active subscription', {
+              lineUserId: decodedLineUserId,
+              currentStatus: existingUser?.subscription_status
+            })
+            return NextResponse.json({ received: true, alreadySubscribed: true })
           }
           
+          // 支払い金額に基づいてプランを判定
+          // Professional: 50,000円, Premium: 10,000円
+          const subscriptionType = amountTotal >= 50000 ? 'professional' : 'premium'
+          const planName = subscriptionType === 'professional' ? 'プロフェッショナルプラン' : 'プレミアムプラン'
+
           // ユーザーのステータスを更新（決済日を基準に1ヶ月更新）
           const now = new Date()
           const { error } = await (supabaseAdmin as any)
             .from('users')
             .update({
-              subscription_status: 'premium',
+              subscription_status: subscriptionType,
               stripe_customer_id: session.customer,
               subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
               subscription_started_at: now.toISOString(),
@@ -175,16 +185,24 @@ export async function POST(req: NextRequest) {
           if (error) {
             logger.error('Failed to update user subscription', { error, lineUserId: decodedLineUserId })
           } else {
-            logger.info('User subscription activated', { lineUserId: decodedLineUserId })
+            logger.info('User subscription activated', {
+              lineUserId: decodedLineUserId,
+              subscriptionType,
+              amountTotal
+            })
             
             // 決済完了メッセージをLINEで送信
             try {
               const LineApiClient = (await import('@/lib/line/client')).LineApiClient
               const lineClient = new LineApiClient()
               
+              const confirmationMessage = subscriptionType === 'professional'
+                ? '🎆 決済が完了しました！\n\nプロフェッショナルプランが有効化されました。\n無制限でGASコードを生成でき、優先サポートもご利用いただけます。\n\n「スプレッドシート操作」などのカテゴリを送信してお試しください！'
+                : '💎 決済が完了しました！\n\nプレミアムプランが有効化されました。\n無制限でGASコードを生成できます。\n\n「スプレッドシート操作」などのカテゴリを送信してお試しください！'
+
               await lineClient.pushMessage(decodedLineUserId, [{
                 type: 'text',
-                text: '🎉 決済が完了しました！\n\n月額プランが有効化されました。\n無制限でGASコードを生成できます。\n\n「スプレッドシート操作」などのカテゴリを送信してお試しください！'
+                text: confirmationMessage
               }])
             } catch (lineError) {
               logger.error('Failed to send payment confirmation', { lineError })

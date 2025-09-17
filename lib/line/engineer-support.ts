@@ -38,10 +38,13 @@ export class EngineerSupportSystem {
       // 1. ユーザー情報を取得
       const userProfile = await this.lineClient.getUserProfile(userId)
       
-      // 2. 最新のコンテキストを取得
+      // 2. ユーザーのプラン情報を取得
+      const userPlan = await this.getUserSubscriptionStatus(userId)
+
+      // 3. 最新のコンテキストを取得
       const context = await this.getUserContext(userId)
-      
-      // 3. サポートリクエストを作成
+
+      // 4. サポートリクエストを作成
       const supportRequest: EngineerSupportRequest = {
         userId,
         userName: userProfile?.displayName || 'Unknown User',

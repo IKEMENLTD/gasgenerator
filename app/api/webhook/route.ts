@@ -277,7 +277,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     if (messageText === '使い方を教えて' || messageText === '使い方' || messageText === 'ヘルプ') {
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
-        text: '📖 GAS Generator 使い方ガイド\n\n【基本の使い方】\n1️⃣ 「コード生成を開始」を送信\n2️⃣ カテゴリを選択（スプレッドシート等）\n3️⃣ 詳しい要望を入力\n4️⃣ 数分でコードが生成されます\n\n【便利な機能】\n🔄 修正したい：生成後に修正可能\n📷 エラースクショ：エラー画面を送信で解決策提示\n📸 画像解析：Excel/PDFのスクショからコード生成\n\n【プレミアムプラン】\n💎 月額10,000円で無制限利用\n🆓 無料プラン：月10回まで\n\n💡 コツ：具体的に要望を伝えるほど、良いコードが生成されます！'
+        text: '📖 GAS Generator 使い方ガイド\n\n【基本の使い方】\n1️⃣ 「コード生成を開始」を送信\n2️⃣ カテゴリを選択（スプレッドシート等）\n3️⃣ 詳しい要望を入力\n4️⃣ 数分でコードが生成されます\n\n【便利な機能】\n🔄 修正したい：生成後に修正可能\n📷 エラースクショ：エラー画面を送信で解決策提示\n📸 画像解析：Excel/PDFのスクショからコード生成\n\n【料金プラン】\n🆓 無料：月10回\n💎 プレミアム：月額10,000円\n🎆 プロフェッショナル：月額50,000円\n\n💡 コツ：具体的に要望を伝えるほど、良いコードが生成されます！'
       }])
       return true
     }
@@ -290,19 +290,50 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       return true
     }
     
-    if (messageText === 'プレミアムプラン') {
+    if (messageText === 'プレミアムプラン' || messageText === '料金プラン' || messageText === 'アップグレード') {
       const encodedUserId = Buffer.from(userId).toString('base64')
+
+      // 現在のプレミアムステータスを確認
+      const currentStatus = await PremiumChecker.checkPremiumStatus(userId)
+
       await lineClient.replyMessage(replyToken, [{
         type: 'template',
-        altText: 'プレミアムプランのご案内',
+        altText: '料金プランのご案内',
         template: {
-          type: 'buttons',
-          text: '💎 プレミアムプラン\n\n✅ 無制限のコード生成\n✅ 画像解析無制限\n✅ 優先サポート\n\n月額 500円',
-          actions: [{
-            type: 'uri',
-            label: '今すぐ申し込む',
-            uri: `${process.env.STRIPE_PAYMENT_LINK || 'https://example.com/upgrade'}?client_reference_id=${encodedUserId}`
-          }]
+          type: 'carousel',
+          columns: [
+            {
+              title: '🆓 無料プラン',
+              text: '現在のプラン\n\n✅ 月10回まで生成\n✅ 全機能利用可能\n✅ 画像解析対応\n\n月額 0円',
+              actions: [{
+                type: 'message',
+                label: currentStatus.isPremium || currentStatus.isProfessional ? 'ダウングレード' : '現在のプラン',
+                text: currentStatus.isPremium || currentStatus.isProfessional ? 'プランをダウングレードしたい' : '無料プランを継続'
+              }]
+            },
+            {
+              title: '💎 プレミアムプラン',
+              text: '人気No.1\n\n✅ 無制限生成\n✅ 優先サポート\n✅ 履歴無制限保存\n\n月額 10,000円',
+              actions: [{
+                type: 'uri',
+                label: currentStatus.isPremium ? '現在のプラン' : '申し込む',
+                uri: currentStatus.isPremium
+                  ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'  // 管理画面へのリンク
+                  : `${process.env.STRIPE_PAYMENT_LINK || 'https://example.com/upgrade'}?client_reference_id=${encodedUserId}`
+              }]
+            },
+            {
+              title: '🎆 プロフェッショナル',
+              text: '法人向け\n\n✅ 全機能無制限\n✅ 24時間以内対応\n✅ 専任エンジニア\n✅ APIアクセス\n\n月額 50,000円',
+              actions: [{
+                type: 'uri',
+                label: currentStatus.isProfessional ? '現在のプラン' : '申し込む',
+                uri: currentStatus.isProfessional
+                  ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'  // 管理画面へのリンク
+                  : `${process.env.STRIPE_PROFESSIONAL_PAYMENT_LINK || 'https://buy.stripe.com/fZu6oH78Ea5HcYS1dV6oo0a'}?client_reference_id=${encodedUserId}`
+              }]
+            }
+          ]
         }
       }] as any)
       return true
@@ -805,19 +836,35 @@ async function startCodeGeneration(
     const premiumStatus = await PremiumChecker.checkPremiumStatus(userId)
     
     if (!premiumStatus.canGenerate) {
-      // 制限に達した場合
-      const upgradeUrl = PremiumChecker.getUpgradeUrl(userId)
+      // 制限に達した場合 - カルーセルで両プランを表示
+      const premiumUrl = PremiumChecker.getUpgradeUrl(userId)
+      const professionalUrl = `${process.env.STRIPE_PROFESSIONAL_PAYMENT_LINK || 'https://buy.stripe.com/fZu6oH78Ea5HcYS1dV6oo0a'}?client_reference_id=${Buffer.from(userId).toString('base64')}`
+
       await lineClient.replyMessage(replyToken, [{
         type: 'template',
-        altText: premiumStatus.message || '利用制限に達しました',
+        altText: '利用制限に達しました - プランをアップグレード',
         template: {
-          type: 'buttons',
-          text: premiumStatus.message || '📊 無料プランの月間利用回数（10回）に達しました。\n\nプレミアムプランで無制限利用が可能です！',
-          actions: [{
-            type: 'uri',
-            label: '💎 プレミアムプランを見る',
-            uri: upgradeUrl
-          }]
+          type: 'carousel',
+          columns: [
+            {
+              title: '💎 プレミアムプラン',
+              text: '月額10,000円\n\n✅ 無制限生成\n✅ 全カテゴリ利用可能\n✅ エラー解決サポート',
+              actions: [{
+                type: 'uri',
+                label: 'プレミアムプランを購入',
+                uri: premiumUrl
+              }]
+            },
+            {
+              title: '🎆 プロフェッショナル',
+              text: '月額50,000円\n\n✅ 無制限生成\n✅ 優先サポート\n✅ エンジニア直接対応\n✅ 複雑な要件対応',
+              actions: [{
+                type: 'uri',
+                label: 'プロフェッショナルを購入',
+                uri: professionalUrl
+              }]
+            }
+          ]
         }
       }] as any)
       return

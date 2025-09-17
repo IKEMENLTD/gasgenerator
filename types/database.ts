@@ -10,7 +10,7 @@ export interface Database {
           display_name: string  // LINE User IDを格納
           user_id: string | null  // 内部ID（実際のテーブルに合わせる）
           skill_level: 'beginner' | 'intermediate' | 'advanced'
-          subscription_status: 'free' | 'premium'
+          subscription_status: 'free' | 'premium' | 'professional'
           subscription_end_date: string | null
           subscription_started_at: string | null
           subscription_cancelled_at: string | null
@@ -28,7 +28,7 @@ export interface Database {
           display_name: string  // LINE User IDを格納
           user_id?: string | null
           skill_level?: 'beginner' | 'intermediate' | 'advanced'
-          subscription_status?: 'free' | 'premium'
+          subscription_status?: 'free' | 'premium' | 'professional'
           subscription_end_date?: string | null
           subscription_id?: string | null
           stripe_customer_id?: string | null
@@ -44,7 +44,7 @@ export interface Database {
           display_name?: string  // LINE User IDを格納
           user_id?: string | null
           skill_level?: 'beginner' | 'intermediate' | 'advanced'
-          subscription_status?: 'free' | 'premium'
+          subscription_status?: 'free' | 'premium' | 'professional'
           subscription_end_date?: string | null
           subscription_id?: string | null
           stripe_customer_id?: string | null
