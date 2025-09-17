@@ -11,6 +11,8 @@ interface EngineerSupportRequest {
     errorMessage?: string
     conversationHistory?: any[]
   }
+  userPlan?: string
+  isPriority?: boolean
   timestamp: Date
 }
 
@@ -50,6 +52,8 @@ export class EngineerSupportSystem {
         userName: userProfile?.displayName || 'Unknown User',
         userMessage: message,
         context,
+        userPlan: userPlan?.text || '無料プラン',
+        isPriority: userPlan?.isPremium || false,
         timestamp: new Date()
       }
       

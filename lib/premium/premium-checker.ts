@@ -56,6 +56,7 @@ export class PremiumChecker {
         logger.warn('User not found, treating as free user', { userId })
         return {
           isPremium: false,
+          isProfessional: false,
           remainingUses: this.FREE_MONTHLY_LIMIT,
           canGenerate: true,
           message: `無料プラン: 月${this.FREE_MONTHLY_LIMIT}回まで`
@@ -158,6 +159,7 @@ export class PremiumChecker {
       // エラー時は安全側に倒して生成を拒否
       return {
         isPremium: false,
+        isProfessional: false,
         remainingUses: 0,
         canGenerate: false,
         message: 'ステータス確認エラーが発生しました。しばらくしてからお試しください。'

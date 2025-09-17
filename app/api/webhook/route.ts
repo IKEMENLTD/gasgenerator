@@ -291,8 +291,6 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     }
     
     if (messageText === 'プレミアムプラン' || messageText === '料金プラン' || messageText === 'アップグレード') {
-      const encodedUserId = Buffer.from(userId).toString('base64')
-
       // 現在のプレミアムステータスを確認
       const currentStatus = await PremiumChecker.checkPremiumStatus(userId)
 
@@ -837,9 +835,6 @@ async function startCodeGeneration(
     
     if (!premiumStatus.canGenerate) {
       // 制限に達した場合 - カルーセルで両プランを表示
-      const premiumUrl = PremiumChecker.getUpgradeUrl(userId)
-      const professionalUrl = `${process.env.STRIPE_PROFESSIONAL_PAYMENT_LINK || 'https://buy.stripe.com/fZu6oH78Ea5HcYS1dV6oo0a'}?client_reference_id=${Buffer.from(userId).toString('base64')}`
-
       // 利用規約ページ経由でStripeに誘導
       const termsUrlPremium = `https://gasgenerator.onrender.com/terms?plan=premium&user_id=${userId}`
       const termsUrlProfessional = `https://gasgenerator.onrender.com/terms?plan=professional&user_id=${userId}`

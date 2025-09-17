@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
-export default function TermsOfService() {
+function TermsContent() {
   const [agreed, setAgreed] = useState(false)
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan') || 'premium'
@@ -257,5 +257,20 @@ export default function TermsOfService() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function TermsOfService() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl">⚡</div>
+          <p className="mt-2 text-gray-600">読み込み中...</p>
+        </div>
+      </div>
+    }>
+      <TermsContent />
+    </Suspense>
   )
 }
