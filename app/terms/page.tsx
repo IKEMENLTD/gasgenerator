@@ -10,13 +10,13 @@ function TermsContent() {
   const plan = searchParams.get('plan') || 'premium'
   const userId = searchParams.get('user_id') || ''
 
-  // Stripe決済URLを構築
+  // Stripe決済URLを構築（正しいURLを使用）
   const getPaymentUrl = () => {
     const encodedUserId = Buffer.from(userId).toString('base64')
     if (plan === 'professional') {
       return `${process.env.NEXT_PUBLIC_STRIPE_PROFESSIONAL_PAYMENT_LINK || 'https://buy.stripe.com/fZu6oH78Ea5HcYS1dV6oo0a'}?client_reference_id=${encodedUserId}`
     }
-    return `${process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/xxxxx'}?client_reference_id=${encodedUserId}`
+    return `${process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/7sY3cv2So0v78ICbSz6oo09'}?client_reference_id=${encodedUserId}`
   }
 
   const planDetails = {
@@ -43,7 +43,7 @@ function TermsContent() {
 
         .page-container {
           min-height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
           position: relative;
           overflow: hidden;
         }
@@ -53,7 +53,7 @@ function TermsContent() {
           position: absolute;
           width: 200%;
           height: 200%;
-          background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+          background: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
           background-size: 50px 50px;
           animation: bgMove 60s linear infinite;
         }
@@ -72,9 +72,9 @@ function TermsContent() {
         }
 
         .header-content {
-          max-width: 1200px;
+          max-width: 1440px;
           margin: 0 auto;
-          padding: 1.5rem 2rem;
+          padding: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 4vw, 2rem);
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -83,10 +83,10 @@ function TermsContent() {
         .logo {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          font-size: 1.5rem;
+          gap: clamp(0.5rem, 2vw, 0.75rem);
+          font-size: clamp(1.125rem, 3vw, 1.5rem);
           font-weight: 700;
-          color: #1a202c;
+          color: #1f2937;
           text-decoration: none;
           transition: transform 0.2s;
         }
@@ -96,28 +96,28 @@ function TermsContent() {
         }
 
         .plan-badge {
-          background: linear-gradient(135deg, #667eea, #764ba2);
+          background: linear-gradient(135deg, #6b7280, #4b5563);
           color: white;
-          padding: 0.5rem 1.25rem;
+          padding: clamp(0.375rem, 2vw, 0.5rem) clamp(0.875rem, 3vw, 1.25rem);
           border-radius: 50px;
-          font-size: 0.875rem;
+          font-size: clamp(0.75rem, 2vw, 0.875rem);
           font-weight: 600;
-          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+          box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
         }
 
         .main-content {
-          max-width: 900px;
-          margin: 3rem auto;
-          padding: 0 1.5rem;
+          max-width: 1200px;
+          margin: clamp(1.5rem, 5vw, 3rem) auto;
+          padding: 0 clamp(1rem, 3vw, 1.5rem);
           position: relative;
           z-index: 5;
         }
 
         .progress-bar {
           background: rgba(255, 255, 255, 0.95);
-          border-radius: 20px;
-          padding: 2rem;
-          margin-bottom: 2rem;
+          border-radius: clamp(12px, 3vw, 20px);
+          padding: clamp(1.25rem, 3vw, 2rem);
+          margin-bottom: clamp(1.25rem, 3vw, 2rem);
           box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
 
@@ -134,74 +134,74 @@ function TermsContent() {
         }
 
         .step-circle {
-          width: 40px;
-          height: 40px;
+          width: clamp(32px, 5vw, 40px);
+          height: clamp(32px, 5vw, 40px);
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: 700;
-          font-size: 1rem;
+          font-size: clamp(0.875rem, 2vw, 1rem);
           transition: all 0.3s;
         }
 
         .step-circle.active {
-          background: linear-gradient(135deg, #667eea, #764ba2);
+          background: linear-gradient(135deg, #6b7280, #4b5563);
           color: white;
-          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+          box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
         }
 
         .step-circle.completed {
-          background: #48bb78;
+          background: #10b981;
           color: white;
         }
 
         .step-circle.pending {
-          background: #e2e8f0;
-          color: #a0aec0;
+          background: #e5e7eb;
+          color: #9ca3af;
         }
 
         .step-label {
-          margin-left: 0.75rem;
-          font-size: 0.9rem;
+          margin-left: clamp(0.5rem, 2vw, 0.75rem);
+          font-size: clamp(0.75rem, 2vw, 0.9rem);
           font-weight: 600;
-          color: #2d3748;
+          color: #374151;
         }
 
         .step-connector {
           flex: 1;
           height: 2px;
-          background: #e2e8f0;
-          margin: 0 1rem;
+          background: #e5e7eb;
+          margin: 0 clamp(0.5rem, 2vw, 1rem);
         }
 
         .terms-card {
           background: white;
-          border-radius: 24px;
+          border-radius: clamp(12px, 3vw, 24px);
           overflow: hidden;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
         .card-header {
-          background: linear-gradient(135deg, #667eea, #764ba2);
-          padding: 2.5rem;
+          background: linear-gradient(135deg, #4b5563, #6b7280);
+          padding: clamp(1.5rem, 4vw, 2.5rem);
           color: white;
         }
 
         .card-title {
-          font-size: 2.25rem;
+          font-size: clamp(1.5rem, 4vw, 2.25rem);
           font-weight: 700;
-          margin-bottom: 0.5rem;
+          margin-bottom: clamp(0.25rem, 1vw, 0.5rem);
         }
 
         .card-subtitle {
-          font-size: 1rem;
+          font-size: clamp(0.875rem, 2vw, 1rem);
           opacity: 0.9;
         }
 
         .terms-content {
-          padding: 3rem;
-          max-height: 500px;
+          padding: clamp(1.5rem, 4vw, 3rem);
+          max-height: 70vh;
           overflow-y: auto;
         }
 
@@ -210,140 +210,150 @@ function TermsContent() {
         }
 
         .terms-content::-webkit-scrollbar-track {
-          background: #f7fafc;
+          background: #f9fafb;
           border-radius: 10px;
         }
 
         .terms-content::-webkit-scrollbar-thumb {
-          background: linear-gradient(135deg, #667eea, #764ba2);
+          background: linear-gradient(135deg, #4b5563, #6b7280);
           border-radius: 10px;
         }
 
         .section {
-          margin-bottom: 2.5rem;
+          margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
         }
 
         .section-title {
-          font-size: 1.25rem;
+          font-size: clamp(1rem, 2.5vw, 1.25rem);
           font-weight: 700;
-          color: #1a202c;
-          margin-bottom: 1rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 2px solid #e2e8f0;
+          color: #1f2937;
+          margin-bottom: clamp(0.75rem, 2vw, 1rem);
+          padding-bottom: clamp(0.375rem, 1vw, 0.5rem);
+          border-bottom: 2px solid #e5e7eb;
         }
 
         .section-content {
-          color: #4a5568;
+          color: #4b5563;
           line-height: 1.8;
+          font-size: clamp(0.875rem, 2vw, 1rem);
         }
 
         .list-item {
-          margin-bottom: 0.75rem;
-          padding-left: 1.5rem;
+          margin-bottom: clamp(0.5rem, 1.5vw, 0.75rem);
+          padding-left: clamp(1rem, 3vw, 1.5rem);
           position: relative;
+          font-size: clamp(0.875rem, 2vw, 1rem);
         }
 
         .list-item::before {
           content: '•';
           position: absolute;
           left: 0;
-          color: #667eea;
+          color: #6b7280;
           font-weight: 700;
         }
 
         .highlight-box {
-          background: linear-gradient(135deg, #f6f9ff 0%, #f0f4ff 100%);
-          border-left: 4px solid #667eea;
-          padding: 1.5rem;
+          background: linear-gradient(135deg, #f3f4f6 0%, #f9fafb 100%);
+          border-left: 4px solid #6b7280;
+          padding: clamp(1rem, 3vw, 1.5rem);
           border-radius: 8px;
-          margin: 1.5rem 0;
+          margin: clamp(1rem, 3vw, 1.5rem) 0;
         }
 
         .highlight-box.warning {
-          background: linear-gradient(135deg, #fffbf0 0%, #fff9e6 100%);
-          border-left-color: #f6ad55;
+          background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+          border-left-color: #ef4444;
+        }
+
+        .highlight-box.important {
+          background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+          border-left-color: #3b82f6;
         }
 
         .pricing-table {
-          margin: 1.5rem 0;
+          margin: clamp(1rem, 3vw, 1.5rem) 0;
         }
 
         .pricing-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1rem 1.5rem;
-          background: #f7fafc;
+          padding: clamp(0.75rem, 2vw, 1rem) clamp(1rem, 3vw, 1.5rem);
+          background: #f9fafb;
           border-radius: 8px;
-          margin-bottom: 0.75rem;
+          margin-bottom: clamp(0.5rem, 1.5vw, 0.75rem);
           transition: all 0.3s;
+          font-size: clamp(0.875rem, 2vw, 1rem);
         }
 
         .pricing-row:hover {
-          background: linear-gradient(135deg, #f6f9ff 0%, #f0f4ff 100%);
+          background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
           transform: translateX(5px);
         }
 
         .contact-box {
-          background: #f7fafc;
-          padding: 1.5rem;
+          background: #f9fafb;
+          padding: clamp(1rem, 3vw, 1.5rem);
           border-radius: 12px;
-          margin-top: 1.5rem;
+          margin-top: clamp(1rem, 3vw, 1.5rem);
         }
 
         .contact-item {
-          margin-bottom: 0.5rem;
-          color: #4a5568;
+          margin-bottom: clamp(0.375rem, 1vw, 0.5rem);
+          color: #4b5563;
+          font-size: clamp(0.875rem, 2vw, 1rem);
         }
 
         .agreement-section {
-          background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-          padding: 2rem;
-          border-top: 1px solid #e2e8f0;
+          background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+          padding: clamp(1.5rem, 4vw, 2rem);
+          border-top: 1px solid #e5e7eb;
         }
 
         .checkbox-container {
           display: flex;
           align-items: flex-start;
-          margin-bottom: 1.5rem;
+          margin-bottom: clamp(1rem, 3vw, 1.5rem);
           cursor: pointer;
         }
 
         .checkbox-container input[type="checkbox"] {
-          width: 20px;
-          height: 20px;
-          margin-right: 1rem;
+          width: clamp(18px, 3vw, 20px);
+          height: clamp(18px, 3vw, 20px);
+          margin-right: clamp(0.75rem, 2vw, 1rem);
           margin-top: 2px;
           cursor: pointer;
         }
 
         .checkbox-label {
-          color: #2d3748;
+          color: #374151;
           line-height: 1.6;
+          font-size: clamp(0.875rem, 2vw, 1rem);
         }
 
         .checkbox-label a {
-          color: #667eea;
+          color: #6b7280;
           text-decoration: none;
           font-weight: 600;
           transition: color 0.2s;
         }
 
         .checkbox-label a:hover {
-          color: #764ba2;
+          color: #4b5563;
           text-decoration: underline;
         }
 
         .action-buttons {
           display: flex;
-          gap: 1rem;
+          gap: clamp(0.75rem, 2vw, 1rem);
         }
 
         .btn {
           flex: 1;
-          padding: 1rem 2rem;
+          padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem);
           border-radius: 12px;
-          font-size: 1rem;
+          font-size: clamp(0.875rem, 2vw, 1rem);
           font-weight: 600;
           text-align: center;
           transition: all 0.3s;
@@ -355,30 +365,30 @@ function TermsContent() {
 
         .btn-secondary {
           background: white;
-          color: #4a5568;
-          border: 2px solid #e2e8f0;
+          color: #4b5563;
+          border: 2px solid #e5e7eb;
         }
 
         .btn-secondary:hover {
-          background: #f7fafc;
-          border-color: #cbd5e0;
+          background: #f9fafb;
+          border-color: #d1d5db;
           transform: translateY(-2px);
         }
 
         .btn-primary {
-          background: linear-gradient(135deg, #667eea, #764ba2);
+          background: linear-gradient(135deg, #6b7280, #4b5563);
           color: white;
-          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+          box-shadow: 0 4px 20px rgba(107, 114, 128, 0.3);
         }
 
         .btn-primary:hover {
-          box-shadow: 0 6px 30px rgba(102, 126, 234, 0.5);
+          box-shadow: 0 6px 30px rgba(107, 114, 128, 0.4);
           transform: translateY(-2px);
         }
 
         .btn-disabled {
-          background: #cbd5e0;
-          color: #718096;
+          background: #d1d5db;
+          color: #9ca3af;
           cursor: not-allowed;
           box-shadow: none;
         }
@@ -389,8 +399,8 @@ function TermsContent() {
 
         .footer-info {
           text-align: center;
-          margin-top: 3rem;
-          padding: 0 1.5rem 3rem;
+          margin-top: clamp(2rem, 5vw, 3rem);
+          padding: 0 clamp(1rem, 3vw, 1.5rem) clamp(2rem, 5vw, 3rem);
           color: white;
         }
 
@@ -398,15 +408,17 @@ function TermsContent() {
           background: rgba(255, 255, 255, 0.2);
           backdrop-filter: blur(10px);
           display: inline-block;
-          padding: 1rem 2rem;
+          padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2rem);
           border-radius: 50px;
-          margin-bottom: 0.5rem;
+          margin-bottom: clamp(0.375rem, 1vw, 0.5rem);
+          font-size: clamp(0.875rem, 2vw, 1rem);
         }
 
-        @media (max-width: 768px) {
+        /* レスポンシブデザイン: 275px〜1440px対応 */
+        @media (max-width: 640px) {
           .progress-steps {
             flex-direction: column;
-            gap: 1rem;
+            gap: clamp(0.75rem, 3vw, 1rem);
           }
 
           .step-connector {
@@ -417,16 +429,15 @@ function TermsContent() {
             width: 100%;
           }
 
-          .main-content {
-            margin: 2rem auto;
-          }
-
-          .terms-content {
-            padding: 1.5rem;
-          }
-
           .action-buttons {
             flex-direction: column;
+          }
+        }
+
+        @media (min-width: 1440px) {
+          .header-content,
+          .main-content {
+            max-width: 1440px;
           }
         }
       `}</style>
@@ -497,6 +508,14 @@ function TermsContent() {
 
               <section className="section">
                 <h2 className="section-title">第3条（料金および支払い）</h2>
+                <div className="highlight-box important">
+                  <p style={{ fontWeight: 'bold', marginBottom: '0.75rem', fontSize: 'clamp(0.875rem, 2vw, 1rem)' }}>
+                    最低契約期間: 3ヶ月（全有料プラン共通）
+                  </p>
+                  <div className="list-item">プレミアムプラン: 初回30,000円（3ヶ月分）</div>
+                  <div className="list-item">プロフェッショナルプラン: 初回150,000円（3ヶ月分）</div>
+                  <div className="list-item">3ヶ月経過後は月額自動更新</div>
+                </div>
                 <div className="highlight-box">
                   <div className="pricing-table">
                     <div className="pricing-row">
@@ -517,6 +536,7 @@ function TermsContent() {
                   <div className="list-item">料金は前払い制とし、毎月自動更新されます</div>
                   <div className="list-item">決済はStripeを通じて安全に処理されます</div>
                   <div className="list-item">日割り計算は行いません</div>
+                  <div className="list-item">解約は次回更新日の5日前までに申請（最低契約期間3ヶ月経過後）</div>
                 </div>
               </section>
 
@@ -561,6 +581,7 @@ function TermsContent() {
                 <h2 className="section-title">第7条（返金ポリシー）</h2>
                 <div className="section-content">
                   <div className="list-item"><strong>クーリングオフ:</strong> 初回申込から7日間は全額返金可能</div>
+                  <div className="list-item"><strong>最低契約期間:</strong> 3ヶ月経過前の解約でも返金は行いません</div>
                   <div className="list-item"><strong>サービス不具合:</strong> 当社起因の重大な不具合の場合、日割り返金</div>
                   <div className="list-item"><strong>返金申請:</strong> support@ikemen.co.jp まで連絡</div>
                   <div className="list-item"><strong>処理期間:</strong> 申請から5営業日以内に処理</div>
