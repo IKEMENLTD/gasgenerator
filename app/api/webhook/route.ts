@@ -303,7 +303,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       if (!context) {
         context = await sessionManager.getContext(userId)
       }
-      
+
       // デバッグログ追加
       logger.info('Modify button pressed', {
         userId,
@@ -311,30 +311,15 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         lastGeneratedCode: context?.lastGeneratedCode,
         contextKeys: context ? Object.keys(context) : []
       })
-      
-      // セッションがない場合は新規作成して修正モードに
-      if (!context) {
-        context = {
-          messages: [],
-          category: null,
-          subcategory: null,
-          requirements: {},
-          extractedRequirements: {},
-          currentStep: 1,
-          readyForCode: false,
-          lastGeneratedCode: true,  // 修正モードとして扱う
-          isModifying: true
-        } as any
-      }
-      
-      // lastGeneratedCodeがない場合でも修正モードに入る
-      if (context && (context.lastGeneratedCode || messageText === '修正したい')) {
+
+      // コンテキストがある場合のみ修正モードに入る
+      if (context) {
         context.isModifying = true
         context.lastGeneratedCode = false
-        
+
         // SessionManager経由で保存
         await sessionManager.saveContext(userId, context)
-        
+
         await lineClient.replyMessage(replyToken, [{
           type: 'text',
           text: '🔧 修正したい内容を教えてください。\n\n例：\n・「エラー処理を追加して」\n・「ログを詳細に出力」\n・「シート名を変更」',
@@ -346,11 +331,29 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           }
         }] as any)
         return true
+      } else {
+        // コンテキストがない場合は通常のメッセージとして処理させる
+        logger.info('No context for modification, treating as new message', { userId })
       }
     }
     
     // 続きから再開コマンド
     if (isContinueCommand(messageText)) {
+      // 既にコンテキストがある場合はそれを使用
+      if (context) {
+        await lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: `📚 会話を続けます。\n\n現在のカテゴリ：${context.category || '未設定'}\n\n続きをどうぞ！`,
+          quickReply: {
+            items: [
+              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }},
+              { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }}
+            ]
+          }
+        }] as any)
+        return true
+      }
+
       // 過去のメッセージを取得
       const recentMessages = await sessionManager.getRecentMessages(userId, 10)
       if (recentMessages.length > 0) {
@@ -365,10 +368,11 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           }
         }] as any)
 
-        // 既存のコンテキストを復活させる
-        if (!context) {
-          // Supabaseから最新のセッションを取得
-          context = await sessionManager.recoverSession(userId)
+        // Supabaseから最新のセッションを取得
+        context = await sessionManager.recoverSession(userId)
+        if (context) {
+          // コンテキストを復活させたのでセッションを継続
+          return await continueConversation(userId, context, '', replyToken)
         }
         return true
       } else {
@@ -396,8 +400,10 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
     // 新規会話開始
     if (!context) {
-      const clearHistory = isResetCommand(messageText) // リセットコマンドの場合は履歴クリア
-      logger.info('Starting new conversation', { userId, clearHistory })
+      // カテゴリを選択した場合は新規作成として履歴をクリア
+      const isSelectingCategory = getCategoryIdByName(messageText) !== null
+      const clearHistory = isResetCommand(messageText) || isSelectingCategory
+      logger.info('Starting new conversation', { userId, clearHistory, isSelectingCategory })
       return await startNewConversation(userId, messageText, replyToken, clearHistory)
     }
 
@@ -584,7 +590,8 @@ async function continueConversation(
 ): Promise<boolean> {
   // キャンセル処理（どの段階でも有効）
   if (messageText === 'キャンセル') {
-    await sessionManager.deleteSession(userId)
+    // 履歴は保持したままセッションをクリア（続きから可能にする）
+    await sessionManager.createSession(userId, context.category || 'custom', '', false)
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
       text: '❌ キャンセルしました。\n\n新しくコードを生成したい場合は、カテゴリを選んでください：',
