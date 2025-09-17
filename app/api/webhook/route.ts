@@ -590,8 +590,11 @@ async function continueConversation(
 ): Promise<boolean> {
   // キャンセル処理（どの段階でも有効）
   if (messageText === 'キャンセル') {
-    // 履歴は保持したままセッションをクリア（続きから可能にする）
-    await sessionManager.createSession(userId, context.category || 'custom', '', false)
+    // セッションのみクリア（メッセージ履歴は保持）
+    const memoryStore = (sessionManager as any).memoryStore
+    if (memoryStore) {
+      memoryStore.delete(userId)
+    }
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
       text: '❌ キャンセルしました。\n\n新しくコードを生成したい場合は、カテゴリを選んでください：',
