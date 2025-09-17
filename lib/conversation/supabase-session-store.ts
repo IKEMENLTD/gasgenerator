@@ -289,11 +289,21 @@ export class SupabaseSessionStore {
         updated_at: new Date().toISOString()
       }
 
+      // 既存のセッションとメッセージを削除（新しいセッションを開始する前に）
+      await this.supabase
+        .from('messages')
+        .delete()
+        .eq('user_id', userId)
+
+      await this.supabase
+        .from('conversation_sessions')
+        .delete()
+        .eq('user_id', userId)
+
+      // 新しいセッションを挿入
       const { error: contextError } = await this.supabase
         .from('conversation_sessions')
-        .upsert(contextData, {
-          onConflict: 'user_id'
-        })
+        .insert(contextData)
 
       if (contextError) throw contextError
 
@@ -329,6 +339,16 @@ export class SupabaseSessionStore {
     }
 
     try {
+      // メッセージ履歴も削除
+      const { error: messageError } = await this.supabase
+        .from('messages')
+        .delete()
+        .eq('user_id', userId)
+
+      if (messageError) {
+        logger.warn('Failed to delete messages', { userId, error: messageError })
+      }
+
       // コンテキストを削除
       const { error } = await this.supabase
         .from('conversation_sessions')
@@ -337,7 +357,7 @@ export class SupabaseSessionStore {
 
       if (error) throw error
 
-      logger.info('Session deleted', { userId })
+      logger.info('Session and messages deleted', { userId })
 
     } catch (error) {
       logger.error('Failed to delete session', { userId, error })

@@ -357,14 +357,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
     // 新規会話開始
     if (!context) {
-      // 新規会話でも過去の履歴を確認
-      const recentMessages = await sessionManager.getRecentMessages(userId, 5)
-      if (recentMessages.length > 0) {
-        logger.info('Found recent messages, continuing conversation', { 
-          userId, 
-          messageCount: recentMessages.length 
-        })
-      }
+      // 過去の履歴チェックは削除（新規会話は常に新しく開始）
+      logger.info('Starting new conversation', { userId })
       return await startNewConversation(userId, messageText, replyToken)
     }
 
