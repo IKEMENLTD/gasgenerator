@@ -108,12 +108,13 @@ export class SessionManager {
   async createSession(
     userId: string,
     category: string,
-    initialMessage?: string
+    initialMessage?: string,
+    clearHistory: boolean = true
   ): Promise<ConversationContext> {
     try {
       // Supabaseで作成を試みる
       const context = await this.withRetry(() =>
-        this.supabaseStore.createNewSession(userId, category, initialMessage),
+        this.supabaseStore.createNewSession(userId, category, initialMessage, clearHistory),
         2
       )
 

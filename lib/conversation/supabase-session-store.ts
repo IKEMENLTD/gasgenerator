@@ -254,7 +254,8 @@ export class SupabaseSessionStore {
   async createNewSession(
     userId: string,
     category: string,
-    initialMessage?: string
+    initialMessage?: string,
+    clearHistory: boolean = true  // デフォルトは履歴をクリア
   ): Promise<ConversationContext> {
     const sessionId = generateSessionId()  // TEXT型のセッションID生成
 
@@ -289,16 +290,25 @@ export class SupabaseSessionStore {
         updated_at: new Date().toISOString()
       }
 
-      // 既存のセッションとメッセージを削除（新しいセッションを開始する前に）
-      await this.supabase
-        .from('messages')
-        .delete()
-        .eq('user_id', userId)
+      // clearHistoryがtrueの場合のみ、既存のセッションとメッセージを削除
+      if (clearHistory) {
+        await this.supabase
+          .from('messages')
+          .delete()
+          .eq('user_id', userId)
 
-      await this.supabase
-        .from('conversation_sessions')
-        .delete()
-        .eq('user_id', userId)
+        await this.supabase
+          .from('conversation_sessions')
+          .delete()
+          .eq('user_id', userId)
+      } else {
+        // 履歴を保持する場合は、既存セッションを非アクティブに
+        await this.supabase
+          .from('conversation_sessions')
+          .update({ status: 'inactive', updated_at: new Date().toISOString() })
+          .eq('user_id', userId)
+          .eq('status', 'active')
+      }
 
       // 新しいセッションを挿入
       const { error: contextError } = await this.supabase

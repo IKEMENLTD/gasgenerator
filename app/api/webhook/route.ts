@@ -349,17 +349,56 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       }
     }
     
-    // リセットコマンド
+    // 続きから再開コマンド
+    if (isContinueCommand(messageText)) {
+      // 過去のメッセージを取得
+      const recentMessages = await sessionManager.getRecentMessages(userId, 10)
+      if (recentMessages.length > 0) {
+        await lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: `📚 前回の会話から続きを再開します。\n\n前回の内容：\n${recentMessages[recentMessages.length - 1].content.substring(0, 100)}...\n\n続きをどうぞ！`,
+          quickReply: {
+            items: [
+              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }},
+              { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }}
+            ]
+          }
+        }] as any)
+
+        // 既存のコンテキストを復活させる
+        if (!context) {
+          // Supabaseから最新のセッションを取得
+          context = await sessionManager.recoverSession(userId)
+        }
+        return true
+      } else {
+        await lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: '過去の会話履歴が見つかりません。新しく始めましょう！',
+          quickReply: {
+            items: [
+              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }}
+            ]
+          }
+        }] as any)
+        return true
+      }
+    }
+
+    // リセットコマンド（完全にクリア）
     if (isResetCommand(messageText)) {
       await sessionManager.deleteSession(userId)
       context = null
+      logger.info('Session reset requested', { userId })
     }
 
     // 新規会話開始
     if (!context) {
-      // 過去の履歴チェックは削除（新規会話は常に新しく開始）
-      logger.info('Starting new conversation', { userId })
-      return await startNewConversation(userId, messageText, replyToken)
+      const clearHistory = isResetCommand(messageText) // リセットコマンドの場合は履歴クリア
+      logger.info('Starting new conversation', { userId, clearHistory })
+      return await startNewConversation(userId, messageText, replyToken, clearHistory)
     }
 
     // 既存会話の継続
@@ -432,8 +471,16 @@ function isDuplicateEvent(userId: string, timestamp: number): boolean {
  * リセットコマンドかどうか判定
  */
 function isResetCommand(text: string): boolean {
-  const resetCommands = ['リセット', '最初から', '新しいコードを作りたい', 'reset', 'restart']
+  const resetCommands = ['リセット', '最初から', '新しいコードを作りたい', 'reset', 'restart', '新規作成']
   return resetCommands.some(cmd => text.toLowerCase().includes(cmd))
+}
+
+/**
+ * 続きから再開コマンドかどうか判定
+ */
+function isContinueCommand(text: string): boolean {
+  const continueCommands = ['続きから', '続き', '再開', 'continue', 'resume', '昨日の続き', '前回の続き']
+  return continueCommands.some(cmd => text.toLowerCase().includes(cmd))
 }
 
 /**
@@ -442,7 +489,8 @@ function isResetCommand(text: string): boolean {
 async function startNewConversation(
   userId: string,
   messageText: string,
-  replyToken: string
+  replyToken: string,
+  clearHistory: boolean = true
 ): Promise<boolean> {
   // カテゴリ判定
   let categoryId = getCategoryIdByName(messageText)
@@ -458,18 +506,37 @@ async function startNewConversation(
 
     if (!categoryId) {
       // それでも判定できない場合のみカテゴリ選択画面を表示
+      // 過去の履歴があるかチェック
+      const hasHistory = (await sessionManager.getRecentMessages(userId, 1)).length > 0
+
+      const quickReplyItems = [
+        { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+        { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+        { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+        { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
+        { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }}
+      ]
+
+      // 履歴がある場合は「続きから」ボタンを追加
+      if (hasHistory) {
+        quickReplyItems.unshift({
+          type: 'action',
+          action: { type: 'message', label: '📚 続きから', text: '続きから' }
+        })
+      }
+
+      quickReplyItems.push({
+        type: 'action',
+        action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談' }
+      })
+
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
-        text: '👋 こんにちは！GASコードを自動生成します。\n\n作りたいコードのカテゴリを選んでください：',
+        text: hasHistory
+          ? '👋 お帰りなさい！\n\n前回の続きから再開するか、新しくコードを作成できます：'
+          : '👋 こんにちは！GASコードを自動生成します。\n\n作りたいコードのカテゴリを選んでください：',
         quickReply: {
-          items: [
-            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
-            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談' }}
-          ]
+          items: quickReplyItems as any
         }
       }])
       return true
@@ -477,7 +544,7 @@ async function startNewConversation(
   }
 
   // SessionManager経由で新しいセッションを作成
-  const context = await sessionManager.createSession(userId, categoryId, messageText)
+  const context = await sessionManager.createSession(userId, categoryId, messageText, clearHistory)
 
   // 自動検出の場合は、メッセージを要件として扱う
   if (autoDetected) {
