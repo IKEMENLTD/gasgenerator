@@ -319,7 +319,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
                 label: currentStatus.isPremium ? '現在のプラン' : '申し込む',
                 uri: currentStatus.isPremium
                   ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'  // 管理画面へのリンク
-                  : `${process.env.STRIPE_PAYMENT_LINK || 'https://example.com/upgrade'}?client_reference_id=${encodedUserId}`
+                  : `https://gasgenerator.onrender.com/terms?plan=premium&user_id=${userId}`
               }]
             },
             {
@@ -330,7 +330,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
                 label: currentStatus.isProfessional ? '現在のプラン' : '申し込む',
                 uri: currentStatus.isProfessional
                   ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'  // 管理画面へのリンク
-                  : `${process.env.STRIPE_PROFESSIONAL_PAYMENT_LINK || 'https://buy.stripe.com/fZu6oH78Ea5HcYS1dV6oo0a'}?client_reference_id=${encodedUserId}`
+                  : `https://gasgenerator.onrender.com/terms?plan=professional&user_id=${userId}`
               }]
             }
           ]
@@ -840,6 +840,10 @@ async function startCodeGeneration(
       const premiumUrl = PremiumChecker.getUpgradeUrl(userId)
       const professionalUrl = `${process.env.STRIPE_PROFESSIONAL_PAYMENT_LINK || 'https://buy.stripe.com/fZu6oH78Ea5HcYS1dV6oo0a'}?client_reference_id=${Buffer.from(userId).toString('base64')}`
 
+      // 利用規約ページ経由でStripeに誘導
+      const termsUrlPremium = `https://gasgenerator.onrender.com/terms?plan=premium&user_id=${userId}`
+      const termsUrlProfessional = `https://gasgenerator.onrender.com/terms?plan=professional&user_id=${userId}`
+
       await lineClient.replyMessage(replyToken, [{
         type: 'template',
         altText: '利用制限に達しました - プランをアップグレード',
@@ -852,7 +856,7 @@ async function startCodeGeneration(
               actions: [{
                 type: 'uri',
                 label: 'プレミアムプランを購入',
-                uri: premiumUrl
+                uri: termsUrlPremium
               }]
             },
             {
@@ -861,7 +865,7 @@ async function startCodeGeneration(
               actions: [{
                 type: 'uri',
                 label: 'プロフェッショナルを購入',
-                uri: professionalUrl
+                uri: termsUrlProfessional
               }]
             }
           ]
