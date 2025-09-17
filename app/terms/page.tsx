@@ -489,7 +489,7 @@ function TermsContent() {
                 <h2 className="section-title">第1条（利用規約の適用）</h2>
                 <div className="section-content">
                   <p>
-                    本利用規約（以下「本規約」）は、株式会社IKEMEN（以下「当社」）が提供するGAS Generator（以下「本サービス」）の利用条件を定めるものです。
+                    本利用規約（以下「本規約」）は、株式会社イケメン（以下「当社」）が提供するGAS Generator（以下「本サービス」）の利用条件を定めるものです。
                     利用者は、本規約に同意の上、本サービスを利用するものとします。
                   </p>
                 </div>
@@ -583,7 +583,7 @@ function TermsContent() {
                   <div className="list-item"><strong>クーリングオフ:</strong> 初回申込から7日間は全額返金可能</div>
                   <div className="list-item"><strong>最低契約期間:</strong> 3ヶ月未満での解約でも、3ヶ月分の料金が発生します</div>
                   <div className="list-item"><strong>サービス不具合:</strong> 当社起因の重大な不具合の場合、日割り返金</div>
-                  <div className="list-item"><strong>返金申請:</strong> support@ikemen.co.jp まで連絡</div>
+                  <div className="list-item"><strong>返金申請:</strong> info@ikemen.ltd まで連絡</div>
                   <div className="list-item"><strong>処理期間:</strong> 申請から5営業日以内に処理</div>
                 </div>
               </section>
@@ -603,7 +603,7 @@ function TermsContent() {
                 <div className="section-content">
                   <div className="list-item">禁止事項違反の場合、事前通知なくアカウント停止可能</div>
                   <div className="list-item">90日以上利用のないアカウントは削除される場合があります</div>
-                  <div className="list-item">退会希望の場合、support@ikemen.co.jp まで連絡</div>
+                  <div className="list-item">退会希望の場合、info@ikemen.ltd まで連絡</div>
                   <div className="list-item">退会後もデータは法定保存期間保持されます</div>
                 </div>
               </section>
@@ -671,9 +671,9 @@ function TermsContent() {
               <section className="section">
                 <h2 className="section-title">第17条（お問い合わせ）</h2>
                 <div className="contact-box">
-                  <div className="contact-item"><strong>運営会社:</strong> 株式会社IKEMEN</div>
-                  <div className="contact-item"><strong>メール:</strong> support@ikemen.co.jp</div>
-                  <div className="contact-item"><strong>LINE:</strong> @gas-generator</div>
+                  <div className="contact-item"><strong>運営会社:</strong> 株式会社イケメン</div>
+                  <div className="contact-item"><strong>メール:</strong> info@ikemen.ltd</div>
+                  <div className="contact-item"><strong>LINE:</strong> @356uysad</div>
                   <div className="contact-item"><strong>営業時間:</strong> 平日 10:00-19:00（土日祝休み）</div>
                 </div>
               </section>

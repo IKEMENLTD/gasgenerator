@@ -423,7 +423,7 @@ export default function PrivacyPolicy() {
             <div className="privacy-content">
               <section className="privacy-section">
                 <p className="privacy-text">
-                  株式会社IKEMEN（以下「当社」）は、GAS Generator（以下「本サービス」）における
+                  株式会社イケメン（以下「当社」）は、GAS Generator（以下「本サービス」）における
                   個人情報の取扱いについて、以下のとおりプライバシーポリシーを定めます。
                 </p>
               </section>
@@ -555,7 +555,7 @@ export default function PrivacyPolicy() {
                     </li>
                   </ul>
                   <p className="privacy-text" style={{ marginTop: 'clamp(0.75rem, 2vw, 1rem)', fontSize: 'clamp(0.75rem, 1.75vw, 0.875rem)' }}>
-                    請求方法: support@ikemen.co.jp まで本人確認書類を添えてご連絡ください
+                    請求方法: info@ikemen.ltd まで本人確認書類を添えてご連絡ください
                   </p>
                 </div>
               </section>
@@ -592,9 +592,9 @@ export default function PrivacyPolicy() {
                 <div className="contact-section">
                   <p className="contact-title">個人情報管理責任者</p>
                   <div className="contact-info">
-                    <p>株式会社IKEMEN プライバシー保護担当</p>
-                    <p>メール: privacy@ikemen.co.jp</p>
-                    <p>LINE: @gas-generator</p>
+                    <p>株式会社イケメン プライバシー保護担当</p>
+                    <p>メール: info@ikemen.ltd</p>
+                    <p>LINE: @356uysad</p>
                     <p>住所: 東京都渋谷区〇〇 1-2-3</p>
                     <p>対応時間: 平日 10:00-19:00</p>
                   </div>
@@ -612,7 +612,7 @@ export default function PrivacyPolicy() {
             <div className="privacy-footer">
               <div className="footer-content">
                 <p className="copyright">
-                  © 2025 IKEMEN Ltd. All rights reserved.
+                  © 2025 イケメン Ltd. All rights reserved.
                 </p>
                 <Link href="/terms" className="footer-link">
                   利用規約に戻る
