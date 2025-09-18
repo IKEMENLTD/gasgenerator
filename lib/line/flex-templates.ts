@@ -12,7 +12,7 @@ export class FlexTemplates {
   static createWelcomeFlexMessage(): FlexMessage {
     return {
       type: 'flex',
-      altText: 'GAS Generatorへようこそ！月額¥10,000で無制限利用可能',
+      altText: 'Task mateへようこそ！月額¥10,000で無制限利用可能',
       contents: {
         type: 'bubble',
         hero: {
@@ -29,7 +29,7 @@ export class FlexTemplates {
           contents: [
             {
               type: 'text',
-              text: 'GAS Generator',
+              text: 'Task mate',
               size: 'xl',
               weight: 'bold',
               color: '#4F46E5'

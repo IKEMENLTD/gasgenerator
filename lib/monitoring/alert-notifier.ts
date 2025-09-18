@@ -187,7 +187,7 @@ export class AlertNotifier {
             value: String(value),
             short: true
           })) : [],
-          footer: 'GAS Generator Alert',
+          footer: 'Task mate Alert',
           ts: Math.floor(Date.now() / 1000)
         }]
       }
