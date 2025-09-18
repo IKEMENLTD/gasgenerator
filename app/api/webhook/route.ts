@@ -356,6 +356,29 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       return true
     }
 
+    // プランのダウングレード処理
+    if (messageText === 'プランをダウングレードしたい') {
+      await lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '📝 プランのダウングレードについて\n\n現在の有料プランを解約する場合は、以下の手順でお手続きください：\n\n1️⃣ Stripeカスタマーポータルから解約\n2️⃣ 次回更新日に自動的に無料プランへ移行\n3️⃣ それまでは有料プラン機能を利用可能\n\n⚠️ 解約しても当月分の返金はありません',
+        quickReply: {
+          items: [
+            {
+              type: 'action',
+              action: {
+                type: 'uri',
+                label: '解約手続きへ',
+                uri: 'https://billing.stripe.com/p/login/aEU3cb2So0v78ICbSz6oo09'
+              }
+            },
+            { type: 'action', action: { type: 'message', label: '👨‍💻 サポートに相談', text: 'エンジニアに相談' }},
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+          ] as any
+        }
+      }] as any)
+      return true
+    }
+
     // コード生成後の修正モード（最優先でチェック）
     if (messageText === '修正' || messageText === '修正したい' || messageText === 'やり直し') {
       // SessionManagerから最新のセッションを再取得
