@@ -65,7 +65,7 @@ export class MessageTemplates {
     return [
       {
         type: 'text',
-        text: '🎉 GAS Generator へようこそ！\n\nGoogle Apps Scriptのコードを自動生成するLINE Botです。'
+        text: '🎉 Task mate へようこそ！\n\nGoogle Apps Scriptのコードを自動生成するLINE Botです。'
       },
       {
         type: 'template',

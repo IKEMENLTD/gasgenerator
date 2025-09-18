@@ -405,7 +405,7 @@ export default function PrivacyPolicy() {
         <header className="privacy-header">
           <div className="privacy-header-content">
             <div className="privacy-logo">
-              GAS Generator
+              Task mate
             </div>
             <Link href="/terms" className="back-link">
               利用規約に戻る
@@ -423,7 +423,7 @@ export default function PrivacyPolicy() {
             <div className="privacy-content">
               <section className="privacy-section">
                 <p className="privacy-text">
-                  株式会社イケメン（以下「当社」）は、GAS Generator（以下「本サービス」）における
+                  株式会社イケメン（以下「当社」）は、Task mate（以下「本サービス」）における
                   個人情報の取扱いについて、以下のとおりプライバシーポリシーを定めます。
                 </p>
               </section>
@@ -595,7 +595,7 @@ export default function PrivacyPolicy() {
                     <p>株式会社イケメン プライバシー保護担当</p>
                     <p>メール: info@ikemen.ltd</p>
                     <p>LINE: @356uysad</p>
-                    <p>住所: 東京都渋谷区〇〇 1-2-3</p>
+                    <p>住所: 東京都品川区大崎4丁目4-24</p>
                     <p>対応時間: 平日 10:00-19:00</p>
                   </div>
                 </div>

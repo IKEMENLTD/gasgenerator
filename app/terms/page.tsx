@@ -447,7 +447,7 @@ function TermsContent() {
         <header className="header">
           <div className="header-content">
             <div className="logo">
-              GAS Generator
+              Task mate
             </div>
             <div className="plan-badge">
               {currentPlan.name}
@@ -489,7 +489,7 @@ function TermsContent() {
                 <h2 className="section-title">第1条（利用規約の適用）</h2>
                 <div className="section-content">
                   <p>
-                    本利用規約（以下「本規約」）は、株式会社イケメン（以下「当社」）が提供するGAS Generator（以下「本サービス」）の利用条件を定めるものです。
+                    本利用規約（以下「本規約」）は、株式会社イケメン（以下「当社」）が提供するTask mate（以下「本サービス」）の利用条件を定めるものです。
                     利用者は、本規約に同意の上、本サービスを利用するものとします。
                   </p>
                 </div>

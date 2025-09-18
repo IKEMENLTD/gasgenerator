@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     if (!response.ok) {
       return {
-        title: 'コードが見つかりません - GAS Generator',
+        title: 'コードが見つかりません - Task mate',
         description: '指定されたコードは存在しないか、有効期限が切れています。'
       }
     }
@@ -32,20 +32,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const data = await response.json()
 
     return {
-      title: `${data.data.title} - GAS Generator`,
+      title: `${data.data.title} - Task mate`,
       description: data.data.description || 'Google Apps Scriptの自動生成コード',
       openGraph: {
         title: data.data.title,
         description: data.data.description || 'Google Apps Scriptの自動生成コード',
         type: 'article',
         url: `${baseUrl}/s/${params.id}`,
-        siteName: 'GAS Generator'
+        siteName: 'Task mate'
       }
     }
   } catch (error) {
     console.error('Failed to generate metadata:', error)
     return {
-      title: 'GAS Generator',
+      title: 'Task mate',
       description: 'Google Apps Scriptコード共有'
     }
   }
