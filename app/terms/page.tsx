@@ -672,6 +672,7 @@ function TermsContent() {
                 <h2 className="section-title">第17条（お問い合わせ）</h2>
                 <div className="contact-box">
                   <div className="contact-item"><strong>運営会社:</strong> 株式会社イケメン</div>
+                  <div className="contact-item"><strong>住所:</strong> 東京都品川区大崎4丁目4-24</div>
                   <div className="contact-item"><strong>メール:</strong> info@ikemen.ltd</div>
                   <div className="contact-item"><strong>LINE:</strong> @356uysad</div>
                   <div className="contact-item"><strong>営業時間:</strong> 平日 10:00-19:00（土日祝休み）</div>
