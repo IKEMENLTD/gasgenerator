@@ -579,12 +579,41 @@ function TermsContent() {
 
               <section className="section">
                 <h2 className="section-title">第7条（返金ポリシー）</h2>
+                <div className="highlight-box important">
+                  <p style={{ fontWeight: 'bold', marginBottom: '0.75rem', fontSize: 'clamp(0.875rem, 2vw, 1rem)' }}>
+                    30日間満足保証制度
+                  </p>
+                  <div className="list-item">初回申込から30日以内、サポートを受けても解決しない場合に限り返金可能</div>
+                  <div className="list-item">返金申請前に必ずサポートチームへの相談が必要です</div>
+                </div>
                 <div className="section-content">
-                  <div className="list-item"><strong>クーリングオフ:</strong> 初回申込から7日間は全額返金可能</div>
-                  <div className="list-item"><strong>最低契約期間:</strong> 3ヶ月未満での解約でも、3ヶ月分の料金が発生します</div>
-                  <div className="list-item"><strong>サービス不具合:</strong> 当社起因の重大な不具合の場合、日割り返金</div>
-                  <div className="list-item"><strong>返金申請:</strong> info@ikemen.ltd まで連絡</div>
-                  <div className="list-item"><strong>処理期間:</strong> 申請から5営業日以内に処理</div>
+                  <div className="list-item"><strong>30日間満足保証:</strong> 以下の条件をすべて満たす場合のみ適用</div>
+                  <div style={{ marginLeft: '2rem', marginTop: '0.5rem', marginBottom: '1rem' }}>
+                    <div className="list-item">初回申込から30日以内であること</div>
+                    <div className="list-item">サポートチームに3回以上相談し、改善を試みたこと</div>
+                    <div className="list-item">サポートの指示に従って操作・設定を行ったこと</div>
+                    <div className="list-item">生成回数が50回未満であること</div>
+                    <div className="list-item">エンジニアサポート（プロプランのみ）を利用していないこと</div>
+                  </div>
+                  <div className="list-item"><strong>クーリングオフ:</strong> 初回申込から7日間、利用回数10回未満の場合は全額返金可能</div>
+                  <div className="list-item"><strong>最低契約期間:</strong> 3ヶ月未満での解約でも、3ヶ月分の料金が発生します（30日間満足保証適用時を除く）</div>
+                  <div className="list-item"><strong>サービス不具合:</strong> 当社起因の重大な不具合でサービスが3日以上利用できない場合、日割り返金</div>
+                  <div className="list-item"><strong>返金対象外:</strong></div>
+                  <div style={{ marginLeft: '2rem', marginTop: '0.5rem', marginBottom: '1rem' }}>
+                    <div className="list-item">利用規約違反が認められた場合</div>
+                    <div className="list-item">Google Apps Scriptの仕様変更による影響</div>
+                    <div className="list-item">ユーザー側の設定ミスや理解不足による問題</div>
+                    <div className="list-item">生成されたコードを改変後の不具合</div>
+                    <div className="list-item">2回目以降の申込（再契約）の場合</div>
+                  </div>
+                  <div className="list-item"><strong>返金申請手順:</strong></div>
+                  <div style={{ marginLeft: '2rem', marginTop: '0.5rem', marginBottom: '1rem' }}>
+                    <div className="list-item">1. LINE公式アカウントでサポートに相談（最低3回）</div>
+                    <div className="list-item">2. サポートチケット番号を含めてinfo@ikemen.ltdへ返金申請</div>
+                    <div className="list-item">3. 返金審査（3営業日以内）</div>
+                    <div className="list-item">4. 承認後5営業日以内に返金処理</div>
+                  </div>
+                  <div className="list-item"><strong>処理期間:</strong> 審査3営業日、返金処理5営業日（最大8営業日）</div>
                 </div>
               </section>
 
