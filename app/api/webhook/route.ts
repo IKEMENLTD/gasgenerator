@@ -283,8 +283,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       // ランダムな文字列っぽい（数字と文字が混在して30文字以上）
       if (messageText.length > 30 && /^[a-zA-Z0-9]+$/.test(messageText)) return true
 
-      // 絵文字だけで10個以上
-      const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu
+      // 絵文字だけで10個以上（ES5互換の正規表現）
+      const emojiRegex = /[\uD83D][\uDC00-\uDE4F]|[\uD83D][\uDE80-\uDEFF]|[\u2600-\u26FF]|[\u2700-\u27BF]/g
       const emojiMatches = messageText.match(emojiRegex)
       if (emojiMatches && emojiMatches.length >= 10 && messageText.length < 50) return true
 
@@ -335,14 +335,6 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         lineClient.showLoadingAnimation(userId, 10).catch(err => {
           logger.debug('Failed to show loading for LLM response', { err })
         })
-
-        // Claude Haikuで高速・低コストに返答生成
-        const aiResponse = await claudeClient.sendMessage([
-          {
-            role: 'user',
-            content: messageText
-          }
-        ], userId, 1, 500)  // 最大500トークンで短い返答
 
         // システムプロンプトを含むメッセージを送信
         const messages = [
