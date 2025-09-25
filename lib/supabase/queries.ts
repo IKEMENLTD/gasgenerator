@@ -13,11 +13,11 @@ export class UserQueries {
         throw new Error('Invalid LINE User ID format')
       }
       
-      // まず既存ユーザーを検索（display_nameにLINE IDを格納）
+      // まず既存ユーザーを検索（line_user_idで検索）
       const { data: existingUser, error: findError } = await (supabaseAdmin as any)
         .from('users')
         .select('*')
-        .eq('display_name', lineUserId)
+        .eq('line_user_id', lineUserId)
         .limit(1)
         .maybeSingle()
 
@@ -52,8 +52,9 @@ export class UserQueries {
         const { data, error } = await (supabaseAdmin as any)
           .from('users')
           .insert({
-            display_name: lineUserId,  // display_nameにLINE IDを保存
-            line_display_name: displayName || null,  // LINE表示名を保存
+            line_user_id: lineUserId,  // line_user_idにLINE IDを正しく保存
+            display_name: displayName || null,  // display_nameにはLINEの表示名を保存
+            line_display_name: displayName || null,  // LINE表示名も保存
             skill_level: 'beginner',
             subscription_status: 'free',
             monthly_usage_count: 0,
@@ -71,7 +72,8 @@ export class UserQueries {
       // エラーでも最小限のユーザーオブジェクトを返す
       return {
         id: lineUserId,
-        display_name: lineUserId,  // display_nameにLINE IDを保存
+        line_user_id: lineUserId,  // line_user_idにLINE IDを保存
+        display_name: null,
         skill_level: 'beginner',
         subscription_status: 'free',
         monthly_usage_count: 0
