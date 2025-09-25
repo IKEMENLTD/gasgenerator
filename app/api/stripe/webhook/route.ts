@@ -146,11 +146,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ received: true, error: 'Decode error' })
           }
           
-          // まず既存のユーザーを確認（display_nameにLINE IDが格納されている）
+          // まず既存のユーザーを確認（line_user_idでユーザーを特定）
           const { data: existingUser } = await (supabaseAdmin as any)
             .from('users')
             .select('subscription_status, stripe_customer_id')
-            .eq('display_name', decodedLineUserId)
+            .eq('line_user_id', decodedLineUserId)
             .single()
           
           // 既にプレミアムまたはプロフェッショナルの場合はスキップ（重複課金防止）
@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
               last_reset_month: 0,  // リセット月数を初期化
               monthly_usage_count: 0  // 使用回数もリセット
             })
-            .eq('display_name', decodedLineUserId)  // display_nameにLINE IDが格納されている
+            .eq('line_user_id', decodedLineUserId)  // line_user_idで正しくユーザーを特定
           
           if (error) {
             logger.error('Failed to update user subscription', { error, lineUserId: decodedLineUserId })
