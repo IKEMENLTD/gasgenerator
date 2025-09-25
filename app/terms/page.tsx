@@ -737,7 +737,7 @@ function TermsContent() {
                 />
                 <label htmlFor="agreement" className="checkbox-label">
                   上記の利用規約および
-                  <Link href="/privacy">プライバシーポリシー</Link>
+                  <Link href={`/privacy?plan=${plan}&user_id=${userId}`}>プライバシーポリシー</Link>
                   に同意します
                 </label>
               </div>

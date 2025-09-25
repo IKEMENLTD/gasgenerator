@@ -1,12 +1,12 @@
-# GAS Generator システム仕様書 v2.0
+# Task mate システム仕様書 v2.0
 
 ## 1. システム概要
 
 ### 1.1 基本情報
-- **システム名**: GAS Generator (ガスジェネレーター)
+- **システム名**: Task mate
 - **バージョン**: 2.0.0
 - **提供形態**: LINE Bot アプリケーション
-- **LINE Bot ID**: @gas-generator（※実際のIDは環境により異なります）
+- **LINE Bot ID**: @  （※実際のIDは環境により異なります）
 - **主要機能**: Google Apps Script (GAS) コードの自動生成
 - **対象ユーザー**: プログラミング未経験者〜中級者
 - **公式サイト**: https://gasgenerator.onrender.com

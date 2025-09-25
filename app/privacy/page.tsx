@@ -1,8 +1,16 @@
 'use client'
 
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export default function PrivacyPolicy() {
+function PrivacyPolicyContent() {
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan') || ''
+  const userId = searchParams.get('user_id') || ''
+
+  // 戻るURLを動的に生成
+  const backUrl = plan ? `/terms?plan=${plan}&user_id=${userId}` : '/terms'
   return (
     <>
       <style jsx global>{`
@@ -614,7 +622,7 @@ export default function PrivacyPolicy() {
                 <p className="copyright">
                   © 2025 イケメン Ltd. All rights reserved.
                 </p>
-                <Link href="/terms" className="footer-link">
+                <Link href={backUrl} className="footer-link">
                   利用規約に戻る
                 </Link>
               </div>
@@ -623,5 +631,13 @@ export default function PrivacyPolicy() {
         </main>
       </div>
     </>
+  )
+}
+
+export default function PrivacyPolicy() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PrivacyPolicyContent />
+    </Suspense>
   )
 }

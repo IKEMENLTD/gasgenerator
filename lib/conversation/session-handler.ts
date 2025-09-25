@@ -9,7 +9,7 @@ export class SessionHandler {
    */
   static async getCurrentState(lineUserId: string): Promise<ConversationState | null> {
     try {
-      const user = await UserQueries.createOrUpdate(lineUserId)
+      const user = await UserQueries.createOrUpdate(lineUserId, undefined)
       if (!user) return null
 
       const session = await SessionQueries.getSession((user as any).id || lineUserId)
@@ -34,10 +34,10 @@ export class SessionHandler {
   /**
    * 新しい会話セッションを開始
    */
-  static async startNewSession(lineUserId: string, _displayName?: string): Promise<ConversationState> {
+  static async startNewSession(lineUserId: string, displayName?: string): Promise<ConversationState> {
     try {
-      // ユーザー取得または作成
-      const user = await UserQueries.createOrUpdate(lineUserId)
+      // ユーザー取得または作成（displayNameも保存）
+      const user = await UserQueries.createOrUpdate(lineUserId, displayName)
 
       // 既存のアクティブセッションがあれば完了
       const existingSession = await SessionQueries.getSession((user as any).id || lineUserId)
@@ -227,7 +227,7 @@ export class SessionHandler {
     lastActiveAt: string
   } | null> {
     try {
-      const user = await UserQueries.createOrUpdate(lineUserId)
+      const user = await UserQueries.createOrUpdate(lineUserId, undefined)
       if (!user) return null
 
       // 詳細な統計を取得

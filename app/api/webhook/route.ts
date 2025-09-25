@@ -13,6 +13,7 @@ import { SessionManager } from '../../../lib/conversation/session-manager'
 import { LineImageHandler } from '../../../lib/line/image-handler'
 import { rateLimiters } from '../../../lib/middleware/rate-limiter'
 import { engineerSupport } from '../../../lib/line/engineer-support'
+import { ClaudeApiClient } from '../../../lib/claude/client'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -21,6 +22,7 @@ export const maxDuration = 30  // Webhookは30秒で応答
 const lineClient = new LineApiClient()
 const sessionManager = SessionManager.getInstance()
 const imageHandler = new LineImageHandler()
+const claudeClient = new ClaudeApiClient()
 
 // プロセス終了時のクリーンアップ
 if (typeof process !== 'undefined') {
@@ -273,6 +275,137 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       return true
     }
     
+    // 明らかなスパムの即時ブロック（連続する同じ文字、意味不明な文字列）
+    const isSpam = (): boolean => {
+      // 同じ文字が5回以上連続
+      if (/(.)\1{4,}/.test(messageText)) return true
+
+      // ランダムな文字列っぽい（数字と文字が混在して30文字以上）
+      if (messageText.length > 30 && /^[a-zA-Z0-9]+$/.test(messageText)) return true
+
+      // 絵文字だけで10個以上
+      const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu
+      const emojiMatches = messageText.match(emojiRegex)
+      if (emojiMatches && emojiMatches.length >= 10 && messageText.length < 50) return true
+
+      // URLを5個以上含む
+      const urlMatches = messageText.match(/https?:\/\/[^\s]+/g)
+      if (urlMatches && urlMatches.length >= 5) return true
+
+      return false
+    }
+
+    if (isSpam()) {
+      logger.warn('Spam detected', { userId, messageText: messageText.substring(0, 100) })
+
+      // スパムカウンターをインクリメント（メモリ内で管理）
+      const spamCountKey = `spam_${userId}`
+      const spamCount = (global as any)[spamCountKey] || 0
+      ;(global as any)[spamCountKey] = spamCount + 1
+
+      if (spamCount >= 3) {
+        // 3回以上スパムを送信したユーザーは警告
+        await lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: '⚠️ 不適切なメッセージが検出されました。\n\n続けると利用を制限させていただく場合があります。\n\n正しい使い方は「使い方」と送信してご確認ください。'
+        }])
+
+        // 5回以上はブロック対象として記録
+        if (spamCount >= 5) {
+          logger.error('User blocked for spam', { userId, count: spamCount })
+          // TODO: Supabaseのusersテーブルにblocked_at列を追加して記録
+        }
+      }
+
+      return true // スパムは処理終了
+    }
+
+    // 会話の最初のターンかどうかを判定
+    const isFirstTurn = !context && !isResetCommand(messageText)
+
+    // 最初のターンで、既知のコマンドではない場合はLLMで自然な返答
+    if (isFirstTurn &&
+        messageText.length >= 2 &&
+        messageText.length <= 200 &&
+        !getCategoryIdByName(messageText) &&
+        !['メニュー', 'menu', '使い方', 'ヘルプ', '料金プラン'].includes(messageText.toLowerCase())) {
+
+      try {
+        // ローディングアニメーションを開始
+        lineClient.showLoadingAnimation(userId, 10).catch(err => {
+          logger.debug('Failed to show loading for LLM response', { err })
+        })
+
+        // Claude Haikuで高速・低コストに返答生成
+        const aiResponse = await claudeClient.sendMessage([
+          {
+            role: 'user',
+            content: messageText
+          }
+        ], userId, 1, 500)  // 最大500トークンで短い返答
+
+        // システムプロンプトを含むメッセージを送信
+        const messages = [
+          {
+            role: 'assistant' as const,
+            content: `あなたはTaskMateというGASコード生成サービスのアシスタントです。
+以下のルールに従って返答してください：
+
+1. 挨拶には自然に挨拶を返す（時間帯に応じて）
+2. サービスについての質問には簡潔に答える
+3. TaskMateの強み：
+   - 会話履歴を永続保存、いつでも続きから再開可能
+   - 現役PMエンジニアへの直接相談が可能
+   - LINE完結で使いやすい
+4. コード生成の要望なら「どのようなコードを生成したいですか？」と確認
+5. 返答は3行以内、敬語で丁寧に
+6. 最後に適切なアクションを促す`
+          },
+          {
+            role: 'user' as const,
+            content: messageText
+          }
+        ]
+
+        const finalResponse = await claudeClient.sendMessage(messages, userId, 1, 300)
+
+        const responseText = finalResponse.content[0].text
+
+        // 返答内容に基づいてクイックリプライを決定
+        const quickReplyItems = []
+
+        if (responseText.includes('コード') || responseText.includes('生成')) {
+          quickReplyItems.push(
+            { type: 'action', action: { type: 'message', label: 'コード生成を開始', text: 'コード生成を開始' }}
+          )
+        }
+
+        quickReplyItems.push(
+          { type: 'action', action: { type: 'message', label: '使い方', text: '使い方' }},
+          { type: 'action', action: { type: 'message', label: '料金プラン', text: '料金プラン' }},
+          { type: 'action', action: { type: 'message', label: 'メニュー', text: 'メニュー' }}
+        )
+
+        await lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: responseText,
+          quickReply: quickReplyItems.length > 0 ? { items: quickReplyItems as any } : undefined
+        }])
+
+        logger.info('LLM first-turn response sent', {
+          userId,
+          messageLength: messageText.length,
+          responseLength: responseText.length
+        })
+
+        return true
+
+      } catch (error) {
+        logger.warn('LLM response failed, falling back to default flow', { error })
+        // LLMが失敗した場合は通常のフローに戻る
+      }
+    }
+
     // メニュー表示
     if (messageText === 'メニュー' || messageText === 'MENU' || messageText === 'menu' || messageText === 'Menu') {
       await lineClient.replyMessage(replyToken, [{

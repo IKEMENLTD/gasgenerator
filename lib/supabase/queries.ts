@@ -6,7 +6,7 @@ import { InputValidator } from '../utils/input-validator'
 export { SessionQueries } from './session-queries'
 
 export class UserQueries {
-  static async createOrUpdate(lineUserId: string) {
+  static async createOrUpdate(lineUserId: string, displayName?: string) {
     try {
       // LINE User IDの検証（SQLインジェクション対策）
       if (!InputValidator.validateLineUserId(lineUserId)) {
@@ -28,12 +28,19 @@ export class UserQueries {
 
       if (existingUser) {
         // 既存ユーザーを更新
+        const updateData: any = {
+          last_active_at: new Date().toISOString(),
+          total_requests: ((existingUser as any).total_requests || 0) + 1
+        }
+
+        // LINE表示名が提供され、かつ未設定または変更されている場合は更新
+        if (displayName && displayName !== (existingUser as any).line_display_name) {
+          updateData.line_display_name = displayName
+        }
+
         const { data, error } = await (supabaseAdmin as any)
           .from('users')
-          .update({
-            last_active_at: new Date().toISOString(),
-            total_requests: ((existingUser as any).total_requests || 0) + 1
-          })
+          .update(updateData)
           .eq('id', (existingUser as any).id)
           .select()
           .single()
@@ -46,6 +53,7 @@ export class UserQueries {
           .from('users')
           .insert({
             display_name: lineUserId,  // display_nameにLINE IDを保存
+            line_display_name: displayName || null,  // LINE表示名を保存
             skill_level: 'beginner',
             subscription_status: 'free',
             monthly_usage_count: 0,
