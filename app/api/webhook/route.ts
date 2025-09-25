@@ -292,6 +292,74 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       return true
     }
 
+    // LLMサービスとの比較質問への対応
+    // 正規化して検出（大文字小文字、ひらがな、カタカナ対応）
+    const normalizedText = messageText.toLowerCase()
+
+    // LLMサービス名の検出
+    const hasLLMService =
+      /chatgpt|gpt|claude|gemini|copilot|ai|llm/.test(normalizedText) ||
+      normalizedText.includes('ちゃっとじーぴーてぃー') ||
+      normalizedText.includes('じーぴーてぃー') ||
+      normalizedText.includes('くろーど') ||
+      normalizedText.includes('じぇみに') ||
+      normalizedText.includes('こぱいろっと') ||
+      normalizedText.includes('えーあい') ||
+      normalizedText.includes('他のサービス') ||
+      normalizedText.includes('ほかのサービス') ||
+      normalizedText.includes('チャットジーピーティー') ||
+      normalizedText.includes('ジーピーティー') ||
+      normalizedText.includes('クロード') ||
+      normalizedText.includes('ジェミニ') ||
+      normalizedText.includes('コパイロット') ||
+      normalizedText.includes('エーアイ')
+
+    // 比較を意図する文脈の検出
+    const hasComparisonIntent =
+      /違い|差|比較|どう|価値|merit|benefit|difference|compare|vs|versus/.test(normalizedText) ||
+      normalizedText.includes('ちがい') ||
+      normalizedText.includes('さ') ||
+      normalizedText.includes('ひかく') ||
+      normalizedText.includes('かち') ||
+      normalizedText.includes('めりっと') ||
+      normalizedText.includes('べねふぃっと') ||
+      normalizedText.includes('なぜ') ||
+      normalizedText.includes('なに') ||
+      normalizedText.includes('何') ||
+      normalizedText.includes('どっち') ||
+      normalizedText.includes('どちら') ||
+      normalizedText.includes('いい') ||
+      normalizedText.includes('よい') ||
+      normalizedText.includes('良い') ||
+      normalizedText.includes('チガイ') ||
+      normalizedText.includes('サ') ||
+      normalizedText.includes('ヒカク') ||
+      normalizedText.includes('カチ') ||
+      normalizedText.includes('メリット') ||
+      normalizedText.includes('ベネフィット')
+
+    // TaskMate自体への言及を除外（自己言及は比較対象外）
+    const isSelfReference =
+      normalizedText.includes('taskmate') ||
+      normalizedText.includes('タスクメイト') ||
+      normalizedText.includes('たすくめいと')
+
+    if (hasLLMService && hasComparisonIntent && !isSelfReference) {
+
+      await lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: 'TaskMateと他のLLMサービスの本質的な違い\n\n【TaskMateにしかない強み】\n\n1. 無制限の会話履歴と文脈保持\nTaskMateは全ての会話履歴を永続的に保存。1ヶ月前の続きから再開可能。他のLLMは会話が長くなると文脈を失い、最初から説明し直す必要があります。\n\n2. 現役PMエンジニアへの直接相談\n「エンジニアに相談」ボタンで、10年以上の実務経験を持つフルスタックエンジニアが直接対応。複雑な要件も一緒に設計から考えます。他のLLMではAIのみの対応です。\n\n3. 修正履歴の完全管理\n過去に生成した全てのコードを記憶し、修正要望も文脈を保持したまま対応。「先週作ったコードの〇〇を修正」といった依頼も可能。\n\n4. LINE完結の業務フロー\nスクショ送信→コード生成→動作確認→修正依頼まで全てLINE内で完結。ブラウザを開く必要なし。\n\n5. 実装サポートまで含む\n生成したコードの実装方法、エラー対処、カスタマイズまで一貫してサポート。孤独な試行錯誤は不要です。\n\n【使い分けの目安】\n・他のLLM：調査や学習向き\n・TaskMate：実務で今すぐ使えるコードと実装サポートが必要な方向き',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '無料で試す', text: 'コード生成を開始' }},
+            { type: 'action', action: { type: 'message', label: 'エンジニアに相談', text: 'エンジニアに相談' }},
+            { type: 'action', action: { type: 'message', label: '料金プラン', text: '料金プラン' }}
+          ] as any
+        }
+      }])
+      return true
+    }
+
     // 使い方ガイド
     if (messageText === '使い方を教えて' || messageText === '使い方' || messageText === 'ヘルプ') {
       await lineClient.replyMessage(replyToken, [{
