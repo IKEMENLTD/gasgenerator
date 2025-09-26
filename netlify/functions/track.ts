@@ -37,7 +37,7 @@ function getClientIP(event: any): string {
          '0.0.0.0'
 }
 
-export const handler: Handler = async (event, context) => {
+export const handler: Handler = async (event) => {
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
@@ -105,7 +105,7 @@ export const handler: Handler = async (event, context) => {
     const expiresAt = new Date()
     expiresAt.setMinutes(expiresAt.getMinutes() + 10)
 
-    const { data: sessionData, error: sessionError } = await supabase
+    const { error: sessionError } = await supabase
       .from('tracking_sessions')
       .insert({
         tracking_link_id: trackingLink.id,

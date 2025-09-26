@@ -12,7 +12,7 @@ export async function handleTokenWithTransaction(
   profile: any
 ) {
   try {
-    const { data, error } = await supabase.rpc('process_token_verification', {
+    const { error } = await supabase.rpc('process_token_verification', {
       p_session_id: sessionId,
       p_line_user_id: lineUserId,
       p_tracking_link_id: trackingLinkId,

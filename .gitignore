@@ -49,3 +49,6 @@ set-render-env.bat
 # OS
 Thumbs.db
 .vercel
+
+# Local Netlify folder
+.netlify

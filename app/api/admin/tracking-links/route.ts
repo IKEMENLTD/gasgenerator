@@ -18,7 +18,7 @@ function generateUniqueCode(): string {
   return code
 }
 
-export const GET = adminAuthMiddleware(async (request: NextRequest) => {
+export const GET = adminAuthMiddleware(async (_request: NextRequest) => {
   try {
     const { data, error } = await supabase
       .from('tracking_links')

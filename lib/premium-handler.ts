@@ -45,8 +45,6 @@ export async function checkAndActivatePremium(
     }
 
     // Check database activation codes
-    const codeHash = crypto.createHash('sha256').update(code).digest('hex')
-
     const { data: success } = await supabase.rpc('activate_premium_plan', {
       p_line_user_id: lineUserId,
       p_activation_code: code,

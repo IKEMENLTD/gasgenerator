@@ -7,7 +7,7 @@ const supabase = createClient(
 )
 
 // Run every hour
-export const handler = schedule('0 * * * *', async (event) => {
+export const handler = schedule('0 * * * *', async () => {
   console.log('Starting session cleanup...')
 
   try {

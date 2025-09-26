@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY || ''
 )
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const checks = {
     status: 'healthy' as 'healthy' | 'degraded' | 'unhealthy',
     timestamp: new Date().toISOString(),
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
   // Check database connection
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('tracking_links')
       .select('count')
       .limit(1)
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Lightweight health check for monitoring
-export async function HEAD(request: NextRequest) {
+export async function HEAD(_request: NextRequest) {
   try {
     // Quick database check
     const { error } = await supabase
