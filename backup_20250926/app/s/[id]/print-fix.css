@@ -1,0 +1,59 @@
+/* PDF/プリント時の強制的なスタイル修正 */
+
+/* 常にSVGとアイコンを完全非表示 */
+svg, [class*="icon"], [class*="ti-"], .icon {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+@media print {
+  /* プリント時もSVGとアイコンを完全非表示 */
+  svg, [class*="icon"], [class*="ti-"], .icon {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+
+  /* アクションバー全体を非表示 */
+  .action-bar {
+    display: none !important;
+  }
+
+  /* ボタンのSVGを非表示 */
+  .btn svg {
+    display: none !important;
+  }
+
+  /* ヘッダーを非表示（必要に応じて） */
+  .glass-header {
+    display: none !important;
+  }
+
+  /* フッターを非表示 */
+  footer {
+    display: none !important;
+  }
+
+  /* コードブロックのスタイル最適化 */
+  pre {
+    page-break-inside: avoid;
+    font-size: 10pt !important;
+  }
+
+  /* 余白調整 */
+  .main-card {
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* 背景色削除 */
+  .min-h-screen {
+    background: white !important;
+    padding: 0 !important;
+  }
+}

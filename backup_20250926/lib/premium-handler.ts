@@ -7,27 +7,11 @@ const supabase = createClient(
 )
 
 // Master activation codes from environment variables (for security)
-// Support both individual codes and the AMEBAS variable
 const MASTER_CODES = [
-  process.env.PREMIUM_MASTER_ACTIVATION_AMEBAS,  // The actual env var being set
   process.env.PREMIUM_MASTER_CODE_1,
   process.env.PREMIUM_MASTER_CODE_2,
   process.env.PREMIUM_MASTER_CODE_3
 ].filter(Boolean) as string[]
-
-// Debug logging for production
-console.log('🔍 Premium codes loaded:', {
-  count: MASTER_CODES.length,
-  env: process.env.NODE_ENV,
-  hasAmebas: !!process.env.PREMIUM_MASTER_ACTIVATION_AMEBAS,
-  amebasLength: process.env.PREMIUM_MASTER_ACTIVATION_AMEBAS?.length,
-  hasCode1: !!process.env.PREMIUM_MASTER_CODE_1,
-  hasCode2: !!process.env.PREMIUM_MASTER_CODE_2,
-  hasCode3: !!process.env.PREMIUM_MASTER_CODE_3,
-  code1Length: process.env.PREMIUM_MASTER_CODE_1?.length,
-  code2Length: process.env.PREMIUM_MASTER_CODE_2?.length,
-  code3Length: process.env.PREMIUM_MASTER_CODE_3?.length
-})
 
 // Fallback for development only
 if (MASTER_CODES.length === 0) {
@@ -57,39 +41,17 @@ export async function checkAndActivatePremium(
   code: string
 ): Promise<PremiumActivationResult> {
   try {
-    // Debug logging for activation attempts
-    console.log('🎫 Premium activation attempt:', {
-      lineUserId,
-      codeLength: code.length,
-      codePrefix: code.substring(0, 10) + '...',
-      masterCodesCount: MASTER_CODES.length,
-      patternsCount: SPECIAL_PATTERNS.length
-    })
-
     // Check if it's a master code (instant activation)
-    // Also check if it's the specific 72-char code from the screenshot
-    const isTaskmateMaster = code === 'TASKMATE_PREMIUM_2024_MASTER_ACTIVATION_6B4E2A9F3D8C1B7E5A2F9D4C8B3E7A1D'
-
-    if (MASTER_CODES.includes(code) || isTaskmateMaster) {
-      console.log('✅ Master code matched:', { isTaskmateMaster, fromEnv: MASTER_CODES.includes(code) })
+    if (MASTER_CODES.includes(code)) {
       return await activatePremiumDirectly(lineUserId, 'master', 30) // 1 month
     }
 
     // Check special patterns
     for (const pattern of SPECIAL_PATTERNS) {
       if (pattern.test(code)) {
-        console.log('✅ Pattern matched:', pattern)
         return await activatePremiumDirectly(lineUserId, 'pattern', 30) // 1 month
       }
     }
-
-    // Log pattern testing details
-    console.log('❌ No patterns matched for code:', {
-      codeLength: code.length,
-      startsWithPREMIUM: code.startsWith('PREMIUM-ACTIVATE-'),
-      startsWithTM: code.startsWith('TM-SPECIAL-'),
-      patternResults: SPECIAL_PATTERNS.map(p => ({ pattern: p.toString(), matches: p.test(code) }))
-    })
 
     // Check database activation codes
     const { data: success } = await supabase.rpc('activate_premium_plan', {

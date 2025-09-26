@@ -73,20 +73,15 @@ export class DatabaseConnectionPool {
   /**
    * 新しい接続を作成
    */
-  private async createConnection(useServiceKey = false): Promise<PooledConnection | null> {
+  private async createConnection(): Promise<PooledConnection | null> {
     if (this.connections.length >= this.config.maxConnections) {
       return null
     }
 
     try {
-      // Use service key for write operations, anon key for read operations
-      const apiKey = useServiceKey
-        ? process.env.SUPABASE_SERVICE_ROLE_KEY!
-        : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
       const client = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        apiKey,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
           auth: {
             persistSession: false,
@@ -120,7 +115,7 @@ export class DatabaseConnectionPool {
   }
 
   /**
-   * 接続を取得 (読み込み用 - anon key)
+   * 接続を取得
    */
   async acquire(): Promise<SupabaseClient> {
     // 利用可能な接続を探す
@@ -162,20 +157,6 @@ export class DatabaseConnectionPool {
   }
 
   /**
-   * サービスキー接続を取得 (書き込み用 - service role key)
-   */
-  async acquireServiceClient(): Promise<SupabaseClient> {
-    // サービスキー用の新しい接続を作成
-    const newConnection = await this.createConnection(true)
-    if (newConnection) {
-      newConnection.inUse = true
-      return newConnection.client
-    }
-
-    throw new Error('Failed to acquire service role connection')
-  }
-
-  /**
    * 接続を解放
    */
   release(client: SupabaseClient): void {
@@ -201,13 +182,13 @@ export class DatabaseConnectionPool {
   }
 
   /**
-   * トランザクション実行のラッパー (anon key)
+   * トランザクション実行のラッパー
    */
   async executeWithConnection<T>(
     callback: (client: SupabaseClient) => Promise<T>
   ): Promise<T> {
     const client = await this.acquire()
-
+    
     try {
       return await RetryHandler.execute(
         () => callback(client),
@@ -215,32 +196,6 @@ export class DatabaseConnectionPool {
           maxAttempts: this.config.retryAttempts,
           onRetry: (attempt, error) => {
             logger.warn('Database operation retry', {
-              attempt,
-              error: error instanceof Error ? error.message : String(error)
-            })
-          }
-        }
-      )
-    } finally {
-      this.release(client)
-    }
-  }
-
-  /**
-   * サービスキー接続でのトランザクション実行
-   */
-  async executeWithServiceConnection<T>(
-    callback: (client: SupabaseClient) => Promise<T>
-  ): Promise<T> {
-    const client = await this.acquireServiceClient()
-
-    try {
-      return await RetryHandler.execute(
-        () => callback(client),
-        {
-          maxAttempts: this.config.retryAttempts,
-          onRetry: (attempt, error) => {
-            logger.warn('Database service operation retry', {
               attempt,
               error: error instanceof Error ? error.message : String(error)
             })
