@@ -1,0 +1,42 @@
+# Netlify Configuration for TaskMate Tracking System
+
+[build]
+  publish = ".next"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Redirect rules for tracking
+[[redirects]]
+  from = "/t/:code"
+  to = "/.netlify/functions/track"
+  status = 200
+  query = {code = ":code"}
+
+[[redirects]]
+  from = "/c/:campaign"
+  to = "/.netlify/functions/track"
+  status = 200
+  query = {campaign = ":campaign"}
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# Function configuration
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"

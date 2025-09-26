@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import EnvironmentValidator from '@/lib/config/environment'
 
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
     logger.info('Stripe webhook received', { eventType })
     
     // 重複処理防止のためのイベントID確認
-    const { data: existingEvent } = await (supabaseAdmin as any)
+    const { data: existingEvent } = await (supabase as any)
       .from('stripe_events')
       .select('id')
       .eq('event_id', event.id)
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
     }
     
     // イベントを記録（トランザクション的処理の代替）
-    await (supabaseAdmin as any)
+    await (supabase as any)
       .from('stripe_events')
       .insert({
         event_id: event.id,
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
           }
           
           // まず既存のユーザーを確認（line_user_idでユーザーを特定）
-          const { data: existingUser } = await (supabaseAdmin as any)
+          const { data: existingUser } = await (supabase as any)
             .from('users')
             .select('subscription_status, stripe_customer_id')
             .eq('line_user_id', decodedLineUserId)
@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
 
           // ユーザーのステータスを更新（決済日を基準に1ヶ月更新）
           const now = new Date()
-          const { error } = await (supabaseAdmin as any)
+          const { error } = await (supabase as any)
             .from('users')
             .update({
               subscription_status: subscriptionType,
@@ -217,7 +217,7 @@ export async function POST(req: NextRequest) {
         // サブスクリプションキャンセル時
         const subscription = event.data.object
         
-        const { error: cancelError } = await (supabaseAdmin as any)
+        const { error: cancelError } = await (supabase as any)
           .from('users')
           .update({
             subscription_status: 'free',
@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
         const charge = event.data.object
         
         // 返金記録を保存
-        await (supabaseAdmin as any)
+        await (supabase as any)
           .from('refunds')
           .insert({
             charge_id: charge.id,
@@ -249,7 +249,7 @@ export async function POST(req: NextRequest) {
         
         // ユーザーのステータスを無料に戻す
         if (charge.customer) {
-          await (supabaseAdmin as any)
+          await (supabase as any)
             .from('users')
             .update({
               subscription_status: 'free',
