@@ -6,13 +6,22 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY!
 )
 
-// Master activation codes (hardcoded for backdoor access)
+// Master activation codes from environment variables (for security)
 const MASTER_CODES = [
-  // Production master code - EXTREMELY SECRET
-  'TASKMATE_PREMIUM_2024_MASTER_ACTIVATION_6B4E2A9F3D8C1B7E5A2F9D4C8B3E7A1D',
-  // Emergency override code
-  'EMERGENCY_OVERRIDE_TASKMATE_PREMIUM_ACCESS_9F3E8B2C4A7D1E5B3F9C2A8E4D7B1A6C'
-]
+  process.env.PREMIUM_MASTER_CODE_1,
+  process.env.PREMIUM_MASTER_CODE_2,
+  process.env.PREMIUM_MASTER_CODE_3
+].filter(Boolean) as string[]
+
+// Fallback for development only
+if (MASTER_CODES.length === 0) {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn('⚠️ Premium master codes not configured - using development defaults')
+    MASTER_CODES.push('DEV_ONLY_TEST_CODE_' + 'X'.repeat(50))
+  } else {
+    console.warn('⚠️ Premium master codes not configured in production')
+  }
+}
 
 // Special pattern codes (for easier activation)
 const SPECIAL_PATTERNS = [
@@ -34,13 +43,13 @@ export async function checkAndActivatePremium(
   try {
     // Check if it's a master code (instant activation)
     if (MASTER_CODES.includes(code)) {
-      return await activatePremiumDirectly(lineUserId, 'master', 3650) // 10 years
+      return await activatePremiumDirectly(lineUserId, 'master', 30) // 1 month
     }
 
     // Check special patterns
     for (const pattern of SPECIAL_PATTERNS) {
       if (pattern.test(code)) {
-        return await activatePremiumDirectly(lineUserId, 'pattern', 365) // 1 year
+        return await activatePremiumDirectly(lineUserId, 'pattern', 30) // 1 month
       }
     }
 
@@ -48,12 +57,12 @@ export async function checkAndActivatePremium(
     const { data: success } = await supabase.rpc('activate_premium_plan', {
       p_line_user_id: lineUserId,
       p_activation_code: code,
-      p_duration_days: 365
+      p_duration_days: 30
     })
 
     if (success) {
       const expiresAt = new Date()
-      expiresAt.setFullYear(expiresAt.getFullYear() + 1)
+      expiresAt.setMonth(expiresAt.getMonth() + 1)
 
       return {
         success: true,

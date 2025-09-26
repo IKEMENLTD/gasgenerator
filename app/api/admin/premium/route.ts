@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase/client'
 import { adminAuthMiddleware } from '@/middleware/admin-auth'
 import { generateActivationCode } from '@/lib/premium-handler'
 import * as crypto from 'crypto'
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-)
 
 // Get all premium users
 export const GET = adminAuthMiddleware(async (request: NextRequest) => {
@@ -15,7 +10,7 @@ export const GET = adminAuthMiddleware(async (request: NextRequest) => {
     const { searchParams } = new URL(request.url)
     const onlyActive = searchParams.get('active') === 'true'
 
-    let query = supabase
+    let query = supabaseAdmin
       .from('user_states')
       .select('*')
 
@@ -56,7 +51,7 @@ export const GET = adminAuthMiddleware(async (request: NextRequest) => {
 export const POST = adminAuthMiddleware(async (request: NextRequest) => {
   try {
     const body = await request.json()
-    const { type = 'premium', duration = 365, customCode } = body
+    const { type = 'premium', duration = 30, customCode } = body
 
     let code: string
     let codeHash: string
@@ -74,7 +69,7 @@ export const POST = adminAuthMiddleware(async (request: NextRequest) => {
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + duration)
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('activation_codes')
       .insert({
         code: code,
@@ -116,7 +111,7 @@ export const POST = adminAuthMiddleware(async (request: NextRequest) => {
 export const PUT = adminAuthMiddleware(async (request: NextRequest) => {
   try {
     const body = await request.json()
-    const { lineUserId, duration = 365, reason = 'manual_activation' } = body
+    const { lineUserId, duration = 30, reason = 'manual_activation' } = body
 
     if (!lineUserId) {
       return NextResponse.json(
@@ -128,7 +123,7 @@ export const PUT = adminAuthMiddleware(async (request: NextRequest) => {
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + duration)
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('user_states')
       .upsert({
         line_user_id: lineUserId,
@@ -155,7 +150,7 @@ export const PUT = adminAuthMiddleware(async (request: NextRequest) => {
     }
 
     // Log the activation
-    await supabase
+    await supabaseAdmin
       .from('activation_codes')
       .insert({
         code: `admin_manual_${Date.now()}`,
@@ -200,7 +195,7 @@ export const DELETE = adminAuthMiddleware(async (request: NextRequest) => {
       )
     }
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('user_states')
       .update({
         is_premium: false,

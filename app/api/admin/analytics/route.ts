@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-)
+import { supabaseAdmin } from '@/lib/supabase/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +7,7 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
 
-    const { data: links, error: linksError } = await supabase
+    const { data: links, error: linksError } = await supabaseAdmin
       .from('tracking_links')
       .select('*')
       .order('created_at', { ascending: false })
@@ -24,7 +19,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    let sessionsQuery = supabase
+    let sessionsQuery = supabaseAdmin
       .from('tracking_sessions')
       .select('*')
 

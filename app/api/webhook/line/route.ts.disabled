@@ -1,0 +1,4 @@
+// このファイルは無効化されました
+// TaskMateのメインwebhookは /api/webhook/route.ts を使用してください
+// LINE Developers Consoleで以下を設定:
+// Webhook URL: https://your-domain/api/webhook

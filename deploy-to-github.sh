@@ -1,80 +1,74 @@
 #!/bin/bash
 
-echo "🚀 GitHub デプロイスクリプト"
+echo "================================"
+echo "TaskMate Tracking System Deployment"
 echo "================================"
 
-# GitHubのリポジトリ設定
-GITHUB_REPO="IKEMENLTD/gasgenerator"
-BRANCH="main"
-
-# 現在のディレクトリを確認
-echo "📁 現在のディレクトリ: $(pwd)"
-
-# Gitの状態を確認
-echo ""
-echo "📊 Git状態確認:"
-git status --short
-
-# コミットされていない変更があるか確認
-if [[ -n $(git status --porcelain) ]]; then
-    echo ""
-    echo "⚠️  コミットされていない変更があります"
-    echo "コミットしています..."
-    git add -A
-    git commit -m "Auto-commit: TypeScript fixes for production build $(date +%Y%m%d_%H%M%S)"
-fi
-
-# リモートURLを確認
-echo ""
-echo "🔗 リモートURL確認:"
-git remote -v
-
-# 個人用アクセストークンを使用してプッシュ
-echo ""
-echo "📤 GitHubへプッシュ中..."
-echo "================================"
-
-# HTTPSでプッシュ（認証が必要）
-if [ -z "$GITHUB_TOKEN" ]; then
-    echo "⚠️  GITHUB_TOKEN環境変数が設定されていません"
-    echo ""
-    echo "以下のコマンドを実行してください:"
-    echo ""
-    echo "1. GitHub Personal Access Tokenを設定:"
-    echo "   export GITHUB_TOKEN=your_github_token_here"
-    echo ""
-    echo "2. プッシュ:"
-    echo "   git push https://\$GITHUB_TOKEN@github.com/$GITHUB_REPO.git $BRANCH"
-    echo ""
-    echo "または、直接プッシュ:"
-    echo "   git push origin $BRANCH"
-    echo ""
-    echo "================================"
-    echo "💡 Tokenの作成方法:"
-    echo "1. GitHub.com → Settings → Developer settings → Personal access tokens"
-    echo "2. 'Generate new token' をクリック"
-    echo "3. 'repo' スコープを選択"
-    echo "4. トークンをコピーして上記のコマンドで使用"
+# Check if origin remote exists
+if git remote get-url origin &>/dev/null; then
+    echo "✅ Remote 'origin' already configured"
+    git remote get-url origin
 else
-    # トークンが設定されている場合
-    git push https://$GITHUB_TOKEN@github.com/$GITHUB_REPO.git $BRANCH
-    
-    if [ $? -eq 0 ]; then
-        echo "✅ プッシュ成功！"
-        echo ""
-        echo "🎉 次のステップ:"
-        echo "1. Renderのダッシュボードを確認"
-        echo "2. 自動デプロイが開始されているか確認"
-        echo "3. ビルドログでエラーがないか確認"
+    echo "⚠️  No remote 'origin' configured"
+    echo ""
+    echo "Please create a new repository on GitHub:"
+    echo "1. Go to https://github.com/new"
+    echo "2. Repository name: gas-generator"
+    echo "3. Set as Public or Private"
+    echo "4. Do NOT initialize with README, .gitignore, or license"
+    echo ""
+    echo "Then run:"
+    echo "git remote add origin https://github.com/YOUR_USERNAME/gas-generator.git"
+    echo ""
+    read -p "Have you created the repository? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        read -p "Enter your GitHub username: " username
+        git remote add origin "https://github.com/${username}/gas-generator.git"
+        echo "✅ Remote added"
     else
-        echo "❌ プッシュ失敗"
-        echo "手動でプッシュしてください:"
-        echo "git push origin $BRANCH"
+        echo "Please create the repository first"
+        exit 1
     fi
 fi
 
 echo ""
-echo "================================"
-echo "📦 Renderデプロイ確認URL:"
-echo "https://dashboard.render.com/"
-echo "================================"
+echo "Pushing to GitHub..."
+git push -u origin main
+
+if [ $? -eq 0 ]; then
+    echo ""
+    echo "✅ Successfully pushed to GitHub!"
+    echo ""
+    echo "================================"
+    echo "Next Steps:"
+    echo "================================"
+    echo ""
+    echo "1. Go to Netlify: https://app.netlify.com"
+    echo "2. Click 'Add new site' → 'Import an existing project'"
+    echo "3. Connect to GitHub and select 'gas-generator' repository"
+    echo "4. Configure build settings:"
+    echo "   - Build command: npm run build"
+    echo "   - Publish directory: .next"
+    echo "   - Functions directory: netlify/functions"
+    echo ""
+    echo "5. Add environment variables in Netlify:"
+    echo "   Copy all variables from .env.local to Netlify's environment settings"
+    echo ""
+    echo "6. Deploy the site!"
+    echo ""
+    echo "================================"
+    echo "Premium Activation Master Code:"
+    echo "================================"
+    echo "TASKMATE_PREMIUM_2024_MASTER_ACTIVATION_6B4E2A9F3D8C1B7E5A2F9D4C8B3E7A1D"
+    echo ""
+    echo "Send this code to LINE to activate premium for 10 years"
+    echo "================================"
+else
+    echo ""
+    echo "❌ Push failed. Please check your GitHub credentials"
+    echo ""
+    echo "If authentication fails, you may need to:"
+    echo "1. Create a personal access token at https://github.com/settings/tokens"
+    echo "2. Use the token as your password when prompted"
+fi

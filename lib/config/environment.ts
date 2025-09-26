@@ -208,13 +208,15 @@ if (typeof window === 'undefined') {
     console.error('='.repeat(60))
     
     // 本番環境では起動を停止（Edge Runtimeでは使用不可）
-    // 一時的に無効化 - デプロイ後に環境変数を設定
-    // if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
-    //   if (typeof process.exit === 'function') {
-    //     process.exit(1)
-    //   }
-    //   throw new Error('環境変数の設定エラー')
-    // }
+    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
+      // Netlifyの場合は警告のみ（ビルド時には環境変数が未設定の可能性があるため）
+      if (process.env.NETLIFY === 'true') {
+        console.error('⚠️ 環境変数エラー検出 - Netlifyダッシュボードで設定してください')
+      } else if (typeof process.exit === 'function') {
+        // その他の環境では停止
+        process.exit(1)
+      }
+    }
   }
   
   if (validation.warnings.length > 0) {

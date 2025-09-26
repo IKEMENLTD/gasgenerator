@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-)
+import { supabaseAdmin } from '@/lib/supabase/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +9,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate')
     const exportFormat = searchParams.get('export')
 
-    let query = supabase
+    let query = supabaseAdmin
       .from('tracking_sessions')
       .select(`
         *,
