@@ -612,6 +612,23 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       }
     }
     
+    // プレミアムアクティベーションコードのチェック（64文字以上）
+    if (messageText.length >= 64) {
+      // プレミアムハンドラーをインポートして実行
+      const { checkAndActivatePremium } = await import('../../../lib/premium-handler')
+      const result = await checkAndActivatePremium(userId, messageText)
+
+      if (result.success) {
+        await lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: `🎉 プレミアムプラン アクティベーション成功！\n\n✨ プレミアム機能が有効になりました\n\n【特典】\n・無制限のGASコード生成\n・優先サポート\n・高度な機能へのアクセス\n\n有効期限: ${result.expiresAt}\n\nプレミアムプランをお楽しみください！`
+        }] as any)
+        return true
+      }
+      // アクティベーション失敗は無視して通常処理を続行
+      logger.info('Invalid activation code attempt', { userId, codeLength: messageText.length })
+    }
+
     // 続きから再開コマンド
     if (isContinueCommand(messageText)) {
       // 既にコンテキストがある場合はそれを使用
