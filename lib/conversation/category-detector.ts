@@ -65,8 +65,14 @@ export class CategoryDetector {
       const jsonString = jsonMatch[1] || jsonMatch[0]
       const result = JSON.parse(jsonString)
 
+      // resultがnullまたは不正な形式の場合
+      if (!result || typeof result !== 'object') {
+        logger.warn('Invalid result format from AI', { result })
+        return null
+      }
+
       // 信頼度チェック
-      if (result.confidence < 50 || result.category === null) {
+      if (!result.confidence || result.confidence < 50 || result.category === null) {
         logger.info('Low confidence or null category', {
           confidence: result.confidence,
           reason: result.reason
@@ -90,7 +96,9 @@ export class CategoryDetector {
 
     } catch (error) {
       logger.error('Failed to detect category', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        messageText
       })
       return null
     }

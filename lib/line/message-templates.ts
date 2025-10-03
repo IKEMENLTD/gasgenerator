@@ -65,7 +65,7 @@ export class MessageTemplates {
     return [
       {
         type: 'text',
-        text: '🎉 Task mate へようこそ！\n\nGoogle Apps Scriptのコードを自動生成するLINE Botです。'
+        text: '🎉 Task mate へようこそ！\n\nGoogle Apps Scriptのコードを自動生成するLINE Botです。\n\n📢 2025年9月より本番運用を開始しました。\n現在も改善を重ねておりますが、一部エラーが発生する場合がございます。お手数ですが、不具合等お気づきの点がございましたらお知らせいただけますと幸いです。'
       },
       {
         type: 'template',
