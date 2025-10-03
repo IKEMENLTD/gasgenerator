@@ -374,25 +374,21 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
         const responseText = finalResponse.content[0].text
 
-        // 返答内容に基づいてクイックリプライを決定
-        const quickReplyItems = []
-
-        if (responseText.includes('コード') || responseText.includes('生成')) {
-          quickReplyItems.push(
-            { type: 'action', action: { type: 'message', label: 'コード生成を開始', text: 'コード生成を開始' }}
-          )
-        }
-
-        quickReplyItems.push(
-          { type: 'action', action: { type: 'message', label: '使い方', text: '使い方' }},
-          { type: 'action', action: { type: 'message', label: '料金プラン', text: '料金プラン' }},
-          { type: 'action', action: { type: 'message', label: 'メニュー', text: 'メニュー' }}
-        )
-
+        // メインメニューquickReplyを使用（message-templates.tsの createMainMenuQuickReply と同じ）
         await lineClient.replyMessage(replyToken, [{
           type: 'text',
           text: responseText,
-          quickReply: quickReplyItems.length > 0 ? { items: quickReplyItems as any } : undefined
+          quickReply: {
+            items: [
+              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+              { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
+              { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
+              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            ]
+          }
         }])
 
         logger.info('LLM first-turn response sent', {
@@ -1100,13 +1096,19 @@ async function continueConversation(
       )
     }
 
-    // 応答送信
+    // 応答送信 - isCompleteの時は確認ボタン、それ以外はメインメニュー
     const quickReplyItems = result.isComplete ? [
       { type: 'action', action: { type: 'message', label: '✅ はい', text: 'はい' }},
       { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }},
       { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }}
     ] : [
-      { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }}
+      { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+      { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+      { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+      { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
+      { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
+      { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
+      { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
     ]
 
     await lineClient.replyMessage(replyToken, [{
@@ -1120,12 +1122,23 @@ async function continueConversation(
   } catch (error) {
     // AIエラー時のフォールバック
     logger.error('Conversation processing error', { error })
-    
+
     await lineClient.replyMessage(replyToken, [{
-      type: 'text',  
-      text: 'もう少し詳しく教えていただけますか？\n\nどのような処理を自動化したいですか？'
+      type: 'text',
+      text: 'もう少し詳しく教えていただけますか？\n\nどのような処理を自動化したいですか？',
+      quickReply: {
+        items: [
+          { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+          { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+          { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+          { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
+          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
+          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
+          { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+        ]
+      }
     }])
-    
+
     return true
   }
 }
