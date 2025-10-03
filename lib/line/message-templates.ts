@@ -347,7 +347,8 @@ export class MessageTemplates {
   static createErrorMessage(errorType: 'generation' | 'system' = 'system'): TextMessage {
     return {
       type: 'text',
-      text: errorType === 'generation' ? PROMPT_MESSAGES.GENERATION_ERROR : PROMPT_MESSAGES.SYSTEM_ERROR
+      text: errorType === 'generation' ? PROMPT_MESSAGES.GENERATION_ERROR : PROMPT_MESSAGES.SYSTEM_ERROR,
+      quickReply: MessageTemplates.createMainMenuQuickReply()
     }
   }
 
@@ -355,9 +356,76 @@ export class MessageTemplates {
     return [
       {
         type: 'text',
-        text: '📘 使い方ガイド\n\n1. カテゴリを選択\n2. サブカテゴリを選択\n3. 詳細な要件を入力\n\n数分でコードが生成されます！'
+        text: '📘 使い方ガイド\n\n1. カテゴリを選択\n2. サブカテゴリを選択\n3. 詳細な要件を入力\n\n数分でコードが生成されます！',
+        quickReply: MessageTemplates.createMainMenuQuickReply()
       }
     ]
+  }
+
+  /**
+   * メインメニューquickReply（「最初から」と同じメニュー）
+   */
+  static createMainMenuQuickReply(): any {
+    return {
+      items: [
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: '📊 スプレッドシート',
+            text: 'スプレッドシート操作'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: '📧 Gmail',
+            text: 'Gmail自動化'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: '📅 カレンダー',
+            text: 'カレンダー連携'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: '🔗 API',
+            text: 'API連携'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: '✨ その他',
+            text: 'その他'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: '👨‍💻 エンジニア相談',
+            text: 'エンジニアに相談する'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'message',
+            label: '📋 メニュー',
+            text: 'メニュー'
+          }
+        }
+      ]
+    }
   }
 }
 

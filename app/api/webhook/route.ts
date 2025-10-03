@@ -307,7 +307,18 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         // 3回以上スパムを送信したユーザーは警告
         await lineClient.replyMessage(replyToken, [{
           type: 'text',
-          text: '⚠️ 不適切なメッセージが検出されました。\n\n続けると利用を制限させていただく場合があります。\n\n正しい使い方は「使い方」と送信してご確認ください。'
+          text: '⚠️ 不適切なメッセージが検出されました。\n\n続けると利用を制限させていただく場合があります。\n\n正しい使い方は「使い方」と送信してご確認ください。',
+          quickReply: {
+            items: [
+              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+              { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
+              { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
+              { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' }},
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            ]
+          }
         }])
 
         // 5回以上はブロック対象として記録
@@ -489,7 +500,18 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     if (messageText === '使い方を教えて' || messageText === '使い方' || messageText === 'ヘルプ') {
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
-        text: '📖 Task mate 使い方ガイド\n\n【基本の使い方】\n1️⃣ 「コード生成を開始」を送信\n2️⃣ カテゴリを選択（スプレッドシート等）\n3️⃣ 詳しい要望を入力\n4️⃣ 数分でコードが生成されます\n\n【便利な機能】\n🔄 修正したい：生成後に修正可能\n📷 エラースクショ：エラー画面を送信で解決策提示\n📸 画像解析：Excel/PDFのスクショからコード生成\n\n【料金プラン】\n🆓 無料：月10回\n💎 プレミアム：月額10,000円\n🎆 プロフェッショナル：月額50,000円\n\n💡 コツ：具体的に要望を伝えるほど、良いコードが生成されます！'
+        text: '📖 Task mate 使い方ガイド\n\n【基本の使い方】\n1️⃣ 「コード生成を開始」を送信\n2️⃣ カテゴリを選択（スプレッドシート等）\n3️⃣ 詳しい要望を入力\n4️⃣ 数分でコードが生成されます\n\n【便利な機能】\n🔄 修正したい：生成後に修正可能\n📷 エラースクショ：エラー画面を送信で解決策提示\n📸 画像解析：Excel/PDFのスクショからコード生成\n\n【料金プラン】\n🆓 無料：月10回\n💎 プレミアム：月額10,000円\n🎆 プロフェッショナル：月額50,000円\n\n💡 コツ：具体的に要望を伝えるほど、良いコードが生成されます！',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
+            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+          ]
+        }
       }])
       return true
     }
@@ -497,7 +519,18 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     if (messageText === '画像解析の使い方') {
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
-        text: '📸 画像解析の使い方\n\n1️⃣ エラー画面のスクショを送る\n→ エラーの原因と解決コードを生成\n\n2️⃣ ExcelやPDFのスクショを送る\n→ データ構造を理解してコード生成\n\n3️⃣ Webサイトのスクショを送る\n→ スクレイピングやAPI連携コード生成\n\n💡 コツ：画像は鮮明に、文字が読めるように撮影してください'
+        text: '📸 画像解析の使い方\n\n1️⃣ エラー画面のスクショを送る\n→ エラーの原因と解決コードを生成\n\n2️⃣ ExcelやPDFのスクショを送る\n→ データ構造を理解してコード生成\n\n3️⃣ Webサイトのスクショを送る\n→ スクレイピングやAPI連携コード生成\n\n💡 コツ：画像は鮮明に、文字が読めるように撮影してください',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
+            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+          ]
+        }
       }])
       return true
     }
@@ -506,46 +539,63 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       // 現在のプレミアムステータスを確認
       const currentStatus = await PremiumChecker.checkPremiumStatus(userId)
 
-      await lineClient.replyMessage(replyToken, [{
-        type: 'template',
-        altText: '料金プランのご案内',
-        template: {
-          type: 'carousel',
-          columns: [
-            {
-              title: '🆓 無料プラン',
-              text: '現在のプラン\n\n✅ 月10回まで生成\n✅ 全機能利用可能\n✅ 画像解析対応\n\n月額 0円',
-              actions: [{
-                type: 'message',
-                label: currentStatus.isPremium || currentStatus.isProfessional ? 'ダウングレード' : '現在のプラン',
-                text: currentStatus.isPremium || currentStatus.isProfessional ? 'プランをダウングレードしたい' : '無料プランを継続'
-              }]
-            },
-            {
-              title: '💎 プレミアムプラン',
-              text: '人気No.1\n\n✅ 無制限生成\n✅ 優先サポート\n✅ 履歴無制限保存\n\n月額 10,000円',
-              actions: [{
-                type: 'uri',
-                label: currentStatus.isPremium ? '現在のプラン' : '申し込む',
-                uri: currentStatus.isPremium
-                  ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'  // 管理画面へのリンク
-                  : `https://gasgenerator.onrender.com/terms?plan=premium&user_id=${userId}`
-              }]
-            },
-            {
-              title: '🎆 プロフェッショナル',
-              text: '法人向け\n\n✅ 全機能無制限\n✅ 24時間以内対応\n✅ 専任エンジニア\n✅ APIアクセス\n\n月額 50,000円',
-              actions: [{
-                type: 'uri',
-                label: currentStatus.isProfessional ? '現在のプラン' : '申し込む',
-                uri: currentStatus.isProfessional
-                  ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'  // 管理画面へのリンク
-                  : `https://gasgenerator.onrender.com/terms?plan=professional&user_id=${userId}`
-              }]
-            }
-          ]
+      await lineClient.replyMessage(replyToken, [
+        {
+          type: 'template',
+          altText: '料金プランのご案内',
+          template: {
+            type: 'carousel',
+            columns: [
+              {
+                title: '🆓 無料プラン',
+                text: '現在のプラン\n\n✅ 月10回まで生成\n✅ 全機能利用可能\n✅ 画像解析対応\n\n月額 0円',
+                actions: [{
+                  type: 'message',
+                  label: currentStatus.isPremium || currentStatus.isProfessional ? 'ダウングレード' : '現在のプラン',
+                  text: currentStatus.isPremium || currentStatus.isProfessional ? 'プランをダウングレードしたい' : '無料プランを継続'
+                }]
+              },
+              {
+                title: '💎 プレミアムプラン',
+                text: '人気No.1\n\n✅ 無制限生成\n✅ 優先サポート\n✅ 履歴無制限保存\n\n月額 10,000円',
+                actions: [{
+                  type: 'uri',
+                  label: currentStatus.isPremium ? '現在のプラン' : '申し込む',
+                  uri: currentStatus.isPremium
+                    ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'  // 管理画面へのリンク
+                    : `https://gasgenerator.onrender.com/terms?plan=premium&user_id=${userId}`
+                }]
+              },
+              {
+                title: '🎆 プロフェッショナル',
+                text: '法人向け\n\n✅ 全機能無制限\n✅ 24時間以内対応\n✅ 専任エンジニア\n✅ APIアクセス\n\n月額 50,000円',
+                actions: [{
+                  type: 'uri',
+                  label: currentStatus.isProfessional ? '現在のプラン' : '申し込む',
+                  uri: currentStatus.isProfessional
+                    ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'  // 管理画面へのリンク
+                    : `https://gasgenerator.onrender.com/terms?plan=professional&user_id=${userId}`
+                }]
+              }
+            ]
+          }
+        },
+        {
+          type: 'text',
+          text: '下のボタンから操作を選んでください',
+          quickReply: {
+            items: [
+              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+              { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
+              { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
+              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            ]
+          }
         }
-      }] as any)
+      ] as any)
       return true
     }
 
