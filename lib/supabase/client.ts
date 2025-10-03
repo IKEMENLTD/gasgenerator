@@ -2,11 +2,18 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
+// Public client (for read-only operations with RLS)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Alias for backward compatibility
-export const supabaseAdmin = supabase
+// Admin client with service role key (bypasses RLS)
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
+  }
+})
 
 export async function getTrackingLinkByCode(code: string) {
   const { data, error } = await supabase

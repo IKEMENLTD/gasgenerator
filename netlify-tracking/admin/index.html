@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMate AI - Tracking Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div x-data="adminDashboard()" x-init="init()" class="min-h-screen">
+        <!-- Login Screen -->
+        <div x-show="!isAuthenticated" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-700">
+            <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">TaskMate AI</h1>
+                    <p class="text-gray-600">Tracking Admin Dashboard</p>
+                </div>
+
+                <form @submit.prevent="login()">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            Admin Username
+                        </label>
+                        <input
+                            type="text"
+                            x-model="loginForm.username"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                        />
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            x-model="loginForm.password"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        :disabled="loading"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-200 disabled:opacity-50"
+                    >
+                        <span x-show="!loading">Login</span>
+                        <span x-show="loading" class="flex items-center justify-center">
+                            <i class="fas fa-spinner fa-spin mr-2"></i> Logging in...
+                        </span>
+                    </button>
+                </form>
+
+                <div x-show="loginError" x-text="loginError" class="mt-4 text-red-600 text-sm text-center"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div x-show="isAuthenticated" class="min-h-screen">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center py-4">
+                        <div class="flex items-center">
+                            <h1 class="text-2xl font-bold text-gray-900">TaskMate AI Tracking</h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm text-gray-600">Welcome, Admin</span>
+                            <button @click="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm">
+                                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-link text-blue-500 text-2xl"></i>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Total Links</dt>
+                                        <dd class="text-lg font-medium text-gray-900" x-text="stats.totalLinks"></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-eye text-green-500 text-2xl"></i>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Total Visits</dt>
+                                        <dd class="text-lg font-medium text-gray-900" x-text="stats.totalVisits"></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-users text-purple-500 text-2xl"></i>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">LINE Users</dt>
+                                        <dd class="text-lg font-medium text-gray-900" x-text="stats.lineUsers"></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white overflow-hidden shadow rounded-lg">
+                        <div class="p-5">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-chart-line text-orange-500 text-2xl"></i>
+                                </div>
+                                <div class="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt class="text-sm font-medium text-gray-500 truncate">Conversion Rate</dt>
+                                        <dd class="text-lg font-medium text-gray-900" x-text="stats.conversionRate + '%'"></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="bg-white shadow rounded-lg">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button
+                                @click="activeTab = 'create'"
+                                :class="activeTab === 'create' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
+                            >
+                                <i class="fas fa-plus mr-2"></i>Create Link
+                            </button>
+                            <button
+                                @click="activeTab = 'links'; loadTrackingLinks()"
+                                :class="activeTab === 'links' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
+                            >
+                                <i class="fas fa-list mr-2"></i>Tracking Links
+                            </button>
+                            <button
+                                @click="activeTab = 'visits'; loadVisits()"
+                                :class="activeTab === 'visits' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
+                            >
+                                <i class="fas fa-analytics mr-2"></i>Visit Analytics
+                            </button>
+                            <button
+                                @click="activeTab = 'users'; loadLineUsers()"
+                                :class="activeTab === 'users' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
+                            >
+                                <i class="fas fa-user-friends mr-2"></i>LINE Users
+                            </button>
+                        </nav>
+                    </div>
+
+                    <div class="p-6">
+                        <!-- Create Link Tab -->
+                        <div x-show="activeTab === 'create'">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Create New Tracking Link</h3>
+
+                            <form @submit.prevent="createTrackingLink()" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Campaign Name</label>
+                                    <input
+                                        type="text"
+                                        x-model="newLink.name"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter campaign name"
+                                        required
+                                    />
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">UTM Source</label>
+                                        <input
+                                            type="text"
+                                            x-model="newLink.utm_source"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            placeholder="facebook, google, etc."
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">UTM Medium</label>
+                                        <input
+                                            type="text"
+                                            x-model="newLink.utm_medium"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            placeholder="social, email, ads, etc."
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">UTM Campaign</label>
+                                        <input
+                                            type="text"
+                                            x-model="newLink.utm_campaign"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            placeholder="summer_sale, launch, etc."
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">LINE Friend URL</label>
+                                    <input
+                                        type="url"
+                                        x-model="newLink.line_friend_url"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="https://line.me/R/ti/p/..."
+                                        required
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    :disabled="loading"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md disabled:opacity-50"
+                                >
+                                    <span x-show="!loading">Create Tracking Link</span>
+                                    <span x-show="loading">Creating...</span>
+                                </button>
+                            </form>
+
+                            <div x-show="createdLink" class="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
+                                <h4 class="font-medium text-green-800 mb-2">Tracking Link Created Successfully!</h4>
+                                <div class="flex items-center space-x-2">
+                                    <input
+                                        type="text"
+                                        :value="createdLink"
+                                        readonly
+                                        class="flex-1 px-3 py-2 border border-green-300 rounded-md bg-white"
+                                    />
+                                    <button
+                                        @click="copyToClipboard(createdLink)"
+                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm"
+                                    >
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tracking Links Tab -->
+                        <div x-show="activeTab === 'links'">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Tracking Links</h3>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaign</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tracking Code</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">UTM Parameters</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visits</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <template x-for="link in trackingLinks" :key="link.id">
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="link.name"></td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <code class="bg-gray-100 px-2 py-1 rounded" x-text="link.tracking_code"></code>
+                                                </td>
+                                                <td class="px-6 py-4 text-sm text-gray-500">
+                                                    <div class="space-y-1">
+                                                        <div x-show="link.utm_source">Source: <span x-text="link.utm_source" class="font-medium"></span></div>
+                                                        <div x-show="link.utm_medium">Medium: <span x-text="link.utm_medium" class="font-medium"></span></div>
+                                                        <div x-show="link.utm_campaign">Campaign: <span x-text="link.utm_campaign" class="font-medium"></span></div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="link.visit_count || 0"></td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="new Date(link.created_at).toLocaleDateString()"></td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <button
+                                                        @click="copyToClipboard(`https://taskmateai.net/t/${link.tracking_code}`)"
+                                                        class="bg-blue-100 hover:bg-blue-200 text-blue-600 px-3 py-1 rounded-md text-xs"
+                                                    >
+                                                        <i class="fas fa-copy"></i> Copy Link
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Visit Analytics Tab -->
+                        <div x-show="activeTab === 'visits'">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Visit Analytics</h3>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Campaign</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Agent</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Referrer</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LINE User</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <template x-for="visit in visits" :key="visit.id">
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="new Date(visit.visited_at).toLocaleString()"></td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="visit.tracking_link?.name || 'N/A'"></td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="visit.ip_address"></td>
+                                                <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" x-text="visit.user_agent"></td>
+                                                <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" x-text="visit.referrer || 'Direct'"></td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <span x-show="visit.line_user_id" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        <i class="fas fa-check mr-1"></i> Converted
+                                                    </span>
+                                                    <span x-show="!visit.line_user_id" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                        <i class="fas fa-clock mr-1"></i> Pending
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- LINE Users Tab -->
+                        <div x-show="activeTab === 'users'">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">LINE Users</h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <template x-for="user in lineUsers" :key="user.line_user_id">
+                                    <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                                        <div class="flex items-center space-x-4">
+                                            <img
+                                                :src="user.picture_url || '/default-avatar.png'"
+                                                :alt="user.display_name"
+                                                class="w-12 h-12 rounded-full object-cover"
+                                            />
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate" x-text="user.display_name"></p>
+                                                <p class="text-sm text-gray-500 truncate" x-text="user.status_message || 'No status'"></p>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 space-y-2">
+                                            <div class="text-xs text-gray-500">
+                                                <strong>Added:</strong> <span x-text="new Date(user.created_at).toLocaleDateString()"></span>
+                                            </div>
+                                            <div class="text-xs text-gray-500" x-show="user.tracking_source">
+                                                <strong>Source:</strong> <span x-text="user.tracking_source"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

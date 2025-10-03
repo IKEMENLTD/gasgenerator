@@ -1,0 +1,23 @@
+# Global security headers
+/*
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Admin pages - no cache
+/admin/*
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+# Tracking pages - short cache
+/t/*
+  Cache-Control: public, max-age=300
+
+# Functions CORS headers
+/.netlify/functions/*
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Headers: Content-Type, X-Line-Signature
+  Access-Control-Allow-Methods: GET, POST, OPTIONS

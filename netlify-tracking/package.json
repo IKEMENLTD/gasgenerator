@@ -1,0 +1,40 @@
+{
+  "name": "taskmate-tracking-system",
+  "version": "1.0.0",
+  "description": "Comprehensive tracking management system for TaskMate AI on Netlify with LINE integration",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'No build step required'",
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "tracking",
+    "analytics",
+    "line",
+    "netlify",
+    "supabase",
+    "taskmate"
+  ],
+  "author": "TaskMate AI",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/taskmate-tracking"
+  },
+  "homepage": "https://taskmateai.net",
+  "bugs": {
+    "url": "https://github.com/your-username/taskmate-tracking/issues"
+  }
+}
