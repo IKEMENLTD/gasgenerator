@@ -290,12 +290,10 @@ export class SupabaseSessionStore {
         updated_at: new Date().toISOString()
       }
 
-      // clearHistoryがtrueの場合のみ、既存のセッションとメッセージを削除
+      // clearHistoryがtrueの場合のみ、既存のセッションを削除
       if (clearHistory) {
-        await this.supabase
-          .from('messages')
-          .delete()
-          .eq('user_id', userId)
+        // messagesテーブルは存在しないためスキップ
+        // 会話履歴はconversation_sessions.messagesカラム（JSONB）に保存されている
 
         await this.supabase
           .from('conversation_sessions')
@@ -349,15 +347,8 @@ export class SupabaseSessionStore {
     }
 
     try {
-      // メッセージ履歴も削除
-      const { error: messageError } = await this.supabase
-        .from('messages')
-        .delete()
-        .eq('user_id', userId)
-
-      if (messageError) {
-        logger.warn('Failed to delete messages', { userId, error: messageError })
-      }
+      // messagesテーブルは存在しないためスキップ
+      // 会話履歴はconversation_sessions.messagesカラム（JSONB）に保存されている
 
       // コンテキストを削除
       const { error } = await this.supabase
