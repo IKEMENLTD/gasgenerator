@@ -3,7 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 // Initialize Supabase client
 const supabase = createClient(
     process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
 );
 
 exports.handler = async (event, context) => {
@@ -75,17 +75,23 @@ async function getOverallStats() {
 
         // Get total visits
         const { count: totalVisits, error: visitsError } = await supabase
-            .from('tracking_visits')
+            .from('tracking_sessions')
             .select('*', { count: 'exact', head: true });
 
-        if (visitsError) throw visitsError;
+        if (visitsError) {
+            console.error('Visits error:', visitsError);
+            // Use 0 if table doesn't exist
+        }
 
         // Get LINE users count
         const { count: lineUsers, error: usersError } = await supabase
-            .from('line_users')
+            .from('user_states')
             .select('*', { count: 'exact', head: true });
 
-        if (usersError) throw usersError;
+        if (usersError) {
+            console.error('Users error:', usersError);
+            // Use 0 if table doesn't exist
+        }
 
         // Calculate conversion rate
         const conversionRate = totalVisits > 0 ? ((lineUsers / totalVisits) * 100).toFixed(2) : 0;
@@ -112,22 +118,26 @@ async function getOverallStats() {
 // Get tracking links with visit counts
 async function getTrackingLinks() {
     try {
-        // Get tracking links with visit counts
+        // Get tracking links
         const { data: links, error } = await supabase
             .from('tracking_links')
-            .select(`
-                *,
-                tracking_visits(count)
-            `)
+            .select('*')
             .eq('is_active', true)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        // Transform data to include visit count
-        const linksWithStats = links.map(link => ({
-            ...link,
-            visit_count: link.tracking_visits?.length || 0
+        // For each link, get visit count from tracking_sessions
+        const linksWithStats = await Promise.all(links.map(async (link) => {
+            const { count: visitCount } = await supabase
+                .from('tracking_sessions')
+                .select('*', { count: 'exact', head: true })
+                .eq('tracking_link_id', link.id);
+
+            return {
+                ...link,
+                visit_count: visitCount || link.click_count || 0
+            };
         }));
 
         return {
@@ -137,7 +147,7 @@ async function getTrackingLinks() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                links: linksWithStats
+                links: linksWithStats || []
             })
         };
 
@@ -150,13 +160,12 @@ async function getTrackingLinks() {
 async function getVisits() {
     try {
         const { data: visits, error } = await supabase
-            .from('tracking_visits')
+            .from('tracking_sessions')
             .select(`
                 *,
-                tracking_links(name, tracking_code),
-                line_users(display_name, picture_url)
+                tracking_links(name, code)
             `)
-            .order('visited_at', { ascending: false })
+            .order('created_at', { ascending: false })
             .limit(100); // Limit to latest 100 visits
 
         if (error) throw error;

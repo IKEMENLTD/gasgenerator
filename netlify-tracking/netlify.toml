@@ -8,13 +8,19 @@
 # Redirect rules for tracking
 [[redirects]]
   from = "/t/:tracking_code"
-  to = "/t/index.html"
+  to = "/.netlify/functions/track-redirect/:tracking_code"
   status = 200
 
 # Admin dashboard route
 [[redirects]]
   from = "/admin"
   to = "/admin/index.html"
+  status = 200
+
+# Agency dashboard route
+[[redirects]]
+  from = "/agency"
+  to = "/agency/index.html"
   status = 200
 
 # Keep root showing the main landing page
@@ -39,6 +45,14 @@ Content-Security-Policy = "default-src 'self' https:; script-src 'self' 'unsafe-
 # Admin security
 [[headers]]
   for = "/admin/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
+# Agency security
+[[headers]]
+  for = "/agency/*"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
     Pragma = "no-cache"

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>システム診断ツール</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .status-card.error {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        .status-card.warning {
+            border-left-color: #ffc107;
+            background: #fffdf5;
+        }
+        .status-card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+        .badge.success {
+            background: #28a745;
+            color: white;
+        }
+        .badge.error {
+            background: #dc3545;
+            color: white;
+        }
+        .badge.warning {
+            background: #ffc107;
+            color: black;
+        }
+        .check-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .check-icon {
+            font-size: 18px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 システム診断ツール</h1>
+
+        <button id="runTest" onclick="runDiagnostics()">
+            <span id="buttonText">診断を開始</span>
+        </button>
+
+        <div id="results"></div>
+
+        <div id="rawOutput" style="margin-top: 30px; display: none;">
+            <h3>📝 生データ (JSON)</h3>
+            <pre id="jsonOutput"></pre>
+        </div>
+    </div>
+
+    <script>
+        async function runDiagnostics() {
+            const button = document.getElementById('runTest');
+            const buttonText = document.getElementById('buttonText');
+            const resultsDiv = document.getElementById('results');
+            const rawOutputDiv = document.getElementById('rawOutput');
+            const jsonOutput = document.getElementById('jsonOutput');
+
+            // UI更新
+            button.disabled = true;
+            buttonText.innerHTML = '<span class="spinner"></span> 診断中...';
+            resultsDiv.innerHTML = '';
+            rawOutputDiv.style.display = 'none';
+
+            try {
+                // API URL
+                const apiUrl = window.location.hostname === 'localhost'
+                    ? 'http://localhost:8888/.netlify/functions/test-connection'
+                    : '/.netlify/functions/test-connection';
+
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                // 結果表示
+                displayResults(data);
+
+                // 生データ表示
+                jsonOutput.textContent = JSON.stringify(data, null, 2);
+                rawOutputDiv.style.display = 'block';
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="status-card error">
+                        <h3>❌ 診断エラー</h3>
+                        <p>${error.message}</p>
+                        <p>Netlify Functionsが起動していることを確認してください。</p>
+                    </div>
+                `;
+            } finally {
+                button.disabled = false;
+                buttonText.textContent = '診断を開始';
+            }
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            let html = '';
+
+            // 全体ステータス
+            const overallStatus = data.overall?.status === 'healthy' ? 'success' : 'error';
+            html += `
+                <div class="status-card ${overallStatus === 'success' ? '' : 'error'}">
+                    <h3>${overallStatus === 'success' ? '✅' : '❌'} 診断結果</h3>
+                    <p>ステータス: <span class="badge ${overallStatus}">${data.overall?.status || 'unknown'}</span></p>
+                    <p>エラー数: ${data.errors?.length || 0}</p>
+                    <p>登録準備: ${data.overall?.ready_for_registration ? '✅ 準備完了' : '❌ 問題あり'}</p>
+                </div>
+            `;
+
+            // 環境変数チェック
+            if (data.environment) {
+                html += '<div class="status-card">';
+                html += '<h3>🔑 環境変数</h3>';
+                for (const [key, value] of Object.entries(data.environment)) {
+                    const icon = value === true || (typeof value === 'string' && value !== 'not set') ? '✅' : '❌';
+                    html += `<div class="check-item">
+                        <span><span class="check-icon">${icon}</span> ${key}</span>
+                        <span>${value === true ? 'SET' : value === false ? 'NOT SET' : value}</span>
+                    </div>`;
+                }
+                html += '</div>';
+            }
+
+            // Supabase接続
+            if (data.supabase) {
+                const isConnected = data.supabase.client_created;
+                html += `
+                    <div class="status-card ${isConnected ? '' : 'error'}">
+                        <h3>🔌 Supabase接続</h3>
+                        <p>URL: ${data.supabase.url || 'N/A'}</p>
+                        <p>クライアント: ${isConnected ? '✅ 作成成功' : '❌ 作成失敗'}</p>
+                    </div>
+                `;
+            }
+
+            // データベーステーブル
+            if (data.database) {
+                html += '<div class="status-card">';
+                html += '<h3>💾 データベーステーブル</h3>';
+
+                if (data.database.agencies) {
+                    const accessible = data.database.agencies.accessible;
+                    html += `<div class="check-item">
+                        <span><span class="check-icon">${accessible ? '✅' : '❌'}</span> agencies</span>
+                        <span>${accessible ? 'アクセス可能' : data.database.agencies.error}</span>
+                    </div>`;
+                }
+
+                if (data.database.agency_users) {
+                    const accessible = data.database.agency_users.accessible;
+                    html += `<div class="check-item">
+                        <span><span class="check-icon">${accessible ? '✅' : '❌'}</span> agency_users</span>
+                        <span>${accessible ? 'アクセス可能' : data.database.agency_users.error}</span>
+                    </div>`;
+                }
+
+                html += '</div>';
+            }
+
+            // bcrypt
+            if (data.bcrypt) {
+                const loaded = data.bcrypt.loaded;
+                html += `
+                    <div class="status-card ${loaded ? '' : 'error'}">
+                        <h3>🔐 bcryptjs</h3>
+                        <p>ステータス: ${loaded ? '✅ 正常動作' : '❌ エラー'}</p>
+                        ${loaded ? `<p>テストハッシュ: ${data.bcrypt.test_hash}</p>` : `<p>エラー: ${data.bcrypt.error}</p>`}
+                    </div>
+                `;
+            }
+
+            // エラーリスト
+            if (data.errors && data.errors.length > 0) {
+                html += '<div class="status-card error">';
+                html += '<h3>⚠️ エラー一覧</h3>';
+                html += '<ul>';
+                data.errors.forEach(error => {
+                    html += `<li>${error}</li>`;
+                });
+                html += '</ul>';
+                html += '</div>';
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // ページロード時に自動診断
+        window.addEventListener('load', () => {
+            setTimeout(runDiagnostics, 500);
+        });
+    </script>
+</body>
+</html>

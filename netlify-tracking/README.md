@@ -1,260 +1,124 @@
-# TaskMate AI - Comprehensive Tracking Management System
+# TaskMate AI 流入経路測定システム
 
-A production-ready tracking and analytics system built for Netlify with LINE integration, Supabase backend, and comprehensive admin dashboard.
+営業代理店向けの流入経路測定・管理システムです。LINE友だち追加リンクのトラッキング、コンバージョン測定、手数料管理機能を提供します。
 
-## Features
+## 機能概要
 
-### 🔗 Tracking System
-- Generate unique tracking links with UTM parameters
-- Capture referrer source, IP, user agent, and timestamp data
-- Automatic redirect to LINE friend URLs
-- Real-time visit analytics
+### 管理者機能
+- 代理店の承認・非承認・一時停止管理
+- 全体のトラッキングデータ閲覧
+- LINE友だち情報の確認
+- システム全体の統計情報
 
-### 👥 LINE Integration
-- Automatic user profile collection when users add LINE friend
-- Link tracking data with LINE user IDs
-- Welcome message automation
-- Conversion funnel analysis
+### 代理店機能
+- トラッキングリンクの作成・管理
+- リアルタイム訪問分析
+- コンバージョン追跡
+- 手数料レポート
+- 振込先情報管理
 
-### 📊 Admin Dashboard
-- Secure login authentication
-- Tracking link generation and management
-- Real-time statistics and analytics
-- User information display
-- Visit tracking and conversion metrics
+## セットアップ手順
 
-### 🗄️ Database Management
-- Supabase integration with optimized schema
-- Row Level Security (RLS) policies
-- Analytics views and functions
-- Automated triggers and indexing
-
-## Quick Setup
-
-### 1. Prerequisites
-- Netlify account
-- Supabase account
-- LINE Developers account
-- Node.js 18+ (for local development)
-
-### 2. Database Setup
-1. Create a new Supabase project
-2. Run the SQL schema from `supabase-schema.sql` in your Supabase SQL Editor
-3. Note your Supabase URL and anon key
-
-### 3. LINE Bot Setup
-1. Create a LINE Channel in the LINE Developers Console
-2. Get your Channel Secret and Channel Access Token
-3. Set up webhook URL: `https://your-domain.netlify.app/.netlify/functions/line-webhook`
-
-### 4. Environment Variables
-Copy `.env.example` to your Netlify environment variables:
+### 1. 環境変数の設定
 
 ```bash
-# Required
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-LINE_CHANNEL_SECRET=your-channel-secret
-LINE_CHANNEL_ACCESS_TOKEN=your-access-token
-
-# Admin Access
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=your-secure-password
-
-# Site Configuration
-DEFAULT_LINE_FRIEND_URL=https://line.me/R/ti/p/@your-line-id
+cp .env.example .env
 ```
 
-### 5. Deploy to Netlify
-1. Connect this repository to your Netlify account
-2. Set the build command: `npm install` (optional)
-3. Set the publish directory: `.`
-4. Add all environment variables
-5. Deploy!
+以下の環境変数を設定してください：
 
-## Usage
+- `SUPABASE_URL`: SupabaseプロジェクトのURL
+- `SUPABASE_SERVICE_ROLE_KEY`: Supabaseのサービスロールキー
+- `JWT_SECRET`: JWT認証用のシークレットキー（32文字以上）
+- `LINE_CHANNEL_ACCESS_TOKEN`: LINE Messaging APIのアクセストークン
+- `LINE_CHANNEL_SECRET`: LINE Messaging APIのチャネルシークレット
 
-### Admin Dashboard
-Access your admin dashboard at: `https://your-domain.netlify.app/admin`
+### 2. Supabaseデータベースのセットアップ
 
-**Default Login:**
-- Username: admin
-- Password: (set in environment variables)
+1. Supabaseプロジェクトを作成
+2. SQLエディタで以下のファイルを実行：
+   - `database/schema.sql` - 基本スキーマ
+   - `database/create_test_accounts.sql` - テストアカウント（開発時のみ）
 
-### Creating Tracking Links
-1. Log in to the admin dashboard
-2. Go to "Create Link" tab
-3. Fill in:
-   - Campaign name
-   - UTM parameters (optional)
-   - LINE friend URL
-4. Copy the generated tracking link: `https://your-domain.netlify.app/t/[tracking_code]`
+### 3. Netlifyへのデプロイ
 
-### Tracking Flow
-1. User clicks tracking link
-2. Visit data is captured and stored
-3. User is redirected to LINE friend URL
-4. When user adds LINE friend, profile is linked to visit
-5. Conversion is tracked and displayed in analytics
-
-## File Structure
-
-```
-netlify-tracking/
-├── admin/
-│   ├── index.html              # Admin dashboard interface
-│   └── dashboard.js            # Dashboard logic and API calls
-├── t/
-│   └── index.html              # Tracking redirect page
-├── netlify/
-│   └── functions/
-│       ├── create-tracking-link.js    # Create new tracking links
-│       ├── get-tracking-stats.js      # Fetch analytics data
-│       ├── track-visit.js             # Record visit data
-│       └── line-webhook.js            # LINE bot webhook handler
-├── netlify.toml                # Netlify configuration
-├── package.json                # Dependencies
-├── supabase-schema.sql         # Database schema
-├── .env.example                # Environment variables template
-└── README.md                   # This file
-```
-
-## API Endpoints
-
-### Netlify Functions
-- `/.netlify/functions/create-tracking-link` - Create new tracking links
-- `/.netlify/functions/get-tracking-stats` - Get analytics data
-- `/.netlify/functions/track-visit` - Record visit data
-- `/.netlify/functions/line-webhook` - LINE webhook handler
-
-### Admin Dashboard Routes
-- `/admin` - Admin login and dashboard
-- `/t/[tracking_code]` - Tracking redirect
-
-## Database Schema
-
-### Tables
-- `tracking_links` - Tracking link configurations
-- `tracking_visits` - Visit records with analytics data
-- `line_users` - LINE user profiles and status
-
-### Views
-- `tracking_stats` - Conversion analytics per link
-- `recent_activity` - Combined activity feed
-
-## Security Features
-
-- Row Level Security (RLS) on all tables
-- CORS headers properly configured
-- Admin authentication required
-- LINE webhook signature verification
-- IP-based duplicate visit prevention
-- Rate limiting ready (configurable)
-
-## Customization
-
-### Admin Credentials
-Update credentials in your Netlify environment variables:
 ```bash
-ADMIN_USERNAME=your-username
-ADMIN_PASSWORD=your-secure-password
+# Netlify CLIのインストール
+npm install -g netlify-cli
+
+# 依存関係のインストール
+npm install
+
+# Netlifyにデプロイ
+netlify deploy --prod
 ```
 
-### Styling
-The admin dashboard uses Tailwind CSS via CDN. Customize styles by editing the HTML classes in `admin/index.html`.
+### 4. Netlify環境変数の設定
 
-### LINE Bot Messages
-Customize welcome and auto-response messages in `netlify/functions/line-webhook.js`.
+Netlify管理画面で以下の環境変数を設定：
 
-### Analytics
-Add additional tracking parameters by modifying the tracking functions and database schema.
+1. Site settings → Environment variables
+2. `.env`ファイルと同じ環境変数を追加
 
-## Monitoring and Analytics
+## URL構成
 
-### Built-in Analytics
-- Total tracking links
-- Total visits
-- LINE user conversions
-- Conversion rates
-- UTM parameter tracking
-- Referrer analysis
+- `/` - メインランディングページ
+- `/admin` - 管理者ダッシュボード
+- `/agency` - 代理店ダッシュボード
+- `/t/{tracking_code}` - トラッキングリダイレクト
 
-### Dashboard Views
-- Real-time statistics
-- Link performance
-- Visit analytics
-- User profiles
-- Conversion funnel
+## 初回ログイン
 
-## Troubleshooting
+### 管理者
+- URL: `https://yourdomain.com/admin`
+- デフォルト認証は環境変数で設定
 
-### Common Issues
+### 代理店
+1. `/agency`にアクセス
+2. 「新規登録」をクリック
+3. 必要情報を入力して登録
+4. 管理者が承認後、ログイン可能になります
 
-1. **Tracking links not working**
-   - Check if tracking code exists in database
-   - Verify netlify.toml redirect rules
-   - Check function logs
+## APIエンドポイント
 
-2. **LINE webhook not receiving events**
-   - Verify webhook URL is correct
-   - Check LINE channel secret and token
-   - Verify SSL certificate
+### 管理者用
+- `POST /.netlify/functions/admin-auth` - 管理者認証
+- `GET /.netlify/functions/admin-agencies` - 代理店一覧取得
+- `POST /.netlify/functions/admin-agencies` - 代理店ステータス更新
 
-3. **Admin dashboard login failing**
-   - Check environment variables are set
-   - Verify admin credentials
-   - Clear browser cache
+### 代理店用
+- `POST /.netlify/functions/agency-register` - 新規登録
+- `POST /.netlify/functions/agency-auth` - ログイン
+- `POST /.netlify/functions/agency-create-link` - リンク作成
+- `GET /.netlify/functions/agency-links` - リンク一覧
+- `GET /.netlify/functions/agency-stats` - 統計情報
 
-4. **Database connection issues**
-   - Verify Supabase URL and keys
-   - Check RLS policies
-   - Ensure schema is properly created
+### トラッキング
+- `GET /.netlify/functions/tracking-redirect` - リダイレクト処理
+- `POST /.netlify/functions/line-webhook` - LINE Webhook
 
-### Logging
-Check Netlify function logs for detailed error information:
-1. Go to Netlify dashboard
-2. Select your site
-3. Go to Functions tab
-4. Check individual function logs
+## トラブルシューティング
 
-## Performance Optimization
+### ログインできない場合
+1. 代理店ステータスが「承認済み」か確認
+2. パスワードが正しいか確認
+3. 環境変数が正しく設定されているか確認
 
-### Database
-- Indexes on frequently queried columns
-- Efficient RLS policies
-- Analytics views for complex queries
+### トラッキングが動作しない場合
+1. トラッキングコードが正しいか確認
+2. LINE友だち追加URLが有効か確認
+3. Netlify Functionsが正常に動作しているか確認
 
-### Frontend
-- CDN for assets
-- Minimal JavaScript loading
-- Optimized redirect flow
+## セキュリティ注意事項
 
-### Functions
-- Connection pooling ready
-- Error handling with graceful degradation
-- Efficient data queries
+- 本番環境では必ず強力なJWT_SECRETを使用
+- Supabaseのサービスロールキーは絶対に公開しない
+- 定期的にパスワードを変更
+- HTTPSを必須とする
 
-## Support
+## サポート
 
-For issues and questions:
-1. Check the troubleshooting section above
-2. Review Netlify function logs
-3. Check Supabase dashboard for database issues
-4. Verify LINE webhook configuration
-
-## License
-
-MIT License - see LICENSE file for details.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
----
-
-**TaskMate AI** - Efficient tracking and user management system
-🚀 Built with Netlify, Supabase, and LINE Messaging API
+問題が発生した場合は、以下をご確認ください：
+1. Netlifyのデプロイログ
+2. Supabaseのログ
+3. ブラウザのコンソールログ

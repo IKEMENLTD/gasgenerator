@@ -243,10 +243,58 @@ async function getLineUserProfile(userId) {
     }
 }
 
-// Link user to recent tracking visit
+// Link user to recent tracking visit with enhanced agency attribution
 async function linkUserToTracking(lineUserId, userId) {
     try {
-        // Find recent tracking visits (within last hour) that don't have a linked LINE user
+        // First, try to find an active session for this user
+        const { data: activeSession, error: sessionError } = await supabase
+            .from('user_sessions')
+            .select('*')
+            .is('line_user_id', null)
+            .gte('last_activity_at', new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()) // Within last 2 hours
+            .order('last_activity_at', { ascending: false })
+            .limit(1);
+
+        if (!sessionError && activeSession && activeSession.length > 0) {
+            const session = activeSession[0];
+
+            // Update session with LINE user info
+            const { error: updateError } = await supabase
+                .from('user_sessions')
+                .update({
+                    line_user_id: lineUserId,
+                    line_friend_at: new Date().toISOString(),
+                    last_activity_at: new Date().toISOString()
+                })
+                .eq('id', session.id);
+
+            if (!updateError) {
+                console.log(`Linked LINE user ${lineUserId} to session ${session.id} for agency ${session.agency_id}`);
+
+                // Record funnel step
+                await supabase
+                    .from('conversion_funnels')
+                    .insert([{
+                        session_id: session.id,
+                        agency_id: session.agency_id,
+                        step_name: 'line_friend',
+                        step_data: {
+                            line_user_id: lineUserId,
+                            user_id: userId,
+                            timestamp: new Date().toISOString()
+                        }
+                    }]);
+
+                // Create LINE friend conversion if this is an agency session
+                if (session.agency_id) {
+                    await createAgencyLineConversion(session, lineUserId, userId);
+                }
+
+                return session;
+            }
+        }
+
+        // Fallback to old method for backward compatibility
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
         const { data: recentVisits, error } = await supabase
@@ -255,10 +303,10 @@ async function linkUserToTracking(lineUserId, userId) {
             .is('line_user_id', null)
             .gte('visited_at', oneHourAgo)
             .order('visited_at', { ascending: false })
-            .limit(5); // Check last 5 unlinked visits
+            .limit(5);
 
         if (error || !recentVisits || recentVisits.length === 0) {
-            return;
+            return null;
         }
 
         // Link the most recent visit to this user
@@ -270,8 +318,96 @@ async function linkUserToTracking(lineUserId, userId) {
         if (!updateError) {
             console.log(`Linked LINE user ${lineUserId} to visit ${recentVisits[0].id}`);
         }
+
+        return null;
     } catch (error) {
         console.error('Error linking user to tracking:', error);
+        return null;
+    }
+}
+
+// Create agency LINE friend conversion
+async function createAgencyLineConversion(session, lineUserId, userId) {
+    try {
+        // Check if conversion already exists
+        const { data: existingConversion } = await supabase
+            .from('agency_conversions')
+            .select('id')
+            .eq('session_id', session.id)
+            .eq('conversion_type', 'line_friend')
+            .single();
+
+        if (existingConversion) {
+            return; // Already recorded
+        }
+
+        // Get agency information for commission calculation
+        const { data: agency } = await supabase
+            .from('agencies')
+            .select('commission_rate')
+            .eq('id', session.agency_id)
+            .single();
+
+        const conversionData = {
+            agency_id: session.agency_id,
+            tracking_link_id: session.tracking_link_id,
+            visit_id: session.visit_id,
+            session_id: session.id,
+            user_id: userId,
+            line_user_id: lineUserId,
+            conversion_type: 'line_friend',
+            conversion_value: 0, // LINE friend has no direct monetary value
+            metadata: {
+                session_metadata: session.metadata,
+                utm_source: session.utm_source,
+                utm_medium: session.utm_medium,
+                utm_campaign: session.utm_campaign
+            }
+        };
+
+        const { error: conversionError } = await supabase
+            .from('agency_conversions')
+            .insert([conversionData]);
+
+        if (conversionError) {
+            console.error('Error creating agency LINE conversion:', conversionError);
+        } else {
+            console.log(`LINE friend conversion recorded for agency ${session.agency_id}`);
+
+            // Update tracking link conversion count
+            if (session.tracking_link_id) {
+                await supabase
+                    .from('agency_tracking_links')
+                    .update({
+                        conversion_count: supabase.raw('conversion_count + 1')
+                    })
+                    .eq('id', session.tracking_link_id);
+            }
+
+            // Send notification to agency (future enhancement)
+            await notifyAgencyOfConversion(session.agency_id, 'line_friend', conversionData);
+        }
+
+    } catch (error) {
+        console.error('Error creating agency LINE conversion:', error);
+    }
+}
+
+// Notify agency of new conversion (placeholder for future implementation)
+async function notifyAgencyOfConversion(agencyId, conversionType, conversionData) {
+    try {
+        // This could send email notifications, webhook calls, etc.
+        console.log(`Notification: Agency ${agencyId} has new ${conversionType} conversion`);
+
+        // For now, just log the event
+        // Future implementation could include:
+        // - Email notifications
+        // - Slack/Discord webhooks
+        // - Real-time dashboard updates
+        // - SMS notifications for high-value conversions
+
+    } catch (error) {
+        console.error('Error sending agency notification:', error);
     }
 }
 

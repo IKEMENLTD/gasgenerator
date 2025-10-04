@@ -69,7 +69,7 @@ exports.handler = async (event, context) => {
         }
 
         // Generate unique tracking code
-        const tracking_code = generateTrackingCode();
+        let tracking_code = generateTrackingCode();
 
         // Check if tracking code already exists (very unlikely but better to be safe)
         const { data: existing } = await supabase
@@ -80,8 +80,7 @@ exports.handler = async (event, context) => {
 
         if (existing) {
             // Generate a new code if collision occurs
-            const new_tracking_code = generateTrackingCode() + Date.now().toString().slice(-3);
-            tracking_code = new_tracking_code;
+            tracking_code = generateTrackingCode() + Date.now().toString().slice(-3);
         }
 
         // Insert new tracking link

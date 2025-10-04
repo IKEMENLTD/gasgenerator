@@ -4,9 +4,10 @@
   "description": "Comprehensive tracking management system for TaskMate AI on Netlify with LINE integration",
   "main": "index.js",
   "scripts": {
-    "build": "echo 'No build step required'",
+    "build": "npx tailwindcss -i ./css/input.css -o ./css/output.css --minify",
+    "build:watch": "npx tailwindcss -i ./css/input.css -o ./css/output.css --watch",
     "dev": "netlify dev",
-    "deploy": "netlify deploy --prod",
+    "deploy": "npm run build && netlify deploy --prod",
     "test": "echo 'No tests specified'"
   },
   "keywords": [
@@ -21,10 +22,16 @@
   "license": "MIT",
   "dependencies": {
     "@supabase/supabase-js": "^2.38.0",
-    "crypto": "^1.0.1"
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "stripe": "^14.5.0",
+    "@sendgrid/mail": "^7.7.0"
   },
   "devDependencies": {
-    "netlify-cli": "^17.0.0"
+    "netlify-cli": "^17.0.0",
+    "tailwindcss": "^3.3.0",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.24"
   },
   "engines": {
     "node": ">=18.0.0"

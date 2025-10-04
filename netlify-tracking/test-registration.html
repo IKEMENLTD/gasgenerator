@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代理店登録テスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #10b981;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #059669;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .debug {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #10b981;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 代理店登録テスト</h1>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label>会社名 *</label>
+                <input type="text" id="company_name" value="テスト株式会社" required>
+            </div>
+
+            <div class="form-group">
+                <label>代理店名 *</label>
+                <input type="text" id="agency_name" value="テスト営業所" required>
+            </div>
+
+            <div class="form-group">
+                <label>住所</label>
+                <input type="text" id="address" value="東京都渋谷区テスト1-2-3">
+            </div>
+
+            <div class="form-group">
+                <label>担当者名 *</label>
+                <input type="text" id="contact_name" value="田中太郎" required>
+            </div>
+
+            <div class="form-group">
+                <label>メールアドレス *</label>
+                <input type="email" id="email" value="" placeholder="test@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label>電話番号 *</label>
+                <input type="tel" id="phone" value="03-1234-5678" required>
+            </div>
+
+            <div class="form-group">
+                <label>パスワード * (8文字以上)</label>
+                <input type="password" id="password" value="Test123456" required>
+            </div>
+
+            <button type="submit">登録テスト実行</button>
+        </form>
+
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>登録処理中...</p>
+        </div>
+
+        <div id="result" class="result"></div>
+
+        <div id="debug" class="debug" style="display: none;">
+            <strong>デバッグ情報:</strong>
+            <pre id="debugContent"></pre>
+        </div>
+    </div>
+
+    <script>
+        // ランダムなメールアドレスを生成
+        document.getElementById('email').value = `test-${Date.now()}@example.com`;
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const button = e.target.querySelector('button');
+            const loading = document.querySelector('.loading');
+            const resultDiv = document.getElementById('result');
+            const debugDiv = document.getElementById('debug');
+            const debugContent = document.getElementById('debugContent');
+
+            // UI状態を更新
+            button.disabled = true;
+            loading.style.display = 'block';
+            resultDiv.style.display = 'none';
+            debugDiv.style.display = 'none';
+
+            // フォームデータを収集
+            const formData = {
+                company_name: document.getElementById('company_name').value,
+                agency_name: document.getElementById('agency_name').value,
+                address: document.getElementById('address').value,
+                contact_name: document.getElementById('contact_name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                password: document.getElementById('password').value
+            };
+
+            // デバッグ情報を表示
+            debugDiv.style.display = 'block';
+            debugContent.textContent = `送信データ:\n${JSON.stringify(formData, null, 2)}\n\n`;
+
+            try {
+                // APIエンドポイントを決定
+                const apiUrl = window.location.hostname === 'localhost'
+                    ? 'http://localhost:8888/.netlify/functions/agency-register'
+                    : '/.netlify/functions/agency-register';
+
+                debugContent.textContent += `APIエンドポイント: ${apiUrl}\n\n`;
+
+                // API呼び出し
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const responseData = await response.json();
+
+                // デバッグ情報を追加
+                debugContent.textContent += `レスポンスステータス: ${response.status}\n`;
+                debugContent.textContent += `レスポンスデータ:\n${JSON.stringify(responseData, null, 2)}\n`;
+
+                // 結果を表示
+                if (response.ok && responseData.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ 登録成功！</h3>
+                        <p>${responseData.message}</p>
+                        <p><strong>代理店コード:</strong> ${responseData.agency_code}</p>
+                        <p style="margin-top: 10px;">
+                            <small>注意: このアカウントは承認待ち状態です。管理者が承認するまでログインできません。</small>
+                        </p>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ 登録エラー</h3>
+                        <p>${responseData.error || 'Unknown error occurred'}</p>
+                        ${responseData.details ? `<p><small>詳細: ${responseData.details}</small></p>` : ''}
+                    `;
+                }
+
+            } catch (error) {
+                // ネットワークエラーなど
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ 通信エラー</h3>
+                    <p>${error.message}</p>
+                    <p><small>Netlify Functionsが起動していることを確認してください。</small></p>
+                `;
+
+                debugContent.textContent += `\nエラー詳細:\n${error.stack}\n`;
+            } finally {
+                resultDiv.style.display = 'block';
+                loading.style.display = 'none';
+                button.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

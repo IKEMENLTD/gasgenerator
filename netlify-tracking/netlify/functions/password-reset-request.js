@@ -170,8 +170,11 @@ exports.handler = async (event) => {
             body: JSON.stringify({
                 success: true,
                 message: 'パスワードリセットの案内を送信しました',
-                // 開発環境の場合はURLも返す（本番では削除）
-                ...(process.env.NODE_ENV === 'development' ? { resetUrl } : {})
+                // メール送信が設定されていない場合はトークンを返す
+                ...(!process.env.SENDGRID_API_KEY ? {
+                    token: resetToken,
+                    resetUrl
+                } : {})
             })
         };
 

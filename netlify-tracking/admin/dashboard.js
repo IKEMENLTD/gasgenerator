@@ -33,14 +33,23 @@ function adminDashboard() {
         visits: [],
         lineUsers: [],
 
-        // Configuration
+        // Agency management
+        agencies: [],
+        filteredAgencies: [],
+        agencyFilter: 'all',
+        agencyStats: {
+            total: 0,
+            pending: 0,
+            active: 0,
+            rejected: 0,
+            suspended: 0
+        },
+
+        // Configuration - Security Note: Move credentials to environment variables
         config: {
             supabaseUrl: 'https://your-project.supabase.co',
-            supabaseKey: 'your-anon-key',
-            adminCredentials: {
-                username: 'admin',
-                password: 'TaskMate2024Admin!'
-            }
+            supabaseKey: 'your-anon-key'
+            // adminCredentials removed for security - use server-side validation only
         },
 
         async init() {
@@ -57,19 +66,32 @@ function adminDashboard() {
             this.loginError = '';
 
             try {
-                // Simple credential check (in production, use proper authentication)
-                if (
-                    this.loginForm.username === this.config.adminCredentials.username &&
-                    this.loginForm.password === this.config.adminCredentials.password
-                ) {
+                // サーバーサイドで環境変数を使って認証
+                const response = await fetch('/.netlify/functions/validate-admin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: this.loginForm.username,
+                        password: this.loginForm.password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
                     this.isAuthenticated = true;
-                    localStorage.setItem('trackingAdminAuth', 'authenticated');
+                    localStorage.setItem('trackingAdminAuth', result.token);
                     await this.loadDashboardData();
                 } else {
-                    this.loginError = 'Invalid credentials';
+                    this.loginError = result.error || 'ユーザー名またはパスワードが間違っています';
                 }
             } catch (error) {
-                this.loginError = 'Login failed: ' + error.message;
+                // Security: Removed client-side fallback authentication
+                // All authentication must go through server-side validation
+                this.loginError = 'ログイン失敗: サーバーに接続できません。管理者にお問い合わせください。';
+                console.error('Authentication error:', error);
             } finally {
                 this.loading = false;
             }
@@ -189,19 +211,145 @@ function adminDashboard() {
                 // Show temporary success message
                 const button = event.target;
                 const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                button.classList.remove('bg-blue-100', 'hover:bg-blue-200', 'text-blue-600');
+                button.innerHTML = '<i class="fas fa-check"></i> コピー済み！';
+                button.classList.remove('bg-emerald-100', 'hover:bg-emerald-200', 'text-emerald-600');
                 button.classList.add('bg-green-100', 'text-green-600');
 
                 setTimeout(() => {
                     button.innerHTML = originalText;
                     button.classList.remove('bg-green-100', 'text-green-600');
-                    button.classList.add('bg-blue-100', 'hover:bg-blue-200', 'text-blue-600');
+                    button.classList.add('bg-emerald-100', 'hover:bg-emerald-200', 'text-emerald-600');
                 }, 2000);
             } catch (error) {
                 console.error('Failed to copy:', error);
                 alert('Failed to copy to clipboard');
             }
+        },
+
+        // Agency management methods
+        async loadAgencies() {
+            this.loading = true;
+            try {
+                const response = await fetch('/.netlify/functions/admin-agencies', {
+                    headers: {
+                        'Authorization': `Bearer admin:${localStorage.getItem('trackingAdminAuth')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    this.agencies = data.agencies || [];
+                    this.agencyStats = data.stats || {
+                        total: 0,
+                        pending: 0,
+                        active: 0,
+                        rejected: 0,
+                        suspended: 0
+                    };
+                    this.filterAgencies();
+                }
+            } catch (error) {
+                console.error('Error loading agencies:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        filterAgencies() {
+            if (this.agencyFilter === 'all') {
+                this.filteredAgencies = this.agencies;
+            } else {
+                this.filteredAgencies = this.agencies.filter(agency =>
+                    agency.status === this.agencyFilter
+                );
+            }
+        },
+
+        async approveAgency(agencyId) {
+            if (!confirm('この代理店を承認しますか？')) return;
+            await this.updateAgencyStatus(agencyId, 'approve');
+        },
+
+        async rejectAgency(agencyId) {
+            if (!confirm('この代理店を非承認にしますか？')) return;
+            await this.updateAgencyStatus(agencyId, 'reject');
+        },
+
+        async suspendAgency(agencyId) {
+            if (!confirm('この代理店を一時停止しますか？')) return;
+            await this.updateAgencyStatus(agencyId, 'suspend');
+        },
+
+        async activateAgency(agencyId) {
+            if (!confirm('この代理店を再開しますか？')) return;
+            await this.updateAgencyStatus(agencyId, 'activate');
+        },
+
+        async updateAgencyStatus(agencyId, action) {
+            this.loading = true;
+            try {
+                const response = await fetch('/.netlify/functions/admin-agencies', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer admin:${localStorage.getItem('trackingAdminAuth')}`
+                    },
+                    body: JSON.stringify({
+                        action,
+                        agencyId
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(result.message);
+                    await this.loadAgencies();
+                } else {
+                    const error = await response.json();
+                    alert('エラー: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Error updating agency status:', error);
+                alert('ステータス更新に失敗しました');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        viewAgencyDetails(agency) {
+            alert(`
+代理店詳細:
+コード: ${agency.code}
+会社名: ${agency.company_name}
+代理店名: ${agency.name}
+担当者: ${agency.owner_name}
+メール: ${agency.contact_email}
+電話: ${agency.contact_phone}
+住所: ${agency.address || 'N/A'}
+手数料率: ${agency.commission_rate}%
+ステータス: ${this.getStatusLabel(agency.status)}
+登録日: ${this.formatDate(agency.created_at)}
+            `.trim());
+        },
+
+        getStatusLabel(status) {
+            const labels = {
+                'pending': '承認待ち',
+                'active': '承認済み',
+                'rejected': '非承認',
+                'suspended': '一時停止'
+            };
+            return labels[status] || status;
+        },
+
+        formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
     };
 }
@@ -212,15 +360,6 @@ function generateTrackingCode() {
            Math.random().toString(36).substring(2, 8);
 }
 
-function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
