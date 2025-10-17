@@ -4,9 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskMate AI - 代理店管理システム</title>
+    <!-- ⚠️ セキュリティ警告: cdn.tailwindcss.comはJITコンパイラのためSRI未対応 -->
+    <!-- 本番環境ではビルド時にTailwind CSSをコンパイルして使用することを強く推奨 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Alpine.js with SRI (Subresource Integrity) -->
+    <!-- 🔧 DEBUGGING: SRI temporarily removed to check if it's blocking Alpine.js -->
+    <script src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"
+            crossorigin="anonymous"
+            defer></script>
+    <!-- Original with SRI (restore after debugging):
+    <script src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"
+            integrity="sha384-xw/ARJaqXKsFgDt0AhxLQ65mGvCjEjWEReZ6OqiLWJUlIi8y+4zOjsJgYY6YGDX0"
+            crossorigin="anonymous"
+            defer></script>
+    -->
+
+    <!-- Font Awesome with SRI -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
     <style>
         [x-cloak] { display: none !important; }
     </style>
@@ -59,10 +78,15 @@
                 </div>
             </form>
 
-            <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+            <div class="mt-8 pt-6 border-t border-gray-200 text-center space-y-3">
                 <p class="text-sm text-gray-600">
                     代理店登録をご希望の方は
                     <button @click="showRegister = true" class="text-emerald-600 hover:text-emerald-700 font-medium">こちら</button>
+                </p>
+                <p class="text-sm text-gray-600">
+                    <a href="/" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-arrow-left mr-1"></i> メインページに戻る
+                    </a>
                 </p>
             </div>
         </div>
@@ -86,21 +110,21 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">会社名 *</label>
-                        <input type="text" x-model="registerForm.company_name" required
+                        <input type="text" x-model="registerForm.company_name" autocomplete="organization" required
                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                                placeholder="株式会社〇〇">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">代理店名 *</label>
-                        <input type="text" x-model="registerForm.agency_name" required
+                        <input type="text" x-model="registerForm.agency_name" autocomplete="organization" required
                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                                placeholder="〇〇営業所">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">住所</label>
-                        <input type="text" x-model="registerForm.address"
+                        <input type="text" x-model="registerForm.address" autocomplete="street-address"
                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                                placeholder="東京都〇〇区...">
                     </div>
@@ -112,7 +136,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">担当者名 *</label>
-                        <input type="text" x-model="registerForm.contact_name" required
+                        <input type="text" x-model="registerForm.contact_name" autocomplete="name" required
                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                                placeholder="山田太郎">
                     </div>
@@ -177,10 +201,15 @@
                 </div>
             </form>
 
-            <div class="mt-6 pt-4 border-t border-gray-200 text-center">
+            <div class="mt-6 pt-4 border-t border-gray-200 text-center space-y-3">
                 <p class="text-sm text-gray-600">
                     既にアカウントをお持ちの方は
                     <button @click="showRegister = false" class="text-emerald-600 hover:text-emerald-700 font-medium">ログイン</button>
+                </p>
+                <p class="text-sm text-gray-600">
+                    <a href="/" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-arrow-left mr-1"></i> メインページに戻る
+                    </a>
                 </p>
             </div>
         </div>
@@ -206,6 +235,10 @@
                             <p class="text-sm text-gray-600">今月の成果</p>
                             <p class="text-lg font-bold text-emerald-600" x-text="`¥${stats.monthlyCommission.toLocaleString()}`"></p>
                         </div>
+                        <a href="/"
+                           class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors border border-gray-300 inline-flex items-center">
+                            <i class="fas fa-home mr-2"></i> メインページ
+                        </a>
                         <button @click="logout()"
                                 class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors">
                             <i class="fas fa-sign-out-alt mr-2"></i> ログアウト
@@ -277,7 +310,7 @@
                                 class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                             <i class="fas fa-plus-circle mr-2"></i> リンク作成
                         </button>
-                        <button @click="activeTab = 'links'; loadLinks()"
+                        <button @click="activeTab = 'links'; loadTrackingLinks()"
                                 :class="activeTab === 'links' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
                                 class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                             <i class="fas fa-link mr-2"></i> リンク管理
@@ -291,6 +324,11 @@
                                 :class="activeTab === 'commissions' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
                                 class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                             <i class="fas fa-yen-sign mr-2"></i> 報酬
+                        </button>
+                        <button @click="activeTab = 'billing'; loadBillingStats()"
+                                :class="activeTab === 'billing' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                                class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                            <i class="fas fa-credit-card mr-2"></i> 課金状況
                         </button>
                         <button @click="activeTab = 'settings'"
                                 :class="activeTab === 'settings' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
@@ -307,7 +345,7 @@
                     <form @submit.prevent="createLink()" class="space-y-4 max-w-2xl">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">キャンペーン名 *</label>
-                            <input type="text" x-model="newLink.name" required
+                            <input type="text" x-model="newLink.name" autocomplete="off" required
                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                    placeholder="例: 2024年春のキャンペーン">
                         </div>
@@ -315,13 +353,13 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">流入元（UTM Source）</label>
-                                <input type="text" x-model="newLink.utm_source"
+                                <input type="text" x-model="newLink.utm_source" autocomplete="off"
                                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                        placeholder="例: facebook, twitter, line">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">メディア（UTM Medium）</label>
-                                <input type="text" x-model="newLink.utm_medium"
+                                <input type="text" x-model="newLink.utm_medium" autocomplete="off"
                                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                        placeholder="例: social, email, banner">
                             </div>
@@ -329,24 +367,20 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">キャンペーン（UTM Campaign）</label>
-                            <input type="text" x-model="newLink.utm_campaign"
+                            <input type="text" x-model="newLink.utm_campaign" autocomplete="off"
                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                    placeholder="例: spring_sale_2024">
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">LINE友達追加URL *</label>
-                            <input type="url" x-model="newLink.line_friend_url" required
-                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                                   placeholder="https://lin.ee/xxxxx">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">リダイレクト先URL（オプション）</label>
-                            <input type="url" x-model="newLink.destination_url"
-                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                                   placeholder="https://example.com/landing">
-                            <p class="text-xs text-gray-500 mt-1">未入力の場合はLINE友達追加URLにリダイレクトされます</p>
+                        <!-- Info: LINE URL is automatically set from environment -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                                <div>
+                                    <p class="text-sm text-blue-800 font-medium">リダイレクト先について</p>
+                                    <p class="text-sm text-blue-700 mt-1">トラッキングリンクは自動的にTaskMate公式LINEアカウントへリダイレクトされます。</p>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="flex space-x-4">
@@ -370,7 +404,7 @@
                         <div class="flex items-center space-x-2">
                             <input type="text" :value="createdLink" readonly
                                    class="flex-1 px-3 py-2 bg-white border border-emerald-300 rounded-lg text-sm">
-                            <button @click="copyToClipboard(createdLink)"
+                            <button @click="copyToClipboard(createdLink, $event)"
                                     class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors">
                                 <i class="fas fa-copy mr-2"></i> コピー
                             </button>
@@ -405,7 +439,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="link.conversion_count"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatDate(link.created_at)"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <button @click="copyToClipboard(getTrackingUrl(link.tracking_code))"
+                                            <button @click="copyToClipboard(getTrackingUrl(link.tracking_code), $event)"
                                                     class="bg-emerald-100 hover:bg-emerald-200 text-emerald-600 px-3 py-1 rounded-lg mr-2 transition-colors">
                                                 <i class="fas fa-copy"></i> コピー
                                             </button>
@@ -559,6 +593,164 @@
                     </div>
                 </div>
 
+                <!-- 課金状況タブ -->
+                <div x-show="activeTab === 'billing'" class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">紹介ユーザーの課金状況</h2>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm text-gray-600">最終更新: <span x-text="billingStats.lastUpdated ? formatDateTime(billingStats.lastUpdated) : '-'"></span></span>
+                            <button @click="loadBillingStats()"
+                                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-sync-alt mr-2"></i> 更新
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- サマリーカード -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white">
+                            <p class="text-sm opacity-90">現在の課金中ユーザー</p>
+                            <p class="text-3xl font-bold mt-2" x-text="billingStats.summary?.activeSubscribers || 0"></p>
+                            <p class="text-xs mt-2 opacity-75">
+                                <i class="fas fa-check-circle mr-1"></i> アクティブサブスクリプション
+                            </p>
+                        </div>
+
+                        <div class="bg-white rounded-xl border border-gray-200 p-6">
+                            <p class="text-sm text-gray-600">総コンバージョン数</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-2" x-text="billingStats.summary?.totalConversions || 0"></p>
+                            <p class="text-xs mt-2 text-gray-500">
+                                <i class="fas fa-user-plus mr-1"></i> LINE友達追加済み
+                            </p>
+                        </div>
+
+                        <div class="bg-white rounded-xl border border-gray-200 p-6">
+                            <p class="text-sm text-gray-600">累計報酬（予定）</p>
+                            <p class="text-2xl font-bold text-emerald-600 mt-2" x-text="`¥${(billingStats.summary?.totalCommission || 0).toLocaleString()}`"></p>
+                            <p class="text-xs mt-2 text-gray-500">
+                                <i class="fas fa-calculator mr-1"></i> 手数料率: <span x-text="`${billingStats.summary?.commissionRate || 0}%`"></span>
+                            </p>
+                        </div>
+
+                        <div class="bg-white rounded-xl border border-gray-200 p-6">
+                            <p class="text-sm text-gray-600">支払い済み報酬</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-2" x-text="`¥${(billingStats.summary?.paidCommission || 0).toLocaleString()}`"></p>
+                            <p class="text-xs mt-2 text-gray-500">
+                                <i class="fas fa-check mr-1"></i> 確定済み
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 個別ユーザーの課金状態テーブル -->
+                    <div class="bg-white rounded-lg border border-gray-200">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900">個別ユーザーの課金状態</h3>
+                            <p class="text-sm text-gray-600 mt-1">あなたが紹介したユーザーのサブスクリプション状況をリアルタイムで確認できます</p>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ユーザー名</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">課金開始日</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">終了予定日</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">プレミアム</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">予定報酬</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <template x-if="!billingStats.billingUsers || billingStats.billingUsers.length === 0">
+                                        <tr>
+                                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                                <i class="fas fa-inbox text-3xl mb-2"></i>
+                                                <p>まだ課金ユーザーがいません</p>
+                                                <p class="text-sm mt-1">トラッキングリンクを作成して、ユーザーを紹介しましょう！</p>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template x-for="user in billingStats.billingUsers" :key="user.userId">
+                                        <tr class="hover:bg-gray-50" :class="user.isActive ? 'bg-green-50' : ''">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                                        <span x-text="user.displayName?.charAt(0) || '?'"></span>
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-gray-900" x-text="user.displayName"></div>
+                                                        <div class="text-xs text-gray-500" x-text="`ID: ${user.userId.substring(0, 8)}...`"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-3 py-1 text-xs font-semibold rounded-full"
+                                                      :class="{
+                                                          'bg-green-100 text-green-800': user.subscriptionStatus === 'active',
+                                                          'bg-blue-100 text-blue-800': user.subscriptionStatus === 'trialing',
+                                                          'bg-yellow-100 text-yellow-800': user.subscriptionStatus === 'past_due',
+                                                          'bg-red-100 text-red-800': user.subscriptionStatus === 'canceled',
+                                                          'bg-gray-100 text-gray-800': user.subscriptionStatus === 'free' || !user.subscriptionStatus
+                                                      }">
+                                                    <i class="fas fa-circle mr-1" :class="user.isActive ? 'fa-pulse' : ''"></i>
+                                                    <span x-text="getSubscriptionStatusLabel(user.subscriptionStatus)"></span>
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <template x-if="user.subscriptionStartedAt">
+                                                    <span x-text="formatDate(user.subscriptionStartedAt)"></span>
+                                                </template>
+                                                <template x-if="!user.subscriptionStartedAt">
+                                                    <span class="text-gray-400">-</span>
+                                                </template>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <template x-if="user.subscriptionEndDate">
+                                                    <span x-text="formatDate(user.subscriptionEndDate)"></span>
+                                                </template>
+                                                <template x-if="!user.subscriptionEndDate && user.isActive">
+                                                    <span class="text-green-600">継続中</span>
+                                                </template>
+                                                <template x-if="!user.subscriptionEndDate && !user.isActive">
+                                                    <span class="text-gray-400">-</span>
+                                                </template>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                <template x-if="user.isPremium">
+                                                    <span class="text-yellow-600">
+                                                        <i class="fas fa-crown mr-1"></i> プレミアム
+                                                    </span>
+                                                </template>
+                                                <template x-if="!user.isPremium">
+                                                    <span class="text-gray-400">-</span>
+                                                </template>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+                                                <template x-if="user.commission > 0">
+                                                    <span class="text-emerald-600" x-text="`¥${user.commission.toLocaleString()}`"></span>
+                                                </template>
+                                                <template x-if="user.commission === 0">
+                                                    <span class="text-gray-400">¥0</span>
+                                                </template>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 自動更新通知 -->
+                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-blue-800 font-medium">リアルタイム自動更新</p>
+                                <p class="text-sm text-blue-700 mt-1">このページは30秒ごとに自動で最新の課金情報に更新されます。手動で更新したい場合は、右上の「更新」ボタンをクリックしてください。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 設定タブ -->
                 <div x-show="activeTab === 'settings'" class="p-6">
                     <h2 class="text-xl font-bold text-gray-900 mb-6">アカウント設定</h2>
@@ -575,17 +767,17 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">会社名</label>
-                                    <input type="text" x-model="agencyInfo.company_name"
+                                    <input type="text" x-model="agencyInfo.company_name" autocomplete="organization"
                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">連絡先メールアドレス</label>
-                                    <input type="email" x-model="agencyInfo.contact_email"
+                                    <input type="email" x-model="agencyInfo.contact_email" autocomplete="email"
                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">電話番号</label>
-                                    <input type="tel" x-model="agencyInfo.contact_phone"
+                                    <input type="tel" x-model="agencyInfo.contact_phone" autocomplete="tel"
                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
                                 </div>
                             </div>
@@ -597,17 +789,17 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">銀行名</label>
-                                    <input type="text" x-model="paymentInfo.bank_name"
+                                    <input type="text" x-model="paymentInfo.bank_name" autocomplete="off"
                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">支店名</label>
-                                    <input type="text" x-model="paymentInfo.branch_name"
+                                    <input type="text" x-model="paymentInfo.branch_name" autocomplete="off"
                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">口座種別</label>
-                                    <select x-model="paymentInfo.account_type"
+                                    <select x-model="paymentInfo.account_type" autocomplete="off"
                                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
                                         <option value="普通">普通</option>
                                         <option value="当座">当座</option>
@@ -615,13 +807,30 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">口座番号</label>
-                                    <input type="text" x-model="paymentInfo.account_number"
+                                    <input type="text" x-model="paymentInfo.account_number" autocomplete="off"
                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">口座名義</label>
-                                    <input type="text" x-model="paymentInfo.account_holder"
+                                    <input type="text" x-model="paymentInfo.account_holder" autocomplete="name"
                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- セキュリティ設定 -->
+                        <div class="bg-white rounded-lg border border-gray-200 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">セキュリティ設定</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">パスワード</p>
+                                        <p class="text-sm text-gray-500">定期的にパスワードを変更してセキュリティを強化しましょう</p>
+                                    </div>
+                                    <button @click="openChangePasswordModal()"
+                                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors border border-gray-300">
+                                        <i class="fas fa-key mr-2"></i> パスワード変更
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -642,6 +851,298 @@
         </main>
     </div>
 
+    <!-- パスワード変更モーダル -->
+    <div x-show="changePasswordModal"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         @click.self="closeChangePasswordModal()">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <!-- 背景オーバーレイ -->
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" @click="closeChangePasswordModal()"></div>
+
+            <!-- モーダルコンテンツ -->
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <!-- ヘッダー -->
+                <div class="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-key text-white"></i>
+                            </div>
+                            <h3 class="ml-3 text-lg font-semibold text-white">パスワード変更</h3>
+                        </div>
+                        <button @click="closeChangePasswordModal()" class="text-white hover:text-gray-200 transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- フォーム -->
+                <form @submit.prevent="changePassword()" class="px-6 py-4">
+                    <div class="space-y-4">
+                        <!-- 現在のパスワード -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                現在のパスワード *
+                            </label>
+                            <div class="relative">
+                                <input :type="showCurrentPassword ? 'text' : 'password'"
+                                       x-model="changePasswordForm.currentPassword"
+                                       required
+                                       class="w-full px-4 py-3 pr-10 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                       placeholder="現在のパスワードを入力">
+                                <button type="button"
+                                        @click="showCurrentPassword = !showCurrentPassword"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    <i :class="showCurrentPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 新しいパスワード -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                新しいパスワード *
+                            </label>
+                            <div class="relative">
+                                <input :type="showNewPassword ? 'text' : 'password'"
+                                       x-model="changePasswordForm.newPassword"
+                                       required
+                                       minlength="8"
+                                       class="w-full px-4 py-3 pr-10 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                       placeholder="8文字以上で入力"
+                                       @input="checkPasswordStrength()">
+                                <button type="button"
+                                        @click="showNewPassword = !showNewPassword"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    <i :class="showNewPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                </button>
+                            </div>
+                            <!-- パスワード強度インジケーター -->
+                            <div x-show="changePasswordForm.newPassword.length > 0" class="mt-2">
+                                <div class="flex items-center space-x-2">
+                                    <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="h-full transition-all duration-300"
+                                             :class="{
+                                                 'w-1/4 bg-red-500': passwordStrength === 'weak',
+                                                 'w-2/4 bg-yellow-500': passwordStrength === 'medium',
+                                                 'w-3/4 bg-green-500': passwordStrength === 'strong',
+                                                 'w-full bg-emerald-600': passwordStrength === 'very-strong'
+                                             }"></div>
+                                    </div>
+                                    <span class="text-xs font-medium"
+                                          :class="{
+                                              'text-red-600': passwordStrength === 'weak',
+                                              'text-yellow-600': passwordStrength === 'medium',
+                                              'text-green-600': passwordStrength === 'strong',
+                                              'text-emerald-600': passwordStrength === 'very-strong'
+                                          }"
+                                          x-text="passwordStrengthLabel"></span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">英大文字、英小文字、数字、記号を組み合わせると強度が上がります</p>
+                            </div>
+                        </div>
+
+                        <!-- 新しいパスワード（確認） -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                新しいパスワード（確認）*
+                            </label>
+                            <div class="relative">
+                                <input :type="showConfirmPassword ? 'text' : 'password'"
+                                       x-model="changePasswordForm.confirmPassword"
+                                       required
+                                       class="w-full px-4 py-3 pr-10 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                       placeholder="もう一度入力">
+                                <button type="button"
+                                        @click="showConfirmPassword = !showConfirmPassword"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                </button>
+                            </div>
+                            <!-- パスワード一致チェック -->
+                            <div x-show="changePasswordForm.confirmPassword.length > 0" class="mt-2">
+                                <p class="text-xs"
+                                   :class="changePasswordForm.newPassword === changePasswordForm.confirmPassword ? 'text-green-600' : 'text-red-600'">
+                                    <i :class="changePasswordForm.newPassword === changePasswordForm.confirmPassword ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                                    <span x-text="changePasswordForm.newPassword === changePasswordForm.confirmPassword ? 'パスワードが一致しています' : 'パスワードが一致しません'"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- エラーメッセージ -->
+                        <div x-show="changePasswordError"
+                             class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-circle mr-2"></i>
+                                <span x-text="changePasswordError"></span>
+                            </div>
+                        </div>
+
+                        <!-- 成功メッセージ -->
+                        <div x-show="changePasswordSuccess"
+                             class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <span>パスワードが正常に変更されました</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ボタン -->
+                    <div class="mt-6 flex space-x-3">
+                        <button type="submit"
+                                :disabled="loading"
+                                class="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!loading">
+                                <i class="fas fa-check mr-2"></i> 変更する
+                            </span>
+                            <span x-show="loading" class="inline-flex items-center">
+                                <i class="fas fa-spinner fa-spin mr-2"></i> 変更中...
+                            </span>
+                        </button>
+                        <button type="button"
+                                @click="closeChangePasswordModal()"
+                                :disabled="loading"
+                                class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            キャンセル
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- グローバルエラーハンドラ -->
+    <script>
+        // Alpine.jsの初期化をログ
+        console.log('📦 Scripts loading...');
+
+        // グローバルエラーハンドラ
+        window.addEventListener('error', function(event) {
+            console.error('❌ Global error caught:',  {
+                message: event.message,
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno,
+                error: event.error
+            });
+
+            // エラーを画面に表示（デバッグ用）
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #fee; color: #c00; padding: 20px; z-index: 99999; font-family: monospace; font-size: 12px; max-height: 300px; overflow: auto;';
+            errorDiv.innerHTML = `
+                <strong>❌ エラーが発生しました</strong><br>
+                <strong>メッセージ:</strong> ${event.message}<br>
+                <strong>ファイル:</strong> ${event.filename}<br>
+                <strong>行:</strong> ${event.lineno}:${event.colno}<br>
+                <strong>スタック:</strong> ${event.error ? event.error.stack : 'なし'}<br>
+                <button onclick="this.parentElement.remove()" style="margin-top: 10px; padding: 5px 10px; background: #c00; color: white; border: none; cursor: pointer;">閉じる</button>
+            `;
+            document.body.appendChild(errorDiv);
+        });
+
+        // Uncaught Promiseエラーハンドラ
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('❌ Unhandled promise rejection:', event.reason);
+
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #fea; color: #840; padding: 20px; z-index: 99999; font-family: monospace; font-size: 12px; max-height: 300px; overflow: auto;';
+            errorDiv.innerHTML = `
+                <strong>⚠️  Promise エラーが発生しました</strong><br>
+                <strong>理由:</strong> ${event.reason}<br>
+                <button onclick="this.parentElement.remove()" style="margin-top: 10px; padding: 5px 10px; background: #840; color: white; border: none; cursor: pointer;">閉じる</button>
+            `;
+            document.body.appendChild(errorDiv);
+        });
+
+        // Alpine.jsの初期化を監視
+        document.addEventListener('alpine:init', () => {
+            console.log('🎉 Alpine.js initialized successfully!');
+        });
+
+        document.addEventListener('alpine:initializing', () => {
+            console.log('🔄 Alpine.js initializing...');
+        });
+
+        document.addEventListener('alpine:initialized', () => {
+            console.log('✅ Alpine.js fully initialized!');
+        });
+
+        // DOMContentLoaded後にAlpine.jsが読み込まれているか確認
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📄 DOM Content Loaded');
+
+            // 3秒後にAlpine.jsがまだ初期化されていない場合は警告
+            setTimeout(() => {
+                if (!window.Alpine) {
+                    console.error('❌ Alpine.js is not loaded after 3 seconds!');
+                    alert('Alpine.jsの読み込みに失敗しました。ページを再読み込みしてください。');
+                } else {
+                    console.log('✅ Alpine.js is loaded:', window.Alpine);
+                }
+            }, 3000);
+        });
+    </script>
+
+    <!-- XSS Protection Utility -->
+    <script src="xss-protection.js"></script>
     <script src="dashboard.js"></script>
+
+    <!-- Final diagnostic check -->
+    <script>
+        console.log('🏁 All inline scripts loaded');
+        console.log('📊 Current state:', {
+            agencyDashboard: typeof window.agencyDashboard,
+            Alpine: typeof window.Alpine,
+            XSSProtection: typeof window.XSSProtection
+        });
+
+        // Wait a bit and check if Alpine initialized
+        setTimeout(() => {
+            console.log('⏰ After 2 seconds:', {
+                Alpine: typeof window.Alpine,
+                AlpineReady: window.Alpine ? 'yes' : 'no'
+            });
+
+            if (!window.Alpine) {
+                console.error('❌❌❌ Alpine.js is NOT loaded after 2 seconds! ❌❌❌');
+                console.error('This is likely why the page is white.');
+                console.error('Possible causes:');
+                console.error('1. Network error loading Alpine.js from CDN');
+                console.error('2. SRI hash mismatch (we removed it, so not this)');
+                console.error('3. Content Security Policy blocking the script');
+                console.error('4. Browser extension blocking the CDN');
+
+                // Show error on page
+                document.body.innerHTML = `
+                    <div style="padding: 40px; max-width: 800px; margin: 0 auto; font-family: sans-serif;">
+                        <h1 style="color: #c00;">❌ Alpine.js Failed to Load</h1>
+                        <p><strong>The page cannot initialize because Alpine.js did not load from the CDN.</strong></p>
+                        <h2>Possible Solutions:</h2>
+                        <ol>
+                            <li>Check your internet connection</li>
+                            <li>Check if a browser extension is blocking CDN resources</li>
+                            <li>Check the browser console (F12) for network errors</li>
+                            <li>Try disabling ad blockers or privacy extensions</li>
+                            <li>Try a different browser</li>
+                        </ol>
+                        <h2>Technical Details:</h2>
+                        <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px; overflow: auto;">
+Alpine.js URL: https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js
+Alpine.js loaded: No
+agencyDashboard function: ${typeof window.agencyDashboard}
+XSSProtection loaded: ${typeof window.XSSProtection}
+                        </pre>
+                        <button onclick="location.reload()" style="background: #10b981; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                            🔄 Reload Page
+                        </button>
+                    </div>
+                `;
+            } else {
+                console.log('✅ Alpine.js loaded successfully!');
+            }
+        }, 2000);
+    </script>
 </body>
 </html>

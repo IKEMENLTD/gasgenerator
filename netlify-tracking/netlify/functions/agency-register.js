@@ -1,9 +1,12 @@
 const bcrypt = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
+const { validateCsrfProtection, createCsrfErrorResponse } = require('./utils/csrf-protection');
+const { applyRateLimit, STRICT_RATE_LIMIT } = require('./utils/rate-limiter');
+const logger = require('./utils/logger');
 
 // Check environment variables
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+    logger.error('Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
 }
 
 const supabase = createClient(
@@ -24,7 +27,8 @@ exports.handler = async (event) => {
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'X-Content-Type-Options': 'nosniff'
     };
 
     if (event.httpMethod === 'OPTIONS') {
@@ -43,8 +47,20 @@ exports.handler = async (event) => {
         };
     }
 
+    // レート制限チェック（スパム登録攻撃対策）
+    const rateLimitResponse = applyRateLimit(event, STRICT_RATE_LIMIT);
+    if (rateLimitResponse) {
+        return rateLimitResponse;
+    }
+
+    // CSRF保護チェック
+    const csrfValidation = validateCsrfProtection(event);
+    if (!csrfValidation.valid) {
+        return createCsrfErrorResponse(csrfValidation.error);
+    }
+
     try {
-        console.log('Registration request received');
+        logger.log('Registration request received');
 
         // Check if Supabase is configured
         if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -52,7 +68,7 @@ exports.handler = async (event) => {
                 statusCode: 500,
                 headers,
                 body: JSON.stringify({
-                    error: 'システム設定エラー：環境変数が設定されていません'
+                    error: 'サービスが一時的に利用できません。しばらくしてから再度お試しください。'
                 })
             };
         }
@@ -67,7 +83,7 @@ exports.handler = async (event) => {
             password
         } = JSON.parse(event.body);
 
-        console.log('Parsed request data for email:', email);
+        logger.log('Parsed request data for email:', email);
 
         // Validate required fields
         if (!company_name || !agency_name || !contact_name || !email || !phone || !password) {
@@ -92,6 +108,7 @@ exports.handler = async (event) => {
         }
 
         // Check if email already exists
+        // セキュリティ上の理由により、メール存在を明示しない（ユーザー列挙攻撃対策）
         const { data: existingUser } = await supabase
             .from('agency_users')
             .select('id')
@@ -103,7 +120,7 @@ exports.handler = async (event) => {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({
-                    error: 'このメールアドレスは既に登録されています'
+                    error: '登録処理を完了できませんでした。入力内容を確認してください。'
                 })
             };
         }
@@ -151,7 +168,7 @@ exports.handler = async (event) => {
             .single();
 
         if (agencyError) {
-            console.error('Agency creation error:', agencyError);
+            logger.error('Agency creation error:', agencyError);
             throw agencyError;
         }
 
@@ -173,7 +190,7 @@ exports.handler = async (event) => {
             .single();
 
         if (userError) {
-            console.error('User creation error:', userError);
+            logger.error('User creation error:', userError);
             // Rollback agency creation
             await supabase
                 .from('agencies')
@@ -196,23 +213,15 @@ exports.handler = async (event) => {
         };
 
     } catch (error) {
-        console.error('Registration error:', error);
-        console.error('Error details:', {
+        logger.error('Registration error:', error);
+        logger.error('Error details:', {
             message: error.message,
             stack: error.stack,
             name: error.name
         });
 
-        // More specific error messages
-        let errorMessage = '登録処理中にエラーが発生しました。';
-
-        if (error.message?.includes('SUPABASE')) {
-            errorMessage = 'データベース接続エラーが発生しました。';
-        } else if (error.message?.includes('bcrypt')) {
-            errorMessage = 'パスワード処理中にエラーが発生しました。';
-        } else if (error.message?.includes('duplicate')) {
-            errorMessage = 'このメールアドレスは既に登録されています。';
-        }
+        // セキュリティ上の理由により、詳細なエラー情報は返さない
+        const errorMessage = '登録処理を完了できませんでした。しばらくしてから再度お試しください。';
 
         return {
             statusCode: 500,

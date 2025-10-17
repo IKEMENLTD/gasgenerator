@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>トラッキングリンク テスト</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 4px solid #10b981;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px 10px 0;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #059669;
+        }
+        button.secondary {
+            background: #6366f1;
+        }
+        button.secondary:hover {
+            background: #4f46e5;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 5px;
+            display: none;
+        }
+        .error {
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
+        .log-entry {
+            padding: 8px;
+            margin: 5px 0;
+            background: #f8f8f8;
+            border-left: 3px solid #10b981;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry.error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #93c5fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 トラッキングリンク デバッグツール</h1>
+
+        <div class="info-box">
+            <strong>📝 このツールの使い方：</strong>
+            <ol>
+                <li>作成したトラッキングコードを入力</li>
+                <li>「テスト実行」ボタンをクリック</li>
+                <li>結果とログを確認</li>
+                <li>問題がある場合は、Netlify Function ログも確認してください</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 テスト 1: トラッキングコードのテスト</h2>
+            <label for="trackingCode">トラッキングコード:</label>
+            <input type="text" id="trackingCode" placeholder="例: abc123xyz789" />
+
+            <button onclick="testTrackingCode()">テスト実行</button>
+            <button class="secondary" onclick="testDirectly()">直接アクセス（新しいタブ）</button>
+
+            <div id="result1" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 テスト 2: Function ログ確認</h2>
+            <p>Netlify Function のログを確認する方法：</p>
+            <div class="code">
+# Netlify Dashboard で確認<br>
+1. https://app.netlify.com にログイン<br>
+2. サイトを選択<br>
+3. Functions → track-redirect を選択<br>
+4. ログタブを確認<br>
+<br>
+# または Netlify CLI を使用<br>
+$ netlify functions:log track-redirect
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 テスト 3: データベース確認</h2>
+            <button onclick="checkDatabase()">データベースの状態を確認</button>
+            <div id="result3" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📜 実行ログ</h2>
+            <div id="logs"></div>
+            <button onclick="clearLogs()">ログをクリア</button>
+        </div>
+    </div>
+
+    <script>
+        function addLog(message, isError = false) {
+            const logsDiv = document.getElementById('logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry' + (isError ? ' error' : '');
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            addLog('ログをクリアしました');
+        }
+
+        async function testTrackingCode() {
+            const trackingCode = document.getElementById('trackingCode').value.trim();
+            const resultDiv = document.getElementById('result1');
+
+            if (!trackingCode) {
+                resultDiv.className = 'result error';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '❌ トラッキングコードを入力してください';
+                addLog('エラー: トラッキングコードが空です', true);
+                return;
+            }
+
+            addLog(`テスト開始: ${trackingCode}`);
+            resultDiv.className = 'result';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<span class="status-badge status-pending">テスト中...</span> Function をテスト中...';
+
+            try {
+                const testUrl = `/t/${trackingCode}`;
+                addLog(`リクエスト URL: ${testUrl}`);
+
+                const response = await fetch(testUrl, {
+                    method: 'GET',
+                    redirect: 'manual' // リダイレクトを手動処理
+                });
+
+                addLog(`レスポンスステータス: ${response.status}`);
+                addLog(`レスポンスタイプ: ${response.type}`);
+
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+                addLog(`レスポンスヘッダー: ${JSON.stringify(headers, null, 2)}`);
+
+                if (response.status === 302 || response.status === 301) {
+                    const location = response.headers.get('Location');
+                    addLog(`✅ リダイレクト成功: ${location}`);
+
+                    resultDiv.className = 'result';
+                    resultDiv.innerHTML = `
+                        <span class="status-badge status-success">✅ 成功</span>
+                        <p><strong>ステータス:</strong> ${response.status} (リダイレクト)</p>
+                        <p><strong>リダイレクト先:</strong> ${location || 'なし'}</p>
+                        <p><strong>トラッキングコード:</strong> ${trackingCode}</p>
+                    `;
+                } else if (response.status === 404) {
+                    const body = await response.text();
+                    addLog(`❌ 404 エラー: リンクが見つかりません`, true);
+                    addLog(`レスポンスボディ: ${body.substring(0, 500)}...`);
+
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <span class="status-badge status-error">❌ エラー</span>
+                        <p><strong>ステータス:</strong> 404 Not Found</p>
+                        <p><strong>原因:</strong> トラッキングリンクが存在しないか、無効です</p>
+                        <p><strong>確認事項:</strong></p>
+                        <ul>
+                            <li>トラッキングコードが正しいか確認</li>
+                            <li>リンクが有効（is_active = true）か確認</li>
+                            <li>データベースにレコードが存在するか確認</li>
+                        </ul>
+                    `;
+                } else {
+                    const body = await response.text();
+                    addLog(`⚠️  予期しないステータス: ${response.status}`, true);
+                    addLog(`レスポンスボディ: ${body.substring(0, 500)}...`);
+
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <span class="status-badge status-error">⚠️  予期しないレスポンス</span>
+                        <p><strong>ステータス:</strong> ${response.status}</p>
+                        <p><strong>Body:</strong> <pre>${body.substring(0, 1000)}</pre></p>
+                    `;
+                }
+
+            } catch (error) {
+                addLog(`❌ エラーが発生しました: ${error.message}`, true);
+                console.error('Test error:', error);
+
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <span class="status-badge status-error">❌ エラー</span>
+                    <p><strong>エラー:</strong> ${error.message}</p>
+                    <p>ネットワークエラーまたはFunctionがデプロイされていません。</p>
+                `;
+            }
+        }
+
+        function testDirectly() {
+            const trackingCode = document.getElementById('trackingCode').value.trim();
+
+            if (!trackingCode) {
+                alert('トラッキングコードを入力してください');
+                return;
+            }
+
+            const url = `/t/${trackingCode}`;
+            addLog(`新しいタブで開きます: ${url}`);
+            window.open(url, '_blank');
+        }
+
+        async function checkDatabase() {
+            const resultDiv = document.getElementById('result3');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = '<span class="status-badge status-pending">確認中...</span> データベースをチェック中...';
+
+            addLog('データベースの状態を確認中...');
+
+            try {
+                // This would need a function to check database
+                resultDiv.innerHTML = `
+                    <p>⚠️  この機能を使用するには、専用のFunction（例: /api/debug-links）を作成する必要があります。</p>
+                    <p><strong>手動確認方法:</strong></p>
+                    <ol>
+                        <li>Supabase Dashboard にログイン</li>
+                        <li>Table Editor → agency_tracking_links を選択</li>
+                        <li>作成したリンクの tracking_code を確認</li>
+                        <li>is_active が true になっているか確認</li>
+                    </ol>
+                `;
+                addLog('データベース確認は手動で行ってください');
+
+            } catch (error) {
+                addLog(`❌ エラー: ${error.message}`, true);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ エラー: ${error.message}`;
+            }
+        }
+
+        // 初期化
+        addLog('デバッグツール準備完了');
+    </script>
+</body>
+</html>

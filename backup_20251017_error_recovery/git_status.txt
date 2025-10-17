@@ -1,0 +1,41 @@
+On branch main
+Your branch is ahead of 'origin/main' by 2 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   apply-migrations-final.sql
+	deleted:    netlify-tracking/DEPLOYMENT_FIX.md
+	deleted:    netlify-tracking/DEPLOY_FIX.md
+	deleted:    netlify-tracking/DEPLOY_READY.md
+	deleted:    netlify-tracking/FINAL_CHECKLIST.md
+	deleted:    netlify-tracking/FINAL_SETUP.md
+	deleted:    netlify-tracking/FIX_ERRORS.md
+	deleted:    netlify-tracking/GREEN_THEME_COMPLETE.md
+	deleted:    netlify-tracking/INTEGRATION_COMPLETE.md
+	deleted:    netlify-tracking/JAPANESE_UI_COMPLETE.md
+	deleted:    netlify-tracking/LOGIN_TEST_READY.md
+	deleted:    netlify-tracking/TEST_ACCOUNTS.md
+	deleted:    netlify-tracking/database/check_registration.sql
+	deleted:    netlify-tracking/database/create_test_accounts.sql
+	deleted:    netlify-tracking/database/fix_test_password.sql
+	deleted:    netlify-tracking/database/quick_test_registration.sql
+	deleted:    netlify-tracking/database/simple_test_account.sql
+	deleted:    netlify-tracking/scripts/test-bcrypt.js
+	deleted:    netlify-tracking/test-all-features.html
+	deleted:    netlify-tracking/test-connection.html
+	deleted:    netlify-tracking/test-password-reset.html
+	deleted:    netlify-tracking/test-registration.html
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	CHANGE_LOG_ERROR_RECOVERY_SYSTEM.md
+	DATABASE_SCHEMA_BACKUP.sql
+	QUICK_REFERENCE_ROLLBACK.md
+	backup-before-error-recovery.sh
+	backup_20251017_error_recovery/
+	netlify-tracking/_backup/
+	netlify-tracking/agency/simple-reset.html
+
+no changes added to commit (use "git add" and/or "git commit -a")

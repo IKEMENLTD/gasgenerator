@@ -36,26 +36,14 @@ exports.handler = async (event, context) => {
             name,
             utm_source,
             utm_medium,
-            utm_campaign,
-            line_friend_url
+            utm_campaign
         } = JSON.parse(event.body);
 
-        // Validate required fields
-        if (!name || !line_friend_url) {
-            return {
-                statusCode: 400,
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    error: 'Missing required fields: name and line_friend_url'
-                })
-            };
-        }
+        // Get LINE Official URL from environment variable
+        const line_friend_url = process.env.LINE_OFFICIAL_URL || 'https://line.me/R/ti/p/@taskmate';
 
-        // Validate LINE friend URL format
-        if (!line_friend_url.includes('line.me')) {
+        // Validate required fields
+        if (!name) {
             return {
                 statusCode: 400,
                 headers: {
@@ -63,7 +51,7 @@ exports.handler = async (event, context) => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    error: 'Invalid LINE friend URL format'
+                    error: 'Missing required field: name'
                 })
             };
         }

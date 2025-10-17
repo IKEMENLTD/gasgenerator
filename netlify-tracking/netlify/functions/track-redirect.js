@@ -1,23 +1,56 @@
 const { createClient } = require('@supabase/supabase-js');
+const logger = require('./utils/logger');
+
+// Environment variable check with detailed logging
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    logger.error('❌ CRITICAL: Missing Supabase environment variables');
+    logger.error('SUPABASE_URL:', process.env.SUPABASE_URL ? 'Set' : 'MISSING');
+    logger.error('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'MISSING');
+}
 
 const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
+    process.env.SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
 exports.handler = async (event) => {
+    logger.log('🔗 Track-redirect function called');
+    logger.log('📍 Full path:', event.path);
+    logger.log('🌐 Method:', event.httpMethod);
+    logger.log('📨 Headers:', JSON.stringify(event.headers, null, 2));
+
     // Extract tracking code from path
     const pathParts = event.path.split('/');
     const trackingCode = pathParts[pathParts.length - 1];
 
-    if (!trackingCode) {
+    logger.log('🔍 Extracted tracking code:', trackingCode);
+    logger.log('📂 Path parts:', pathParts);
+
+    if (!trackingCode || trackingCode === 'track-redirect') {
+        logger.error('❌ No tracking code found in path');
         return {
             statusCode: 404,
-            body: 'Tracking code not found'
+            headers: {
+                'Content-Type': 'text/html'
+            },
+            body: `
+                <!DOCTYPE html>
+                <html>
+                <head><title>Tracking Code Missing</title></head>
+                <body style="font-family: Arial; text-align: center; padding: 50px;">
+                    <h1>❌ Tracking Code Not Found</h1>
+                    <p>The tracking link appears to be incomplete.</p>
+                    <p><strong>Path:</strong> ${event.path}</p>
+                    <p><a href="https://lin.ee/4NLfSqH">Continue to LINE</a></p>
+                </body>
+                </html>
+            `
         };
     }
 
     try {
+        logger.log('🔎 Searching for tracking link in database...');
+
         // Find tracking link
         const { data: link, error: linkError } = await supabase
             .from('agency_tracking_links')
@@ -29,12 +62,46 @@ exports.handler = async (event) => {
             .eq('is_active', true)
             .single();
 
-        if (linkError || !link) {
+        if (linkError) {
+            logger.error('❌ Database error when fetching tracking link:', linkError);
+            logger.error('Error details:', {
+                message: linkError.message,
+                code: linkError.code,
+                details: linkError.details,
+                hint: linkError.hint
+            });
+        }
+
+        if (!link) {
+            logger.warn('⚠️  Tracking link not found:', trackingCode);
+            logger.warn('Possible reasons: 1) Link does not exist, 2) Link is inactive, 3) Wrong tracking code');
+
             return {
                 statusCode: 404,
-                body: 'Invalid tracking link'
+                headers: {
+                    'Content-Type': 'text/html'
+                },
+                body: `
+                    <!DOCTYPE html>
+                    <html>
+                    <head><title>Link Not Found</title></head>
+                    <body style="font-family: Arial; text-align: center; padding: 50px;">
+                        <h1>🔍 Tracking Link Not Found</h1>
+                        <p>The tracking link you're trying to access does not exist or has been deactivated.</p>
+                        <p><strong>Tracking Code:</strong> ${trackingCode}</p>
+                        <p><a href="https://lin.ee/4NLfSqH" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #06c755; color: white; text-decoration: none; border-radius: 5px;">Continue to LINE</a></p>
+                    </body>
+                    </html>
+                `
             };
         }
+
+        logger.log('✅ Tracking link found:', {
+            id: link.id,
+            name: link.name,
+            agency_id: link.agency_id,
+            visit_count: link.visit_count
+        });
 
         // Extract visitor information
         const visitorInfo = {
@@ -49,8 +116,10 @@ exports.handler = async (event) => {
 
         // Generate session ID for tracking across conversion funnel
         const sessionId = generateSessionId();
+        logger.log('🆔 Generated session ID:', sessionId);
 
         // Record the visit
+        logger.log('💾 Recording visit to database...');
         const { data: visit, error: visitError } = await supabase
             .from('agency_tracking_visits')
             .insert({
@@ -75,11 +144,19 @@ exports.handler = async (event) => {
             .single();
 
         if (visitError) {
-            console.error('Error recording visit:', visitError);
+            logger.error('❌ Error recording visit:', visitError);
+            logger.error('Visit error details:', {
+                message: visitError.message,
+                code: visitError.code,
+                details: visitError.details
+            });
+        } else {
+            logger.log('✅ Visit recorded successfully. Visit ID:', visit?.id);
         }
 
         // Increment visit count
-        await supabase
+        logger.log('📊 Incrementing visit count...');
+        const { error: updateError } = await supabase
             .from('agency_tracking_links')
             .update({
                 visit_count: link.visit_count + 1,
@@ -87,8 +164,16 @@ exports.handler = async (event) => {
             })
             .eq('id', link.id);
 
+        if (updateError) {
+            logger.error('❌ Error updating visit count:', updateError);
+        } else {
+            logger.log('✅ Visit count updated to:', link.visit_count + 1);
+        }
+
         // Build redirect URL with tracking parameters
         const destinationUrl = link.destination_url || link.line_friend_url || 'https://lin.ee/4NLfSqH';
+        logger.log('🎯 Destination URL:', destinationUrl);
+
         const url = new URL(destinationUrl);
 
         // Add tracking parameters to preserve attribution
@@ -111,10 +196,14 @@ exports.handler = async (event) => {
             timestamp: new Date().toISOString()
         });
 
+        const finalRedirectUrl = url.toString();
+        logger.log('🚀 Redirecting to:', finalRedirectUrl);
+        logger.log('📊 Total visit count for this link:', link.visit_count + 1);
+
         return {
             statusCode: 302,
             headers: {
-                'Location': url.toString(),
+                'Location': finalRedirectUrl,
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Set-Cookie': `taskmate_tracking=${Buffer.from(cookieValue).toString('base64')}; Path=/; Max-Age=2592000; SameSite=Lax`
             },
@@ -122,14 +211,26 @@ exports.handler = async (event) => {
         };
 
     } catch (error) {
-        console.error('Tracking error:', error);
+        logger.error('❌❌❌ CRITICAL ERROR in track-redirect ❌❌❌');
+        logger.error('Error type:', error.name);
+        logger.error('Error message:', error.message);
+        logger.error('Error stack:', error.stack);
+        logger.error('Event details:', {
+            path: event.path,
+            method: event.httpMethod,
+            headers: event.headers
+        });
 
-        // Fallback redirect to LINE friend URL
+        // Fallback redirect to LINE friend URL with error info
+        const fallbackUrl = 'https://lin.ee/4NLfSqH';
+        logger.log('⚠️  Performing fallback redirect to:', fallbackUrl);
+
         return {
             statusCode: 302,
             headers: {
-                'Location': 'https://lin.ee/4NLfSqH',
-                'Cache-Control': 'no-cache, no-store, must-revalidate'
+                'Location': fallbackUrl,
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'X-Error-Occurred': 'true'
             },
             body: ''
         };

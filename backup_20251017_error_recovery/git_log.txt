@@ -1,0 +1,5 @@
+4e417fc Fix password reset token return and test page
+be4bd11 Add password reset functionality
+e1cc0f5 Add main menu quickReply buttons to all LLM responses
+335006a Fix category detection null pointer error and update welcome message
+21abe20 Add main menu quickReply buttons to all pages without navigation

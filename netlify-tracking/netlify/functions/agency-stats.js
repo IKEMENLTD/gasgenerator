@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
+const { authenticateRequest, createAuthErrorResponse } = require('./utils/auth-helper');
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -10,7 +10,9 @@ exports.handler = async (event) => {
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Agency-Id',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS'
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',  // Cookie認証のために必要
+        'X-Content-Type-Options': 'nosniff'
     };
 
     if (event.httpMethod === 'OPTIONS') {
@@ -30,37 +32,14 @@ exports.handler = async (event) => {
     }
 
     try {
-        // Verify JWT token
-        const token = event.headers.authorization?.replace('Bearer ', '');
-        const agencyId = event.headers['x-agency-id'];
+        // Cookie-based認証（Header-basedもフォールバックでサポート）
+        const auth = authenticateRequest(event);
 
-        if (!token || !agencyId) {
-            return {
-                statusCode: 401,
-                headers,
-                body: JSON.stringify({ error: '認証が必要です' })
-            };
+        if (!auth.authenticated) {
+            return createAuthErrorResponse(auth.error);
         }
 
-        let decoded;
-        try {
-            decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-jwt-secret');
-        } catch (err) {
-            return {
-                statusCode: 401,
-                headers,
-                body: JSON.stringify({ error: '無効なトークンです' })
-            };
-        }
-
-        // Verify agency ID matches token
-        if (decoded.agencyId !== agencyId) {
-            return {
-                statusCode: 403,
-                headers,
-                body: JSON.stringify({ error: 'アクセス権限がありません' })
-            };
-        }
+        const agencyId = auth.agencyId;
 
         // Get total links count
         const { count: totalLinks } = await supabase

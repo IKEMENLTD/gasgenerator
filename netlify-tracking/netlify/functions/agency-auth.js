@@ -1,6 +1,9 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
+const { validateCsrfProtection, createCsrfErrorResponse, getSecureCookieOptions } = require('./utils/csrf-protection');
+const { applyRateLimit, STRICT_RATE_LIMIT } = require('./utils/rate-limiter');
+const logger = require('./utils/logger');
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -12,7 +15,8 @@ exports.handler = async (event) => {
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'X-Content-Type-Options': 'nosniff'
     };
 
     if (event.httpMethod === 'OPTIONS') {
@@ -31,6 +35,18 @@ exports.handler = async (event) => {
         };
     }
 
+    // レート制限チェック（ブルートフォース攻撃対策）
+    const rateLimitResponse = applyRateLimit(event, STRICT_RATE_LIMIT);
+    if (rateLimitResponse) {
+        return rateLimitResponse;
+    }
+
+    // CSRF保護チェック
+    const csrfValidation = validateCsrfProtection(event);
+    if (!csrfValidation.valid) {
+        return createCsrfErrorResponse(csrfValidation.error);
+    }
+
     try {
         const { email, password } = JSON.parse(event.body);
 
@@ -45,7 +61,7 @@ exports.handler = async (event) => {
         }
 
         // Find agency user
-        console.log('Looking for user with email:', email);
+        logger.log('Looking for user with email:', email);
 
         const { data: user, error: userError } = await supabase
             .from('agency_users')
@@ -71,10 +87,10 @@ exports.handler = async (event) => {
             .eq('email', email)
             .single();
 
-        console.log('User query result:', { user, error: userError });
+        logger.log('User query result:', { user, error: userError });
 
         if (userError || !user) {
-            console.error('User not found or error:', userError);
+            logger.error('User not found or error:', userError);
             return {
                 statusCode: 401,
                 headers,
@@ -86,12 +102,12 @@ exports.handler = async (event) => {
         }
 
         // Verify password
-        console.log('Comparing password...');
+        logger.log('Comparing password...');
         const validPassword = await bcrypt.compare(password, user.password_hash);
-        console.log('Password valid:', validPassword);
+        logger.log('Password valid:', validPassword);
 
         if (!validPassword) {
-            console.error('Invalid password');
+            logger.error('Invalid password');
             return {
                 statusCode: 401,
                 headers,
@@ -102,32 +118,13 @@ exports.handler = async (event) => {
         }
 
         // Check if user account is active
-        if (!user.is_active) {
+        // セキュリティ上の理由により、具体的な理由は表示しない（ユーザー列挙攻撃対策）
+        if (!user.is_active || user.agencies.status !== 'active') {
             return {
-                statusCode: 403,
+                statusCode: 401,
                 headers,
                 body: JSON.stringify({
-                    error: 'このユーザーアカウントは無効です。管理者にお問い合わせください。'
-                })
-            };
-        }
-
-        // Check if agency is active
-        if (user.agencies.status !== 'active') {
-            let errorMessage = 'このアカウントは現在利用できません';
-            if (user.agencies.status === 'pending') {
-                errorMessage = 'このアカウントは承認待ちです。管理者の承認をお待ちください。';
-            } else if (user.agencies.status === 'rejected') {
-                errorMessage = 'このアカウントの申請は承認されませんでした。';
-            } else if (user.agencies.status === 'suspended') {
-                errorMessage = 'このアカウントは一時停止中です。';
-            }
-
-            return {
-                statusCode: 403,
-                headers,
-                body: JSON.stringify({
-                    error: errorMessage
+                    error: 'メールアドレスまたはパスワードが間違っています'
                 })
             };
         }
@@ -150,11 +147,24 @@ exports.handler = async (event) => {
             { expiresIn: '7d' }
         );
 
+        // セキュアなCookie設定を取得
+        const cookieOptions = getSecureCookieOptions();
+
+        // HttpOnly Cookieでトークンを設定（セキュリティ強化）
+        const setCookieHeaders = [
+            `agencyAuthToken=${token}; ${cookieOptions}`,
+            `agencyId=${user.agency_id}; ${cookieOptions.replace('HttpOnly; ', '')}`  // agencyIdはJSからアクセス可能に
+        ];
+
         return {
             statusCode: 200,
-            headers,
+            headers: {
+                ...headers,
+                'Set-Cookie': setCookieHeaders.join(', ')
+            },
             body: JSON.stringify({
                 success: true,
+                // 下位互換性のためにtokenも返すが、推奨はCookieを使用
                 token,
                 user: {
                     id: user.id,
@@ -174,7 +184,7 @@ exports.handler = async (event) => {
             })
         };
     } catch (error) {
-        console.error('Authentication error:', error);
+        logger.error('Authentication error:', error);
         return {
             statusCode: 500,
             headers,

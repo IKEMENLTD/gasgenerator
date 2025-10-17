@@ -23,8 +23,7 @@ function adminDashboard() {
             name: '',
             utm_source: '',
             utm_medium: '',
-            utm_campaign: '',
-            line_friend_url: ''
+            utm_campaign: ''
         },
         createdLink: '',
 
@@ -151,8 +150,7 @@ function adminDashboard() {
                         name: '',
                         utm_source: '',
                         utm_medium: '',
-                        utm_campaign: '',
-                        line_friend_url: ''
+                        utm_campaign: ''
                     };
                     await this.loadTrackingLinks();
                     await this.loadStats();

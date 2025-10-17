@@ -1,0 +1,223 @@
+import { logger } from '@/lib/utils/logger'
+import { EXTERNAL_API_CONFIG, TIMEOUTS } from '@/lib/constants/config'
+import EnvironmentValidator from '@/lib/config/environment'
+
+export class LineApiClient {
+  private accessToken: string
+  private baseUrl: string
+
+  constructor() {
+    // 環境変数を安全に取得
+    this.accessToken = EnvironmentValidator.getRequired('LINE_CHANNEL_ACCESS_TOKEN')
+    this.baseUrl = EXTERNAL_API_CONFIG.LINE.API_BASE_URL
+  }
+
+  /**
+   * ローディングアニメーションを表示（最大60秒）
+   *
+   * LINE公式の仕様:
+   * - 最大60秒まで表示可能
+   * - 同じユーザーに対して連続で呼び出し可能
+   * - 返信メッセージが送信されると自動的に停止
+   *
+   * @param userId - LINE User ID
+   * @param durationSeconds - 表示時間（秒）デフォルト20秒、最大60秒
+   */
+  async showLoadingAnimation(userId: string, durationSeconds: number = 20): Promise<boolean> {
+    try {
+      // LINE Loading API の正しいエンドポイント
+      const response = await fetch('https://api.line.me/v2/bot/chat/loading/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.accessToken}`
+        },
+        body: JSON.stringify({
+          chatId: userId,
+          loadingSeconds: Math.min(durationSeconds, 60) // 最大60秒
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        logger.error('Loading animation API error', {
+          status: response.status,
+          error: errorText,
+          userId,
+          endpoint: 'https://api.line.me/v2/bot/chat/loading/start'
+        })
+        
+        // エラーでも処理は続行
+        return false
+      }
+
+      logger.info('Loading animation started', { userId, duration: durationSeconds })
+      return true
+
+    } catch (error) {
+      logger.error('Failed to show loading animation', { error })
+      return false
+    }
+  }
+
+  /**
+   * Reply APIを使った返信（replyTokenが必要）
+   * 5メッセージを超える場合は、Push APIを使って追加送信
+   */
+  async replyMessage(replyToken: string, messages: any[], userId?: string): Promise<boolean> {
+    try {
+      // 最初の5メッセージをReply APIで送信
+      const firstBatch = messages.slice(0, 5)
+      const response = await fetch(`${this.baseUrl}/message/reply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.accessToken}`
+        },
+        body: JSON.stringify({
+          replyToken,
+          messages: firstBatch
+        }),
+        signal: AbortSignal.timeout(TIMEOUTS.HTTP_REQUEST)
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        logger.error('LINE reply API error', {
+          status: response.status,
+          error: errorText,
+          replyToken
+        })
+        return false
+      }
+
+      logger.info('LINE reply sent successfully', {
+        replyToken,
+        messageCount: firstBatch.length
+      })
+
+      // 5メッセージを超える場合は、Push APIで追加送信
+      if (messages.length > 5 && userId) {
+        const remainingMessages = messages.slice(5)
+        
+        // 残りのメッセージを5個ずつのバッチで送信
+        for (let i = 0; i < remainingMessages.length; i += 5) {
+          const batch = remainingMessages.slice(i, i + 5)
+          await this.pushMessage(userId, batch)
+          
+          // レート制限を避けるため少し待機
+          if (i + 5 < remainingMessages.length) {
+            await new Promise(resolve => setTimeout(resolve, 100))
+          }
+        }
+      }
+
+      return true
+
+    } catch (error) {
+      logger.error('LINE reply failed', {
+        error: error instanceof Error ? error.message : String(error),
+        replyToken
+      })
+      return false
+    }
+  }
+
+  /**
+   * Push APIを使った能動的メッセージ送信
+   */
+  async pushMessage(userId: string, messages: any[]): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/message/push`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.accessToken}`
+        },
+        body: JSON.stringify({
+          to: userId,
+          messages: messages.slice(0, 5) // LINE APIは最大5メッセージまで
+        }),
+        signal: AbortSignal.timeout(TIMEOUTS.HTTP_REQUEST)
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        logger.error('LINE push API error', {
+          status: response.status,
+          error: errorText,
+          userId
+        })
+        return false
+      }
+
+      logger.info('LINE push sent successfully', {
+        userId,
+        messageCount: messages.length
+      })
+
+      return true
+
+    } catch (error) {
+      logger.error('LINE push failed', {
+        error: error instanceof Error ? error.message : String(error),
+        userId
+      })
+      return false
+    }
+  }
+
+  /**
+   * ユーザープロフィール取得
+   */
+  async getUserProfile(userId: string): Promise<{ displayName: string } | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/profile/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        },
+        signal: AbortSignal.timeout(TIMEOUTS.HTTP_REQUEST)
+      })
+
+      if (!response.ok) {
+        logger.warn('Failed to get user profile', {
+          status: response.status,
+          userId
+        })
+        return null
+      }
+
+      const profile = await response.json()
+      return { displayName: profile.displayName }
+
+    } catch (error) {
+      logger.error('Get user profile failed', {
+        error: error instanceof Error ? error.message : String(error),
+        userId
+      })
+      return null
+    }
+  }
+
+  /**
+   * LINE API接続テスト
+   */
+  async testConnection(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/info`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        },
+        signal: AbortSignal.timeout(5000)
+      })
+
+      return response.ok
+
+    } catch (error) {
+      logger.error('LINE API connection test failed', { error })
+      return false
+    }
+  }
+}
