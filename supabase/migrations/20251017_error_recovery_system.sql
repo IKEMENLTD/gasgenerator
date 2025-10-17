@@ -1,245 +1,259 @@
--- エラー自動修復システム用テーブル
+-- ================================================
+-- エラー自動修復システム - データベーススキーマ
 -- 作成日: 2025-10-17
--- 目的: エラーパターンの学習と自動修復
+-- 修正版: 外部キー制約を削除（LINE User ID直接使用）
+-- ================================================
 
--- 1. エラーパターンテーブル
+-- ================================================
+-- 1. エラーパターン学習テーブル
+-- ================================================
 CREATE TABLE IF NOT EXISTS error_patterns (
   id BIGSERIAL PRIMARY KEY,
-  error_type VARCHAR(100) NOT NULL,  -- エラータイプ (例: ReferenceError, TypeError等)
-  error_message TEXT NOT NULL,        -- エラーメッセージ
-  error_context TEXT,                 -- エラーが発生したコンテキスト
-  solution_pattern TEXT NOT NULL,     -- 修正パターン（どう修正すべきか）
-  success_rate DECIMAL(5,2) DEFAULT 0.0,  -- 成功率（0-100%）
-  usage_count INT DEFAULT 0,          -- このパターンが使用された回数
-  last_used_at TIMESTAMPTZ,           -- 最後に使用された日時
+  error_type VARCHAR(100) NOT NULL,
+  error_message TEXT NOT NULL,
+  error_context TEXT,
+  solution_pattern TEXT NOT NULL,
+  success_rate DECIMAL(5,2) DEFAULT 0.0,
+  usage_count INT DEFAULT 0,
+  last_used_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- インデックス作成（検索高速化）
-CREATE INDEX idx_error_patterns_type ON error_patterns(error_type);
-CREATE INDEX idx_error_patterns_success_rate ON error_patterns(success_rate DESC);
+-- インデックス作成
+CREATE INDEX IF NOT EXISTS idx_error_patterns_type ON error_patterns(error_type);
+CREATE INDEX IF NOT EXISTS idx_error_patterns_success_rate ON error_patterns(success_rate DESC);
 
--- 2. エラー修復履歴テーブル
+-- ================================================
+-- 2. エラー修復ログテーブル
+-- ================================================
 CREATE TABLE IF NOT EXISTS error_recovery_logs (
   id BIGSERIAL PRIMARY KEY,
-  user_id TEXT NOT NULL,              -- LINE User ID
-  session_id TEXT,                    -- セッションID
-  original_code TEXT NOT NULL,        -- 元のコード
-  error_screenshot_url TEXT,          -- エラースクリーンショットURL
-  error_analysis JSONB,               -- エラー分析結果（Claude Visionから）
-  detected_error_type VARCHAR(100),   -- 検出されたエラータイプ
-  detected_error_message TEXT,        -- 検出されたエラーメッセージ
-  fix_attempt_count INT DEFAULT 0,    -- 修正試行回数
-  fixed_code TEXT,                    -- 修正後のコード
-  fix_method VARCHAR(50),             -- 修正方法 (auto/manual/escalated)
-  pattern_id BIGINT REFERENCES error_patterns(id),  -- 使用したパターンID
-  is_successful BOOLEAN,              -- 修正が成功したか
-  user_feedback TEXT,                 -- ユーザーフィードバック
+  user_id VARCHAR(100) NOT NULL,
+  session_id VARCHAR(100),
+  original_code TEXT,
+  fixed_code TEXT,
+  error_screenshot_url TEXT,
+  error_analysis JSONB,
+  detected_error_type VARCHAR(100),
+  detected_error_message TEXT,
+  fix_method VARCHAR(50),
+  pattern_id BIGINT REFERENCES error_patterns(id),
+  fix_attempt_count INT DEFAULT 0,
+  is_successful BOOLEAN,
+  user_feedback VARCHAR(50),
+  resolved_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  resolved_at TIMESTAMPTZ,            -- 解決した日時
-
-  -- 外部キー
-  CONSTRAINT fk_error_recovery_user FOREIGN KEY (user_id)
-    REFERENCES users(line_user_id) ON DELETE CASCADE
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- インデックス作成
-CREATE INDEX idx_error_recovery_user ON error_recovery_logs(user_id);
-CREATE INDEX idx_error_recovery_session ON error_recovery_logs(session_id);
-CREATE INDEX idx_error_recovery_created ON error_recovery_logs(created_at DESC);
-CREATE INDEX idx_error_recovery_success ON error_recovery_logs(is_successful);
+CREATE INDEX IF NOT EXISTS idx_recovery_logs_user_id ON error_recovery_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_recovery_logs_session_id ON error_recovery_logs(session_id);
+CREATE INDEX IF NOT EXISTS idx_recovery_logs_created_at ON error_recovery_logs(created_at DESC);
 
+-- ================================================
 -- 3. ユーザー経験値テーブル（ゲーミフィケーション）
+-- ================================================
 CREATE TABLE IF NOT EXISTS user_experience (
-  user_id TEXT PRIMARY KEY,
-  total_xp INT DEFAULT 0,              -- 総経験値
-  level INT DEFAULT 1,                 -- レベル
-  codes_generated INT DEFAULT 0,       -- 生成したコード数
-  errors_fixed INT DEFAULT 0,          -- 修正したエラー数
-  auto_fixes_count INT DEFAULT 0,      -- 自動修正成功回数
-  badges JSONB DEFAULT '[]',           -- 獲得したバッジ
-  achievements JSONB DEFAULT '[]',     -- 達成した実績
-  last_activity_at TIMESTAMPTZ DEFAULT NOW(),
+  user_id VARCHAR(100) PRIMARY KEY,
+  total_xp INT DEFAULT 0,
+  level INT DEFAULT 1,
+  codes_generated INT DEFAULT 0,
+  errors_fixed INT DEFAULT 0,
+  auto_fixes_count INT DEFAULT 0,
+  badges JSONB DEFAULT '[]'::jsonb,
+  achievements JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-
-  -- 外部キー
-  CONSTRAINT fk_user_experience_user FOREIGN KEY (user_id)
-    REFERENCES users(line_user_id) ON DELETE CASCADE
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- インデックス作成
-CREATE INDEX idx_user_experience_level ON user_experience(level DESC);
-CREATE INDEX idx_user_experience_xp ON user_experience(total_xp DESC);
+CREATE INDEX IF NOT EXISTS idx_user_experience_total_xp ON user_experience(total_xp DESC);
+CREATE INDEX IF NOT EXISTS idx_user_experience_level ON user_experience(level DESC);
 
+-- ================================================
 -- 4. バッジ定義テーブル
+-- ================================================
 CREATE TABLE IF NOT EXISTS badge_definitions (
-  id SERIAL PRIMARY KEY,
-  badge_key VARCHAR(50) UNIQUE NOT NULL,  -- バッジキー (例: first_code, error_master)
-  badge_name VARCHAR(100) NOT NULL,       -- バッジ名
-  badge_description TEXT,                 -- 説明
-  badge_icon VARCHAR(10),                 -- 絵文字アイコン
-  unlock_condition JSONB NOT NULL,        -- 解除条件 (例: {"codes_generated": 1})
-  rarity VARCHAR(20) DEFAULT 'common',    -- レア度 (common/rare/epic/legendary)
-  xp_reward INT DEFAULT 0,                -- 獲得時のXP報酬
+  badge_key VARCHAR(50) PRIMARY KEY,
+  badge_name VARCHAR(100) NOT NULL,
+  badge_icon VARCHAR(10) NOT NULL,
+  badge_description TEXT NOT NULL,
+  unlock_condition JSONB NOT NULL,
+  rarity VARCHAR(20) DEFAULT 'common',
+  xp_reward INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 初期バッジデータ挿入
-INSERT INTO badge_definitions (badge_key, badge_name, badge_description, badge_icon, unlock_condition, rarity, xp_reward) VALUES
-('first_code', '🎉 はじめの一歩', '初めてコードを生成しました', '🎉', '{"codes_generated": 1}', 'common', 100),
-('code_master_10', '💻 コードマスター', '10個のコードを生成', '💻', '{"codes_generated": 10}', 'rare', 500),
-('error_survivor', '🛡️ エラーサバイバー', '初めてエラーを修正', '🛡️', '{"errors_fixed": 1}', 'common', 200),
-('error_master', '⚡ エラーマスター', '10個のエラーを修正', '⚡', '{"errors_fixed": 10}', 'epic', 1000),
-('auto_fix_pro', '🤖 自動修正プロ', '5回自動修正が成功', '🤖', '{"auto_fixes_count": 5}', 'rare', 800),
-('speed_runner', '🚀 スピードランナー', '1日で3つのコード生成', '🚀', '{"daily_codes": 3}', 'rare', 600),
-('perfectionist', '✨ 完璧主義者', 'エラーなしで5個連続生成', '✨', '{"perfect_streak": 5}', 'epic', 1500),
-('legendary_coder', '👑 伝説のコーダー', '50個のコードを生成', '👑', '{"codes_generated": 50}', 'legendary', 5000)
+-- ================================================
+-- 初期バッジデータ投入
+-- ================================================
+INSERT INTO badge_definitions (badge_key, badge_name, badge_icon, badge_description, unlock_condition, rarity, xp_reward)
+VALUES
+  ('first_code', 'はじめの一歩', '🎉', '初めてのコード生成を達成', '{"codes_generated": 1}'::jsonb, 'common', 50),
+  ('code_master', 'コードマスター', '💻', '10個のコードを生成', '{"codes_generated": 10}'::jsonb, 'rare', 200),
+  ('error_survivor', 'エラーサバイバー', '🛡️', '初めてのエラー修正に成功', '{"errors_fixed": 1}'::jsonb, 'common', 100),
+  ('error_master', 'エラーマスター', '⚡', '10個のエラーを修正', '{"errors_fixed": 10}'::jsonb, 'rare', 300),
+  ('auto_fix_pro', '自動修正プロ', '🤖', '5回の自動修正に成功', '{"auto_fixes_count": 5}'::jsonb, 'epic', 500),
+  ('speed_runner', 'スピードランナー', '🚀', '1日で3個のコードを生成', '{"codes_generated_today": 3}'::jsonb, 'rare', 150),
+  ('perfectionist', '完璧主義者', '✨', '5連続でエラーなしコード生成', '{"consecutive_success": 5}'::jsonb, 'epic', 400),
+  ('legendary_coder', '伝説のコーダー', '👑', '50個のコードを生成', '{"codes_generated": 50}'::jsonb, 'legendary', 1000)
 ON CONFLICT (badge_key) DO NOTHING;
 
--- 5. エラー修復統計ビュー
+-- ================================================
+-- 5. ビュー作成
+-- ================================================
+
+-- エラー修復統計ビュー
 CREATE OR REPLACE VIEW error_recovery_stats AS
 SELECT
-  detected_error_type,
-  COUNT(*) as total_occurrences,
-  COUNT(*) FILTER (WHERE is_successful = true) as successful_fixes,
-  ROUND(AVG(fix_attempt_count), 2) as avg_attempts,
-  COUNT(*) FILTER (WHERE fix_method = 'auto') as auto_fixes,
-  COUNT(*) FILTER (WHERE fix_method = 'manual') as manual_fixes,
-  COUNT(*) FILTER (WHERE fix_method = 'escalated') as escalated_cases
+  user_id,
+  COUNT(*) as total_attempts,
+  SUM(CASE WHEN is_successful = true THEN 1 ELSE 0 END) as successful_fixes,
+  SUM(CASE WHEN is_successful = false THEN 1 ELSE 0 END) as failed_fixes,
+  ROUND(
+    (SUM(CASE WHEN is_successful = true THEN 1 ELSE 0 END)::DECIMAL / NULLIF(COUNT(*), 0)) * 100,
+    2
+  ) as success_rate,
+  MAX(created_at) as last_fix_attempt
 FROM error_recovery_logs
-WHERE detected_error_type IS NOT NULL
-GROUP BY detected_error_type
-ORDER BY total_occurrences DESC;
+GROUP BY user_id;
 
--- 6. ユーザーランキングビュー
+-- ユーザーランキングビュー
 CREATE OR REPLACE VIEW user_leaderboard AS
 SELECT
-  u.line_user_id,
-  ux.level,
-  ux.total_xp,
-  ux.codes_generated,
-  ux.errors_fixed,
-  ux.auto_fixes_count,
-  jsonb_array_length(COALESCE(ux.badges, '[]'::jsonb)) as badge_count,
-  ux.last_activity_at,
-  RANK() OVER (ORDER BY ux.total_xp DESC) as rank
-FROM users u
-LEFT JOIN user_experience ux ON u.line_user_id = ux.user_id
-WHERE ux.total_xp > 0
-ORDER BY ux.total_xp DESC
-LIMIT 100;
+  user_id as line_user_id,
+  total_xp,
+  level,
+  codes_generated,
+  errors_fixed,
+  auto_fixes_count,
+  ROW_NUMBER() OVER (ORDER BY total_xp DESC) as rank
+FROM user_experience
+ORDER BY total_xp DESC;
 
--- 7. トリガー: error_patterns の updated_at 自動更新
-CREATE OR REPLACE FUNCTION update_error_pattern_timestamp()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- ================================================
+-- 6. 関数作成
+-- ================================================
 
-CREATE TRIGGER trigger_update_error_pattern_timestamp
-BEFORE UPDATE ON error_patterns
-FOR EACH ROW
-EXECUTE FUNCTION update_error_pattern_timestamp();
-
--- 8. トリガー: user_experience の updated_at 自動更新
-CREATE OR REPLACE FUNCTION update_user_experience_timestamp()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  NEW.last_activity_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_update_user_experience_timestamp
-BEFORE UPDATE ON user_experience
-FOR EACH ROW
-EXECUTE FUNCTION update_user_experience_timestamp();
-
--- 9. 関数: ユーザーレベルアップ判定
-CREATE OR REPLACE FUNCTION check_level_up(p_user_id TEXT)
-RETURNS TABLE (
-  new_level INT,
-  level_up BOOLEAN,
-  xp_to_next_level INT
-) AS $$
+-- レベルアップチェック関数
+CREATE OR REPLACE FUNCTION check_level_up(p_user_id VARCHAR)
+RETURNS TABLE(level_up BOOLEAN, new_level INT) AS $$
 DECLARE
-  v_current_xp INT;
-  v_current_level INT;
-  v_new_level INT;
-  v_xp_for_next INT;
+  current_xp INT;
+  current_level INT;
+  calculated_level INT;
 BEGIN
-  -- 現在のXPとレベルを取得
-  SELECT total_xp, level INTO v_current_xp, v_current_level
+  SELECT total_xp, level INTO current_xp, current_level
   FROM user_experience
   WHERE user_id = p_user_id;
 
-  -- レベル計算（100XPごとに1レベル、指数関数的に必要XPが増加）
-  v_new_level := FLOOR(POWER(v_current_xp / 100.0, 0.5)) + 1;
+  -- レベル計算: √(XP/100) + 1
+  calculated_level := FLOOR(SQRT(current_xp::DECIMAL / 100)) + 1;
 
-  -- 次のレベルまでに必要なXP
-  v_xp_for_next := POWER(v_new_level, 2) * 100 - v_current_xp;
+  IF calculated_level > current_level THEN
+    UPDATE user_experience
+    SET level = calculated_level, updated_at = NOW()
+    WHERE user_id = p_user_id;
 
-  RETURN QUERY SELECT
-    v_new_level,
-    v_new_level > v_current_level,
-    v_xp_for_next;
+    RETURN QUERY SELECT true, calculated_level;
+  ELSE
+    RETURN QUERY SELECT false, current_level;
+  END IF;
 END;
 $$ LANGUAGE plpgsql;
 
--- 10. 関数: バッジ解除チェック
-CREATE OR REPLACE FUNCTION check_badge_unlock(p_user_id TEXT)
-RETURNS TABLE (
-  badge_key VARCHAR(50),
-  badge_name VARCHAR(100),
-  badge_icon VARCHAR(10),
-  xp_reward INT
-) AS $$
+-- バッジ解除チェック関数
+CREATE OR REPLACE FUNCTION check_badge_unlock(p_user_id VARCHAR)
+RETURNS TABLE(badge_key VARCHAR, badge_name VARCHAR, badge_icon VARCHAR) AS $$
+DECLARE
+  user_stats RECORD;
+  badge_rec RECORD;
+  user_badges JSONB;
+  condition_met BOOLEAN;
 BEGIN
-  RETURN QUERY
-  SELECT
-    bd.badge_key,
-    bd.badge_name,
-    bd.badge_icon,
-    bd.xp_reward
-  FROM badge_definitions bd
-  LEFT JOIN user_experience ux ON ux.user_id = p_user_id
-  WHERE
-    -- まだ獲得していないバッジ
-    NOT (ux.badges ? bd.badge_key)
-    AND (
-      -- 条件チェック
-      (bd.unlock_condition->>'codes_generated')::INT <= ux.codes_generated OR
-      (bd.unlock_condition->>'errors_fixed')::INT <= ux.errors_fixed OR
-      (bd.unlock_condition->>'auto_fixes_count')::INT <= ux.auto_fixes_count
-    );
+  -- ユーザー統計取得
+  SELECT * INTO user_stats FROM user_experience WHERE user_id = p_user_id;
+
+  IF NOT FOUND THEN
+    RETURN;
+  END IF;
+
+  user_badges := COALESCE(user_stats.badges, '[]'::jsonb);
+
+  -- 各バッジをチェック
+  FOR badge_rec IN SELECT * FROM badge_definitions LOOP
+    -- 既に獲得済みかチェック
+    IF user_badges ? badge_rec.badge_key THEN
+      CONTINUE;
+    END IF;
+
+    -- 条件チェック
+    condition_met := false;
+
+    IF badge_rec.unlock_condition ? 'codes_generated' THEN
+      IF user_stats.codes_generated >= (badge_rec.unlock_condition->>'codes_generated')::INT THEN
+        condition_met := true;
+      END IF;
+    END IF;
+
+    IF badge_rec.unlock_condition ? 'errors_fixed' THEN
+      IF user_stats.errors_fixed >= (badge_rec.unlock_condition->>'errors_fixed')::INT THEN
+        condition_met := true;
+      END IF;
+    END IF;
+
+    IF badge_rec.unlock_condition ? 'auto_fixes_count' THEN
+      IF user_stats.auto_fixes_count >= (badge_rec.unlock_condition->>'auto_fixes_count')::INT THEN
+        condition_met := true;
+      END IF;
+    END IF;
+
+    -- 条件を満たしていればバッジ付与
+    IF condition_met THEN
+      user_badges := user_badges || jsonb_build_array(badge_rec.badge_key);
+
+      UPDATE user_experience
+      SET badges = user_badges, updated_at = NOW()
+      WHERE user_id = p_user_id;
+
+      RETURN QUERY SELECT badge_rec.badge_key, badge_rec.badge_name, badge_rec.badge_icon;
+    END IF;
+  END LOOP;
 END;
 $$ LANGUAGE plpgsql;
 
--- 11. Row Level Security (RLS) 有効化
-ALTER TABLE error_recovery_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_experience ENABLE ROW LEVEL SECURITY;
+-- ================================================
+-- 7. トリガー作成（更新日時自動更新）
+-- ================================================
 
--- RLSポリシー: ユーザーは自分のデータのみ読み書き可能
-CREATE POLICY error_recovery_user_policy ON error_recovery_logs
-  FOR ALL USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+-- 更新日時を自動更新する関数
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-CREATE POLICY user_experience_user_policy ON user_experience
-  FOR ALL USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+-- 各テーブルにトリガーを設定
+DROP TRIGGER IF EXISTS update_error_patterns_updated_at ON error_patterns;
+CREATE TRIGGER update_error_patterns_updated_at
+  BEFORE UPDATE ON error_patterns
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- サービスロール用ポリシー（全てのデータにアクセス可能）
-CREATE POLICY error_recovery_service_role_policy ON error_recovery_logs
-  FOR ALL TO service_role USING (true);
+DROP TRIGGER IF EXISTS update_error_recovery_logs_updated_at ON error_recovery_logs;
+CREATE TRIGGER update_error_recovery_logs_updated_at
+  BEFORE UPDATE ON error_recovery_logs
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE POLICY user_experience_service_role_policy ON user_experience
-  FOR ALL TO service_role USING (true);
+DROP TRIGGER IF EXISTS update_user_experience_updated_at ON user_experience;
+CREATE TRIGGER update_user_experience_updated_at
+  BEFORE UPDATE ON user_experience
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- 完了メッセージ
-COMMENT ON TABLE error_patterns IS 'エラーパターン学習用テーブル - 自動修復システムのコア';
-COMMENT ON TABLE error_recovery_logs IS 'エラー修復履歴 - 全てのエラー対応を記録';
-COMMENT ON TABLE user_experience IS 'ユーザー経験値・レベル - ゲーミフィケーション';
-COMMENT ON TABLE badge_definitions IS 'バッジ定義 - 達成報酬システム';
+-- ================================================
+-- マイグレーション完了
+-- ================================================
+SELECT 'Error Recovery System migration completed successfully!' as status;
