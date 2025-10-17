@@ -31,7 +31,14 @@ export class ClaudeApiClient {
    * Claude APIにリクエストを送信（リトライ機能付き）
    */
   async sendMessage(
-    messages: Array<{ role: 'user' | 'assistant', content: string }>,
+    messages: Array<{
+      role: 'user' | 'assistant'
+      content: string | Array<{
+        type: 'image' | 'text'
+        source?: { type: string; media_type: string; data: string }
+        text?: string
+      }>
+    }>,
     userId?: string,
     maxRetries: number = 3,
     customMaxTokens?: number
@@ -75,7 +82,16 @@ export class ClaudeApiClient {
         }
 
         // コンテンツタイプの詳細分析
-        const content = messages.map(m => m.content).join(' ').toLowerCase()
+        const content = messages.map(m => {
+          if (typeof m.content === 'string') {
+            return m.content
+          }
+          // 配列の場合はテキスト部分のみを抽出
+          return m.content
+            .filter((c): c is { type: 'text'; text: string } => c.type === 'text' && 'text' in c)
+            .map(c => c.text)
+            .join(' ')
+        }).join(' ').toLowerCase()
 
         // タスクタイプの判定（優先度順）
         const taskType = this.detectTaskType(content)
