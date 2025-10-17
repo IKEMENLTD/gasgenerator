@@ -291,7 +291,7 @@ export class AutoFixer {
       if (solution.includes('null check') || solution.includes('add check')) {
         return code.replace(
           /([a-zA-Z_$][a-zA-Z0-9_$]*)\.([\w]+)/g,
-          (match, obj, prop) => `(${obj} ? ${obj}.${prop} : null)`
+          (_match, obj, prop) => `(${obj} ? ${obj}.${prop} : null)`
         )
       }
 
