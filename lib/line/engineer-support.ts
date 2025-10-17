@@ -58,7 +58,7 @@ export class EngineerSupportSystem {
       }
       
       // 4. エンジニアグループに通知
-      await this.notifyEngineers(supportRequest)
+      await this.notifyEngineersInternal(supportRequest)
       
       // 5. サポートリクエストをDBに保存
       await this.saveSupportRequest(supportRequest)
@@ -93,16 +93,16 @@ export class EngineerSupportSystem {
   }
 
   /**
-   * エンジニアグループに通知を送信
+   * エンジニアグループに通知を送信（内部用）
    */
-  private async notifyEngineers(request: EngineerSupportRequest): Promise<void> {
+  private async notifyEngineersInternal(request: EngineerSupportRequest): Promise<void> {
     const notificationMessage = await this.createNotificationMessage(request)
-    
+
     // グループチャットに送信
     if (this.supportGroupId) {
       await this.lineClient.pushMessage(this.supportGroupId, notificationMessage)
     }
-    
+
     // 個別のエンジニアにも通知（オプション）
     if (this.engineerUserIds.length > 0) {
       const urgentRequests = this.isUrgent(request)
@@ -117,6 +117,37 @@ export class EngineerSupportSystem {
           )
         )
       }
+    }
+  }
+
+  /**
+   * エンジニアにエスカレーション通知を送信（簡易版 - エラー回復システム用）
+   */
+  async notifyEngineers(userId: string, message: string): Promise<void> {
+    try {
+      // グループチャットに送信
+      if (this.supportGroupId) {
+        await this.lineClient.pushMessage(this.supportGroupId, [{
+          type: 'text',
+          text: message
+        }])
+      }
+
+      // 個別のエンジニアにも通知
+      if (this.engineerUserIds.length > 0) {
+        await Promise.all(
+          this.engineerUserIds.map(engineerId =>
+            this.lineClient.pushMessage(engineerId, [{
+              type: 'text',
+              text: '🚨 自動修正失敗のエスカレーションがあります！\nグループチャットを確認してください。'
+            }])
+          )
+        )
+      }
+
+      logger.info('Escalation notification sent to engineers', { userId })
+    } catch (error) {
+      logger.error('Failed to notify engineers', { userId, error })
     }
   }
 

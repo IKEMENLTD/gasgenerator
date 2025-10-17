@@ -244,7 +244,7 @@ export class RecoveryManager {
     userId: string,
     fixResult: FixResult,
     xpReward: any,
-    attemptCount: number
+    _attemptCount: number
   ): Promise<void> {
     try {
       let message = `✅ エラー修正に成功しました！\n\n`
