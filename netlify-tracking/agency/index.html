@@ -851,6 +851,203 @@
         </main>
     </div>
 
+    <!-- リンク詳細モーダル -->
+    <div x-show="linkDetailsModal"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         @click.self="closeLinkDetailsModal()">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <!-- 背景オーバーレイ -->
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" @click="closeLinkDetailsModal()"></div>
+
+            <!-- モーダルコンテンツ -->
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <!-- ヘッダー -->
+                <div class="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-chart-line text-white"></i>
+                            </div>
+                            <h3 class="ml-3 text-lg font-semibold text-white">トラッキングリンク詳細</h3>
+                        </div>
+                        <button @click="closeLinkDetailsModal()" class="text-white hover:text-gray-200 transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- コンテンツ -->
+                <div class="px-6 py-6 max-h-[70vh] overflow-y-auto">
+                    <template x-if="selectedLink">
+                        <div class="space-y-6">
+                            <!-- 基本情報 -->
+                            <div class="bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg p-6 border border-emerald-200">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                                    <i class="fas fa-info-circle text-emerald-600 mr-2"></i>基本情報
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">キャンペーン名</label>
+                                        <p class="text-base font-semibold text-gray-900" x-text="selectedLink.name"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">作成日</label>
+                                        <p class="text-base text-gray-900" x-text="formatDateTime(selectedLink.created_at)"></p>
+                                    </div>
+                                    <div class="col-span-full">
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">トラッキングURL</label>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="text" :value="getTrackingUrl(selectedLink.tracking_code)" readonly
+                                                   class="flex-1 px-3 py-2 bg-white border border-emerald-300 rounded-lg text-sm font-mono">
+                                            <button @click="copyToClipboard(getTrackingUrl(selectedLink.tracking_code), $event)"
+                                                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap">
+                                                <i class="fas fa-copy mr-2"></i>コピー
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">トラッキングコード</label>
+                                        <code class="inline-block bg-gray-100 px-3 py-1 rounded text-sm" x-text="selectedLink.tracking_code"></code>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">ステータス</label>
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                                              :class="selectedLink.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                            <i :class="selectedLink.is_active ? 'fas fa-check-circle' : 'fas fa-times-circle'" class="mr-1"></i>
+                                            <span x-text="selectedLink.is_active ? '有効' : '無効'"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- パフォーマンス指標 -->
+                            <div class="bg-white rounded-lg border border-gray-200 p-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                                    <i class="fas fa-chart-bar text-emerald-600 mr-2"></i>パフォーマンス
+                                </h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div class="text-center p-4 bg-emerald-50 rounded-lg">
+                                        <p class="text-sm text-gray-600 mb-1">クリック数</p>
+                                        <p class="text-2xl font-bold text-emerald-600" x-text="selectedLink.visit_count || 0"></p>
+                                    </div>
+                                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                                        <p class="text-sm text-gray-600 mb-1">コンバージョン</p>
+                                        <p class="text-2xl font-bold text-green-600" x-text="selectedLink.conversion_count || 0"></p>
+                                    </div>
+                                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                                        <p class="text-sm text-gray-600 mb-1">CVR</p>
+                                        <p class="text-2xl font-bold text-blue-600" x-text="calculateCVR(selectedLink.visit_count, selectedLink.conversion_count) + '%'"></p>
+                                    </div>
+                                    <div class="text-center p-4 bg-yellow-50 rounded-lg">
+                                        <p class="text-sm text-gray-600 mb-1">予想報酬</p>
+                                        <p class="text-2xl font-bold text-yellow-600" x-text="'¥' + calculateCommission(selectedLink.conversion_count).toLocaleString()"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- UTMパラメータ -->
+                            <div class="bg-white rounded-lg border border-gray-200 p-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                                    <i class="fas fa-tags text-emerald-600 mr-2"></i>UTMパラメータ
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">UTM Source</label>
+                                        <p class="text-sm text-gray-900" x-text="selectedLink.utm_source || '-'"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">UTM Medium</label>
+                                        <p class="text-sm text-gray-900" x-text="selectedLink.utm_medium || '-'"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">UTM Campaign</label>
+                                        <p class="text-sm text-gray-900" x-text="selectedLink.utm_campaign || '-'"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">UTM Term</label>
+                                        <p class="text-sm text-gray-900" x-text="selectedLink.utm_term || '-'"></p>
+                                    </div>
+                                    <div class="col-span-full">
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">UTM Content</label>
+                                        <p class="text-sm text-gray-900" x-text="selectedLink.utm_content || '-'"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 最近の訪問履歴 -->
+                            <div class="bg-white rounded-lg border border-gray-200 p-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                                    <i class="fas fa-history text-emerald-600 mr-2"></i>最近の訪問履歴
+                                </h4>
+                                <template x-if="linkVisits.length > 0">
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">日時</th>
+                                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">デバイス</th>
+                                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">ブラウザ</th>
+                                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">OS</th>
+                                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">リファラー</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                <template x-for="visit in linkVisits" :key="visit.id">
+                                                    <tr>
+                                                        <td class="px-4 py-2 whitespace-nowrap text-xs text-gray-900" x-text="formatDateTime(visit.created_at)"></td>
+                                                        <td class="px-4 py-2 whitespace-nowrap text-xs">
+                                                            <span class="px-2 py-1 rounded-full text-xs"
+                                                                  :class="{
+                                                                      'bg-blue-100 text-blue-800': visit.device_type === 'mobile',
+                                                                      'bg-purple-100 text-purple-800': visit.device_type === 'tablet',
+                                                                      'bg-gray-100 text-gray-800': visit.device_type === 'desktop'
+                                                                  }"
+                                                                  x-text="visit.device_type || 'unknown'"></span>
+                                                        </td>
+                                                        <td class="px-4 py-2 whitespace-nowrap text-xs text-gray-900" x-text="visit.browser || '-'"></td>
+                                                        <td class="px-4 py-2 whitespace-nowrap text-xs text-gray-900" x-text="visit.os || '-'"></td>
+                                                        <td class="px-4 py-2 text-xs text-gray-600 truncate max-w-xs" x-text="visit.referrer || '-'"></td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </template>
+                                <template x-if="linkVisits.length === 0">
+                                    <div class="text-center py-8 text-gray-500">
+                                        <i class="fas fa-inbox text-3xl mb-2"></i>
+                                        <p>まだ訪問履歴がありません</p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- フッター (アクションボタン) -->
+                <div class="bg-gray-50 px-6 py-4 flex flex-wrap gap-3 justify-between items-center">
+                    <div class="flex gap-2">
+                        <button @click="toggleLinkStatus(selectedLink)"
+                                class="px-4 py-2 rounded-lg font-medium transition-colors"
+                                :class="selectedLink?.is_active ? 'bg-red-100 hover:bg-red-200 text-red-700' : 'bg-green-100 hover:bg-green-200 text-green-700'">
+                            <i :class="selectedLink?.is_active ? 'fas fa-ban' : 'fas fa-check-circle'" class="mr-2"></i>
+                            <span x-text="selectedLink?.is_active ? '無効化' : '有効化'"></span>
+                        </button>
+                        <button @click="deleteLinkWithConfirm(selectedLink)"
+                                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-trash mr-2"></i>削除
+                        </button>
+                    </div>
+                    <button @click="closeLinkDetailsModal()"
+                            class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors">
+                        閉じる
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- パスワード変更モーダル -->
     <div x-show="changePasswordModal"
          x-cloak

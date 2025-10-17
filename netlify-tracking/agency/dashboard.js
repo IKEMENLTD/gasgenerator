@@ -112,6 +112,12 @@ function agencyDashboard() {
         passwordStrength: 'weak',
         passwordStrengthLabel: '弱い',
 
+        // Link details modal
+        linkDetailsModal: false,
+        selectedLink: null,
+        linkVisits: [],
+        loadingVisits: false,
+
         // セッションタイムアウト管理
         inactivityTimer: null,
         INACTIVITY_TIMEOUT: 30 * 60 * 1000,  // 30分
@@ -728,10 +734,171 @@ function agencyDashboard() {
             return labels[status] || status;
         },
 
-        viewLinkDetails(link) {
-            // Implementation for viewing detailed link analytics
-            console.log('View details for:', link);
-            // Could open a modal or navigate to detailed view
+        async viewLinkDetails(link) {
+            console.log('📊 Opening link details for:', link);
+            this.selectedLink = link;
+            this.linkDetailsModal = true;
+            this.loadingVisits = true;
+
+            try {
+                await this.loadLinkVisits(link.id);
+            } catch (error) {
+                console.error('Error loading link visits:', error);
+                alert('訪問履歴の読み込みに失敗しました');
+            } finally {
+                this.loadingVisits = false;
+            }
+        },
+
+        closeLinkDetailsModal() {
+            this.linkDetailsModal = false;
+            this.selectedLink = null;
+            this.linkVisits = [];
+            this.loadingVisits = false;
+        },
+
+        async loadLinkVisits(linkId) {
+            console.log('📈 Loading visits for link ID:', linkId);
+
+            try {
+                const response = await fetch(`/.netlify/functions/agency-link-visits?link_id=${linkId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('agencyAuthToken')}`,
+                        'X-Agency-Id': localStorage.getItem('agencyId')
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    this.linkVisits = data.visits || [];
+                    console.log('✅ Loaded', this.linkVisits.length, 'visits');
+                } else {
+                    console.error('Failed to load visits:', await response.text());
+                    this.linkVisits = [];
+                }
+            } catch (error) {
+                console.error('Error loading link visits:', error);
+                this.linkVisits = [];
+            }
+        },
+
+        calculateCVR() {
+            if (!this.selectedLink) return '0.00';
+
+            const visits = this.selectedLink.visit_count || 0;
+            const conversions = this.selectedLink.conversion_count || 0;
+
+            if (visits === 0) return '0.00';
+
+            return ((conversions / visits) * 100).toFixed(2);
+        },
+
+        calculateCommission() {
+            if (!this.selectedLink) return '0';
+
+            const conversions = this.selectedLink.conversion_count || 0;
+            const commissionRate = this.agencyInfo.commission_rate || 10;
+            const baseCommissionPerConversion = 1000; // ベース報酬額
+
+            const totalCommission = conversions * baseCommissionPerConversion * (commissionRate / 100);
+
+            return totalCommission.toLocaleString('ja-JP');
+        },
+
+        async toggleLinkStatus(link) {
+            if (!link) return;
+
+            const newStatus = !link.is_active;
+            const action = newStatus ? '有効化' : '無効化';
+
+            if (!confirm(`「${link.name}」を${action}してもよろしいですか？`)) {
+                return;
+            }
+
+            this.loading = true;
+
+            try {
+                const response = await fetch('/.netlify/functions/agency-toggle-link', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('agencyAuthToken')}`,
+                        'X-Agency-Id': localStorage.getItem('agencyId')
+                    },
+                    body: JSON.stringify({
+                        link_id: link.id,
+                        is_active: newStatus
+                    })
+                });
+
+                if (response.ok) {
+                    // Update local state
+                    link.is_active = newStatus;
+                    this.selectedLink.is_active = newStatus;
+
+                    // Refresh tracking links
+                    await this.loadTrackingLinks();
+                    await this.loadStats();
+
+                    alert(`リンクを${action}しました`);
+                } else {
+                    const error = await response.json();
+                    alert(`${action}に失敗しました: ` + (error.message || '不明なエラー'));
+                }
+            } catch (error) {
+                console.error('Error toggling link status:', error);
+                alert(`${action}処理中にエラーが発生しました`);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async deleteLinkWithConfirm(link) {
+            if (!link) return;
+
+            const confirmed = confirm(
+                `「${link.name}」を削除してもよろしいですか？\n\n` +
+                `この操作は取り消せません。\n` +
+                `トラッキングコード: ${link.tracking_code}\n` +
+                `クリック数: ${link.visit_count || 0}`
+            );
+
+            if (!confirmed) return;
+
+            this.loading = true;
+
+            try {
+                const response = await fetch('/.netlify/functions/agency-delete-link', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('agencyAuthToken')}`,
+                        'X-Agency-Id': localStorage.getItem('agencyId')
+                    },
+                    body: JSON.stringify({
+                        link_id: link.id
+                    })
+                });
+
+                if (response.ok) {
+                    alert('リンクを削除しました');
+
+                    // Close modal
+                    this.closeLinkDetailsModal();
+
+                    // Refresh data
+                    await this.loadTrackingLinks();
+                    await this.loadStats();
+                } else {
+                    const error = await response.json();
+                    alert('削除に失敗しました: ' + (error.message || '不明なエラー'));
+                }
+            } catch (error) {
+                console.error('Error deleting link:', error);
+                alert('削除処理中にエラーが発生しました');
+            } finally {
+                this.loading = false;
+            }
         },
 
         initPerformanceChart() {
