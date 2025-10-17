@@ -10,7 +10,18 @@ export interface ClaudeApiRequest {
 
 export interface ClaudeMessage {
   role: 'user' | 'assistant'
-  content: string
+  content: string | ClaudeContentBlock[]
+}
+
+// Claude Vision API用のコンテンツブロック
+export interface ClaudeContentBlock {
+  type: 'text' | 'image'
+  text?: string
+  source?: {
+    type: string
+    media_type: string
+    data: string
+  }
 }
 
 // Claude API Response
