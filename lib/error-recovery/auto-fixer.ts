@@ -400,10 +400,20 @@ ${attemptCount > 0 ? `\n注意: これは${attemptCount + 1}回目の修正試�
    */
   private async updatePatternUsage(patternId: number): Promise<void> {
     try {
+      // 現在の値を取得
+      const { data: pattern } = await supabaseAdmin
+        .from('error_patterns')
+        .select('usage_count')
+        .eq('id', patternId)
+        .single()
+
+      if (!pattern) return
+
+      // インクリメントして更新
       await supabaseAdmin
         .from('error_patterns')
         .update({
-          usage_count: supabaseAdmin.raw('usage_count + 1'),
+          usage_count: pattern.usage_count + 1,
           last_used_at: new Date().toISOString()
         })
         .eq('id', patternId)
