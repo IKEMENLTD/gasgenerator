@@ -232,15 +232,44 @@ export class SupabaseSessionStore {
       if (updates.errorScreenshot !== undefined) updateData.error_screenshot = updates.errorScreenshot
       if (updates.currentStep !== undefined) updateData.current_step = updates.currentStep
 
-      const { error } = await this.supabase
+      // まず既存のセッションを検索
+      const { data: existing, error: selectError } = await this.supabase
         .from('conversation_sessions')
-        .upsert(updateData, {
-          onConflict: 'user_id'
-        })
+        .select('id')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .limit(1)
+        .single()
 
-      if (error) throw error
+      if (selectError && selectError.code !== 'PGRST116') {
+        // PGRST116 はレコードが見つからない場合のコードなので無視
+        throw selectError
+      }
 
-      logger.debug('Context updated', { userId, updates: Object.keys(updates) })
+      if (existing) {
+        // 既存セッションを更新
+        const { error: updateError } = await this.supabase
+          .from('conversation_sessions')
+          .update(updateData)
+          .eq('id', existing.id)
+
+        if (updateError) throw updateError
+
+        logger.debug('Context updated (existing session)', { userId, updates: Object.keys(updates) })
+      } else {
+        // 新規セッションを作成
+        const { error: insertError } = await this.supabase
+          .from('conversation_sessions')
+          .insert({
+            ...updateData,
+            status: 'active',
+            created_at: new Date().toISOString()
+          })
+
+        if (insertError) throw insertError
+
+        logger.debug('Context created (new session)', { userId, updates: Object.keys(updates) })
+      }
 
     } catch (error) {
       logger.error('Failed to update context', { userId, error })

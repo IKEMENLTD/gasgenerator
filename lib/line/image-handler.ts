@@ -272,6 +272,19 @@ export class LineImageHandler {
   }
   
   /**
+   * LINE APIから画像をダウンロードしてBase64を取得（エラー修復用）
+   */
+  async getImageBase64(messageId: string): Promise<string> {
+    try {
+      const { buffer } = await this.downloadImage(messageId)
+      return buffer.toString('base64')
+    } catch (error) {
+      logger.error('Failed to get image base64', { messageId, error })
+      throw error
+    }
+  }
+
+  /**
    * LINE APIから画像をダウンロード
    */
   private async downloadImage(messageId: string): Promise<{

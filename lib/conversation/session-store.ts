@@ -46,19 +46,22 @@ export class ConversationSessionStore {
     lastActivity: number
   }>
   private timerManager: TimerManager
-  
-  // 24時間のタイムアウト（ユーザー体験改善のため）
-  private readonly SESSION_TIMEOUT = 24 * 60 * 60 * 1000 // 24時間
-  // 最大保持セッション数（メモリ節約のため削減）
-  private readonly MAX_SESSIONS = 30
-  
+  private lastCleanupTime: number = 0
+
+  // 2時間のタイムアウト（メモリリーク対策、ユーザー体験のバランス）
+  private readonly SESSION_TIMEOUT = 2 * 60 * 60 * 1000 // 2時間
+  // 最大保持セッション数（メモリ管理のため適切な上限を設定）
+  private readonly MAX_SESSIONS = 100 // 100セッションまで対応
+  // クリーンアップ間隔
+  private readonly CLEANUP_INTERVAL = 5 * 60 * 1000 // 5分ごとにクリーンアップ
+
   private constructor() {
     // タイマーマネージャーを初期化
     this.timerManager = new TimerManager()
-    
+
     // 通常のMapとして初期化
     this.sessions = new Map()
-    
+
     // MemoryManagerを使用してキャッシュを作成（別途管理）
     memoryManager.createCache<{
       context: ConversationContext
@@ -66,11 +69,12 @@ export class ConversationSessionStore {
     }>('conversation-sessions', {
       maxSize: this.MAX_SESSIONS,
       ttl: this.SESSION_TIMEOUT,
-      cleanupInterval: 10 * 60 * 1000
+      cleanupInterval: this.CLEANUP_INTERVAL
     })
-    
+
     // ServerlessではsetIntervalを使わない
-    // クリーンアップはアクセス時に実行
+    // クリーンアップはアクセス時に実行（頻度制限付き）
+    this.lastCleanupTime = Date.now()
   }
   
   // インスタンスの破棄メソッドを追加
@@ -108,11 +112,16 @@ export class ConversationSessionStore {
   async getAsync(userId: string): Promise<ConversationContext | null> {
     // SessionLockを使用して競合状態を防ぐ
     const { SessionLock } = await import('../utils/session-lock')
-    
+
     return await SessionLock.withLock(userId, 'session-get', async () => {
-      // アクセス時にクリーンアップを実行（Serverless対応）
-      if (SecureRandom.random() < 0.1) { // 10%の確率でクリーンアップ
+      // アクセス時にクリーンアップを実行（Serverless対応、頻度制限付き）
+      const now = Date.now()
+      if (now - this.lastCleanupTime > this.CLEANUP_INTERVAL) {
         this.cleanup()
+        this.lastCleanupTime = now
+        logger.debug('Periodic cleanup executed', {
+          sessionsRemaining: this.sessions.size
+        })
       }
       
       // まずメモリキャッシュを確認
@@ -372,31 +381,37 @@ export class ConversationSessionStore {
   }
   
   /**
-   * セッション統計の取得
+   * セッション統計の取得（メモリ管理用）
    */
   getStats(): {
-    totalSessions: number
+    size: number
+    maxSize: number
+    utilizationPercent: number
     activeSessions: number
-    oldestSession: number | null
+    oldestSessionAge: number | null
+    timeUntilNextCleanup: number
   } {
     const now = Date.now()
     let activeSessions = 0
     let oldestTime: number | null = null
-    
+
     for (const session of this.sessions.values()) {
       if (now - session.lastActivity < 5 * 60 * 1000) { // 5分以内
         activeSessions++
       }
-      
+
       if (oldestTime === null || session.lastActivity < oldestTime) {
         oldestTime = session.lastActivity
       }
     }
-    
+
     return {
-      totalSessions: this.sessions.size,
+      size: this.sessions.size,
+      maxSize: this.MAX_SESSIONS,
+      utilizationPercent: (this.sessions.size / this.MAX_SESSIONS) * 100,
       activeSessions,
-      oldestSession: oldestTime ? now - oldestTime : null
+      oldestSessionAge: oldestTime ? now - oldestTime : null,
+      timeUntilNextCleanup: Math.max(0, this.CLEANUP_INTERVAL - (now - this.lastCleanupTime))
     }
   }
 }

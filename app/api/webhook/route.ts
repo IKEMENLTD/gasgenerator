@@ -14,6 +14,9 @@ import { LineImageHandler } from '../../../lib/line/image-handler'
 import { rateLimiters } from '../../../lib/middleware/rate-limiter'
 import { engineerSupport } from '../../../lib/line/engineer-support'
 import { ClaudeApiClient } from '../../../lib/claude/client'
+import { isSpam } from '../../../lib/middleware/spam-detector'
+import { MemoryMonitor } from '../../../lib/monitoring/memory-monitor'
+import { RecoveryManager } from '../../../lib/error-recovery/recovery-manager'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -23,6 +26,13 @@ const lineClient = new LineApiClient()
 const sessionManager = SessionManager.getInstance()
 const imageHandler = new LineImageHandler()
 const claudeClient = new ClaudeApiClient()
+
+// メモリ監視を開始（アプリケーション起動時に一度だけ）
+if (typeof process !== 'undefined' && !(global as any).__memoryMonitorStarted) {
+  MemoryMonitor.start()
+  ;(global as any).__memoryMonitorStarted = true
+  logger.info('Memory monitor initialized')
+}
 
 // プロセス終了時のクリーンアップ
 if (typeof process !== 'undefined') {
@@ -264,38 +274,82 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     }
     
     // エンジニアに相談
-    if (messageText === 'エンジニアに相談する' || 
-        messageText === 'エンジニアに相談' || 
+    if (messageText === 'エンジニアに相談する' ||
+        messageText === 'エンジニアに相談' ||
         messageText === 'エンジニアへの相談' ||
         messageText === '👨‍💻 エンジニアに相談' ||
         messageText.includes('エンジニア') && messageText.includes('相談') ||
         messageText.includes('人間') && messageText.includes('相談')) {
-      
+
       await engineerSupport.handleSupportRequest(userId, messageText, replyToken)
       return true
     }
-    
-    // 明らかなスパムの即時ブロック（連続する同じ文字、意味不明な文字列）
-    const isSpam = (): boolean => {
-      // 同じ文字が5回以上連続
-      if (/(.)\1{4,}/.test(messageText)) return true
 
-      // ランダムな文字列っぽい（数字と文字が混在して30文字以上）
-      if (messageText.length > 30 && /^[a-zA-Z0-9]+$/.test(messageText)) return true
+    // エラー修復フィードバック処理
+    if (messageText === '動作しました' ||
+        messageText === '動作確認OK' ||
+        messageText === '✅ 動作確認OK' ||
+        messageText.includes('動作') && messageText.includes('OK')) {
 
-      // 絵文字だけで10個以上（ES5互換の正規表現）
-      const emojiRegex = /[\uD83D][\uDC00-\uDE4F]|[\uD83D][\uDE80-\uDEFF]|[\u2600-\u26FF]|[\u2700-\u27BF]/g
-      const emojiMatches = messageText.match(emojiRegex)
-      if (emojiMatches && emojiMatches.length >= 10 && messageText.length < 50) return true
+      // フィードバック成功を記録
+      const recoveryLogId = context ? (context as any).lastRecoveryLogId : undefined
+      if (recoveryLogId) {
+        const recoveryManager = new RecoveryManager()
+        await recoveryManager.recordFeedback(userId, true, recoveryLogId)
 
-      // URLを5個以上含む
-      const urlMatches = messageText.match(/https?:\/\/[^\s]+/g)
-      if (urlMatches && urlMatches.length >= 5) return true
+        // ログIDをクリア
+        if (context) {
+          delete (context as any).lastRecoveryLogId
+          await sessionManager.saveContext(userId, context)
+        }
 
-      return false
+        logger.info('User feedback recorded: success', { userId, recoveryLogId })
+      }
+
+      await lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '🎉 素晴らしいです！\n\nエラーが解決できて良かったです。\n\n引き続き、何かあればお気軽にご相談ください！',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '🔄 新しいコード', text: '新しいコードを作りたい' }},
+            { type: 'action', action: { type: 'message', label: '📊 統計を見る', text: 'マイステータス' }},
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+          ]
+        }
+      }] as any)
+      return true
     }
 
-    if (isSpam()) {
+    if (messageText === 'まだエラーが出ます' ||
+        messageText === 'まだエラー' ||
+        messageText === '❌ まだエラー' ||
+        messageText.includes('まだ') && messageText.includes('エラー')) {
+
+      // フィードバック失敗を記録
+      const recoveryLogId = context ? (context as any).lastRecoveryLogId : undefined
+      if (recoveryLogId) {
+        const recoveryManager = new RecoveryManager()
+        await recoveryManager.recordFeedback(userId, false, recoveryLogId)
+
+        logger.info('User feedback recorded: failure', { userId, recoveryLogId })
+      }
+
+      await lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '了解しました。もう一度エラーのスクリーンショットを送信してください。\n\n別のアプローチで修正を試みます。',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '📷 スクショ送信', text: 'エラーのスクリーンショットを送る' }},
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談する' }},
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+          ]
+        }
+      }] as any)
+      return true
+    }
+    
+    // スパム検出（Googleドメインのホワイトリスト対応）
+    if (isSpam(messageText)) {
       logger.warn('Spam detected', { userId, messageText: messageText.substring(0, 100) })
 
       // スパムカウンターをインクリメント（メモリ内で管理）
@@ -1343,16 +1397,84 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
 
     // SessionManagerから完全なコンテキストを取得
     let context = await sessionManager.getContext(userId)
-    
+
     const isWaitingForScreenshot = context && (context as any).waitingForScreenshot
-    
+
     if (isWaitingForScreenshot && context) {
-      logger.info('Processing screenshot in waiting mode', { userId })
-      // waitingForScreenshotフラグをクリア
-      delete (context as any).waitingForScreenshot
-      
-      // SessionManager経由で更新を保存
-      await sessionManager.saveContext(userId, context)
+      logger.info('Processing error screenshot for auto-recovery', { userId })
+
+      try {
+        // エラー修復システムを起動
+        const recoveryManager = new RecoveryManager()
+
+        // 画像をBase64として取得
+        const imageBase64 = await imageHandler.getImageBase64(messageId)
+
+        // 元のコードとセッションIDを取得
+        const originalCode = (context as any).lastGeneratedCode || ''
+        const sessionId = context.sessionId || generateSessionId()
+        const attemptCount = (context as any).errorAttemptCount || 0
+
+        // エラー修復プロセスを開始（RecoveryManagerが直接LINEにメッセージを送信）
+        const result = await recoveryManager.startRecovery(
+          userId,
+          sessionId,
+          originalCode,
+          imageBase64,
+          attemptCount
+        )
+
+        logger.info('Error recovery completed', {
+          userId,
+          success: result.success,
+          shouldEscalate: result.shouldEscalate
+        })
+
+        // コンテキストを更新
+        if (result.success && result.fixedCode) {
+          // 成功: 修正後のコードを保存
+          ;(context as any).lastGeneratedCode = result.fixedCode
+          ;(context as any).errorAttemptCount = 0
+          ;(context as any).lastRecoveryLogId = result.recoveryLogId
+        } else if (!result.shouldEscalate) {
+          // 失敗: 試行回数をインクリメント
+          ;(context as any).errorAttemptCount = attemptCount + 1
+          ;(context as any).lastRecoveryLogId = result.recoveryLogId
+        }
+
+        // waitingForScreenshotフラグをクリア
+        delete (context as any).waitingForScreenshot
+
+        // SessionManager経由で更新を保存
+        await sessionManager.saveContext(userId, context)
+
+        // エラー修復システムが既に返信済みなので、ここでは処理終了
+        return true
+
+      } catch (error) {
+        logger.error('Error recovery system failed', {
+          userId,
+          error: error instanceof Error ? error.message : String(error)
+        })
+
+        // エラー時は通常のフローにフォールバック
+        delete (context as any).waitingForScreenshot
+        await sessionManager.saveContext(userId, context)
+
+        // エラーメッセージを送信
+        await lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: '申し訳ございません。エラー分析中に問題が発生しました。\n\n「エンジニアに相談」ボタンから直接ご相談ください。',
+          quickReply: {
+            items: [
+              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談する' }},
+              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }},
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            ]
+          }
+        }] as any)
+        return true
+      }
     }
     
     const result = await imageHandler.handleImageMessage(messageId, replyToken, userId)
