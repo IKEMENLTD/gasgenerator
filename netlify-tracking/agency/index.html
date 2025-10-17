@@ -937,11 +937,11 @@
                                     </div>
                                     <div class="text-center p-4 bg-blue-50 rounded-lg">
                                         <p class="text-sm text-gray-600 mb-1">CVR</p>
-                                        <p class="text-2xl font-bold text-blue-600" x-text="calculateCVR(selectedLink.visit_count, selectedLink.conversion_count) + '%'"></p>
+                                        <p class="text-2xl font-bold text-blue-600" x-text="calculateCVR() + '%'"></p>
                                     </div>
                                     <div class="text-center p-4 bg-yellow-50 rounded-lg">
                                         <p class="text-sm text-gray-600 mb-1">予想報酬</p>
-                                        <p class="text-2xl font-bold text-yellow-600" x-text="'¥' + calculateCommission(selectedLink.conversion_count).toLocaleString()"></p>
+                                        <p class="text-2xl font-bold text-yellow-600" x-text="'¥' + calculateCommission()"></p>
                                     </div>
                                 </div>
                             </div>

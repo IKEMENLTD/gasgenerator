@@ -736,17 +736,26 @@ function agencyDashboard() {
 
         async viewLinkDetails(link) {
             console.log('📊 Opening link details for:', link);
+            console.log('📊 Before change - linkDetailsModal:', this.linkDetailsModal);
+
             this.selectedLink = link;
             this.linkDetailsModal = true;
             this.loadingVisits = true;
 
+            console.log('📊 After change - linkDetailsModal:', this.linkDetailsModal);
+            console.log('📊 selectedLink:', this.selectedLink);
+
             try {
+                console.log('📊 Calling loadLinkVisits with id:', link.id);
                 await this.loadLinkVisits(link.id);
+                console.log('📊 loadLinkVisits completed successfully');
             } catch (error) {
-                console.error('Error loading link visits:', error);
-                alert('訪問履歴の読み込みに失敗しました');
+                console.error('❌ Error loading link visits:', error);
+                console.error('❌ Error stack:', error.stack);
+                alert('訪問履歴の読み込みに失敗しました: ' + error.message);
             } finally {
                 this.loadingVisits = false;
+                console.log('📊 Final state - linkDetailsModal:', this.linkDetailsModal);
             }
         },
 
