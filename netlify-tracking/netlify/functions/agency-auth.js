@@ -80,8 +80,10 @@ exports.handler = async (event) => {
                     company_name,
                     contact_email,
                     contact_phone,
-                    commission_rate,
-                    status
+                    status,
+                    level,
+                    own_commission_rate,
+                    parent_agency_id
                 )
             `)
             .eq('email', email)
@@ -179,7 +181,10 @@ exports.handler = async (event) => {
                     company_name: user.agencies.company_name,
                     contact_email: user.agencies.contact_email,
                     contact_phone: user.agencies.contact_phone,
-                    commission_rate: user.agencies.commission_rate
+                    // 4段階代理店制度の情報
+                    level: user.agencies.level,
+                    own_commission_rate: user.agencies.own_commission_rate,
+                    parent_agency_id: user.agencies.parent_agency_id
                 }
             })
         };

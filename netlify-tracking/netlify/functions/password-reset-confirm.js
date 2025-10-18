@@ -1,6 +1,9 @@
 const { createClient } = require('@supabase/supabase-js');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const { validateCsrfProtection, createCsrfErrorResponse } = require('./utils/csrf-protection');
+const { applyRateLimit, STRICT_RATE_LIMIT } = require('./utils/rate-limiter');
+const logger = require('./utils/logger');
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -29,6 +32,25 @@ exports.handler = async (event) => {
             body: JSON.stringify({ error: 'Method not allowed' })
         };
     }
+
+    // レート制限チェック（パスワードリセット確認のスパム対策）
+    logger.log('=== パスワードリセット確認受信 ===');
+    logger.log('IPアドレス:', event.headers['x-forwarded-for'] || event.headers['client-ip'] || 'unknown');
+
+    const rateLimitResponse = applyRateLimit(event, STRICT_RATE_LIMIT);
+    if (rateLimitResponse) {
+        logger.error('❌ レート制限により拒否されました');
+        return rateLimitResponse;
+    }
+    logger.log('✅ レート制限チェック通過');
+
+    // CSRF保護チェック
+    const csrfValidation = validateCsrfProtection(event);
+    if (!csrfValidation.valid) {
+        logger.error('❌ CSRF検証失敗:', csrfValidation.error);
+        return createCsrfErrorResponse(csrfValidation.error);
+    }
+    logger.log('✅ CSRF保護チェック通過');
 
     try {
         const { token, password } = JSON.parse(event.body);
