@@ -142,51 +142,73 @@ exports.handler = async (event) => {
         }
         logger.log('✅ パスワード長チェック通過');
 
-        // Validate invitation code
-        logger.log('=== STEP 1: 招待コード検証開始 ===');
-        logger.log('招待コード:', invitation_code);
-        const { data: invitationLink, error: invitationError } = await supabase
-            .from('agency_tracking_links')
-            .select('id, agency_id, is_active')
-            .eq('tracking_code', invitation_code)
+        // Validate invitation code (4-tier agency system)
+        logger.log('=== STEP 1: 代理店コード検証開始 ===');
+        logger.log('代理店コード:', invitation_code);
+
+        const { data: parentAgency, error: parentError } = await supabase
+            .from('agencies')
+            .select('id, code, name, level, own_commission_rate, status')
+            .eq('code', invitation_code)
             .single();
 
         logger.log('Supabaseクエリ結果:');
-        logger.log('- invitationLink:', invitationLink);
-        logger.log('- invitationError:', invitationError);
+        logger.log('- parentAgency:', parentAgency);
+        logger.log('- parentError:', parentError);
 
-        if (invitationError || !invitationLink) {
-            logger.error('❌ 招待コードが見つかりません');
-            logger.error('- 入力された招待コード:', invitation_code);
-            logger.error('- Supabaseエラー:', invitationError);
+        if (parentError || !parentAgency) {
+            logger.error('❌ 代理店コードが見つかりません');
+            logger.error('- 入力された代理店コード:', invitation_code);
+            logger.error('- Supabaseエラー:', parentError);
             return {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({
-                    error: '招待コードが無効です。代理店から正しい招待コードを取得してください。'
+                    error: '代理店コードが無効です。紹介元の代理店から正しいコードを取得してください。'
                 })
             };
         }
 
-        logger.log('✅ 招待コードが見つかりました');
-        logger.log('- ID:', invitationLink.id);
-        logger.log('- Agency ID:', invitationLink.agency_id);
-        logger.log('- is_active:', invitationLink.is_active);
+        logger.log('✅ 親代理店が見つかりました');
+        logger.log('- ID:', parentAgency.id);
+        logger.log('- 代理店名:', parentAgency.name);
+        logger.log('- 階層レベル:', parentAgency.level);
+        logger.log('- ステータス:', parentAgency.status);
 
-        if (!invitationLink.is_active) {
-            logger.error('❌ 招待コードが無効化されています');
-            logger.error('- 招待コード:', invitation_code);
-            logger.error('- is_active:', invitationLink.is_active);
+        if (parentAgency.status !== 'active') {
+            logger.error('❌ 親代理店が無効化されています');
+            logger.error('- 代理店コード:', invitation_code);
+            logger.error('- ステータス:', parentAgency.status);
             return {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({
-                    error: 'この招待コードは現在無効です。代理店にお問い合わせください。'
+                    error: 'この代理店コードは現在使用できません。紹介元の代理店にお問い合わせください。'
                 })
             };
         }
 
-        logger.log('✅ 招待コード検証完了 - 有効なコードです');
+        // Check maximum hierarchy level (4 tiers)
+        if (parentAgency.level >= 4) {
+            logger.error('❌ 最大階層に達しています');
+            logger.error('- 親代理店レベル:', parentAgency.level);
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({
+                    error: 'これ以上下位の代理店を登録することはできません（最大4階層まで）。'
+                })
+            };
+        }
+
+        // Calculate new agency level and commission rate
+        const newAgencyLevel = parentAgency.level + 1;
+        const standardRates = { 1: 20.00, 2: 18.00, 3: 16.00, 4: 14.00 };
+        const newCommissionRate = standardRates[newAgencyLevel] || 20.00;
+
+        logger.log('✅ 代理店コード検証完了 - 有効なコードです');
+        logger.log('- 新規代理店の階層レベル:', newAgencyLevel);
+        logger.log('- 新規代理店の報酬率:', newCommissionRate, '%');
 
         // Check if email already exists
         // セキュリティ上の理由により、メール存在を明示しない（ユーザー列挙攻撃対策）
@@ -245,9 +267,13 @@ exports.handler = async (event) => {
             throw new Error('Failed to generate unique agency code');
         }
 
-        // Create agency
+        // Create agency (4-tier system)
         logger.log('=== STEP 4: 代理店レコード作成 ===');
         logger.log('代理店コード:', agencyCode);
+        logger.log('親代理店ID:', parentAgency.id);
+        logger.log('階層レベル:', newAgencyLevel);
+        logger.log('自己報酬率:', newCommissionRate);
+
         const { data: agency, error: agencyError } = await supabase
             .from('agencies')
             .insert({
@@ -258,7 +284,10 @@ exports.handler = async (event) => {
                 contact_phone: phone,
                 address: address,
                 status: 'active', // 新規登録を自動承認に変更
-                commission_rate: 10.00, // デフォルト手数料率
+                // 4段階代理店制度のフィールド
+                parent_agency_id: parentAgency.id,
+                level: newAgencyLevel,
+                own_commission_rate: newCommissionRate,
                 settings: {},
                 payment_info: {}
             })
