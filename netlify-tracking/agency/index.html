@@ -490,7 +490,7 @@
                                 class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                             <i class="fas fa-chart-bar mr-2"></i> 分析
                         </button>
-                        <button @click="activeTab = 'commissions'; loadCommissions()"
+                        <button @click="activeTab = 'commissions'; loadCommissions(); loadCommissionHistory()"
                                 :class="activeTab === 'commissions' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
                                 class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
                             <i class="fas fa-yen-sign mr-2"></i> 報酬
@@ -711,7 +711,7 @@
                         <div class="bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl p-6 text-white">
                             <p class="text-sm opacity-90">今月の報酬（予定）</p>
                             <p class="text-3xl font-bold mt-2" x-text="`¥${stats.monthlyCommission.toLocaleString()}`"></p>
-                            <p class="text-xs mt-2 opacity-75">手数料率: <span x-text="`${agencyInfo.commission_rate}%`"></span></p>
+                            <p class="text-xs mt-2 opacity-75">手数料率: <span x-text="`${agencyInfo.own_commission_rate}%`"></span></p>
                         </div>
                         <div class="bg-white rounded-xl border border-gray-200 p-6">
                             <p class="text-sm text-gray-600">前月の報酬</p>
@@ -724,7 +724,7 @@
                     </div>
 
                     <!-- 4段階代理店制度 - 詳細コミッション履歴 -->
-                    <div class="bg-white rounded-lg border border-emerald-200 mb-8" x-init="loadCommissionHistory()">
+                    <div class="bg-white rounded-lg border border-emerald-200 mb-8">
                         <div class="px-6 py-4 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-green-50">
                             <div class="flex items-center justify-between">
                                 <h3 class="text-lg font-semibold text-gray-900">
@@ -774,9 +774,9 @@
                                                           :class="commission.commission_type === 'own' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'"
                                                           x-text="getCommissionTypeLabel(commission.commission_type)"></span>
                                                 </td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700" x-text="`¥${commission.deal_amount?.toLocaleString() || '0'}`"></td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700" x-text="`${commission.commission_rate}%`"></td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-emerald-600" x-text="`¥${commission.commission_amount?.toLocaleString() || '0'}`"></td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700" x-text="`¥${(commission.deal_amount || 0).toLocaleString()}`"></td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700" x-text="`${commission.commission_rate || 0}%`"></td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-emerald-600" x-text="`¥${(commission.commission_amount || 0).toLocaleString()}`"></td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600" x-text="commission.closing_agency_name || '-'"></td>
                                                 <td class="px-4 py-3 whitespace-nowrap">
                                                     <span class="px-2 py-1 text-xs rounded-full"

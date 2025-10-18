@@ -38,7 +38,6 @@ function agencyDashboard() {
             company_name: '',
             contact_email: '',
             contact_phone: '',
-            commission_rate: 10,
             // 4段階代理店制度の情報
             level: 1,
             own_commission_rate: 20.00,
@@ -823,7 +822,7 @@ function agencyDashboard() {
             if (!this.selectedLink) return '0';
 
             const conversions = this.selectedLink.conversion_count || 0;
-            const commissionRate = this.agencyInfo.commission_rate || 10;
+            const commissionRate = this.agencyInfo.own_commission_rate || 20;
             const baseCommissionPerConversion = 1000; // ベース報酬額
 
             const totalCommission = conversions * baseCommissionPerConversion * (commissionRate / 100);
@@ -1083,12 +1082,23 @@ function agencyDashboard() {
                     }
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    this.referralInfo = data;
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
                 }
+
+                const data = await response.json();
+                this.referralInfo = data;
             } catch (error) {
                 console.error('Error loading referral info:', error);
+                this.referralInfo = {
+                    childAgencies: [],
+                    totalChildren: 0,
+                    hierarchyChain: []
+                };
+                // 404エラーは正常（APIがまだ実装されていない場合）
+                if (!error.message.includes('404')) {
+                    console.warn('階層情報の読み込みに失敗しました:', error.message);
+                }
             }
         },
 
@@ -1103,12 +1113,19 @@ function agencyDashboard() {
                     }
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    this.commissionHistory = data.commissions || [];
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
                 }
+
+                const data = await response.json();
+                this.commissionHistory = data.commissions || [];
             } catch (error) {
                 console.error('Error loading commission history:', error);
+                this.commissionHistory = [];
+                // 404エラーは正常（APIがまだ実装されていない場合）
+                if (!error.message.includes('404')) {
+                    console.warn('コミッション履歴の読み込みに失敗しました:', error.message);
+                }
             } finally {
                 this.loadingCommissions = false;
             }
