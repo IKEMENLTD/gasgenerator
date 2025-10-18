@@ -418,10 +418,12 @@
                     <!-- 階層レベル -->
                     <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-lg p-3 sm:p-4 border border-emerald-200">
                         <p class="text-xs sm:text-sm text-gray-600 mb-1">階層レベル</p>
-                        <p class="text-2xl sm:text-3xl font-bold text-emerald-600">
-                            <span x-text="agencyInfo.level"></span>次
+                        <p class="text-lg sm:text-xl md:text-2xl font-bold text-emerald-600 whitespace-nowrap" x-text="getLevelLabel(agencyInfo.level)">
+                            統括代理店
                         </p>
-                        <p class="text-[10px] sm:text-xs text-gray-500 mt-1" x-text="getLevelLabel(agencyInfo.level)"></p>
+                        <p class="text-[10px] sm:text-xs text-gray-500 mt-1">
+                            Level <span x-text="agencyInfo.level"></span>
+                        </p>
                     </div>
 
                     <!-- 自己報酬率 -->

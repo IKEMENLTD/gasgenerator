@@ -1134,10 +1134,10 @@ function agencyDashboard() {
         // 4段階代理店制度 - 階層ラベルを取得
         getLevelLabel(level) {
             const labels = {
-                1: '1次代理店',
-                2: '2次代理店',
-                3: '3次代理店',
-                4: '4次代理店'
+                1: '統括代理店',
+                2: '正規代理店',
+                3: '販売代理店',
+                4: '営業代理店'
             };
             return labels[level] || '代理店';
         },
