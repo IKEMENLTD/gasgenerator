@@ -435,38 +435,11 @@
 
                     <!-- リファラル報酬率 -->
                     <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-3 sm:p-4 border border-purple-200">
-                        <p class="text-xs sm:text-sm text-gray-600 mb-1">リファラル報酬</p>
+                        <p class="text-xs sm:text-sm text-gray-600 mb-1 whitespace-nowrap">傘下からの自動吸い上げ</p>
                         <p class="text-2xl sm:text-3xl font-bold text-purple-600">
                             <span x-text="getReferralRate()"></span>%
                         </p>
                         <p class="text-[10px] sm:text-xs text-gray-500 mt-1">下位代理店の成約時</p>
-                    </div>
-                </div>
-
-                <!-- リファラルシステム説明 -->
-                <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h4 class="text-sm font-semibold text-gray-900 mb-3">
-                        <i class="fas fa-info-circle text-blue-500 mr-1"></i>
-                        4段階リファラルシステムについて
-                    </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                        <div>
-                            <p class="font-semibold text-emerald-600 mb-2">自己報酬</p>
-                            <ul class="space-y-1 text-xs">
-                                <li>• 1次代理店: 20%</li>
-                                <li>• 2次代理店: 18%</li>
-                                <li>• 3次代理店: 16%</li>
-                                <li>• 4次代理店: 14%</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-purple-600 mb-2">リファラル報酬</p>
-                            <ul class="space-y-1 text-xs">
-                                <li>• 下位代理店の成約ごとに固定2%</li>
-                                <li>• 全ての上位代理店に分配</li>
-                                <li>• 最大4階層まで</li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -749,7 +722,7 @@
                                 <div class="p-12 text-center">
                                     <i class="fas fa-inbox text-5xl text-gray-300 mb-4"></i>
                                     <p class="text-gray-600">コミッション履歴がありません</p>
-                                    <p class="text-sm text-gray-500 mt-2">案件成約またはリファラル報酬が発生すると表示されます</p>
+                                    <p class="text-sm text-gray-500 mt-2">案件成約または傘下からの吸い上げが発生すると表示されます</p>
                                 </div>
                             </template>
                             <template x-if="!loadingCommissions && commissionHistory.length > 0">
