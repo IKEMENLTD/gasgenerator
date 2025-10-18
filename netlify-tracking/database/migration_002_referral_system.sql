@@ -3,6 +3,21 @@
 -- 説明: 既存のagenciesテーブルに階層構造とコミッション率を追加
 
 -- ===================================
+-- STEP 0: トリガー関数の作成（存在しない場合）
+-- ===================================
+
+-- updated_at 自動更新関数を作成
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION update_updated_at IS 'updated_atカラムを自動更新するトリガー関数';
+
+-- ===================================
 -- STEP 1: agenciesテーブルの拡張
 -- ===================================
 
@@ -25,6 +40,7 @@ CHECK (own_commission_rate >= 0 AND own_commission_rate <= 100);
 COMMENT ON COLUMN agencies.parent_agency_id IS '親代理店のID（1次代理店の場合はNULL）';
 COMMENT ON COLUMN agencies.level IS '代理店階層レベル: 1=1次, 2=2次, 3=3次, 4=4次';
 COMMENT ON COLUMN agencies.own_commission_rate IS '案件成約時の自己報酬率（パーセンテージ）';
+COMMENT ON COLUMN agencies.commission_rate IS '基本手数料率（旧システム用、将来的に廃止予定）';
 
 -- ===================================
 -- STEP 2: インデックス追加
@@ -111,6 +127,9 @@ ON agency_commission_distributions(payment_status);
 -- STEP 5: トリガー関数（更新日時自動更新）
 -- ===================================
 
+-- トリガーを作成（既存の場合は削除してから作成）
+DROP TRIGGER IF EXISTS update_commission_distributions_updated_at ON agency_commission_distributions;
+
 CREATE TRIGGER update_commission_distributions_updated_at
     BEFORE UPDATE ON agency_commission_distributions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
@@ -121,23 +140,32 @@ CREATE TRIGGER update_commission_distributions_updated_at
 
 ALTER TABLE agency_commission_distributions ENABLE ROW LEVEL SECURITY;
 
+-- 既存のポリシーを削除（存在する場合）
+DROP POLICY IF EXISTS "Agencies can view own commission distributions" ON agency_commission_distributions;
+
 -- 代理店は自分の報酬記録のみ閲覧可能
 CREATE POLICY "Agencies can view own commission distributions"
 ON agency_commission_distributions
     FOR SELECT
-    USING (agency_id = auth.jwt() ->> 'agency_id'::uuid);
+    USING (
+        agency_id IN (
+            SELECT id FROM agencies
+            WHERE id = (auth.jwt() ->> 'agency_id')::uuid
+        )
+    );
 
 -- ===================================
 -- STEP 7: 既存データの更新
 -- ===================================
 
--- 既存の代理店を全て1次代理店として設定
+-- 既存の代理店を全て1次代理店として設定（levelカラムが追加されたばかりの場合）
 UPDATE agencies
 SET
     level = 1,
     own_commission_rate = 20.00,
     parent_agency_id = NULL
-WHERE level IS NULL OR level = 0;
+WHERE level = 1 AND own_commission_rate = 20.00 AND parent_agency_id IS NULL;
+-- WHERE条件を追加して、既に設定済みのデータを上書きしないようにする
 
 -- ===================================
 -- STEP 8: ヘルパー関数: 代理店階層取得
@@ -205,14 +233,20 @@ COMMENT ON FUNCTION get_standard_commission_rate IS '階層レベルに基づい
 -- マイグレーション完了
 -- ===================================
 
+-- マイグレーション記録テーブルの作成（存在しない場合）
+CREATE TABLE IF NOT EXISTS migration_history (
+    version VARCHAR(50) PRIMARY KEY,
+    description TEXT,
+    applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- マイグレーション記録
 INSERT INTO migration_history (version, description, applied_at)
 VALUES ('002', '4段階代理店制度（リファラルシステム）', NOW())
 ON CONFLICT (version) DO NOTHING;
 
--- 注: migration_historyテーブルが存在しない場合は以下を実行してください：
--- CREATE TABLE IF NOT EXISTS migration_history (
---     version VARCHAR(50) PRIMARY KEY,
---     description TEXT,
---     applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
--- );
+-- 完了メッセージ
+DO $$
+BEGIN
+    RAISE NOTICE '✅ マイグレーション 002 完了: 4段階代理店制度（リファラルシステム）';
+END $$;
