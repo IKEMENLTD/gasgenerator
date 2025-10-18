@@ -80,14 +80,13 @@ exports.handler = async (event) => {
             contact_name,
             email,
             phone,
-            password,
-            invitation_code
+            password
         } = JSON.parse(event.body);
 
         logger.log('Parsed request data for email:', email);
 
         // Validate required fields
-        if (!company_name || !agency_name || !contact_name || !email || !phone || !password || !invitation_code) {
+        if (!company_name || !agency_name || !contact_name || !email || !phone || !password) {
             return {
                 statusCode: 400,
                 headers,
@@ -107,38 +106,6 @@ exports.handler = async (event) => {
                 })
             };
         }
-
-        // Validate invitation code
-        logger.log('Checking invitation code:', invitation_code);
-        const { data: invitationLink, error: invitationError } = await supabase
-            .from('agency_tracking_links')
-            .select('id, agency_id, is_active')
-            .eq('tracking_code', invitation_code)
-            .single();
-
-        if (invitationError || !invitationLink) {
-            logger.log('Invalid invitation code:', invitation_code, invitationError);
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({
-                    error: '招待コードが無効です。代理店から正しい招待コードを取得してください。'
-                })
-            };
-        }
-
-        if (!invitationLink.is_active) {
-            logger.log('Inactive invitation code:', invitation_code);
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({
-                    error: 'この招待コードは現在無効です。代理店にお問い合わせください。'
-                })
-            };
-        }
-
-        logger.log('Valid invitation code found for agency:', invitationLink.agency_id);
 
         // Check if email already exists
         // セキュリティ上の理由により、メール存在を明示しない（ユーザー列挙攻撃対策）

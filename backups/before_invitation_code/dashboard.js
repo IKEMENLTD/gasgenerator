@@ -24,7 +24,6 @@ function agencyDashboard() {
             phone: '',
             password: '',
             password_confirm: '',
-            invitation_code: '',
             agree_terms: false
         },
         registerError: '',
@@ -337,8 +336,7 @@ function agencyDashboard() {
                         contact_name: this.registerForm.contact_name,
                         email: this.registerForm.email,
                         phone: this.registerForm.phone,
-                        password: this.registerForm.password,
-                        invitation_code: this.registerForm.invitation_code
+                        password: this.registerForm.password
                     })
                 });
 
