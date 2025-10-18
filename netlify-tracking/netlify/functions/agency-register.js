@@ -159,7 +159,7 @@ exports.handler = async (event) => {
                 contact_email: email,
                 contact_phone: phone,
                 address: address,
-                status: 'pending', // 新規登録は承認待ちに設定
+                status: 'active', // 新規登録を自動承認に変更
                 commission_rate: 10.00, // デフォルト手数料率
                 settings: {},
                 payment_info: {}
@@ -184,7 +184,7 @@ exports.handler = async (event) => {
                 password_hash: hashedPassword,
                 name: contact_name,
                 role: 'owner',
-                is_active: false // 代理店承認待ちのため非アクティブに設定
+                is_active: true // 新規登録を自動承認に変更（すぐにログイン可能）
             })
             .select()
             .single();
