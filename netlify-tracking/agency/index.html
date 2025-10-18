@@ -832,14 +832,14 @@
                 </div>
 
                 <!-- 課金状況タブ -->
-                <div x-show="activeTab === 'billing'" class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold text-gray-900">紹介ユーザーの課金状況</h2>
-                        <div class="flex items-center space-x-4">
-                            <span class="text-sm text-gray-600">最終更新: <span x-text="billingStats.lastUpdated ? formatDateTime(billingStats.lastUpdated) : '-'"></span></span>
+                <div x-show="activeTab === 'billing'" class="p-4 sm:p-6">
+                    <div class="flex justify-between items-center mb-4 sm:mb-6">
+                        <h2 class="text-base sm:text-lg md:text-xl font-bold text-gray-900 whitespace-nowrap">課金状況</h2>
+                        <div class="flex items-center space-x-2 sm:space-x-4">
+                            <span class="text-xs sm:text-sm text-gray-600 hidden sm:inline whitespace-nowrap">最終更新: <span x-text="billingStats.lastUpdated ? formatDateTime(billingStats.lastUpdated) : '-'"></span></span>
                             <button @click="loadBillingStats()"
-                                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors">
-                                <i class="fas fa-sync-alt mr-2"></i> 更新
+                                    class="bg-emerald-600 hover:bg-emerald-700 text-white p-2 sm:px-4 sm:py-2 rounded-lg transition-colors flex items-center">
+                                <i class="fas fa-sync-alt text-sm sm:mr-2"></i> <span class="hidden sm:inline">更新</span>
                             </button>
                         </div>
                     </div>
