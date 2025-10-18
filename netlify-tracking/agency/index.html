@@ -306,27 +306,27 @@
         <header class="bg-white shadow-sm border-b border-emerald-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-4">
-                    <div class="flex items-center space-x-4">
-                        <div class="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-emerald-600 to-green-600 rounded-full">
-                            <i class="fas fa-chart-line text-white"></i>
+                    <div class="flex items-center space-x-2 sm:space-x-4">
+                        <div class="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-600 to-green-600 rounded-full flex-shrink-0">
+                            <i class="fas fa-chart-line text-white text-sm sm:text-base"></i>
                         </div>
-                        <div>
-                            <h1 class="text-xl font-bold text-gray-900">TaskMate AI 代理店システム</h1>
-                            <p class="text-sm text-gray-600" x-text="`${agencyInfo.name} - ${userInfo.name}さん`"></p>
+                        <div class="min-w-0">
+                            <h1 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-900 whitespace-nowrap">TaskMate AI 代理店</h1>
+                            <p class="text-xs sm:text-sm text-gray-600 truncate max-w-[150px] sm:max-w-[200px] md:max-w-none" x-text="`${agencyInfo.name} - ${userInfo.name}さん`"></p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="text-right">
-                            <p class="text-sm text-gray-600">今月の成果</p>
-                            <p class="text-lg font-bold text-emerald-600" x-text="`¥${stats.monthlyCommission.toLocaleString()}`"></p>
+                    <div class="flex items-center space-x-2 sm:space-x-4">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-xs sm:text-sm text-gray-600">今月の成果</p>
+                            <p class="text-sm sm:text-base md:text-lg font-bold text-emerald-600" x-text="`¥${stats.monthlyCommission.toLocaleString()}`"></p>
                         </div>
                         <a href="/"
-                           class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors border border-gray-300 inline-flex items-center">
-                            <i class="fas fa-home mr-2"></i> メインページ
+                           class="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 sm:px-4 sm:py-2 rounded-lg transition-colors border border-gray-300 inline-flex items-center">
+                            <i class="fas fa-home sm:mr-2"></i> <span class="hidden sm:inline">メインページ</span>
                         </a>
                         <button @click="logout()"
-                                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors">
-                            <i class="fas fa-sign-out-alt mr-2"></i> ログアウト
+                                class="bg-red-500 hover:bg-red-600 text-white p-2 sm:px-4 sm:py-2 rounded-lg transition-colors">
+                            <i class="fas fa-sign-out-alt sm:mr-2"></i> <span class="hidden sm:inline">ログアウト</span>
                         </button>
                     </div>
                 </div>
@@ -473,37 +473,37 @@
 
             <!-- タブメニュー -->
             <div class="bg-white rounded-xl shadow-lg border border-emerald-100 mb-8">
-                <div class="border-b border-emerald-100">
-                    <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                <div class="border-b border-emerald-100 overflow-x-auto">
+                    <nav class="flex space-x-1 sm:space-x-4 md:space-x-8 px-2 sm:px-4 md:px-6 min-w-max" aria-label="Tabs">
                         <button @click="activeTab = 'create'"
                                 :class="activeTab === 'create' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                                class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                            <i class="fas fa-plus-circle mr-2"></i> リンク作成
+                                class="py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex flex-col sm:flex-row items-center">
+                            <i class="fas fa-plus-circle sm:mr-2 text-xs sm:text-sm"></i> <span class="text-[10px] sm:text-xs md:text-sm">リンク作成</span>
                         </button>
                         <button @click="activeTab = 'links'; loadTrackingLinks()"
                                 :class="activeTab === 'links' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                                class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                            <i class="fas fa-link mr-2"></i> リンク管理
+                                class="py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex flex-col sm:flex-row items-center">
+                            <i class="fas fa-link sm:mr-2 text-xs sm:text-sm"></i> <span class="text-[10px] sm:text-xs md:text-sm">リンク管理</span>
                         </button>
                         <button @click="activeTab = 'analytics'; loadAnalytics()"
                                 :class="activeTab === 'analytics' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                                class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                            <i class="fas fa-chart-bar mr-2"></i> 分析
+                                class="py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex flex-col sm:flex-row items-center">
+                            <i class="fas fa-chart-bar sm:mr-2 text-xs sm:text-sm"></i> <span class="text-[10px] sm:text-xs md:text-sm">分析</span>
                         </button>
                         <button @click="activeTab = 'commissions'; loadCommissions(); loadCommissionHistory()"
                                 :class="activeTab === 'commissions' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                                class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                            <i class="fas fa-yen-sign mr-2"></i> 報酬
+                                class="py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex flex-col sm:flex-row items-center">
+                            <i class="fas fa-yen-sign sm:mr-2 text-xs sm:text-sm"></i> <span class="text-[10px] sm:text-xs md:text-sm">報酬</span>
                         </button>
                         <button @click="activeTab = 'billing'; loadBillingStats()"
                                 :class="activeTab === 'billing' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                                class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                            <i class="fas fa-credit-card mr-2"></i> 課金状況
+                                class="py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex flex-col sm:flex-row items-center">
+                            <i class="fas fa-credit-card sm:mr-2 text-xs sm:text-sm"></i> <span class="text-[10px] sm:text-xs md:text-sm">課金状況</span>
                         </button>
                         <button @click="activeTab = 'settings'"
                                 :class="activeTab === 'settings' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                                class="py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                            <i class="fas fa-cog mr-2"></i> 設定
+                                class="py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex flex-col sm:flex-row items-center">
+                            <i class="fas fa-cog sm:mr-2 text-xs sm:text-sm"></i> <span class="text-[10px] sm:text-xs md:text-sm">設定</span>
                         </button>
                     </nav>
                 </div>
@@ -543,12 +543,12 @@
                         </div>
 
                         <!-- Info: LINE URL is automatically set from environment -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
                             <div class="flex items-start">
-                                <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
-                                <div>
-                                    <p class="text-sm text-blue-800 font-medium">リダイレクト先について</p>
-                                    <p class="text-sm text-blue-700 mt-1">トラッキングリンクは自動的にTaskMate公式LINEアカウントへリダイレクトされます。</p>
+                                <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-2 sm:mr-3 text-sm flex-shrink-0"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs sm:text-sm text-blue-800 font-medium">リダイレクト先について</p>
+                                    <p class="text-xs sm:text-sm text-blue-700 mt-1">トラッキングリンクは自動的にTaskMate公式LINEアカウントへリダイレクトされます。</p>
                                 </div>
                             </div>
                         </div>
