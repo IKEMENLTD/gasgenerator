@@ -395,51 +395,51 @@
                     </h3>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
+                    <!-- 招待コード（モバイルで最初に表示） -->
+                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-3 sm:p-4 border border-amber-200 order-first md:order-last">
+                        <p class="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">あなたの招待コード</p>
+                        <div class="flex items-center space-x-1 sm:space-x-2">
+                            <code class="bg-white px-2 py-1.5 sm:px-3 sm:py-2 rounded border border-amber-300 font-mono text-xs sm:text-sm font-semibold text-gray-900 flex-1 break-all" x-text="agencyInfo.code"></code>
+                            <button @click="copyToClipboard(agencyInfo.code, $event)"
+                                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1.5 sm:px-3 sm:py-2 rounded transition-colors flex-shrink-0"
+                                    title="コピー">
+                                <i class="fas fa-copy text-xs sm:text-sm"></i>
+                            </button>
+                        </div>
+                        <p class="text-[10px] sm:text-xs text-gray-500 mt-1 sm:mt-2" x-show="agencyInfo.level < 4">
+                            新規代理店を招待できます
+                        </p>
+                        <p class="text-[10px] sm:text-xs text-red-500 mt-1 sm:mt-2" x-show="agencyInfo.level >= 4">
+                            最大階層に達しています
+                        </p>
+                    </div>
+
                     <!-- 階層レベル -->
-                    <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-lg p-4 border border-emerald-200">
-                        <p class="text-sm text-gray-600 mb-1">階層レベル</p>
-                        <p class="text-3xl font-bold text-emerald-600">
+                    <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-lg p-3 sm:p-4 border border-emerald-200">
+                        <p class="text-xs sm:text-sm text-gray-600 mb-1">階層レベル</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-emerald-600">
                             <span x-text="agencyInfo.level"></span>次
                         </p>
-                        <p class="text-xs text-gray-500 mt-1" x-text="getLevelLabel(agencyInfo.level)"></p>
+                        <p class="text-[10px] sm:text-xs text-gray-500 mt-1" x-text="getLevelLabel(agencyInfo.level)"></p>
                     </div>
 
                     <!-- 自己報酬率 -->
-                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-                        <p class="text-sm text-gray-600 mb-1">自己報酬率</p>
-                        <p class="text-3xl font-bold text-blue-600">
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-3 sm:p-4 border border-blue-200">
+                        <p class="text-xs sm:text-sm text-gray-600 mb-1">自己報酬率</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-blue-600">
                             <span x-text="agencyInfo.own_commission_rate"></span>%
                         </p>
-                        <p class="text-xs text-gray-500 mt-1">案件成約時の報酬</p>
+                        <p class="text-[10px] sm:text-xs text-gray-500 mt-1">案件成約時の報酬</p>
                     </div>
 
                     <!-- リファラル報酬率 -->
-                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
-                        <p class="text-sm text-gray-600 mb-1">リファラル報酬</p>
-                        <p class="text-3xl font-bold text-purple-600">
+                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-3 sm:p-4 border border-purple-200">
+                        <p class="text-xs sm:text-sm text-gray-600 mb-1">リファラル報酬</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-purple-600">
                             <span x-text="getReferralRate()"></span>%
                         </p>
-                        <p class="text-xs text-gray-500 mt-1">下位代理店の成約時</p>
-                    </div>
-
-                    <!-- 招待コード -->
-                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-4 border border-amber-200">
-                        <p class="text-sm text-gray-600 mb-2">あなたの招待コード</p>
-                        <div class="flex items-center space-x-2">
-                            <code class="bg-white px-3 py-2 rounded border border-amber-300 font-mono text-sm font-semibold text-gray-900 flex-1" x-text="agencyInfo.code"></code>
-                            <button @click="copyToClipboard(agencyInfo.code, $event)"
-                                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded transition-colors flex-shrink-0"
-                                    title="コピー">
-                                <i class="fas fa-copy text-sm"></i>
-                            </button>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2" x-show="agencyInfo.level < 4">
-                            新規代理店を招待できます
-                        </p>
-                        <p class="text-xs text-red-500 mt-2" x-show="agencyInfo.level >= 4">
-                            最大階層に達しています
-                        </p>
+                        <p class="text-[10px] sm:text-xs text-gray-500 mt-1">下位代理店の成約時</p>
                     </div>
                 </div>
 
@@ -590,12 +590,12 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-emerald-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">キャンペーン名</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">トラッキングコード</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">クリック数</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">コンバージョン</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">作成日</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">アクション</th>
+                                    <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">キャンペーン</th>
+                                    <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">コード</th>
+                                    <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">クリック</th>
+                                    <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">CV</th>
+                                    <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">作成日</th>
+                                    <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">操作</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -881,20 +881,20 @@
 
                     <!-- 個別ユーザーの課金状態テーブル -->
                     <div class="bg-white rounded-lg border border-gray-200">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">個別ユーザーの課金状態</h3>
-                            <p class="text-sm text-gray-600 mt-1">あなたが紹介したユーザーのサブスクリプション状況をリアルタイムで確認できます</p>
+                        <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900">個別ユーザーの課金状態</h3>
+                            <p class="text-xs sm:text-sm text-gray-600 mt-1">紹介ユーザーの課金状況をリアルタイムで確認</p>
                         </div>
                         <div class="table-scroll overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ユーザー名</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">課金開始日</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">終了予定日</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">プレミアム</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">予定報酬</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">ユーザー</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">状態</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">開始日</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">終了日</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">プラン</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">報酬</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
