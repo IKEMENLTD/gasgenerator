@@ -38,7 +38,11 @@ function agencyDashboard() {
             company_name: '',
             contact_email: '',
             contact_phone: '',
-            commission_rate: 10
+            commission_rate: 10,
+            // 4段階代理店制度の情報
+            level: 1,
+            own_commission_rate: 20.00,
+            parent_agency_id: null
         },
         userInfo: {
             id: '',
@@ -118,6 +122,17 @@ function agencyDashboard() {
         selectedLink: null,
         linkVisits: [],
         loadingVisits: false,
+
+        // 4段階代理店制度 - 階層情報
+        referralInfo: {
+            childAgencies: [],
+            totalChildren: 0,
+            hierarchyChain: []
+        },
+
+        // 4段階代理店制度 - コミッション履歴
+        commissionHistory: [],
+        loadingCommissions: false,
 
         // セッションタイムアウト管理
         inactivityTimer: null,
@@ -1056,6 +1071,72 @@ function agencyDashboard() {
             } finally {
                 this.loading = false;
             }
+        },
+
+        // 4段階代理店制度 - 階層情報を読み込む
+        async loadReferralInfo() {
+            try {
+                const response = await fetch('/.netlify/functions/agency-referral-info', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('agencyAuthToken')}`,
+                        'X-Agency-Id': localStorage.getItem('agencyId')
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    this.referralInfo = data;
+                }
+            } catch (error) {
+                console.error('Error loading referral info:', error);
+            }
+        },
+
+        // 4段階代理店制度 - コミッション履歴を読み込む
+        async loadCommissionHistory() {
+            this.loadingCommissions = true;
+            try {
+                const response = await fetch('/.netlify/functions/agency-commission-history', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('agencyAuthToken')}`,
+                        'X-Agency-Id': localStorage.getItem('agencyId')
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    this.commissionHistory = data.commissions || [];
+                }
+            } catch (error) {
+                console.error('Error loading commission history:', error);
+            } finally {
+                this.loadingCommissions = false;
+            }
+        },
+
+        // 4段階代理店制度 - 階層ラベルを取得
+        getLevelLabel(level) {
+            const labels = {
+                1: '1次代理店',
+                2: '2次代理店',
+                3: '3次代理店',
+                4: '4次代理店'
+            };
+            return labels[level] || '代理店';
+        },
+
+        // 4段階代理店制度 - コミッション種別ラベル
+        getCommissionTypeLabel(type) {
+            const labels = {
+                'own': '自己報酬',
+                'referral': 'リファラル報酬'
+            };
+            return labels[type] || type;
+        },
+
+        // 4段階代理店制度 - リファラルコミッション率を取得
+        getReferralRate() {
+            return 2.00; // 固定2%
         }
     };
 }
