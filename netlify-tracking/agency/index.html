@@ -509,34 +509,34 @@
                 </div>
 
                 <!-- リンク作成タブ -->
-                <div x-show="activeTab === 'create'" class="p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">新規トラッキングリンク作成</h2>
+                <div x-show="activeTab === 'create'" class="p-4 sm:p-6">
+                    <h2 class="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-4 sm:mb-6">リンク作成</h2>
 
-                    <form @submit.prevent="createLink()" class="space-y-4 max-w-2xl">
+                    <form @submit.prevent="createLink()" class="space-y-3 sm:space-y-4 max-w-2xl">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">キャンペーン名 *</label>
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">キャンペーン名 *</label>
                             <input type="text" x-model="newLink.name" autocomplete="off" required
                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                    placeholder="例: 2024年春のキャンペーン">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">流入元（UTM Source）</label>
+                                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">流入元</label>
                                 <input type="text" x-model="newLink.utm_source" autocomplete="off"
-                                       class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                                       placeholder="例: facebook, twitter, line">
+                                       class="w-full px-3 sm:px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                                       placeholder="例: facebook">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">メディア（UTM Medium）</label>
+                                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">メディア</label>
                                 <input type="text" x-model="newLink.utm_medium" autocomplete="off"
-                                       class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                                       placeholder="例: social, email, banner">
+                                       class="w-full px-3 sm:px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+                                       placeholder="例: social">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">キャンペーン（UTM Campaign）</label>
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">キャンペーン</label>
                             <input type="text" x-model="newLink.utm_campaign" autocomplete="off"
                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                                    placeholder="例: spring_sale_2024">
@@ -626,19 +626,19 @@
                 </div>
 
                 <!-- 分析タブ -->
-                <div x-show="activeTab === 'analytics'" class="p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">パフォーマンス分析</h2>
+                <div x-show="activeTab === 'analytics'" class="p-4 sm:p-6">
+                    <h2 class="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-4 sm:mb-6">パフォーマンス分析</h2>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                         <!-- 期間別パフォーマンス -->
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">期間別パフォーマンス</h3>
+                        <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                            <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">期間別</h3>
                             <canvas id="performanceChart"></canvas>
                         </div>
 
                         <!-- コンバージョンファネル -->
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">コンバージョンファネル</h3>
+                        <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                            <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4 whitespace-nowrap">CVファネル</h3>
                             <div class="space-y-4">
                                 <div>
                                     <div class="flex justify-between mb-2">
@@ -665,17 +665,17 @@
                     </div>
 
                     <!-- トップパフォーマンスキャンペーン -->
-                    <div class="mt-6 bg-white rounded-lg border border-gray-200 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">トップパフォーマンスキャンペーン</h3>
+                    <div class="mt-4 sm:mt-6 bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                        <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">トップキャンペーン</h3>
                         <div class="table-scroll overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">順位</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">キャンペーン名</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">クリック数</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">コンバージョン</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">CVR</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">順位</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">名前</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">クリック</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">CV</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">CVR</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -703,23 +703,23 @@
                 </div>
 
                 <!-- 報酬タブ -->
-                <div x-show="activeTab === 'commissions'" class="p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">報酬管理</h2>
+                <div x-show="activeTab === 'commissions'" class="p-4 sm:p-6">
+                    <h2 class="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-4 sm:mb-6">報酬管理</h2>
 
                     <!-- 報酬サマリー -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div class="bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl p-6 text-white">
-                            <p class="text-sm opacity-90">今月の報酬（予定）</p>
-                            <p class="text-3xl font-bold mt-2" x-text="`¥${stats.monthlyCommission.toLocaleString()}`"></p>
-                            <p class="text-xs mt-2 opacity-75">手数料率: <span x-text="`${agencyInfo.own_commission_rate}%`"></span></p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div class="bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl p-4 sm:p-6 text-white">
+                            <p class="text-xs sm:text-sm opacity-90 whitespace-nowrap">今月の報酬</p>
+                            <p class="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2" x-text="`¥${stats.monthlyCommission.toLocaleString()}`"></p>
+                            <p class="text-[10px] sm:text-xs mt-1 sm:mt-2 opacity-75 whitespace-nowrap">手数料率: <span x-text="`${agencyInfo.own_commission_rate}%`"></span></p>
                         </div>
-                        <div class="bg-white rounded-xl border border-gray-200 p-6">
-                            <p class="text-sm text-gray-600">前月の報酬</p>
-                            <p class="text-2xl font-bold text-gray-900 mt-2" x-text="`¥${stats.lastMonthCommission.toLocaleString()}`"></p>
+                        <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+                            <p class="text-xs sm:text-sm text-gray-600 whitespace-nowrap">前月の報酬</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2" x-text="`¥${stats.lastMonthCommission.toLocaleString()}`"></p>
                         </div>
-                        <div class="bg-white rounded-xl border border-gray-200 p-6">
-                            <p class="text-sm text-gray-600">累計報酬</p>
-                            <p class="text-2xl font-bold text-gray-900 mt-2" x-text="`¥${stats.totalCommission.toLocaleString()}`"></p>
+                        <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+                            <p class="text-xs sm:text-sm text-gray-600 whitespace-nowrap">累計報酬</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2" x-text="`¥${stats.totalCommission.toLocaleString()}`"></p>
                         </div>
                     </div>
 
@@ -727,16 +727,16 @@
                     <div class="bg-white rounded-lg border border-emerald-200 mb-8">
                         <div class="px-6 py-4 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-green-50">
                             <div class="flex items-center justify-between">
-                                <h3 class="text-lg font-semibold text-gray-900">
-                                    <i class="fas fa-layer-group text-emerald-600 mr-2"></i>
-                                    コミッション分配履歴
+                                <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900">
+                                    <i class="fas fa-layer-group text-emerald-600 mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+                                    分配履歴
                                 </h3>
                                 <button @click="loadCommissionHistory()"
-                                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-sm transition-colors">
-                                    <i class="fas fa-sync-alt mr-1"></i> 更新
+                                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs sm:text-sm transition-colors">
+                                    <i class="fas fa-sync-alt mr-1 text-xs sm:text-sm"></i> 更新
                                 </button>
                             </div>
-                            <p class="text-xs text-gray-600 mt-1">4段階リファラルシステムによる報酬分配の詳細</p>
+                            <p class="text-[10px] sm:text-xs text-gray-600 mt-1">4段階リファラルシステムによる報酬分配の詳細</p>
                         </div>
                         <div class="table-scroll">
                             <template x-if="loadingCommissions">
@@ -756,30 +756,30 @@
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                         <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">日時</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">種別</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">案件総額</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">報酬率</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">報酬額</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">成約代理店</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">支払状況</th>
+                                            <th class="px-3 sm:px-4 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">日時</th>
+                                            <th class="px-3 sm:px-4 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">種別</th>
+                                            <th class="px-3 sm:px-4 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">総額</th>
+                                            <th class="px-3 sm:px-4 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">率</th>
+                                            <th class="px-3 sm:px-4 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">報酬</th>
+                                            <th class="px-3 sm:px-4 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">成約店</th>
+                                            <th class="px-3 sm:px-4 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">状況</th>
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         <template x-for="commission in commissionHistory" :key="commission.id">
                                             <tr class="hover:bg-gray-50 transition-colors">
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900" x-text="formatDateTime(commission.created_at)"></td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <span class="px-2 py-1 text-xs rounded-full font-medium"
+                                                <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900" x-text="formatDateTime(commission.created_at)"></td>
+                                                <td class="px-3 sm:px-4 py-3 whitespace-nowrap">
+                                                    <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full font-medium"
                                                           :class="commission.commission_type === 'own' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'"
                                                           x-text="getCommissionTypeLabel(commission.commission_type)"></span>
                                                 </td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700" x-text="`¥${(commission.deal_amount || 0).toLocaleString()}`"></td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700" x-text="`${commission.commission_rate || 0}%`"></td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-emerald-600" x-text="`¥${(commission.commission_amount || 0).toLocaleString()}`"></td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600" x-text="commission.closing_agency_name || '-'"></td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <span class="px-2 py-1 text-xs rounded-full"
+                                                <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-xs sm:text-sm text-gray-700" x-text="`¥${(commission.deal_amount || 0).toLocaleString()}`"></td>
+                                                <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-xs sm:text-sm text-gray-700" x-text="`${commission.commission_rate || 0}%`"></td>
+                                                <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-xs sm:text-sm font-semibold text-emerald-600" x-text="`¥${(commission.commission_amount || 0).toLocaleString()}`"></td>
+                                                <td class="px-3 sm:px-4 py-3 whitespace-nowrap text-xs sm:text-sm text-gray-600" x-text="commission.closing_agency_name || '-'"></td>
+                                                <td class="px-3 sm:px-4 py-3 whitespace-nowrap">
+                                                    <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full"
                                                           :class="commission.payment_status === 'paid' ? 'bg-green-100 text-green-800' : commission.payment_status === 'approved' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'"
                                                           x-text="getStatusLabel(commission.payment_status)"></span>
                                                 </td>
@@ -793,36 +793,36 @@
 
                     <!-- 報酬履歴 -->
                     <div class="bg-white rounded-lg border border-gray-200">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">報酬履歴</h3>
+                        <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                            <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900">報酬履歴</h3>
                         </div>
                         <div class="table-scroll overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">期間</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">コンバージョン数</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">売上</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">手数料率</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">報酬額</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ステータス</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">支払日</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">期間</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">CV数</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">売上</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">率</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">報酬</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">状態</th>
+                                        <th class="px-3 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase whitespace-nowrap">支払日</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     <template x-for="commission in commissions" :key="commission.id">
                                         <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="commission.period"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="commission.conversions"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="`¥${commission.sales.toLocaleString()}`"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="`${commission.rate}%`"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900" x-text="`¥${commission.amount.toLocaleString()}`"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="px-2 py-1 text-xs rounded-full"
+                                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900" x-text="commission.period"></td>
+                                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500" x-text="commission.conversions"></td>
+                                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500" x-text="`¥${commission.sales.toLocaleString()}`"></td>
+                                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500" x-text="`${commission.rate}%`"></td>
+                                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-semibold text-gray-900" x-text="`¥${commission.amount.toLocaleString()}`"></td>
+                                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                                <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full"
                                                       :class="commission.status === 'paid' ? 'bg-green-100 text-green-800' : commission.status === 'approved' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'"
                                                       x-text="getStatusLabel(commission.status)"></span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="commission.payment_date || '-'"></td>
+                                            <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500" x-text="commission.payment_date || '-'"></td>
                                         </tr>
                                     </template>
                                 </tbody>
@@ -845,36 +845,36 @@
                     </div>
 
                     <!-- サマリーカード -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white">
-                            <p class="text-sm opacity-90">現在の課金中ユーザー</p>
-                            <p class="text-3xl font-bold mt-2" x-text="billingStats.summary?.activeSubscribers || 0"></p>
-                            <p class="text-xs mt-2 opacity-75">
-                                <i class="fas fa-check-circle mr-1"></i> アクティブサブスクリプション
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 sm:p-6 text-white">
+                            <p class="text-xs sm:text-sm opacity-90 whitespace-nowrap">課金中ユーザー</p>
+                            <p class="text-2xl sm:text-3xl font-bold mt-2" x-text="billingStats.summary?.activeSubscribers || 0"></p>
+                            <p class="text-[10px] sm:text-xs mt-1 sm:mt-2 opacity-75 whitespace-nowrap">
+                                <i class="fas fa-check-circle mr-1 text-[10px] sm:text-xs"></i> 契約中
                             </p>
                         </div>
 
-                        <div class="bg-white rounded-xl border border-gray-200 p-6">
-                            <p class="text-sm text-gray-600">総コンバージョン数</p>
-                            <p class="text-2xl font-bold text-gray-900 mt-2" x-text="billingStats.summary?.totalConversions || 0"></p>
-                            <p class="text-xs mt-2 text-gray-500">
-                                <i class="fas fa-user-plus mr-1"></i> LINE友達追加済み
+                        <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+                            <p class="text-xs sm:text-sm text-gray-600 whitespace-nowrap">総CV数</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-2" x-text="billingStats.summary?.totalConversions || 0"></p>
+                            <p class="text-[10px] sm:text-xs mt-1 sm:mt-2 text-gray-500 whitespace-nowrap">
+                                <i class="fas fa-user-plus mr-1 text-[10px] sm:text-xs"></i> LINE追加済み
                             </p>
                         </div>
 
-                        <div class="bg-white rounded-xl border border-gray-200 p-6">
-                            <p class="text-sm text-gray-600">累計報酬（予定）</p>
-                            <p class="text-2xl font-bold text-emerald-600 mt-2" x-text="`¥${(billingStats.summary?.totalCommission || 0).toLocaleString()}`"></p>
-                            <p class="text-xs mt-2 text-gray-500">
-                                <i class="fas fa-calculator mr-1"></i> 手数料率: <span x-text="`${billingStats.summary?.commissionRate || 0}%`"></span>
+                        <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+                            <p class="text-xs sm:text-sm text-gray-600 whitespace-nowrap">累計報酬(予定)</p>
+                            <p class="text-xl sm:text-2xl font-bold text-emerald-600 mt-2" x-text="`¥${(billingStats.summary?.totalCommission || 0).toLocaleString()}`"></p>
+                            <p class="text-[10px] sm:text-xs mt-1 sm:mt-2 text-gray-500 whitespace-nowrap">
+                                <i class="fas fa-calculator mr-1 text-[10px] sm:text-xs"></i> 率: <span x-text="`${billingStats.summary?.commissionRate || 0}%`"></span>
                             </p>
                         </div>
 
-                        <div class="bg-white rounded-xl border border-gray-200 p-6">
-                            <p class="text-sm text-gray-600">支払い済み報酬</p>
-                            <p class="text-2xl font-bold text-gray-900 mt-2" x-text="`¥${(billingStats.summary?.paidCommission || 0).toLocaleString()}`"></p>
-                            <p class="text-xs mt-2 text-gray-500">
-                                <i class="fas fa-check mr-1"></i> 確定済み
+                        <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+                            <p class="text-xs sm:text-sm text-gray-600 whitespace-nowrap">支払済報酬</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-2" x-text="`¥${(billingStats.summary?.paidCommission || 0).toLocaleString()}`"></p>
+                            <p class="text-[10px] sm:text-xs mt-1 sm:mt-2 text-gray-500 whitespace-nowrap">
+                                <i class="fas fa-check mr-1 text-[10px] sm:text-xs"></i> 確定済み
                             </p>
                         </div>
                     </div>
@@ -990,13 +990,13 @@
                 </div>
 
                 <!-- 設定タブ -->
-                <div x-show="activeTab === 'settings'" class="p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">アカウント設定</h2>
+                <div x-show="activeTab === 'settings'" class="p-4 sm:p-6">
+                    <h2 class="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-4 sm:mb-6">アカウント設定</h2>
 
-                    <div class="max-w-2xl space-y-6">
+                    <div class="max-w-2xl space-y-4 sm:space-y-6">
                         <!-- 代理店情報 -->
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">代理店情報</h3>
+                        <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                            <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">代理店情報</h3>
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">代理店コード</label>
@@ -1022,8 +1022,8 @@
                         </div>
 
                         <!-- 振込先情報 -->
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">振込先情報</h3>
+                        <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                            <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">振込先情報</h3>
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">銀行名</label>
@@ -1057,8 +1057,8 @@
                         </div>
 
                         <!-- セキュリティ設定 -->
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">セキュリティ設定</h3>
+                        <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+                            <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">セキュリティ設定</h3>
                             <div class="space-y-4">
                                 <div class="flex items-center justify-between">
                                     <div>
