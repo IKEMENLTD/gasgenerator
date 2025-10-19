@@ -164,7 +164,17 @@ exports.handler = async (event) => {
                 statusCode: 401,
                 headers,
                 body: JSON.stringify({
-                    error: 'このアカウントは無効化されています。管理者にお問い合わせください。'
+                    error: 'このアカウントは無効化されています',
+                    error_type: 'user_inactive',
+                    message: 'アカウントが管理者により無効化されています。サポートにお問い合わせください。',
+                    actions: [
+                        {
+                            type: 'contact_support',
+                            label: 'サポートに問い合わせる',
+                            url: 'https://ikemen.ltd/contact/',
+                            email: 'info@ikemen.ltd'
+                        }
+                    ]
                 })
             };
         }
@@ -173,11 +183,46 @@ exports.handler = async (event) => {
             logger.error('❌ 代理店が非アクティブです');
             logger.error('- 代理店ステータス:', user.agencies.status);
             logger.error('- 代理店名:', user.agencies.name);
+
+            const lineOfficialUrl = process.env.LINE_OFFICIAL_URL || 'https://line.me/R/ti/p/@xxx';
+
             return {
                 statusCode: 401,
                 headers,
                 body: JSON.stringify({
-                    error: 'この代理店アカウントはまだ有効化されていません。LINE公式アカウントを友達追加してください。'
+                    error: 'アカウントの有効化が完了していません',
+                    error_type: 'agency_pending_activation',
+                    agency_status: user.agencies.status,
+                    message: user.agencies.status === 'pending_friend_add'
+                        ? 'LINE公式アカウントを友達追加して、アカウントを有効化してください。'
+                        : 'アカウントの有効化処理中です。しばらくお待ちください。',
+                    actions: user.agencies.status === 'pending_friend_add'
+                        ? [
+                            {
+                                type: 'add_line_friend',
+                                label: 'LINE友達追加してアカウントを有効化',
+                                url: lineOfficialUrl
+                            },
+                            {
+                                type: 'contact_support',
+                                label: '問題が解決しない場合はサポートへ',
+                                url: 'https://ikemen.ltd/contact/',
+                                email: 'info@ikemen.ltd'
+                            }
+                        ]
+                        : [
+                            {
+                                type: 'retry',
+                                label: '数分後に再度ログインを試す',
+                                url: null
+                            },
+                            {
+                                type: 'contact_support',
+                                label: 'サポートに問い合わせる',
+                                url: 'https://ikemen.ltd/contact/',
+                                email: 'info@ikemen.ltd'
+                            }
+                        ]
                 })
             };
         }

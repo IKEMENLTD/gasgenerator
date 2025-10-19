@@ -12,6 +12,7 @@ function agencyDashboard() {
             remember: false
         },
         loginError: '',
+        loginErrorData: null,  // エラー時のアクション情報を保存
         loading: false,
 
         // Registration form
@@ -250,8 +251,9 @@ function agencyDashboard() {
 
             this.loading = true;
             this.loginError = '';
+            this.loginErrorData = null;  // エラーデータをリセット
 
-            try {
+            try{
                 console.log('API呼び出し: /.netlify/functions/agency-auth');
                 const response = await fetch('/.netlify/functions/agency-auth', {
                     method: 'POST',
@@ -308,8 +310,11 @@ function agencyDashboard() {
                     console.error('❌ ログイン失敗');
                     console.error('ステータス:', response.status);
                     console.error('エラーメッセージ:', result.error);
+                    console.error('エラー詳細データ:', result);
 
-                    this.loginError = result.error || 'メールアドレスまたはパスワードが間違っています';
+                    // エラーメッセージとアクション情報を保存
+                    this.loginError = result.message || result.error || 'メールアドレスまたはパスワードが間違っています';
+                    this.loginErrorData = result;  // アクション情報を含む完全なエラーデータを保存
                 }
             } catch (error) {
                 console.error('❌❌❌ ログイン処理でエラー発生 ❌❌❌');
