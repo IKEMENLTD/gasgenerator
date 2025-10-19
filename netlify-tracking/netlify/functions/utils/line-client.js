@@ -28,7 +28,7 @@ function generateLineLoginUrl(redirectUri, state) {
         client_id: channelId,
         redirect_uri: redirectUri,
         state: state,
-        scope: 'profile openid email',
+        scope: 'profile openid',
         // bot_prompt: 'normal' // Optional: prompt user to add bot
     });
 

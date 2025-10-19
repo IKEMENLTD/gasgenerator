@@ -145,7 +145,7 @@ exports.handler = async (event) => {
         const state = generateState();
 
         // Get callback URL from environment
-        const callbackUrl = process.env.LINE_LOGIN_CALLBACK_URL || 'https://taskmateai.net/agency/line-callback';
+        const callbackUrl = process.env.LINE_LOGIN_CALLBACK_URL || 'https://taskmateai.net/agency/';
 
         logger.log('- コールバックURL:', callbackUrl);
         logger.log('- State:', state);
