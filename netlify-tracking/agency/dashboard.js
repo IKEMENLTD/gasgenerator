@@ -244,10 +244,15 @@ function agencyDashboard() {
         },
 
         async login() {
+            console.log('=== 🔐 フロントエンド: ログイン処理開始 ===');
+            console.log('入力メールアドレス:', this.loginForm.email);
+            console.log('パスワード長:', this.loginForm.password ? this.loginForm.password.length : 0);
+
             this.loading = true;
             this.loginError = '';
 
             try {
+                console.log('API呼び出し: /.netlify/functions/agency-auth');
                 const response = await fetch('/.netlify/functions/agency-auth', {
                     method: 'POST',
                     headers: {
@@ -260,37 +265,61 @@ function agencyDashboard() {
                     })
                 });
 
+                console.log('API応答ステータス:', response.status);
+                console.log('API応答OK:', response.ok);
+
                 const result = await response.json();
+                console.log('API応答データ:', result);
 
                 if (response.ok && result.success) {
+                    console.log('✅ ログイン成功');
+                    console.log('ユーザー情報:', result.user);
+                    console.log('代理店情報:', result.agency);
+
                     this.isAuthenticated = true;
 
                     // HttpOnly Cookieが自動的に設定される
                     // LocalStorageは下位互換性のために保持（オプション）
                     // 注意: 将来的にはCookieのみに移行予定
+                    console.log('LocalStorageに保存中...');
                     localStorage.setItem('agencyAuthToken', result.token);
                     localStorage.setItem('agencyId', result.agency.id);
 
                     if (this.loginForm.remember) {
                         localStorage.setItem('rememberLogin', 'true');
+                        console.log('ログイン状態を記憶');
                     }
 
                     // Set agency and user info
                     this.agencyInfo = result.agency;
                     this.userInfo = result.user;
 
+                    console.log('ダッシュボードデータ読み込み開始...');
                     await this.loadDashboardData();
-                    // 課金情報の自動更新を開始
+
+                    console.log('課金情報の自動更新を開始');
                     this.startBillingStatsAutoRefresh();
-                    // セッションタイムアウト監視を開始
+
+                    console.log('セッションタイムアウト監視を開始');
                     this.startInactivityTimer();
+
+                    console.log('=== ✅✅✅ ログイン処理完了 ✅✅✅ ===');
                 } else {
+                    console.error('❌ ログイン失敗');
+                    console.error('ステータス:', response.status);
+                    console.error('エラーメッセージ:', result.error);
+
                     this.loginError = result.error || 'メールアドレスまたはパスワードが間違っています';
                 }
             } catch (error) {
+                console.error('❌❌❌ ログイン処理でエラー発生 ❌❌❌');
+                console.error('エラー詳細:', error);
+                console.error('エラーメッセージ:', error.message);
+                console.error('エラースタック:', error.stack);
+
                 this.loginError = 'ログインに失敗しました。しばらくしてから再度お試しください。';
-                console.error('Login error:', error);
             } finally {
+                console.log('ローディング終了');
                 this.loading = false;
             }
         },

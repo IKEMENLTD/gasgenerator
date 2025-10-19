@@ -48,9 +48,17 @@ exports.handler = async (event) => {
     }
 
     try {
+        logger.log('=== 🔐 ログイン処理開始 ===');
+        logger.log('IPアドレス:', event.headers['x-forwarded-for'] || event.headers['client-ip'] || 'unknown');
+        logger.log('User-Agent:', event.headers['user-agent'] || 'unknown');
+
         const { email, password } = JSON.parse(event.body);
 
+        logger.log('📧 入力されたメールアドレス:', email);
+        logger.log('🔑 パスワード長:', password ? password.length : 0);
+
         if (!email || !password) {
+            logger.error('❌ メールアドレスまたはパスワードが空です');
             return {
                 statusCode: 400,
                 headers,
@@ -61,7 +69,8 @@ exports.handler = async (event) => {
         }
 
         // Find agency user
-        logger.log('Looking for user with email:', email);
+        logger.log('=== STEP 1: ユーザー検索 ===');
+        logger.log('検索メールアドレス:', email);
 
         const { data: user, error: userError } = await supabase
             .from('agency_users')
@@ -89,27 +98,51 @@ exports.handler = async (event) => {
             .eq('email', email)
             .single();
 
-        logger.log('User query result:', { user, error: userError });
+        logger.log('=== STEP 2: データベース検索結果 ===');
 
-        if (userError || !user) {
-            logger.error('User not found or error:', userError);
+        if (userError) {
+            logger.error('❌ Supabaseエラー発生:');
+            logger.error('- エラーコード:', userError.code);
+            logger.error('- エラーメッセージ:', userError.message);
+            logger.error('- エラー詳細:', JSON.stringify(userError, null, 2));
+        }
+
+        if (!user) {
+            logger.error('❌ ユーザーが見つかりません');
+            logger.error('- 検索メールアドレス:', email);
+            logger.error('- データベース応答: null');
             return {
                 statusCode: 401,
                 headers,
                 body: JSON.stringify({
-                    error: 'メールアドレスまたはパスワードが間違っています',
-                    details: userError?.message
+                    error: 'メールアドレスまたはパスワードが間違っています'
                 })
             };
         }
 
-        // Verify password
-        logger.log('Comparing password...');
-        const validPassword = await bcrypt.compare(password, user.password_hash);
-        logger.log('Password valid:', validPassword);
+        logger.log('✅ ユーザー発見:');
+        logger.log('- ユーザーID:', user.id);
+        logger.log('- メールアドレス:', user.email);
+        logger.log('- 名前:', user.name);
+        logger.log('- 役割:', user.role);
+        logger.log('- アクティブ:', user.is_active);
+        logger.log('- 代理店ID:', user.agency_id);
+        logger.log('- 代理店名:', user.agencies?.name);
+        logger.log('- 代理店ステータス:', user.agencies?.status);
+        logger.log('- パスワードハッシュ存在:', !!user.password_hash);
 
-        if (!validPassword) {
-            logger.error('Invalid password');
+        // Verify password
+        logger.log('=== STEP 3: パスワード検証 ===');
+        logger.log('パスワードハッシュ比較中...');
+
+        const validPassword = await bcrypt.compare(password, user.password_hash);
+
+        if (validPassword) {
+            logger.log('✅ パスワード一致');
+        } else {
+            logger.error('❌ パスワード不一致');
+            logger.error('- 入力パスワード長:', password.length);
+            logger.error('- ハッシュ形式:', user.password_hash ? user.password_hash.substring(0, 10) + '...' : 'なし');
             return {
                 statusCode: 401,
                 headers,
@@ -120,24 +153,52 @@ exports.handler = async (event) => {
         }
 
         // Check if user account is active
-        // セキュリティ上の理由により、具体的な理由は表示しない（ユーザー列挙攻撃対策）
-        if (!user.is_active || user.agencies.status !== 'active') {
+        logger.log('=== STEP 4: アクティブステータス確認 ===');
+        logger.log('- ユーザーアクティブ:', user.is_active);
+        logger.log('- 代理店ステータス:', user.agencies.status);
+
+        if (!user.is_active) {
+            logger.error('❌ ユーザーが非アクティブです');
+            logger.error('- is_active:', user.is_active);
             return {
                 statusCode: 401,
                 headers,
                 body: JSON.stringify({
-                    error: 'メールアドレスまたはパスワードが間違っています'
+                    error: 'このアカウントは無効化されています。管理者にお問い合わせください。'
                 })
             };
         }
 
+        if (user.agencies.status !== 'active') {
+            logger.error('❌ 代理店が非アクティブです');
+            logger.error('- 代理店ステータス:', user.agencies.status);
+            logger.error('- 代理店名:', user.agencies.name);
+            return {
+                statusCode: 401,
+                headers,
+                body: JSON.stringify({
+                    error: 'この代理店アカウントはまだ有効化されていません。LINE公式アカウントを友達追加してください。'
+                })
+            };
+        }
+
+        logger.log('✅ アクティブステータス確認完了');
+
         // Update last login
-        await supabase
+        logger.log('=== STEP 5: 最終ログイン時刻更新 ===');
+        const { error: updateError } = await supabase
             .from('agency_users')
             .update({ last_login_at: new Date().toISOString() })
             .eq('id', user.id);
 
+        if (updateError) {
+            logger.error('⚠️ 最終ログイン時刻の更新に失敗:', updateError.message);
+        } else {
+            logger.log('✅ 最終ログイン時刻更新完了');
+        }
+
         // Generate JWT token
+        logger.log('=== STEP 6: JWT トークン生成 ===');
         const token = jwt.sign(
             {
                 userId: user.id,
@@ -148,15 +209,26 @@ exports.handler = async (event) => {
             process.env.JWT_SECRET || 'your-jwt-secret',
             { expiresIn: '7d' }
         );
+        logger.log('✅ JWT トークン生成完了');
+        logger.log('- トークン長:', token.length);
+        logger.log('- 有効期限: 7日間');
 
         // セキュアなCookie設定を取得
         const cookieOptions = getSecureCookieOptions();
+        logger.log('- Cookie設定:', cookieOptions);
 
         // HttpOnly Cookieでトークンを設定（セキュリティ強化）
         const setCookieHeaders = [
             `agencyAuthToken=${token}; ${cookieOptions}`,
             `agencyId=${user.agency_id}; ${cookieOptions.replace('HttpOnly; ', '')}`  // agencyIdはJSからアクセス可能に
         ];
+
+        logger.log('=== ✅✅✅ ログイン成功 ✅✅✅ ===');
+        logger.log('- ユーザーID:', user.id);
+        logger.log('- メールアドレス:', user.email);
+        logger.log('- 代理店:', user.agencies.name);
+        logger.log('- 代理店コード:', user.agencies.code);
+        logger.log('- 階層レベル:', user.agencies.level);
 
         return {
             statusCode: 200,
