@@ -516,6 +516,28 @@ function agencyDashboard() {
                 if (response.ok && result.success) {
                     console.log('✅ Registration completed successfully');
 
+                    // 友達追加が必要な場合はLINE公式アカウントにリダイレクト
+                    if (result.requires_friend_add && result.line_official_url) {
+                        console.log('🔄 Redirecting to LINE friend add page...');
+                        console.log('LINE Official URL:', result.line_official_url);
+
+                        // 代理店コードを保存（友達追加完了後の確認用）
+                        if (result.agency?.code) {
+                            localStorage.setItem('agencyCode', result.agency.code);
+                        }
+
+                        // セッションストレージをクリア
+                        sessionStorage.removeItem('lineAuthState');
+                        sessionStorage.removeItem('lineAuthToken');
+
+                        // URLをクリーンアップしてからリダイレクト
+                        window.history.replaceState({}, document.title, window.location.pathname);
+
+                        // LINE友達追加ページにリダイレクト
+                        window.location.href = result.line_official_url;
+                        return;
+                    }
+
                     // セッションストレージをクリア
                     sessionStorage.removeItem('lineAuthState');
                     sessionStorage.removeItem('lineAuthToken');

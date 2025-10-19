@@ -112,6 +112,9 @@ async function handleFollowEvent(event) {
     const userId = event.source.userId;
 
     try {
+        console.log('=== FOLLOW EVENT 受信 ===');
+        console.log('LINE User ID:', userId);
+
         // Get user profile from LINE API
         const userProfile = await getLineUserProfile(userId);
 
@@ -119,6 +122,67 @@ async function handleFollowEvent(event) {
             console.error('Failed to get user profile for:', userId);
             return;
         }
+
+        console.log('LINE Profile取得成功:', userProfile.displayName);
+
+        // 🆕 Check if this is an agency registration (代理店登録フロー)
+        const { data: agency, error: agencyError } = await supabase
+            .from('agencies')
+            .select('id, code, name, status, contact_email')
+            .eq('line_user_id', userId)
+            .single();
+
+        if (!agencyError && agency) {
+            console.log('✅ 代理店登録の友達追加を検知:', agency.name);
+            console.log('- 代理店ID:', agency.id);
+            console.log('- 代理店コード:', agency.code);
+            console.log('- 現在のステータス:', agency.status);
+
+            // 代理店が既にアクティブの場合は何もしない（重複防止）
+            if (agency.status === 'active') {
+                console.log('⚠️ 代理店は既にアクティブ - スキップします');
+                return;
+            }
+
+            // 代理店をアクティブ化
+            const { error: updateError } = await supabase
+                .from('agencies')
+                .update({
+                    status: 'active'
+                })
+                .eq('id', agency.id);
+
+            if (updateError) {
+                console.error('❌ 代理店アクティベーション失敗:', updateError);
+            } else {
+                console.log('✅ 代理店をアクティブ化しました');
+
+                // ユーザーもアクティブ化
+                const { error: userUpdateError } = await supabase
+                    .from('agency_users')
+                    .update({
+                        is_active: true
+                    })
+                    .eq('agency_id', agency.id)
+                    .eq('role', 'owner');
+
+                if (userUpdateError) {
+                    console.error('❌ ユーザーアクティベーション失敗:', userUpdateError);
+                } else {
+                    console.log('✅ ユーザーをアクティブ化しました');
+                }
+
+                // 🎉 代理店登録完了メッセージを送信
+                await sendAgencyWelcomeMessage(userId, agency);
+                console.log('✅ 代理店ウェルカムメッセージ送信完了');
+            }
+
+            return; // 代理店フロー完了
+        }
+
+        console.log('通常の友達追加として処理します');
+
+        // 🔽 既存のトラッキングユーザー処理（従来通り）
 
         // Check if user already exists
         const { data: existingUser } = await supabase
@@ -472,6 +536,173 @@ async function sendLineMessage(userId, message) {
         }
     } catch (error) {
         console.error('Error sending LINE message:', error);
+    }
+}
+
+// 🆕 Send agency registration welcome message
+async function sendAgencyWelcomeMessage(userId, agency) {
+    try {
+        console.log('代理店ウェルカムメッセージ送信開始:', agency.name);
+
+        const welcomeMessage = {
+            type: 'flex',
+            altText: '✅ LINE連携が完了しました！',
+            contents: {
+                type: 'bubble',
+                hero: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                        {
+                            type: 'text',
+                            text: '✅',
+                            size: '4xl',
+                            align: 'center',
+                            weight: 'bold',
+                            color: '#10b981'
+                        }
+                    ],
+                    backgroundColor: '#f0fdf4',
+                    paddingAll: '20px'
+                },
+                body: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                        {
+                            type: 'text',
+                            text: 'LINE連携完了',
+                            weight: 'bold',
+                            size: 'xl',
+                            color: '#1f2937'
+                        },
+                        {
+                            type: 'text',
+                            text: 'TaskMate AI パートナー登録',
+                            size: 'sm',
+                            color: '#6b7280',
+                            margin: 'md'
+                        },
+                        {
+                            type: 'separator',
+                            margin: 'xl'
+                        },
+                        {
+                            type: 'box',
+                            layout: 'vertical',
+                            margin: 'lg',
+                            spacing: 'sm',
+                            contents: [
+                                {
+                                    type: 'box',
+                                    layout: 'baseline',
+                                    spacing: 'sm',
+                                    contents: [
+                                        {
+                                            type: 'text',
+                                            text: '代理店名',
+                                            color: '#6b7280',
+                                            size: 'sm',
+                                            flex: 2
+                                        },
+                                        {
+                                            type: 'text',
+                                            text: agency.name,
+                                            wrap: true,
+                                            color: '#111827',
+                                            size: 'sm',
+                                            flex: 5,
+                                            weight: 'bold'
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: 'box',
+                                    layout: 'baseline',
+                                    spacing: 'sm',
+                                    contents: [
+                                        {
+                                            type: 'text',
+                                            text: '代理店コード',
+                                            color: '#6b7280',
+                                            size: 'sm',
+                                            flex: 2
+                                        },
+                                        {
+                                            type: 'text',
+                                            text: agency.code,
+                                            wrap: true,
+                                            color: '#10b981',
+                                            size: 'md',
+                                            flex: 5,
+                                            weight: 'bold'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            type: 'separator',
+                            margin: 'xl'
+                        },
+                        {
+                            type: 'box',
+                            layout: 'vertical',
+                            margin: 'lg',
+                            spacing: 'sm',
+                            contents: [
+                                {
+                                    type: 'text',
+                                    text: '🎉 次のステップ',
+                                    weight: 'bold',
+                                    color: '#111827',
+                                    margin: 'md'
+                                },
+                                {
+                                    type: 'text',
+                                    text: '1. ダッシュボードにログイン\n2. トラッキングリンクを作成\n3. お客様に共有して報酬GET!',
+                                    wrap: true,
+                                    color: '#4b5563',
+                                    size: 'sm',
+                                    margin: 'md'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                footer: {
+                    type: 'box',
+                    layout: 'vertical',
+                    spacing: 'sm',
+                    contents: [
+                        {
+                            type: 'button',
+                            style: 'primary',
+                            height: 'sm',
+                            action: {
+                                type: 'uri',
+                                label: 'ダッシュボードへ',
+                                uri: 'https://taskmateai.net/agency/'
+                            },
+                            color: '#10b981'
+                        },
+                        {
+                            type: 'box',
+                            layout: 'vertical',
+                            contents: [],
+                            margin: 'sm'
+                        }
+                    ],
+                    flex: 0
+                }
+            }
+        };
+
+        await sendLineMessage(userId, welcomeMessage);
+        console.log('✅ 代理店ウェルカムメッセージ送信成功');
+
+    } catch (error) {
+        console.error('❌ 代理店ウェルカムメッセージ送信失敗:', error);
     }
 }
 
