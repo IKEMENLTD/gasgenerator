@@ -217,7 +217,6 @@ exports.handler = async (event) => {
         logger.log('- 新規代理店の報酬率:', newCommissionRate, '%');
 
         // Check if email already exists
-        // セキュリティ上の理由により、メール存在を明示しない（ユーザー列挙攻撃対策）
         logger.log('=== STEP 2: メールアドレス重複チェック ===');
         logger.log('チェックするメールアドレス:', email);
         const { data: existingUser } = await supabase
@@ -237,12 +236,39 @@ exports.handler = async (event) => {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({
-                    error: '登録処理を完了できませんでした。入力内容を確認してください。'
+                    error: 'このメールアドレスは既に登録されています'
                 })
             };
         }
 
         logger.log('✅ メールアドレスは使用可能です');
+
+        // Check if phone number already exists
+        logger.log('=== STEP 2.5: 電話番号重複チェック ===');
+        logger.log('チェックする電話番号:', phone);
+        const { data: existingPhone } = await supabase
+            .from('agencies')
+            .select('id, contact_phone')
+            .eq('contact_phone', phone)
+            .single();
+
+        logger.log('電話番号重複チェック結果:');
+        logger.log('- existingPhone:', existingPhone ? '電話番号は既に使用されています' : '電話番号は使用可能です');
+
+        if (existingPhone) {
+            logger.error('❌ 電話番号が既に登録されています');
+            logger.error('- 電話番号:', phone);
+            logger.error('- 既存代理店ID:', existingPhone.id);
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({
+                    error: 'この電話番号は既に登録されています'
+                })
+            };
+        }
+
+        logger.log('✅ 電話番号は使用可能です');
 
         // Generate unique agency code
         logger.log('=== STEP 3: 代理店コード生成 ===');
