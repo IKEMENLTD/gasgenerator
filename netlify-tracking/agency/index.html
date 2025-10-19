@@ -342,42 +342,44 @@
     <!-- LINE認証中ローディング画面 -->
     <div x-show="loading && (registerSuccess || (!isAuthenticated && !showRegister))"
          x-cloak
-         class="fixed inset-0 bg-gradient-to-br from-emerald-600 to-green-600 flex items-center justify-center z-50">
-        <div class="text-center text-white p-8">
-            <!-- アニメーション付きLINEアイコン -->
-            <div class="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full mb-6 animate-pulse">
-                <i class="fab fa-line text-5xl text-emerald-600"></i>
-            </div>
-
-            <!-- ローディングスピナー -->
-            <div class="mb-6">
-                <div class="inline-block">
-                    <svg class="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+         class="fixed inset-0 bg-gradient-to-br from-emerald-600 to-green-600 overflow-y-auto z-50">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="text-center text-white">
+                <!-- アニメーション付きLINEアイコン -->
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full mb-6 animate-pulse">
+                    <i class="fab fa-line text-5xl text-emerald-600"></i>
                 </div>
-            </div>
 
-            <!-- メッセージ -->
-            <div class="space-y-3">
-                <h2 class="text-2xl sm:text-3xl font-bold">LINE連携処理中...</h2>
-                <p class="text-sm sm:text-base text-emerald-100">
-                    しばらくお待ちください
-                </p>
-                <div class="flex items-center justify-center space-x-1 text-emerald-100">
-                    <span class="animate-bounce" style="animation-delay: 0s;">●</span>
-                    <span class="animate-bounce" style="animation-delay: 0.2s;">●</span>
-                    <span class="animate-bounce" style="animation-delay: 0.4s;">●</span>
+                <!-- ローディングスピナー -->
+                <div class="mb-6">
+                    <div class="inline-block">
+                        <svg class="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
                 </div>
-            </div>
 
-            <!-- 注意事項 -->
-            <div class="mt-8 bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 max-w-md mx-auto">
-                <p class="text-xs sm:text-sm text-emerald-50">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    このページを閉じないでください
-                </p>
+                <!-- メッセージ -->
+                <div class="space-y-3">
+                    <h2 class="text-2xl sm:text-3xl font-bold">LINE連携処理中...</h2>
+                    <p class="text-sm sm:text-base text-emerald-100">
+                        しばらくお待ちください
+                    </p>
+                    <div class="flex items-center justify-center space-x-1 text-emerald-100">
+                        <span class="animate-bounce" style="animation-delay: 0s;">●</span>
+                        <span class="animate-bounce" style="animation-delay: 0.2s;">●</span>
+                        <span class="animate-bounce" style="animation-delay: 0.4s;">●</span>
+                    </div>
+                </div>
+
+                <!-- 注意事項 -->
+                <div class="mt-8 bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 max-w-md mx-auto">
+                    <p class="text-xs sm:text-sm text-emerald-50">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        このページを閉じないでください
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -385,8 +387,8 @@
     <!-- 登録完了画面 -->
     <div x-show="registerSuccess && !loading && !showLineConfirmModal"
          x-cloak
-         class="fixed inset-0 bg-gradient-to-br from-emerald-600 to-green-600 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 sm:p-12 w-full max-w-2xl">
+         class="fixed inset-0 bg-gradient-to-br from-emerald-600 to-green-600 overflow-y-auto p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 sm:p-12 w-full max-w-2xl my-8 mx-auto">
             <!-- 成功アニメーション -->
             <div class="text-center mb-8">
                 <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-600 to-green-600 rounded-full mb-6 animate-bounce">
@@ -482,9 +484,9 @@
     <!-- LINE連携確認モーダル -->
     <div x-show="showLineConfirmModal"
          x-cloak
-         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+         class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto p-4 z-50"
          @click.self="showLineConfirmModal = false">
-        <div class="bg-white rounded-xl shadow-2xl p-6 sm:p-8 w-full max-w-md transform transition-all"
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 sm:p-8 w-full max-w-md my-8 mx-auto transform transition-all"
              @click.stop>
             <!-- ヘッダー -->
             <div class="text-center mb-6">
