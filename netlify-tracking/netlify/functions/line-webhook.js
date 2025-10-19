@@ -1,10 +1,12 @@
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 
-// Initialize Supabase client
+// Initialize Supabase client with SERVICE_ROLE_KEY
+// IMPORTANT: Webhooks are server-side operations that need full database access
+// ANON_KEY would be restricted by Row Level Security (RLS)
 const supabase = createClient(
     process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
+    process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 // LINE Messaging API configuration
@@ -707,8 +709,8 @@ async function sendAgencyWelcomeMessage(userId, agency) {
 }
 
 // Validate environment variables on cold start
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    console.error('Missing required environment variables: SUPABASE_URL, SUPABASE_ANON_KEY');
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('Missing required environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY');
 }
 
 if (!LINE_CHANNEL_SECRET || !LINE_CHANNEL_ACCESS_TOKEN) {
