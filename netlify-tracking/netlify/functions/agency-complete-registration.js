@@ -341,11 +341,19 @@ exports.handler = async (event) => {
 
         // Send LINE welcome message (既存友達でも新規友達でも送信可能)
         logger.log('=== STEP 7: LINE連携完了メッセージ送信 ===');
+        logger.log('LINE_CHANNEL_ACCESS_TOKEN:', process.env.LINE_CHANNEL_ACCESS_TOKEN ? '設定済み（長さ: ' + process.env.LINE_CHANNEL_ACCESS_TOKEN.length + '文字）' : '❌ 未設定');
+        logger.log('送信先LINE User ID:', profile.userId);
+        logger.log('送信先表示名:', profile.displayName);
+
         try {
             if (process.env.LINE_CHANNEL_ACCESS_TOKEN) {
+                logger.log('✅ LINE_CHANNEL_ACCESS_TOKENが設定されています - メッセージ送信を開始します');
+
                 const lineClient = new Client({
                     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN
                 });
+
+                logger.log('LINE Clientインスタンス作成完了');
 
                 const welcomeMessage = {
                     type: 'flex',
@@ -502,15 +510,34 @@ exports.handler = async (event) => {
                 };
 
                 // Push message（既存友達でも新規友達でも送信可能）
-                await lineClient.pushMessage(profile.userId, welcomeMessage);
+                logger.log('📤 pushMessage API呼び出し開始');
+                logger.log('- 送信先User ID:', profile.userId);
+                logger.log('- メッセージタイプ:', welcomeMessage.type);
+                logger.log('- altText:', welcomeMessage.altText);
+
+                const pushResult = await lineClient.pushMessage(profile.userId, welcomeMessage);
+
                 logger.log('✅ LINE連携完了メッセージ送信成功');
                 logger.log('- 送信先LINE User ID:', profile.userId.substring(0, 8) + '...');
+                logger.log('- pushMessage結果:', pushResult);
             } else {
                 logger.log('⚠️ LINE_CHANNEL_ACCESS_TOKENが未設定のため、メッセージ送信をスキップ');
             }
         } catch (lineError) {
             // LINEメッセージ送信失敗は致命的エラーではないので、ログのみ
-            logger.error('⚠️ LINEメッセージ送信に失敗（登録自体は成功）:', lineError.message);
+            logger.error('⚠️ LINEメッセージ送信に失敗（登録自体は成功）');
+            logger.error('エラー名:', lineError.name);
+            logger.error('エラーメッセージ:', lineError.message);
+            logger.error('エラースタック:', lineError.stack);
+            logger.error('エラー詳細（full）:', JSON.stringify(lineError, null, 2));
+
+            // HTTPステータスコードがある場合（LINE API エラー）
+            if (lineError.statusCode) {
+                logger.error('LINE APIエラー:');
+                logger.error('- ステータスコード:', lineError.statusCode);
+                logger.error('- ステータスメッセージ:', lineError.statusMessage);
+                logger.error('- originalError:', lineError.originalError);
+            }
         }
 
         logger.log('=== ✅✅✅ LINE連携完了 ✅✅✅ ===');
