@@ -166,6 +166,45 @@
                 <p class="text-gray-600 mt-2">TaskMate AI パートナー登録</p>
             </div>
 
+            <!-- プログレスインジケーター -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between max-w-md mx-auto">
+                    <!-- Step 1: 基本情報 -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold mb-2">
+                            <i class="fas fa-check text-sm"></i>
+                        </div>
+                        <span class="text-xs font-medium text-emerald-600">基本情報</span>
+                    </div>
+
+                    <!-- Connector -->
+                    <div class="flex-1 h-1 bg-gray-300 mx-2 relative" style="top: -12px;">
+                        <div class="h-full bg-emerald-600 transition-all duration-500" style="width: 0%;" x-bind:style="registerSuccess ? 'width: 100%' : 'width: 0%'"></div>
+                    </div>
+
+                    <!-- Step 2: LINE連携 -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="w-10 h-10 rounded-full transition-all duration-300 flex items-center justify-center font-bold mb-2"
+                             x-bind:class="registerSuccess ? 'bg-emerald-600 text-white' : 'bg-gray-300 text-gray-600'">
+                            <i class="fab fa-line text-sm"></i>
+                        </div>
+                        <span class="text-xs font-medium transition-colors duration-300"
+                              x-bind:class="registerSuccess ? 'text-emerald-600' : 'text-gray-500'">LINE連携</span>
+                    </div>
+
+                    <!-- Connector -->
+                    <div class="flex-1 h-1 bg-gray-300 mx-2 relative" style="top: -12px;"></div>
+
+                    <!-- Step 3: 完了 -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="w-10 h-10 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center font-bold mb-2">
+                            <i class="fas fa-flag-checkered text-sm"></i>
+                        </div>
+                        <span class="text-xs font-medium text-gray-500">完了</span>
+                    </div>
+                </div>
+            </div>
+
             <form @submit.prevent="register()" class="space-y-4">
                 <!-- 会社情報 -->
                 <div class="space-y-4 pb-4 border-b border-gray-200">
@@ -297,6 +336,218 @@
                     </a>
                 </p>
             </div>
+        </div>
+    </div>
+
+    <!-- LINE認証中ローディング画面 -->
+    <div x-show="loading && (registerSuccess || (!isAuthenticated && !showRegister))"
+         x-cloak
+         class="fixed inset-0 bg-gradient-to-br from-emerald-600 to-green-600 flex items-center justify-center z-50">
+        <div class="text-center text-white p-8">
+            <!-- アニメーション付きLINEアイコン -->
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full mb-6 animate-pulse">
+                <i class="fab fa-line text-5xl text-emerald-600"></i>
+            </div>
+
+            <!-- ローディングスピナー -->
+            <div class="mb-6">
+                <div class="inline-block">
+                    <svg class="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- メッセージ -->
+            <div class="space-y-3">
+                <h2 class="text-2xl sm:text-3xl font-bold">LINE連携処理中...</h2>
+                <p class="text-sm sm:text-base text-emerald-100">
+                    しばらくお待ちください
+                </p>
+                <div class="flex items-center justify-center space-x-1 text-emerald-100">
+                    <span class="animate-bounce" style="animation-delay: 0s;">●</span>
+                    <span class="animate-bounce" style="animation-delay: 0.2s;">●</span>
+                    <span class="animate-bounce" style="animation-delay: 0.4s;">●</span>
+                </div>
+            </div>
+
+            <!-- 注意事項 -->
+            <div class="mt-8 bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 max-w-md mx-auto">
+                <p class="text-xs sm:text-sm text-emerald-50">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    このページを閉じないでください
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登録完了画面 -->
+    <div x-show="registerSuccess && !loading && !showLineConfirmModal"
+         x-cloak
+         class="fixed inset-0 bg-gradient-to-br from-emerald-600 to-green-600 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 sm:p-12 w-full max-w-2xl">
+            <!-- 成功アニメーション -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-emerald-600 to-green-600 rounded-full mb-6 animate-bounce">
+                    <i class="fas fa-check text-5xl text-white"></i>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+                    登録完了！
+                </h1>
+                <p class="text-lg text-gray-600">
+                    TaskMate AI 代理店パートナーへようこそ
+                </p>
+            </div>
+
+            <!-- 詳細情報カード -->
+            <div class="space-y-4 mb-8">
+                <!-- 代理店コード -->
+                <div class="bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-emerald-900">
+                            <i class="fas fa-id-card mr-2"></i>あなたの代理店コード
+                        </h3>
+                        <span class="text-xs bg-emerald-600 text-white px-3 py-1 rounded-full">
+                            保存推奨
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between bg-white rounded-lg p-4">
+                        <code class="text-2xl sm:text-3xl font-bold text-emerald-600" x-text="pendingRegistrationData?.agency_code || 'AG...'"></code>
+                        <button @click="copyToClipboard(pendingRegistrationData?.agency_code || '', $event)"
+                                class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <i class="fas fa-copy mr-1"></i> コピー
+                        </button>
+                    </div>
+                    <p class="text-xs text-emerald-700 mt-3">
+                        このコードを使って、下位代理店を招待できます
+                    </p>
+                </div>
+
+                <!-- 次のステップ -->
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                    <h3 class="text-sm font-semibold text-blue-900 mb-4">
+                        <i class="fas fa-route mr-2"></i>次のステップ
+                    </h3>
+                    <ol class="space-y-3 text-sm text-blue-800">
+                        <li class="flex items-start">
+                            <span class="inline-flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full mr-3 flex-shrink-0 text-xs font-bold">1</span>
+                            <span>ログインして代理店ダッシュボードにアクセス</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="inline-flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full mr-3 flex-shrink-0 text-xs font-bold">2</span>
+                            <span>トラッキングリンクを作成してお客様に共有</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="inline-flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full mr-3 flex-shrink-0 text-xs font-bold">3</span>
+                            <span>成約ごとに報酬が自動計算されます</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- 機能紹介 -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4 text-center">
+                        <i class="fas fa-chart-line text-2xl text-purple-600 mb-2"></i>
+                        <p class="text-xs font-semibold text-purple-900">リアルタイム分析</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 text-center">
+                        <i class="fas fa-users text-2xl text-orange-600 mb-2"></i>
+                        <p class="text-xs font-semibold text-orange-900">4段階紹介制度</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-pink-50 to-pink-100 border border-pink-200 rounded-lg p-4 text-center">
+                        <i class="fas fa-yen-sign text-2xl text-pink-600 mb-2"></i>
+                        <p class="text-xs font-semibold text-pink-900">自動報酬計算</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- アクションボタン -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button @click="showRegister = false; registerSuccess = false; pendingRegistrationData = null"
+                        class="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    ログイン画面へ
+                </button>
+            </div>
+
+            <!-- カウントダウン -->
+            <p class="text-center text-sm text-gray-500 mt-6">
+                <i class="fas fa-clock mr-1"></i>
+                3秒後に自動的にログイン画面に移動します
+            </p>
+        </div>
+    </div>
+
+    <!-- LINE連携確認モーダル -->
+    <div x-show="showLineConfirmModal"
+         x-cloak
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+         @click.self="showLineConfirmModal = false">
+        <div class="bg-white rounded-xl shadow-2xl p-6 sm:p-8 w-full max-w-md transform transition-all"
+             @click.stop>
+            <!-- ヘッダー -->
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-600 to-green-600 rounded-full mb-4">
+                    <i class="fab fa-line text-3xl text-white"></i>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">LINE連携を開始します</h2>
+                <p class="text-sm text-gray-600">あと少しで登録完了です！</p>
+            </div>
+
+            <!-- 説明セクション -->
+            <div class="space-y-4 mb-6">
+                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                    <p class="text-sm font-semibold text-emerald-900 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>次のステップ
+                    </p>
+                    <ol class="text-sm text-emerald-800 space-y-1 ml-6 list-decimal">
+                        <li>LINEアプリでログイン</li>
+                        <li>アカウント連携を承認</li>
+                        <li>登録完了</li>
+                    </ol>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <p class="text-sm text-amber-800">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <strong>重要：</strong>LINEアプリがインストールされていることを確認してください
+                    </p>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p class="text-xs text-blue-800">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        LINE連携は本人確認のために必要です。お客様の個人情報は安全に保護されます。
+                    </p>
+                </div>
+            </div>
+
+            <!-- アクションボタン -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button @click="proceedToLineAuth()"
+                        :disabled="loading"
+                        class="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-emerald-700 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                    <i class="fab fa-line mr-2 text-lg"></i>
+                    <span x-show="!loading">LINE連携を開始</span>
+                    <span x-show="loading" class="inline-flex items-center">
+                        <i class="fas fa-spinner fa-spin mr-2"></i> 準備中...
+                    </span>
+                </button>
+                <button @click="showLineConfirmModal = false"
+                        :disabled="loading"
+                        class="flex-1 sm:flex-initial sm:px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    キャンセル
+                </button>
+            </div>
+
+            <!-- 閉じるボタン（右上） -->
+            <button @click="showLineConfirmModal = false"
+                    :disabled="loading"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+                    aria-label="閉じる">
+                <i class="fas fa-times text-xl"></i>
+            </button>
         </div>
     </div>
 
