@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const { Client } = require('@line/bot-sdk');
 const { validateCsrfProtection, createCsrfErrorResponse } = require('./utils/csrf-protection');
 const { applyRateLimit, STRICT_RATE_LIMIT } = require('./utils/rate-limiter');
 const logger = require('./utils/logger');
@@ -338,8 +339,179 @@ exports.handler = async (event) => {
             throw userError;
         }
 
-        // Send welcome email (optional - implement if needed)
-        // await sendWelcomeEmail(agency.contact_email, agency.name);
+        // Send LINE welcome message (既存友達でも新規友達でも送信可能)
+        logger.log('=== STEP 7: LINE連携完了メッセージ送信 ===');
+        try {
+            if (process.env.LINE_CHANNEL_ACCESS_TOKEN) {
+                const lineClient = new Client({
+                    channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN
+                });
+
+                const welcomeMessage = {
+                    type: 'flex',
+                    altText: '✅ LINE連携が完了しました！',
+                    contents: {
+                        type: 'bubble',
+                        hero: {
+                            type: 'box',
+                            layout: 'vertical',
+                            contents: [
+                                {
+                                    type: 'text',
+                                    text: '✅',
+                                    size: '4xl',
+                                    align: 'center',
+                                    weight: 'bold',
+                                    color: '#10b981'
+                                }
+                            ],
+                            backgroundColor: '#f0fdf4',
+                            paddingAll: '20px'
+                        },
+                        body: {
+                            type: 'box',
+                            layout: 'vertical',
+                            contents: [
+                                {
+                                    type: 'text',
+                                    text: 'LINE連携完了',
+                                    weight: 'bold',
+                                    size: 'xl',
+                                    color: '#1f2937'
+                                },
+                                {
+                                    type: 'text',
+                                    text: 'TaskMate AI パートナー登録',
+                                    size: 'sm',
+                                    color: '#6b7280',
+                                    margin: 'md'
+                                },
+                                {
+                                    type: 'separator',
+                                    margin: 'xl'
+                                },
+                                {
+                                    type: 'box',
+                                    layout: 'vertical',
+                                    margin: 'lg',
+                                    spacing: 'sm',
+                                    contents: [
+                                        {
+                                            type: 'box',
+                                            layout: 'baseline',
+                                            spacing: 'sm',
+                                            contents: [
+                                                {
+                                                    type: 'text',
+                                                    text: '代理店名',
+                                                    color: '#6b7280',
+                                                    size: 'sm',
+                                                    flex: 2
+                                                },
+                                                {
+                                                    type: 'text',
+                                                    text: agency.name,
+                                                    wrap: true,
+                                                    color: '#111827',
+                                                    size: 'sm',
+                                                    flex: 5,
+                                                    weight: 'bold'
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            type: 'box',
+                                            layout: 'baseline',
+                                            spacing: 'sm',
+                                            contents: [
+                                                {
+                                                    type: 'text',
+                                                    text: '代理店コード',
+                                                    color: '#6b7280',
+                                                    size: 'sm',
+                                                    flex: 2
+                                                },
+                                                {
+                                                    type: 'text',
+                                                    text: agency.code,
+                                                    wrap: true,
+                                                    color: '#10b981',
+                                                    size: 'md',
+                                                    flex: 5,
+                                                    weight: 'bold'
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: 'separator',
+                                    margin: 'xl'
+                                },
+                                {
+                                    type: 'box',
+                                    layout: 'vertical',
+                                    margin: 'lg',
+                                    spacing: 'sm',
+                                    contents: [
+                                        {
+                                            type: 'text',
+                                            text: '🎉 次のステップ',
+                                            weight: 'bold',
+                                            color: '#111827',
+                                            margin: 'md'
+                                        },
+                                        {
+                                            type: 'text',
+                                            text: '1. ダッシュボードにログイン\n2. トラッキングリンクを作成\n3. お客様に共有して報酬GET!',
+                                            wrap: true,
+                                            color: '#4b5563',
+                                            size: 'sm',
+                                            margin: 'md'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        footer: {
+                            type: 'box',
+                            layout: 'vertical',
+                            spacing: 'sm',
+                            contents: [
+                                {
+                                    type: 'button',
+                                    style: 'primary',
+                                    height: 'sm',
+                                    action: {
+                                        type: 'uri',
+                                        label: 'ダッシュボードへ',
+                                        uri: 'https://taskmateai.net/agency/'
+                                    },
+                                    color: '#10b981'
+                                },
+                                {
+                                    type: 'box',
+                                    layout: 'vertical',
+                                    contents: [],
+                                    margin: 'sm'
+                                }
+                            ],
+                            flex: 0
+                        }
+                    }
+                };
+
+                // Push message（既存友達でも新規友達でも送信可能）
+                await lineClient.pushMessage(profile.userId, welcomeMessage);
+                logger.log('✅ LINE連携完了メッセージ送信成功');
+                logger.log('- 送信先LINE User ID:', profile.userId.substring(0, 8) + '...');
+            } else {
+                logger.log('⚠️ LINE_CHANNEL_ACCESS_TOKENが未設定のため、メッセージ送信をスキップ');
+            }
+        } catch (lineError) {
+            // LINEメッセージ送信失敗は致命的エラーではないので、ログのみ
+            logger.error('⚠️ LINEメッセージ送信に失敗（登録自体は成功）:', lineError.message);
+        }
 
         logger.log('=== ✅✅✅ LINE連携完了 ✅✅✅ ===');
         logger.log('代理店コード:', agency.code);
@@ -352,7 +524,10 @@ exports.handler = async (event) => {
             body: JSON.stringify({
                 success: true,
                 message: '登録が完了しました',
-                agency_code: agency.code,
+                agency: {
+                    code: agency.code,
+                    name: agency.name
+                },
                 line_user_name: profile.displayName
             })
         };
