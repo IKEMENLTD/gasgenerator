@@ -13,6 +13,7 @@
     "@anthropic-ai/sdk": "^0.24.3",
     "@line/bot-sdk": "^7.5.2",
     "@netlify/functions": "^2.4.0",
+    "@sendgrid/mail": "^8.1.6",
     "@supabase/supabase-js": "^2.43.5",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
