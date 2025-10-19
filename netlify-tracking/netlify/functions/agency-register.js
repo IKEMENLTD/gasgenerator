@@ -22,6 +22,12 @@ function generateAgencyCode() {
     return `${prefix}${timestamp}${random}`;
 }
 
+// Generate registration token for LINE verification
+function generateRegistrationToken() {
+    const crypto = require('crypto');
+    return crypto.randomBytes(32).toString('hex');
+}
+
 exports.handler = async (event) => {
     // CORS headers
     const headers = {
@@ -274,6 +280,12 @@ exports.handler = async (event) => {
         logger.log('階層レベル:', newAgencyLevel);
         logger.log('自己報酬率:', newCommissionRate);
 
+        // Generate registration token for LINE verification (15分有効期限)
+        const registrationToken = generateRegistrationToken();
+        const tokenExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15分後
+        logger.log('登録トークン生成完了');
+        logger.log('トークン有効期限:', tokenExpiresAt.toISOString());
+
         const { data: agency, error: agencyError } = await supabase
             .from('agencies')
             .insert({
@@ -283,7 +295,9 @@ exports.handler = async (event) => {
                 contact_email: email,
                 contact_phone: phone,
                 address: address,
-                status: 'active', // 新規登録を自動承認に変更
+                status: 'pending_line_verification', // LINE連携待ち状態
+                registration_token: registrationToken, // LINE連携用トークン
+                registration_token_expires_at: tokenExpiresAt.toISOString(), // トークン有効期限（15分）
                 // 4段階代理店制度のフィールド
                 parent_agency_id: parentAgency.id,
                 level: newAgencyLevel,
@@ -322,7 +336,7 @@ exports.handler = async (event) => {
                 password_hash: hashedPassword,
                 name: contact_name,
                 role: 'owner',
-                is_active: true // 新規登録を自動承認に変更（すぐにログイン可能）
+                is_active: false // LINE連携完了後にアクティブ化
             })
             .select()
             .single();
@@ -347,19 +361,23 @@ exports.handler = async (event) => {
         // Send welcome email (optional - implement if needed)
         // await sendWelcomeEmail(email, contact_name, agency_name);
 
-        logger.log('=== ✅✅✅ 登録処理完了 ✅✅✅ ===');
+        logger.log('=== ✅✅✅ 仮登録処理完了 ✅✅✅ ===');
         logger.log('代理店コード:', agencyCode);
         logger.log('代理店ID:', agency.id);
         logger.log('ユーザーID:', agencyUser.id);
         logger.log('メールアドレス:', email);
+        logger.log('登録トークン:', registrationToken);
+        logger.log('次のステップ: LINE連携が必要です');
 
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({
                 success: true,
-                message: '登録が完了しました',
-                agency_code: agencyCode
+                message: 'LINE連携が必要です',
+                agency_code: agencyCode,
+                registration_token: registrationToken,
+                requires_line_verification: true
             })
         };
 

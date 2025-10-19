@@ -141,6 +141,14 @@ function agencyDashboard() {
             console.log('🚀 Agency Dashboard init() started');
 
             try {
+                // LINE連携コールバックをチェック
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('code') && urlParams.has('state')) {
+                    console.log('📞 LINE callback detected');
+                    await this.handleLineCallback();
+                    return; // コールバック処理後は通常の初期化をスキップ
+                }
+
                 // Cookie認証を優先、LocalStorageはフォールバック（下位互換性）
                 // Cookieが設定されているかチェック（agencyIdで確認）
                 const hasCookieAuth = document.cookie.includes('agencyId=');
@@ -359,34 +367,169 @@ function agencyDashboard() {
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    this.registerSuccess = true;
-                    this.registerError = '';
+                    // LINE連携が必要な場合
+                    if (result.requires_line_verification) {
+                        // 登録トークンを保存
+                        localStorage.setItem('registrationToken', result.registration_token);
 
-                    // 3秒後にログイン画面に移動
-                    setTimeout(() => {
-                        this.showRegister = false;
-                        this.registerSuccess = false;
-                        // ログインフォームにメールアドレスをセット
-                        this.loginForm.email = this.registerForm.email;
-                        // 登録フォームをリセット
-                        this.registerForm = {
-                            company_name: '',
-                            agency_name: '',
-                            address: '',
-                            contact_name: '',
-                            email: '',
-                            phone: '',
-                            password: '',
-                            password_confirm: '',
-                            agree_terms: false
-                        };
-                    }, 3000);
+                        // LINE Login URLを取得してリダイレクト
+                        const lineUrlResponse = await fetch('/.netlify/functions/agency-get-line-url', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                registration_token: result.registration_token
+                            })
+                        });
+
+                        if (lineUrlResponse.ok) {
+                            const lineUrlData = await lineUrlResponse.json();
+                            // stateとregistration_tokenをセッションストレージに保存
+                            sessionStorage.setItem('lineAuthState', lineUrlData.state);
+                            sessionStorage.setItem('lineAuthToken', lineUrlData.registration_token);
+
+                            // LINE Loginページにリダイレクト
+                            window.location.href = lineUrlData.line_login_url;
+                        } else {
+                            this.registerError = 'LINE連携の準備に失敗しました。しばらくしてから再度お試しください。';
+                        }
+                    } else {
+                        // 通常の登録完了（LINE連携なし）
+                        this.registerSuccess = true;
+                        this.registerError = '';
+
+                        // 3秒後にログイン画面に移動
+                        setTimeout(() => {
+                            this.showRegister = false;
+                            this.registerSuccess = false;
+                            // ログインフォームにメールアドレスをセット
+                            this.loginForm.email = this.registerForm.email;
+                            // 登録フォームをリセット
+                            this.registerForm = {
+                                company_name: '',
+                                agency_name: '',
+                                address: '',
+                                contact_name: '',
+                                email: '',
+                                phone: '',
+                                password: '',
+                                password_confirm: '',
+                                agree_terms: false
+                            };
+                        }, 3000);
+                    }
                 } else {
                     this.registerError = result.error || '登録に失敗しました';
                 }
             } catch (error) {
                 this.registerError = '登録処理中にエラーが発生しました';
                 console.error('Registration error:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async handleLineCallback() {
+            console.log('🔗 Handling LINE callback...');
+            this.loading = true;
+
+            try {
+                // URLパラメータを取得
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
+                const state = urlParams.get('state');
+
+                console.log('LINE callback params:', { code: code ? 'present' : 'missing', state });
+
+                // セッションストレージから保存した値を取得
+                const savedState = sessionStorage.getItem('lineAuthState');
+                const registrationToken = sessionStorage.getItem('lineAuthToken');
+
+                console.log('Saved state:', savedState);
+                console.log('Registration token:', registrationToken ? 'present' : 'missing');
+
+                // CSRF保護: stateパラメータを検証
+                if (!savedState || state !== savedState) {
+                    console.error('❌ State mismatch! CSRF attack detected');
+                    this.registerError = 'セキュリティエラー: 不正なリクエストです。最初から登録をやり直してください。';
+                    this.isAuthenticated = false;
+                    this.loading = false;
+                    // URLをクリーンアップ
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    return;
+                }
+
+                if (!registrationToken) {
+                    console.error('❌ Registration token not found');
+                    this.registerError = '登録情報が見つかりません。最初から登録をやり直してください。';
+                    this.isAuthenticated = false;
+                    this.loading = false;
+                    // URLをクリーンアップ
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    return;
+                }
+
+                // バックエンドに送信
+                const callbackUrl = window.location.origin + window.location.pathname;
+                const response = await fetch('/.netlify/functions/agency-complete-registration', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        registration_token: registrationToken,
+                        redirect_uri: callbackUrl
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    console.log('✅ Registration completed successfully');
+
+                    // セッションストレージをクリア
+                    sessionStorage.removeItem('lineAuthState');
+                    sessionStorage.removeItem('lineAuthToken');
+
+                    // 成功メッセージを表示
+                    this.registerSuccess = true;
+                    this.registerError = '';
+
+                    // URLをクリーンアップ
+                    window.history.replaceState({}, document.title, window.location.pathname);
+
+                    // 3秒後にログイン画面に移動
+                    setTimeout(() => {
+                        this.showRegister = false;
+                        this.registerSuccess = false;
+                        this.loading = false;
+                        this.isAuthenticated = false;
+                    }, 3000);
+                } else {
+                    console.error('❌ Registration completion failed:', result.error);
+                    this.registerError = result.error || 'LINE連携に失敗しました。最初から登録をやり直してください。';
+                    this.isAuthenticated = false;
+
+                    // セッションストレージをクリア
+                    sessionStorage.removeItem('lineAuthState');
+                    sessionStorage.removeItem('lineAuthToken');
+
+                    // URLをクリーンアップ
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            } catch (error) {
+                console.error('❌ Error handling LINE callback:', error);
+                this.registerError = 'LINE連携処理中にエラーが発生しました。最初から登録をやり直してください。';
+                this.isAuthenticated = false;
+
+                // セッションストレージをクリア
+                sessionStorage.removeItem('lineAuthState');
+                sessionStorage.removeItem('lineAuthToken');
+
+                // URLをクリーンアップ
+                window.history.replaceState({}, document.title, window.location.pathname);
             } finally {
                 this.loading = false;
             }
