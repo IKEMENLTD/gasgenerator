@@ -153,7 +153,13 @@ export async function POST(req: NextRequest) {
       processingTime
     })
 
-    return NextResponse.json({ 
+    // Netlifyに転送（非同期、レスポンスを待たない）
+    // 代理店プログラムのコンバージョントラッキング用
+    forwardToNetlify(body, signature, requestId).catch(err => {
+      logger.error('Background forward to Netlify failed', { requestId, err })
+    })
+
+    return NextResponse.json({
       success: true,
       processed: processedCount,
       time: processingTime
@@ -1590,11 +1596,56 @@ async function processFileMessage(event: any, requestId: string): Promise<boolea
 }
 
 /**
+ * Netlifyへイベントを転送（非同期、バックグラウンド）
+ * Render → Netlify転送により、代理店プログラムのコンバージョントラッキングを実現
+ */
+async function forwardToNetlify(body: string, signature: string, requestId: string): Promise<void> {
+  const netlifyWebhookUrl = process.env.NETLIFY_WEBHOOK_URL
+
+  if (!netlifyWebhookUrl) {
+    logger.debug('NETLIFY_WEBHOOK_URL not configured, skipping forward', { requestId })
+    return
+  }
+
+  try {
+    logger.info('Forwarding to Netlify', { requestId, url: netlifyWebhookUrl })
+
+    const response = await fetch(netlifyWebhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Line-Signature': signature
+      },
+      body: body,
+      signal: AbortSignal.timeout(5000) // 5秒タイムアウト
+    })
+
+    if (!response.ok) {
+      logger.warn('Netlify forward failed', {
+        requestId,
+        status: response.status,
+        statusText: response.statusText
+      })
+    } else {
+      logger.info('Netlify forward successful', {
+        requestId,
+        status: response.status
+      })
+    }
+  } catch (error) {
+    logger.error('Netlify forward error', {
+      requestId,
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
+}
+
+/**
  * ヘルスチェック用GET
  */
 export async function GET() {
-  return NextResponse.json({ 
-    status: 'OK', 
+  return NextResponse.json({
+    status: 'OK',
     service: 'Task mate Webhook',
     version: '2.0.0',
     mode: 'conversational',
