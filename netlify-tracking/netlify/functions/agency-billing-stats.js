@@ -72,6 +72,7 @@ exports.handler = async (event) => {
         const commissionRate = agencyData?.commission_rate || 10;
 
         // Get all conversions for this agency with user billing info
+        console.log('🔍 [DEBUG] Fetching conversions for agency:', agencyId);
         const { data: conversions, error: conversionsError } = await supabase
             .from('agency_conversions')
             .select(`
@@ -87,7 +88,7 @@ exports.handler = async (event) => {
             .order('created_at', { ascending: false });
 
         if (conversionsError) {
-            console.error('Conversions error:', conversionsError);
+            console.error('❌ Conversions error:', conversionsError);
             return {
                 statusCode: 500,
                 headers,
@@ -95,14 +96,22 @@ exports.handler = async (event) => {
             };
         }
 
+        console.log('✅ [DEBUG] Conversions fetched:', conversions?.length || 0);
+        console.log('📊 [DEBUG] Conversion sample:', conversions?.[0]);
+
         // Get user IDs from conversions
         const userIds = [...new Set(conversions?.map(c => c.user_id).filter(Boolean))];
+
+        console.log('👥 [DEBUG] Extracted user IDs:', userIds.length, userIds);
+        console.log('🔍 [DEBUG] Conversions with user_id:', conversions?.filter(c => c.user_id).length || 0);
+        console.log('🔍 [DEBUG] Conversions without user_id:', conversions?.filter(c => !c.user_id).length || 0);
 
         let billingUsers = [];
         let activeSubscriberCount = 0;
         let totalCommission = 0;
 
         if (userIds.length > 0) {
+            console.log('🔄 [DEBUG] Fetching users from users table...');
             // Get user billing information
             const { data: users, error: usersError } = await supabase
                 .from('users')
@@ -120,8 +129,12 @@ exports.handler = async (event) => {
                 .in('id', userIds);
 
             if (usersError) {
-                console.error('Users error:', usersError);
+                console.error('❌ Users error:', usersError);
+                console.error('❌ Users error details:', JSON.stringify(usersError));
             } else {
+                console.log('✅ [DEBUG] Users fetched:', users?.length || 0);
+                console.log('📊 [DEBUG] Users sample:', users?.[0]);
+
                 // Process billing data
                 billingUsers = users.map(user => {
                     const isActive = user.subscription_status === 'active' || user.subscription_status === 'trialing';
@@ -164,7 +177,16 @@ exports.handler = async (event) => {
                     const dateB = new Date(b.subscriptionStartedAt || 0);
                     return dateB - dateA;
                 });
+
+                console.log('💰 [DEBUG] Billing users processed:', billingUsers.length);
+                console.log('📊 [DEBUG] Active subscribers:', activeSubscriberCount);
             }
+        } else {
+            console.log('⚠️  [DEBUG] No user IDs found in conversions');
+            console.log('💡 [DEBUG] Possible reasons:');
+            console.log('   1. No conversions recorded yet');
+            console.log('   2. All conversions have user_id = NULL');
+            console.log('   3. Stripe webhook not setting user_id in metadata');
         }
 
         // Get total paid commission from agency_commissions table
@@ -189,24 +211,36 @@ exports.handler = async (event) => {
             (sum, c) => sum + (parseFloat(c.commission_amount) || 0), 0
         ) || 0;
 
+        const responseData = {
+            // サマリー統計
+            summary: {
+                activeSubscribers: activeSubscriberCount,
+                totalConversions: conversions?.length || 0,
+                totalCommission: Math.round(totalCommission),
+                paidCommission: Math.round(totalPaidCommission),
+                pendingCommission: Math.round(totalPendingCommission),
+                commissionRate: commissionRate
+            },
+            // 個別ユーザーの課金状態
+            billingUsers: billingUsers,
+            // 最終更新日時
+            lastUpdated: new Date().toISOString(),
+            // デバッグ情報（本番環境では削除推奨）
+            debug: {
+                totalConversions: conversions?.length || 0,
+                conversionsWithUserId: conversions?.filter(c => c.user_id).length || 0,
+                extractedUserIds: userIds.length,
+                fetchedUsers: billingUsers.length
+            }
+        };
+
+        console.log('📤 [DEBUG] Response summary:', responseData.summary);
+        console.log('📤 [DEBUG] Response debug:', responseData.debug);
+
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify({
-                // サマリー統計
-                summary: {
-                    activeSubscribers: activeSubscriberCount,
-                    totalConversions: conversions?.length || 0,
-                    totalCommission: Math.round(totalCommission),
-                    paidCommission: Math.round(totalPaidCommission),
-                    pendingCommission: Math.round(totalPendingCommission),
-                    commissionRate: commissionRate
-                },
-                // 個別ユーザーの課金状態
-                billingUsers: billingUsers,
-                // 最終更新日時
-                lastUpdated: new Date().toISOString()
-            })
+            body: JSON.stringify(responseData)
         };
     } catch (error) {
         console.error('Billing stats error:', error);
