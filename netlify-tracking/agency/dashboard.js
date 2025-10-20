@@ -555,6 +555,20 @@ function agencyDashboard() {
                         console.log('🔄 Redirecting to LINE friend add page...');
                         console.log('LINE Official URL:', result.line_official_url);
 
+                        // URLの有効性チェック（無効なフォールバックURLを検出）
+                        if (result.line_official_url.includes('@xxx') ||
+                            result.line_official_url.includes('@your-line-id') ||
+                            !result.line_official_url.startsWith('https://line.me/')) {
+                            console.error('❌ 無効なLINE URLが返されました:', result.line_official_url);
+                            this.registerError = 'LINE友達追加機能の設定に問題があります。管理者にお問い合わせください。';
+                            this.loading = false;
+
+                            // セッションストレージをクリア
+                            sessionStorage.removeItem('lineAuthState');
+                            sessionStorage.removeItem('lineAuthToken');
+                            return;
+                        }
+
                         // 代理店コードを保存（友達追加完了後の確認用）
                         if (result.agency?.code) {
                             localStorage.setItem('agencyCode', result.agency.code);
@@ -568,7 +582,24 @@ function agencyDashboard() {
                         window.history.replaceState({}, document.title, window.location.pathname);
 
                         // LINE友達追加ページにリダイレクト
-                        window.location.href = result.line_official_url;
+                        console.log('✅ 有効なLINE URLにリダイレクトします');
+
+                        // リダイレクトが5秒以内に実行されない場合の警告（ユーザーがポップアップブロッカーを使用している可能性）
+                        const redirectTimeout = setTimeout(() => {
+                            console.warn('⚠️ リダイレクトに時間がかかっています');
+                            alert('リダイレクトに失敗した場合は、下記URLを手動で開いてください:\n' + result.line_official_url);
+                        }, 5000);
+
+                        try {
+                            window.location.href = result.line_official_url;
+                            // リダイレクト成功した場合はタイムアウトをクリア
+                            clearTimeout(redirectTimeout);
+                        } catch (error) {
+                            console.error('❌ リダイレクトエラー:', error);
+                            clearTimeout(redirectTimeout);
+                            this.registerError = 'LINE友達追加ページへの遷移に失敗しました。下記URLを手動で開いてください:\n' + result.line_official_url;
+                            this.loading = false;
+                        }
                         return;
                     }
 

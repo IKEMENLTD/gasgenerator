@@ -86,7 +86,20 @@ exports.handler = async (event) => {
         } = JSON.parse(event.body);
 
         // Get LINE Official URL from environment variable
-        const line_friend_url = process.env.LINE_OFFICIAL_URL || 'https://line.me/R/ti/p/@taskmate';
+        const line_friend_url = process.env.LINE_OFFICIAL_URL;
+
+        // 環境変数チェック
+        if (!line_friend_url || line_friend_url.includes('@your-line-id')) {
+            logger.error('❌ LINE_OFFICIAL_URLが設定されていません');
+            return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({
+                    error: 'LINE友達追加機能の設定が完了していません。管理者にお問い合わせください。'
+                })
+            };
+        }
+
         const destination_url = line_friend_url; // Same as LINE URL for now
 
         // Validate required fields

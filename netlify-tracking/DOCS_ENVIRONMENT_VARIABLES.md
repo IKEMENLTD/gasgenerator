@@ -20,7 +20,9 @@
 | `LINE_LOGIN_CALLBACK_URL` | LINE Login後のリダイレクト先 | 自分で設定 | `https://taskmateai.net/agency/` |
 | `LINE_CHANNEL_SECRET` | Messaging API用チャンネルシークレット | LINE Developers Console → Messaging API チャンネル → Basic settings | `1234567890abcdef...` |
 | `LINE_CHANNEL_ACCESS_TOKEN` | Messaging API用アクセストークン | LINE Developers Console → Messaging API チャンネル → Messaging API settings | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
-| `LINE_OFFICIAL_URL` | LINE公式アカウント友達追加URL | LINE Official Account Manager → アカウント設定 | `https://line.me/R/ti/p/@xxxxxxxxx` |
+| `LINE_OFFICIAL_URL` | **【必須】** LINE公式アカウント友達追加URL | LINE Official Account Manager → アカウント設定 | `https://line.me/R/ti/p/@xxxxxxxxx` |
+
+> ⚠️ **重要**: `LINE_OFFICIAL_URL`が未設定または無効な値の場合、ユーザー登録時のLINE友達追加への遷移が失敗します。必ず有効なLINE公式アカウントのURLを設定してください。
 
 ### Supabase 関連
 

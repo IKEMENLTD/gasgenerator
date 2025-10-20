@@ -40,7 +40,21 @@ exports.handler = async (event, context) => {
         } = JSON.parse(event.body);
 
         // Get LINE Official URL from environment variable
-        const line_friend_url = process.env.LINE_OFFICIAL_URL || 'https://line.me/R/ti/p/@taskmate';
+        const line_friend_url = process.env.LINE_OFFICIAL_URL;
+
+        // 環境変数チェック
+        if (!line_friend_url || line_friend_url.includes('@your-line-id')) {
+            return {
+                statusCode: 500,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    error: 'LINE_OFFICIAL_URL環境変数が設定されていません'
+                })
+            };
+        }
 
         // Validate required fields
         if (!name) {

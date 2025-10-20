@@ -184,7 +184,20 @@ exports.handler = async (event) => {
             logger.error('- 代理店ステータス:', user.agencies.status);
             logger.error('- 代理店名:', user.agencies.name);
 
-            const lineOfficialUrl = process.env.LINE_OFFICIAL_URL || 'https://line.me/R/ti/p/@xxx';
+            const lineOfficialUrl = process.env.LINE_OFFICIAL_URL;
+
+            // 環境変数チェック
+            if (!lineOfficialUrl || lineOfficialUrl.includes('@xxx') || lineOfficialUrl.includes('@your-line-id')) {
+                logger.error('❌ LINE_OFFICIAL_URLが正しく設定されていません');
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({
+                        success: false,
+                        error: 'LINE友達追加機能の設定が完了していません。管理者にお問い合わせください。'
+                    })
+                };
+            }
 
             return {
                 statusCode: 401,

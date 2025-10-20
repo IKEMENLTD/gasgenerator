@@ -309,7 +309,22 @@ exports.handler = async (event) => {
 
         // 友達追加URL取得（環境変数から）
         logger.log('=== STEP 7: 友達追加URL準備 ===');
-        const lineOfficialUrl = process.env.LINE_OFFICIAL_URL || 'https://line.me/R/ti/p/@xxx';
+        const lineOfficialUrl = process.env.LINE_OFFICIAL_URL;
+
+        // 環境変数が設定されていない場合はエラーを返す（無効なURLを返さない）
+        if (!lineOfficialUrl || lineOfficialUrl.includes('@xxx') || lineOfficialUrl.includes('@your-line-id')) {
+            logger.error('❌ LINE_OFFICIAL_URLが正しく設定されていません');
+            logger.error('現在の値:', lineOfficialUrl || '(空)');
+            return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({
+                    error: 'LINE友達追加機能の設定が完了していません。管理者にお問い合わせください。',
+                    admin_message: 'LINE_OFFICIAL_URL環境変数を設定してください'
+                })
+            };
+        }
+
         logger.log('LINE公式アカウントURL:', lineOfficialUrl);
 
         logger.log('=== ✅✅✅ LINE Login完了（友達追加待ち） ✅✅✅ ===');
