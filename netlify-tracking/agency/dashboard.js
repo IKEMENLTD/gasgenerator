@@ -1367,7 +1367,7 @@ function agencyDashboard() {
         async loadCommissionHistory() {
             this.loadingCommissions = true;
             try {
-                const response = await fetch('/.netlify/functions/agency-commission-history', {
+                const response = await fetch('/.netlify/functions/agency-commissions', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('agencyAuthToken')}`,
                         'X-Agency-Id': localStorage.getItem('agencyId')
