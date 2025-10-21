@@ -1488,6 +1488,7 @@
                                             <thead class="bg-gray-50">
                                                 <tr>
                                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">日時</th>
+                                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">LINE名</th>
                                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">デバイス</th>
                                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">ブラウザ</th>
                                                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">OS</th>
@@ -1498,6 +1499,13 @@
                                                 <template x-for="visit in linkVisits" :key="visit.id">
                                                     <tr>
                                                         <td class="px-4 py-2 whitespace-nowrap text-xs text-gray-900" x-text="formatDateTime(visit.created_at)"></td>
+                                                        <td class="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
+                                                            <span x-show="visit.line_display_name" class="flex items-center">
+                                                                <i class="fab fa-line text-green-500 mr-1"></i>
+                                                                <span x-text="visit.line_display_name"></span>
+                                                            </span>
+                                                            <span x-show="!visit.line_display_name" class="text-gray-400">-</span>
+                                                        </td>
                                                         <td class="px-4 py-2 whitespace-nowrap text-xs">
                                                             <span class="px-2 py-1 rounded-full text-xs"
                                                                   :class="{

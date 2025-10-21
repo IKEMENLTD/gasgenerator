@@ -83,10 +83,16 @@ exports.handler = async (event) => {
             };
         }
 
-        // Get visits for this link (most recent 50)
+        // Get visits for this link (most recent 50) with LINE user information
         const { data: visits, error: visitsError } = await supabase
             .from('agency_tracking_visits')
-            .select('*')
+            .select(`
+                *,
+                line_users!left(
+                    display_name,
+                    picture_url
+                )
+            `)
             .eq('tracking_link_id', linkId)
             .order('created_at', { ascending: false })
             .limit(50);
@@ -96,12 +102,19 @@ exports.handler = async (event) => {
             throw visitsError;
         }
 
+        // Format visits to include LINE display name
+        const formattedVisits = (visits || []).map(visit => ({
+            ...visit,
+            line_display_name: visit.line_users?.display_name || null,
+            line_picture_url: visit.line_users?.picture_url || null
+        }));
+
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({
-                visits: visits || [],
-                total: visits?.length || 0
+                visits: formattedVisits,
+                total: formattedVisits.length
             })
         };
 
