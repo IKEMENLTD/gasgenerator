@@ -104,6 +104,13 @@ exports.handler = async (event) => {
             dailyVisits[date] = (dailyVisits[date] || 0) + 1;
         });
 
+        // Process daily conversions (optimize: group by date once)
+        const dailyConversions = {};
+        conversionsResult.data.forEach(conversion => {
+            const date = new Date(conversion.created_at).toISOString().split('T')[0];
+            dailyConversions[date] = (dailyConversions[date] || 0) + 1;
+        });
+
         // Process conversions by type
         const conversionsByType = {};
         conversionsResult.data.forEach(conversion => {
@@ -122,9 +129,7 @@ exports.handler = async (event) => {
             analytics.unshift({
                 date: dateStr,
                 visits: dailyVisits[dateStr] || 0,
-                conversions: conversionsResult.data.filter(c =>
-                    c.created_at.startsWith(dateStr)
-                ).length
+                conversions: dailyConversions[dateStr] || 0
             });
         }
 
@@ -134,12 +139,27 @@ exports.handler = async (event) => {
         const conversionRate = totalVisits > 0 ?
             ((totalConversions / totalVisits) * 100).toFixed(2) : 0;
 
+        // Format top campaigns with proper field names and CVR calculation
+        const formattedTopCampaigns = topCampaignsResult.data.map((campaign, index) => {
+            const clicks = campaign.visit_count || 0;
+            const conversions = campaign.conversion_count || 0;
+            const cvr = clicks > 0 ? parseFloat(((conversions / clicks) * 100).toFixed(2)) : 0;
+
+            return {
+                id: index + 1,
+                name: campaign.name || campaign.utm_campaign || '(キャンペーン名なし)',
+                clicks: clicks,
+                conversions: conversions,
+                cvr: cvr
+            };
+        });
+
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({
                 analytics,
-                topCampaigns: topCampaignsResult.data,
+                topCampaigns: formattedTopCampaigns,
                 conversionsByType,
                 summary: {
                     totalVisits,

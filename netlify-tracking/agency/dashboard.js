@@ -81,6 +81,7 @@ function agencyDashboard() {
         analytics: [],
         commissions: [],
         topCampaigns: [],
+        performanceChart: null, // Chart.js instance
         billingStats: {
             summary: {
                 activeSubscribers: 0,
@@ -1188,9 +1189,131 @@ function agencyDashboard() {
         },
 
         initPerformanceChart() {
-            // Initialize chart using Chart.js or similar
-            // This is a placeholder for chart initialization
-            console.log('Initializing performance chart');
+            // Destroy existing chart instance
+            if (this.performanceChart) {
+                this.performanceChart.destroy();
+            }
+
+            // Get canvas element
+            const canvas = document.getElementById('performanceChart');
+            if (!canvas) {
+                console.error('Canvas element #performanceChart not found');
+                return;
+            }
+
+            // Ensure Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js is not loaded');
+                return;
+            }
+
+            // Prepare data
+            const labels = this.analytics.map(a => {
+                const date = new Date(a.date);
+                return `${date.getMonth() + 1}/${date.getDate()}`;
+            });
+            const visitData = this.analytics.map(a => a.visits);
+            const conversionData = this.analytics.map(a => a.conversions);
+
+            // Create chart
+            this.performanceChart = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'クリック数',
+                            data: visitData,
+                            borderColor: 'rgb(16, 185, 129)', // emerald-600
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'コンバージョン数',
+                            data: conversionData,
+                            borderColor: 'rgb(59, 130, 246)', // blue-500
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                size: 13
+                            },
+                            bodyFont: {
+                                size: 12
+                            },
+                            padding: 10,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed.y;
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 0,
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            console.log('✅ Performance chart initialized with', this.analytics.length, 'data points');
         },
 
         openChangePasswordModal() {
