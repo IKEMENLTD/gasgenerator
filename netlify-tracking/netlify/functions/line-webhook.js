@@ -186,55 +186,55 @@ async function handleFollowEvent(event) {
 
         // 🔽 既存のトラッキングユーザー処理（従来通り）
 
-        // Check if user already exists
-        const { data: existingUser } = await supabase
-            .from('line_users')
+        // Check if user profile already exists
+        const { data: existingProfile } = await supabase
+            .from('line_profiles')
             .select('*')
-            .eq('line_user_id', userId)
+            .eq('user_id', userId)
             .single();
 
-        if (existingUser) {
-            // Update existing user
+        if (existingProfile) {
+            // Update existing profile
             const { error } = await supabase
-                .from('line_users')
+                .from('line_profiles')
                 .update({
                     display_name: userProfile.displayName,
                     picture_url: userProfile.pictureUrl,
                     status_message: userProfile.statusMessage,
-                    is_friend: true,
-                    last_activity: new Date().toISOString(),
+                    language: userProfile.language,
+                    fetched_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 })
-                .eq('line_user_id', userId);
+                .eq('user_id', userId);
 
             if (error) {
-                console.error('Error updating existing user:', error);
+                console.error('Error updating existing profile:', error);
             }
         } else {
-            // Create new user record
-            const userData = {
-                line_user_id: userId,
+            // Create new profile record
+            const profileData = {
+                user_id: userId,
                 display_name: userProfile.displayName,
                 picture_url: userProfile.pictureUrl,
                 status_message: userProfile.statusMessage,
-                is_friend: true,
-                created_at: new Date().toISOString(),
-                last_activity: new Date().toISOString()
+                language: userProfile.language,
+                fetched_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
             };
 
-            const { data: newUser, error } = await supabase
-                .from('line_users')
-                .insert([userData])
+            const { data: newProfile, error } = await supabase
+                .from('line_profiles')
+                .insert([profileData])
                 .select()
                 .single();
 
             if (error) {
-                console.error('Error creating user:', error);
+                console.error('Error creating profile:', error);
                 return;
             }
 
             // Try to link with recent tracking visit
-            await linkUserToTracking(userId, newUser.id);
+            await linkUserToTracking(userId, userId);
         }
 
         // Send welcome message
@@ -250,17 +250,9 @@ async function handleUnfollowEvent(event) {
     const userId = event.source.userId;
 
     try {
-        const { error } = await supabase
-            .from('line_users')
-            .update({
-                is_friend: false,
-                updated_at: new Date().toISOString()
-            })
-            .eq('line_user_id', userId);
-
-        if (error) {
-            console.error('Error updating user unfollow status:', error);
-        }
+        // Note: line_profiles table doesn't have is_friend column
+        // Just log the unfollow event
+        console.log(`User ${userId} unfollowed the bot`);
     } catch (error) {
         console.error('Error handling unfollow event:', error);
     }
@@ -271,13 +263,13 @@ async function handleMessageEvent(event) {
     const userId = event.source.userId;
 
     try {
-        // Update user's last activity
+        // Update user's last activity (using updated_at)
         await supabase
-            .from('line_users')
+            .from('line_profiles')
             .update({
-                last_activity: new Date().toISOString()
+                updated_at: new Date().toISOString()
             })
-            .eq('line_user_id', userId);
+            .eq('user_id', userId);
 
         // Process message based on type and content
         if (event.message.type === 'text') {

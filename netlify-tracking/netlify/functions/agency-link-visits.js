@@ -104,28 +104,28 @@ exports.handler = async (event) => {
         )];
 
         // Fetch LINE user information if there are any LINE user IDs
-        let lineUsersMap = {};
+        let lineProfilesMap = {};
         if (lineUserIds.length > 0) {
-            const { data: lineUsers, error: lineUsersError } = await supabase
-                .from('line_users')
-                .select('line_user_id, display_name, picture_url')
-                .in('line_user_id', lineUserIds);
+            const { data: lineProfiles, error: lineProfilesError } = await supabase
+                .from('line_profiles')
+                .select('user_id, display_name, picture_url')
+                .in('user_id', lineUserIds);
 
-            if (!lineUsersError && lineUsers) {
+            if (!lineProfilesError && lineProfiles) {
                 // Create a map for quick lookup
-                lineUsersMap = Object.fromEntries(
-                    lineUsers.map(user => [user.line_user_id, user])
+                lineProfilesMap = Object.fromEntries(
+                    lineProfiles.map(profile => [profile.user_id, profile])
                 );
             }
         }
 
         // Format visits to include LINE display name
         const formattedVisits = (visits || []).map(visit => {
-            const lineUser = visit.line_user_id ? lineUsersMap[visit.line_user_id] : null;
+            const lineProfile = visit.line_user_id ? lineProfilesMap[visit.line_user_id] : null;
             return {
                 ...visit,
-                line_display_name: lineUser?.display_name || null,
-                line_picture_url: lineUser?.picture_url || null
+                line_display_name: lineProfile?.display_name || null,
+                line_picture_url: lineProfile?.picture_url || null
             };
         });
 
