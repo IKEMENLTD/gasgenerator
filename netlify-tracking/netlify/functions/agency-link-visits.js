@@ -83,16 +83,10 @@ exports.handler = async (event) => {
             };
         }
 
-        // Get visits for this link (most recent 50) with LINE user information
+        // Get visits for this link (most recent 50)
         const { data: visits, error: visitsError } = await supabase
             .from('agency_tracking_visits')
-            .select(`
-                *,
-                line_users!left(
-                    display_name,
-                    picture_url
-                )
-            `)
+            .select('*')
             .eq('tracking_link_id', linkId)
             .order('created_at', { ascending: false })
             .limit(50);
@@ -102,12 +96,38 @@ exports.handler = async (event) => {
             throw visitsError;
         }
 
+        // Get unique LINE user IDs from visits
+        const lineUserIds = [...new Set(
+            (visits || [])
+                .map(v => v.line_user_id)
+                .filter(id => id != null)
+        )];
+
+        // Fetch LINE user information if there are any LINE user IDs
+        let lineUsersMap = {};
+        if (lineUserIds.length > 0) {
+            const { data: lineUsers, error: lineUsersError } = await supabase
+                .from('line_users')
+                .select('line_user_id, display_name, picture_url')
+                .in('line_user_id', lineUserIds);
+
+            if (!lineUsersError && lineUsers) {
+                // Create a map for quick lookup
+                lineUsersMap = Object.fromEntries(
+                    lineUsers.map(user => [user.line_user_id, user])
+                );
+            }
+        }
+
         // Format visits to include LINE display name
-        const formattedVisits = (visits || []).map(visit => ({
-            ...visit,
-            line_display_name: visit.line_users?.display_name || null,
-            line_picture_url: visit.line_users?.picture_url || null
-        }));
+        const formattedVisits = (visits || []).map(visit => {
+            const lineUser = visit.line_user_id ? lineUsersMap[visit.line_user_id] : null;
+            return {
+                ...visit,
+                line_display_name: lineUser?.display_name || null,
+                line_picture_url: lineUser?.picture_url || null
+            };
+        });
 
         return {
             statusCode: 200,
