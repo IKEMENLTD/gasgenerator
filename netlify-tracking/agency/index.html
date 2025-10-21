@@ -1261,6 +1261,105 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- 傘下からの報酬確定ユーザー -->
+                    <div class="mt-6 sm:mt-8 bg-white rounded-lg border border-purple-200">
+                        <div class="px-6 py-4 border-b border-purple-100 bg-gradient-to-r from-purple-50 to-indigo-50">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 flex items-center">
+                                        <i class="fas fa-users text-purple-600 mr-2"></i>
+                                        傘下からの報酬確定ユーザー
+                                    </h3>
+                                    <p class="text-xs sm:text-sm text-gray-600 mt-1">あなたの傘下代理店が獲得したユーザーからのリファラル報酬</p>
+                                </div>
+                                <button @click="loadReferralUsers()" class="bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded text-xs sm:text-sm transition-colors">
+                                    <i class="fas fa-sync-alt mr-1"></i> 更新
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Summary Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 sm:p-6 bg-gray-50">
+                            <div class="bg-white rounded-lg border border-gray-200 p-4">
+                                <p class="text-xs sm:text-sm text-gray-600">総ユーザー数</p>
+                                <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-1" x-text="referralSummary.totalUsers">0</p>
+                            </div>
+                            <div class="bg-white rounded-lg border border-gray-200 p-4">
+                                <p class="text-xs sm:text-sm text-gray-600">契約中</p>
+                                <p class="text-xl sm:text-2xl font-bold text-green-600 mt-1" x-text="referralSummary.activeSubscriptions">0</p>
+                            </div>
+                            <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg p-4 text-white">
+                                <p class="text-xs sm:text-sm opacity-90">リファラル報酬</p>
+                                <p class="text-xl sm:text-2xl font-bold mt-1" x-text="`¥${referralSummary.totalReferralCommission.toLocaleString()}`">¥0</p>
+                                <p class="text-xs mt-1 opacity-75">※課金中のユーザーのみ</p>
+                            </div>
+                        </div>
+
+                        <!-- Referral Users Table -->
+                        <div class="table-scroll overflow-x-auto">
+                            <template x-if="referralUsers.length === 0">
+                                <div class="p-12 text-center">
+                                    <i class="fas fa-users text-5xl text-gray-300 mb-4"></i>
+                                    <p class="text-gray-600">傘下からの報酬確定ユーザーがいません</p>
+                                    <p class="text-sm text-gray-500 mt-2">傘下代理店が獲得したユーザーが課金すると表示されます</p>
+                                </div>
+                            </template>
+                            <template x-if="referralUsers.length > 0">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">LINE名</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">課金状態</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">獲得代理店</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">課金開始日</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">リファラル率</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">あなたの報酬</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <template x-for="user in referralUsers" :key="user.id">
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <template x-if="user.line_picture">
+                                                            <img :src="user.line_picture" class="w-8 h-8 rounded-full mr-2" alt="">
+                                                        </template>
+                                                        <template x-if="!user.line_picture">
+                                                            <div class="w-8 h-8 rounded-full bg-gray-300 mr-2 flex items-center justify-center">
+                                                                <i class="fas fa-user text-gray-500 text-xs"></i>
+                                                            </div>
+                                                        </template>
+                                                        <span class="text-sm font-medium text-gray-900" x-text="user.line_name"></span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="px-2 py-1 text-xs rounded-full"
+                                                          :class="user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                                        <i class="fas fa-circle mr-1" :class="user.is_active ? 'fa-pulse' : ''"></i>
+                                                        <span x-text="user.is_active ? '契約中' : '解約済み'"></span>
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="user.acquired_agency_name"></td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatDate(user.subscription_started_at)"></td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                    <span x-text="`${user.referral_rate}%`"></span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+                                                    <template x-if="user.is_active">
+                                                        <span class="text-purple-600" x-text="`¥${user.referral_commission.toLocaleString()}`"></span>
+                                                    </template>
+                                                    <template x-if="!user.is_active">
+                                                        <span class="text-gray-400">¥0</span>
+                                                    </template>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </template>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 設定タブ -->

@@ -96,6 +96,14 @@ function agencyDashboard() {
         },
         billingStatsInterval: null,
 
+        // Referral users (from child agencies)
+        referralUsers: [],
+        referralSummary: {
+            totalUsers: 0,
+            activeSubscriptions: 0,
+            totalReferralCommission: 0
+        },
+
         // Settings
         paymentInfo: {
             bank_name: '',
@@ -871,11 +879,13 @@ function agencyDashboard() {
         startBillingStatsAutoRefresh() {
             // 初回ロード
             this.loadBillingStats();
+            this.loadReferralUsers();
 
             // 30秒ごとに自動更新（課金状況タブを開いている場合のみ）
             this.billingStatsInterval = setInterval(() => {
                 if (this.activeTab === 'billing' && this.isAuthenticated) {
                     this.loadBillingStats();
+                    this.loadReferralUsers();
                 }
             }, 30000); // 30秒
         },
@@ -884,6 +894,32 @@ function agencyDashboard() {
             if (this.billingStatsInterval) {
                 clearInterval(this.billingStatsInterval);
                 this.billingStatsInterval = null;
+            }
+        },
+
+        async loadReferralUsers() {
+            try {
+                const response = await fetch('/.netlify/functions/agency-referral-users', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('agencyAuthToken')}`,
+                        'X-Agency-Id': localStorage.getItem('agencyId')
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    this.referralUsers = data.referralUsers || [];
+                    this.referralSummary = data.summary || {
+                        totalUsers: 0,
+                        activeSubscriptions: 0,
+                        totalReferralCommission: 0
+                    };
+                    console.log('Referral users loaded:', data);
+                } else {
+                    console.error('Error loading referral users:', await response.text());
+                }
+            } catch (error) {
+                console.error('Error loading referral users:', error);
             }
         },
 
