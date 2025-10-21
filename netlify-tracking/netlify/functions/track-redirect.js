@@ -132,6 +132,7 @@ exports.handler = async (event) => {
                 browser: visitorInfo.browser,
                 os: visitorInfo.os,
                 session_id: sessionId,
+                line_user_id: null, // Will be linked when user adds LINE friend
                 metadata: {
                     tracking_code: trackingCode,
                     utm_source: link.utm_source,

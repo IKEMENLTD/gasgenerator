@@ -363,6 +363,28 @@ async function linkUserToTracking(lineUserId, userId) {
         // Fallback to old method for backward compatibility
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
+        // Try agency_tracking_visits first
+        const { data: agencyVisits, error: agencyError } = await supabase
+            .from('agency_tracking_visits')
+            .select('*')
+            .is('line_user_id', null)
+            .gte('created_at', oneHourAgo)
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        if (!agencyError && agencyVisits && agencyVisits.length > 0) {
+            // Link all recent visits to this user (not just the first one)
+            const { error: updateError } = await supabase
+                .from('agency_tracking_visits')
+                .update({ line_user_id: lineUserId })
+                .in('id', agencyVisits.map(v => v.id));
+
+            if (!updateError) {
+                console.log(`Linked LINE user ${lineUserId} to ${agencyVisits.length} agency visit(s)`);
+            }
+        }
+
+        // Also check old tracking_visits table
         const { data: recentVisits, error } = await supabase
             .from('tracking_visits')
             .select('*')
