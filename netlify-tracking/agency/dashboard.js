@@ -835,6 +835,12 @@ function agencyDashboard() {
                 if (response.ok) {
                     const data = await response.json();
                     this.commissions = data.commissions || [];
+
+                    // Update stats from commission summary
+                    if (data.summary) {
+                        this.stats.monthlyCommission = data.summary.currentMonth || 0;
+                        // Note: lastMonthCommission and totalCommission are updated by loadStats()
+                    }
                 }
             } catch (error) {
                 console.error('Error loading commissions:', error);
@@ -1490,23 +1496,34 @@ function agencyDashboard() {
         async loadCommissionHistory() {
             this.loadingCommissions = true;
             try {
-                const response = await fetch('/.netlify/functions/agency-commissions', {
+                // TODO: Future feature - Commission distribution history
+                // This will show detailed breakdown of commissions including:
+                // - commission_type: 'own' vs 'referral'
+                // - deal_amount: Total deal value
+                // - closing_agency_name: Name of agency that closed the deal
+                // - referral hierarchy (4-tier system)
+                //
+                // For now, this feature is not implemented.
+                // The API endpoint would be: /.netlify/functions/agency-commission-details
+
+                this.commissionHistory = [];
+
+                /* Future implementation:
+                const response = await fetch('/.netlify/functions/agency-commission-details', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('agencyAuthToken')}`,
                         'X-Agency-Id': localStorage.getItem('agencyId')
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    this.commissionHistory = data.commissionDetails || [];
                 }
-
-                const data = await response.json();
-                this.commissionHistory = data.commissions || [];
+                */
             } catch (error) {
                 console.error('Error loading commission history:', error);
                 this.commissionHistory = [];
-                // 404エラーは正常（APIがまだ実装されていない場合）
                 if (!error.message.includes('404')) {
                     console.warn('コミッション履歴の読み込みに失敗しました:', error.message);
                 }

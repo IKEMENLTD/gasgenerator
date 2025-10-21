@@ -91,12 +91,18 @@ exports.handler = async (event) => {
             return periodStart >= currentMonthStart && periodStart <= currentMonthEnd;
         });
 
-        // Format commissions
+        // Format commissions (map to HTML expected field names)
         const formattedCommissions = commissions.map(commission => ({
             id: commission.id,
             period: `${formatDate(commission.period_start)} - ${formatDate(commission.period_end)}`,
             period_start: commission.period_start,
             period_end: commission.period_end,
+            // HTML expects these field names
+            conversions: commission.total_conversions || 0,
+            sales: parseFloat(commission.total_sales || 0),
+            rate: parseFloat(commission.commission_rate || 0),
+            amount: parseFloat(commission.commission_amount || 0),
+            // Keep original names for API compatibility
             total_conversions: commission.total_conversions,
             total_sales: parseFloat(commission.total_sales || 0),
             commission_rate: parseFloat(commission.commission_rate),
