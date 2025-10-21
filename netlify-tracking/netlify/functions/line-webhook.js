@@ -52,6 +52,11 @@ exports.handler = async (event, context) => {
         const webhookBody = JSON.parse(body);
         const events = webhookBody.events;
 
+        // Forward to Render (TaskMate AI) - non-blocking
+        forwardToRender(body, signature).catch(err => {
+            console.error('Background forward to Render failed:', err);
+        });
+
         // Process each event
         for (const event of events) {
             await processLineEvent(event);
@@ -725,6 +730,47 @@ async function sendAgencyWelcomeMessage(userId, agency) {
 // Validate environment variables on cold start
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     console.error('Missing required environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY');
+}
+
+// Forward LINE webhook to Render (TaskMate AI)
+async function forwardToRender(body, signature) {
+    const renderWebhookUrl = process.env.RENDER_WEBHOOK_URL || 'https://gasgenerator.onrender.com/api/webhook';
+
+    if (!renderWebhookUrl) {
+        console.log('⚠️ RENDER_WEBHOOK_URL not configured, skipping forward to Render');
+        return;
+    }
+
+    try {
+        console.log('📤 Forwarding to Render TaskMate AI:', renderWebhookUrl);
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(renderWebhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Line-Signature': signature
+            },
+            body: body,
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            console.warn('⚠️ Render forward failed with status:', response.status);
+        } else {
+            console.log('✅ Render forward successful');
+        }
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.error('⏱️ Render forward timeout (5s)');
+        } else {
+            console.error('❌ Render forward error:', error.message);
+        }
+    }
 }
 
 if (!LINE_CHANNEL_SECRET || !LINE_CHANNEL_ACCESS_TOKEN) {
