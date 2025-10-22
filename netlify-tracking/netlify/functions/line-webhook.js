@@ -63,22 +63,13 @@ exports.handler = async (event, context) => {
             await processLineEvent(event);
         }
 
-        // メッセージイベント処理
-        // 注: Render転送は一時的にオフ（Renderがunhealthyのため）
-        // 代わりにNetlifyから簡易返信を送る
+        // メッセージイベント処理（Renderに転送）
         const hasMessageEvent = events.some(e => e.type === 'message');
         if (hasMessageEvent && !isForwarded) {
-            // Render転送をオフ（一時的）
-            // forwardToRender(body, signature).catch(err => {
-            //     console.error('Background forward to Render failed:', err);
-            // });
-
-            // Netlifyから簡易返信
-            for (const event of events) {
-                if (event.type === 'message' && event.message.type === 'text') {
-                    await handleSimpleTextMessage(event);
-                }
-            }
+            // Renderに転送（非同期・バックグラウンド）
+            forwardToRender(body, signature).catch(err => {
+                console.error('Background forward to Render failed:', err);
+            });
         }
 
         return {
@@ -803,72 +794,6 @@ async function forwardToRender(body, signature) {
         } else {
             console.error('❌ Render forward error:', error.message);
         }
-    }
-}
-
-// 簡易テキストメッセージ処理（Netlify単独運用用）
-async function handleSimpleTextMessage(event) {
-    const messageText = event.message.text;
-    const replyToken = event.replyToken;
-
-    console.log('📨 Simple message handler:', messageText);
-
-    // メニュー対応（Renderと同じquickReplyボタン）
-    if (messageText === 'メニュー' || messageText === 'MENU' || messageText === 'menu' || messageText === 'Menu') {
-        await sendLineReply(replyToken, '📋 メニュー', {
-            items: [
-                { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' }},
-                { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' }},
-                { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' }},
-                { type: 'action', action: { type: 'message', label: '📸 画像解析ガイド', text: '画像解析の使い方' }},
-                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談' }},
-                { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }}
-            ]
-        });
-    } else {
-        // その他のメッセージ
-        await sendLineReply(replyToken, 'メッセージを受信しました。\n\n現在、システムのメンテナンス中のため、一部機能が制限されています。\n\nメニューは「メニュー」と送信してください。', {
-            items: [
-                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
-            ]
-        });
-    }
-}
-
-// LINE返信送信（quickReply対応）
-async function sendLineReply(replyToken, text, quickReply = null) {
-    try {
-        const message = {
-            type: 'text',
-            text: text
-        };
-
-        // quickReplyがあれば追加
-        if (quickReply) {
-            message.quickReply = quickReply;
-        }
-
-        const response = await fetch('https://api.line.me/v2/bot/message/reply', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                replyToken: replyToken,
-                messages: [message]
-            })
-        });
-
-        if (!response.ok) {
-            console.error('❌ LINE reply failed with status:', response.status);
-            const errorBody = await response.text();
-            console.error('Error body:', errorBody);
-        } else {
-            console.log('✅ LINE reply sent successfully');
-        }
-    } catch (error) {
-        console.error('❌ LINE reply error:', error.message);
     }
 }
 
