@@ -10,13 +10,13 @@
 [[redirects]]
   from = "/blog"
   to = "https://elegant-gumdrop-9a983a.netlify.app"
-  status = 200
+  status = 301
   force = true
 
 [[redirects]]
   from = "/blog/*"
   to = "https://elegant-gumdrop-9a983a.netlify.app/:splat"
-  status = 200
+  status = 301
   force = true
 
 # Agency dashboard is now at root (/)
