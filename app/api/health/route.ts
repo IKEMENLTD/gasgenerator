@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_KEY || ''
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 )
 
 export async function GET(_request: NextRequest) {
@@ -22,8 +22,8 @@ export async function GET(_request: NextRequest) {
 
   // Check environment variables
   const requiredEnvVars = [
-    'NEXT_PUBLIC_SUPABASE_URL',
-    'SUPABASE_SERVICE_KEY',
+    'SUPABASE_URL',
+    'SUPABASE_SERVICE_ROLE_KEY',
     'LINE_CHANNEL_SECRET',
     'LINE_CHANNEL_ACCESS_TOKEN'
   ]

@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
     })
 
     // 無限ループ防止: 既に転送されたリクエストは再転送しない
-    const isForwarded = request.headers.get('x-forwarded-from')
+    const isForwarded = req.headers.get('x-forwarded-from')
     if (isForwarded) {
       logger.info('Request already forwarded from: ' + isForwarded + ' - skipping re-forward to prevent infinite loop', { requestId })
     }
