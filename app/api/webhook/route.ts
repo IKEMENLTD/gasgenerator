@@ -99,10 +99,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid body' }, { status: 200 })
     }
 
-    logger.info('Webhook received', { 
-      requestId, 
-      eventCount: parsedBody.events?.length || 0 
+    logger.info('Webhook received', {
+      requestId,
+      eventCount: parsedBody.events?.length || 0
     })
+
+    // 無限ループ防止: 既に転送されたリクエストは再転送しない
+    const isForwarded = request.headers.get('x-forwarded-from')
+    if (isForwarded) {
+      logger.info('Request already forwarded from: ' + isForwarded + ' - skipping re-forward to prevent infinite loop', { requestId })
+    }
 
     // 4. イベント処理
     const events = parsedBody.events || []
@@ -156,8 +162,9 @@ export async function POST(req: NextRequest) {
     // Netlifyに転送（非同期、レスポンスを待たない）
     // 代理店プログラムのコンバージョントラッキング用
     // follow/unfollowイベントのみ転送（messageイベントは転送しない = 無限ループ防止）
+    // 既に転送されたリクエストは再転送しない（無限ループ防止）
     const hasFollowEvent = events.some((e: any) => e.type === 'follow' || e.type === 'unfollow')
-    if (hasFollowEvent) {
+    if (hasFollowEvent && !isForwarded) {
       forwardToNetlify(body, signature, requestId).catch(err => {
         logger.error('Background forward to Netlify failed', { requestId, err })
       })
@@ -1618,7 +1625,8 @@ async function forwardToNetlify(body: string, signature: string, requestId: stri
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Line-Signature': signature
+        'X-Line-Signature': signature,
+        'X-Forwarded-From': 'render'  // 無限ループ防止フラグ
       },
       body: body,
       signal: AbortSignal.timeout(5000) // 5秒タイムアウト

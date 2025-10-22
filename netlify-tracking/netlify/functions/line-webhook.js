@@ -52,6 +52,12 @@ exports.handler = async (event, context) => {
         const webhookBody = JSON.parse(body);
         const events = webhookBody.events;
 
+        // 無限ループ防止: 既に転送されたリクエストは再転送しない
+        const isForwarded = event.headers['x-forwarded-from'];
+        if (isForwarded) {
+            console.log('⚠️ Request already forwarded from:', isForwarded, '- skipping re-forward to prevent infinite loop');
+        }
+
         // Netlify側の処理（コンバージョン記録のみ）[v2.0]
         for (const event of events) {
             await processLineEvent(event);
@@ -59,8 +65,9 @@ exports.handler = async (event, context) => {
 
         // メッセージイベントのみRenderに転送（メッセージ処理用）
         // follow/unfollowイベントはNetlify側で完結するため転送不要
+        // 既に転送されたリクエストは再転送しない（無限ループ防止）
         const hasMessageEvent = events.some(e => e.type === 'message');
-        if (hasMessageEvent) {
+        if (hasMessageEvent && !isForwarded) {
             forwardToRender(body, signature).catch(err => {
                 console.error('Background forward to Render failed:', err);
             });
@@ -768,7 +775,8 @@ async function forwardToRender(body, signature) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Line-Signature': signature
+                'X-Line-Signature': signature,
+                'X-Forwarded-From': 'netlify'  // 無限ループ防止フラグ
             },
             body: body,
             signal: controller.signal
