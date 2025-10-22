@@ -762,7 +762,7 @@ async function forwardToRender(body, signature) {
         console.log('📤 [v2.0] Forwarding to Render TaskMate AI:', renderWebhookUrl);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout for Render wake-up
 
         const response = await fetch(renderWebhookUrl, {
             method: 'POST',
@@ -783,7 +783,7 @@ async function forwardToRender(body, signature) {
         }
     } catch (error) {
         if (error.name === 'AbortError') {
-            console.error('⏱️ Render forward timeout (5s)');
+            console.error('⏱️ Render forward timeout (30s) - Render may be sleeping');
         } else {
             console.error('❌ Render forward error:', error.message);
         }
