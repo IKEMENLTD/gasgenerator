@@ -52,7 +52,7 @@ exports.handler = async (event, context) => {
         const webhookBody = JSON.parse(body);
         const events = webhookBody.events;
 
-        // Netlify側の処理（コンバージョン記録のみ）
+        // Netlify側の処理（コンバージョン記録のみ）[v2.0]
         for (const event of events) {
             await processLineEvent(event);
         }
@@ -759,7 +759,7 @@ async function forwardToRender(body, signature) {
     }
 
     try {
-        console.log('📤 Forwarding to Render TaskMate AI:', renderWebhookUrl);
+        console.log('📤 [v2.0] Forwarding to Render TaskMate AI:', renderWebhookUrl);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
