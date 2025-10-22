@@ -52,15 +52,18 @@ exports.handler = async (event, context) => {
         const webhookBody = JSON.parse(body);
         const events = webhookBody.events;
 
-        // ⚠️ Render→Netlify転送があるため、Netlify→Render転送は無効化
-        // 無限ループ防止のため、転送は一方向のみ（Render→Netlify）
-        // forwardToRender(body, signature).catch(err => {
-        //     console.error('Background forward to Render failed:', err);
-        // });
-
-        // Process each event
+        // Netlify側の処理（コンバージョン記録のみ）
         for (const event of events) {
             await processLineEvent(event);
+        }
+
+        // メッセージイベントのみRenderに転送（メッセージ処理用）
+        // follow/unfollowイベントはNetlify側で完結するため転送不要
+        const hasMessageEvent = events.some(e => e.type === 'message');
+        if (hasMessageEvent) {
+            forwardToRender(body, signature).catch(err => {
+                console.error('Background forward to Render failed:', err);
+            });
         }
 
         return {

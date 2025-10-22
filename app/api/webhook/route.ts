@@ -155,9 +155,13 @@ export async function POST(req: NextRequest) {
 
     // Netlifyに転送（非同期、レスポンスを待たない）
     // 代理店プログラムのコンバージョントラッキング用
-    forwardToNetlify(body, signature, requestId).catch(err => {
-      logger.error('Background forward to Netlify failed', { requestId, err })
-    })
+    // follow/unfollowイベントのみ転送（messageイベントは転送しない = 無限ループ防止）
+    const hasFollowEvent = events.some((e: any) => e.type === 'follow' || e.type === 'unfollow')
+    if (hasFollowEvent) {
+      forwardToNetlify(body, signature, requestId).catch(err => {
+        logger.error('Background forward to Netlify failed', { requestId, err })
+      })
+    }
 
     return NextResponse.json({
       success: true,

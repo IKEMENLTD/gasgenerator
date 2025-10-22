@@ -1,39 +1,19 @@
 [build]
-  publish = "."
+  publish = "agency"
   functions = "netlify/functions"
   command = "echo 'Build complete'"
 
 [build.environment]
   NODE_VERSION = "18"
 
-# Redirect rules for tracking
+# Agency dashboard is now at root (/)
+# SPA routing - serve index.html for all routes
 [[redirects]]
-  from = "/t/:tracking_code"
-  to = "/.netlify/functions/track-redirect/:tracking_code"
+  from = "/*"
+  to = "/index.html"
   status = 200
 
-# Admin dashboard route
-[[redirects]]
-  from = "/admin"
-  to = "/admin/index.html"
-  status = 200
-
-# Agency dashboard route
-[[redirects]]
-  from = "/agency"
-  to = "/agency/index.html"
-  status = 200
-
-# Keep root showing the main landing page
-# Admin is available at /admin path
-
-# API endpoints
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-# Security headers
+# Security headers for agency dashboard
 [[headers]]
   for = "/*"
   [headers.values]
@@ -41,23 +21,10 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-Content-Security-Policy = "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://code.getmdl.io; img-src 'self' data: https:; connect-src 'self' https://api64.ipify.org https://api.ipify.org https://ipinfo.io https://*.supabase.co https://www.google-analytics.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;"
-
-# Admin security
-[[headers]]
-  for = "/admin/*"
-  [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
     Pragma = "no-cache"
     Expires = "0"
-
-# Agency security
-[[headers]]
-  for = "/agency/*"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Pragma = "no-cache"
-    Expires = "0"
+    Content-Security-Policy = "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://code.getmdl.io; img-src 'self' data: https:; connect-src 'self' https://api64.ipify.org https://api.ipify.org https://ipinfo.io https://*.supabase.co https://www.google-analytics.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;"
 
 # Function headers for CORS
 [[headers]]
