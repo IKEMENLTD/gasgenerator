@@ -7,18 +7,18 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Redirect rules for tracking
+# ブログのリダイレクト部分だけ修正
 [[redirects]]
-  from = "/t/:code"
-  to = "/.netlify/functions/track"
+  from = "/blog"
+  to = "https://elegant-gumdrop-9a983a.netlify.app"
   status = 200
-  query = {code = ":code"}
+  force = true
 
 [[redirects]]
-  from = "/c/:campaign"
-  to = "/.netlify/functions/track"
+  from = "/blog/*"
+  to = "https://elegant-gumdrop-9a983a.netlify.app/:splat"
   status = 200
-  query = {campaign = ":campaign"}
+  force = true
 
 # Headers for security
 [[headers]]
