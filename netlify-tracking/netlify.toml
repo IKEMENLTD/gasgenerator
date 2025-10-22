@@ -6,6 +6,19 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# ===== ブログへのリダイレクト（サブドメイン） =====
+[[redirects]]
+  from = "/blog"
+  to = "https://blog.taskmateai.net"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/blog/*"
+  to = "https://blog.taskmateai.net/:splat"
+  status = 301
+  force = true
+
 # Agency dashboard is now at root (/)
 # SPA routing - serve index.html for all routes
 [[redirects]]
