@@ -1,8 +1,8 @@
 # Netlify Configuration for TaskMate Tracking System
 
 [build]
-  publish = ".next"
-  command = "npm run build"
+  publish = "netlify-tracking"
+  command = "echo 'Build complete'"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -38,5 +38,5 @@
 
 # Function configuration
 [functions]
-  directory = "netlify/functions"
+  directory = "netlify-tracking/netlify/functions"
   node_bundler = "esbuild"
