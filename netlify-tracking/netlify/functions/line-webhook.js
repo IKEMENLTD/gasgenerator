@@ -52,10 +52,11 @@ exports.handler = async (event, context) => {
         const webhookBody = JSON.parse(body);
         const events = webhookBody.events;
 
-        // Forward to Render (TaskMate AI) - non-blocking
-        forwardToRender(body, signature).catch(err => {
-            console.error('Background forward to Render failed:', err);
-        });
+        // ⚠️ Render→Netlify転送があるため、Netlify→Render転送は無効化
+        // 無限ループ防止のため、転送は一方向のみ（Render→Netlify）
+        // forwardToRender(body, signature).catch(err => {
+        //     console.error('Background forward to Render failed:', err);
+        // });
 
         // Process each event
         for (const event of events) {
@@ -242,8 +243,8 @@ async function handleFollowEvent(event) {
             await linkUserToTracking(userId, userId);
         }
 
-        // Send welcome message
-        await sendWelcomeMessage(userId, userProfile.displayName);
+        // ⚠️ Netlify側ではメッセージ送信は行わない（Render側のみが送信）
+        // await sendWelcomeMessage(userId, userProfile.displayName);
 
     } catch (error) {
         console.error('Error handling follow event:', error);
@@ -276,10 +277,11 @@ async function handleMessageEvent(event) {
             })
             .eq('user_id', userId);
 
-        // Process message based on type and content
-        if (event.message.type === 'text') {
-            await handleTextMessage(userId, event.message.text);
-        }
+        // ⚠️ Netlify側ではメッセージ返信は行わない（Render側のみが返信）
+        // 代理店プログラムのコンバージョン記録のみを担当
+        // if (event.message.type === 'text') {
+        //     await handleTextMessage(userId, event.message.text);
+        // }
     } catch (error) {
         console.error('Error handling message event:', error);
     }
@@ -512,6 +514,10 @@ async function sendWelcomeMessage(userId, displayName) {
 
 // Handle text messages
 async function handleTextMessage(userId, text) {
+    // ⚠️ Netlify側ではメッセージ返信を完全に無効化（Render側のみが返信）
+    console.log('⚠️ handleTextMessage called but disabled (Netlify side)');
+    return;
+
     try {
         // Simple auto-response logic
         let response = '';
@@ -539,6 +545,10 @@ async function handleTextMessage(userId, text) {
 
 // Send message via LINE Messaging API
 async function sendLineMessage(userId, message) {
+    // ⚠️ Netlify側ではメッセージ送信を完全に無効化（Render側のみが送信）
+    console.log('⚠️ sendLineMessage called but disabled (Netlify side)');
+    return;
+
     try {
         const response = await fetch('https://api.line.me/v2/bot/message/push', {
             method: 'POST',
@@ -562,6 +572,10 @@ async function sendLineMessage(userId, message) {
 
 // 🆕 Send agency registration welcome message
 async function sendAgencyWelcomeMessage(userId, agency) {
+    // ⚠️ Netlify側ではメッセージ送信を完全に無効化（Render側のみが送信）
+    console.log('⚠️ sendAgencyWelcomeMessage called but disabled (Netlify side)');
+    return;
+
     try {
         console.log('代理店ウェルカムメッセージ送信開始:', agency.name);
 
