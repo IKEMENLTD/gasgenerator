@@ -813,22 +813,41 @@ async function handleSimpleTextMessage(event) {
 
     console.log('📨 Simple message handler:', messageText);
 
-    let replyMessage = '';
-
-    // メニュー対応
+    // メニュー対応（Renderと同じquickReplyボタン）
     if (messageText === 'メニュー' || messageText === 'MENU' || messageText === 'menu' || messageText === 'Menu') {
-        replyMessage = '📋 メニュー\n\n🚀 コード生成開始\n💎 料金プラン\n📖 使い方\n📸 画像解析ガイド\n👨‍💻 エンジニア相談\n🔄 最初から\n\n※現在、Renderシステムのメンテナンス中です。一部機能が制限されています。';
+        await sendLineReply(replyToken, '📋 メニュー', {
+            items: [
+                { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' }},
+                { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' }},
+                { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' }},
+                { type: 'action', action: { type: 'message', label: '📸 画像解析ガイド', text: '画像解析の使い方' }},
+                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談' }},
+                { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }}
+            ]
+        });
     } else {
         // その他のメッセージ
-        replyMessage = 'メッセージを受信しました。\n\n現在、システムのメンテナンス中のため、一部機能が制限されています。\n\nメニューは「メニュー」と送信してください。';
+        await sendLineReply(replyToken, 'メッセージを受信しました。\n\n現在、システムのメンテナンス中のため、一部機能が制限されています。\n\nメニューは「メニュー」と送信してください。', {
+            items: [
+                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            ]
+        });
     }
-
-    await sendLineReply(replyToken, replyMessage);
 }
 
-// LINE返信送信
-async function sendLineReply(replyToken, text) {
+// LINE返信送信（quickReply対応）
+async function sendLineReply(replyToken, text, quickReply = null) {
     try {
+        const message = {
+            type: 'text',
+            text: text
+        };
+
+        // quickReplyがあれば追加
+        if (quickReply) {
+            message.quickReply = quickReply;
+        }
+
         const response = await fetch('https://api.line.me/v2/bot/message/reply', {
             method: 'POST',
             headers: {
@@ -837,10 +856,7 @@ async function sendLineReply(replyToken, text) {
             },
             body: JSON.stringify({
                 replyToken: replyToken,
-                messages: [{
-                    type: 'text',
-                    text: text
-                }]
+                messages: [message]
             })
         });
 
