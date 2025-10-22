@@ -6,6 +6,19 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# ===== ブログのリダイレクト（新規追加）=====
+[[redirects]]
+  from = "/blog"
+  to = "https://elegant-gumdrop-9a983a.netlify.app"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/blog/*"
+  to = "https://elegant-gumdrop-9a983a.netlify.app/:splat"
+  status = 200
+  force = true
+
 # Agency dashboard is now at root (/)
 # SPA routing - serve index.html for all routes
 [[redirects]]
