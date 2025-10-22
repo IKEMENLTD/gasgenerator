@@ -1,5 +1,5 @@
 [build]
-  publish = "agency"
+  publish = "."
   functions = "netlify/functions"
   command = "echo 'Build complete'"
 
