@@ -63,14 +63,22 @@ exports.handler = async (event, context) => {
             await processLineEvent(event);
         }
 
-        // メッセージイベントのみRenderに転送（メッセージ処理用）
-        // follow/unfollowイベントはNetlify側で完結するため転送不要
-        // 既に転送されたリクエストは再転送しない（無限ループ防止）
+        // メッセージイベント処理
+        // 注: Render転送は一時的にオフ（Renderがunhealthyのため）
+        // 代わりにNetlifyから簡易返信を送る
         const hasMessageEvent = events.some(e => e.type === 'message');
         if (hasMessageEvent && !isForwarded) {
-            forwardToRender(body, signature).catch(err => {
-                console.error('Background forward to Render failed:', err);
-            });
+            // Render転送をオフ（一時的）
+            // forwardToRender(body, signature).catch(err => {
+            //     console.error('Background forward to Render failed:', err);
+            // });
+
+            // Netlifyから簡易返信
+            for (const event of events) {
+                if (event.type === 'message' && event.message.type === 'text') {
+                    await handleSimpleTextMessage(event);
+                }
+            }
         }
 
         return {
@@ -795,6 +803,56 @@ async function forwardToRender(body, signature) {
         } else {
             console.error('❌ Render forward error:', error.message);
         }
+    }
+}
+
+// 簡易テキストメッセージ処理（Netlify単独運用用）
+async function handleSimpleTextMessage(event) {
+    const messageText = event.message.text;
+    const replyToken = event.replyToken;
+
+    console.log('📨 Simple message handler:', messageText);
+
+    let replyMessage = '';
+
+    // メニュー対応
+    if (messageText === 'メニュー' || messageText === 'MENU' || messageText === 'menu' || messageText === 'Menu') {
+        replyMessage = '📋 メニュー\n\n🚀 コード生成開始\n💎 料金プラン\n📖 使い方\n📸 画像解析ガイド\n👨‍💻 エンジニア相談\n🔄 最初から\n\n※現在、Renderシステムのメンテナンス中です。一部機能が制限されています。';
+    } else {
+        // その他のメッセージ
+        replyMessage = 'メッセージを受信しました。\n\n現在、システムのメンテナンス中のため、一部機能が制限されています。\n\nメニューは「メニュー」と送信してください。';
+    }
+
+    await sendLineReply(replyToken, replyMessage);
+}
+
+// LINE返信送信
+async function sendLineReply(replyToken, text) {
+    try {
+        const response = await fetch('https://api.line.me/v2/bot/message/reply', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                replyToken: replyToken,
+                messages: [{
+                    type: 'text',
+                    text: text
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            console.error('❌ LINE reply failed with status:', response.status);
+            const errorBody = await response.text();
+            console.error('Error body:', errorBody);
+        } else {
+            console.log('✅ LINE reply sent successfully');
+        }
+    } catch (error) {
+        console.error('❌ LINE reply error:', error.message);
     }
 }
 
