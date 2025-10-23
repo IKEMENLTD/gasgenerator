@@ -50,7 +50,7 @@ exports.handler = async (event, context) => {
 
         // Get tracking link information
         const { data: trackingLink, error: linkError } = await supabase
-            .from('tracking_links')
+            .from('agency_tracking_links')
             .select('*')
             .eq('tracking_code', trackingData.tracking_code)
             .eq('is_active', true)
@@ -94,10 +94,10 @@ exports.handler = async (event, context) => {
         // Check for duplicate visits within the last 5 minutes from same IP
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
         const { data: recentVisit } = await supabase
-            .from('tracking_visits')
+            .from('agency_tracking_visits')
             .select('id')
             .eq('tracking_link_id', trackingLink.id)
-            .eq('ip_address', clientIP)
+            .eq('visitor_ip', clientIP)
             .gte('visited_at', fiveMinutesAgo)
             .single();
 
@@ -105,8 +105,23 @@ exports.handler = async (event, context) => {
         if (!recentVisit) {
             // Insert visit record
             const { data: visit, error: visitError } = await supabase
-                .from('tracking_visits')
-                .insert([visitData])
+                .from('agency_tracking_visits')
+                .insert([{
+                    tracking_link_id: trackingLink.id,
+                    agency_id: trackingLink.agency_id,
+                    visitor_ip: clientIP,
+                    user_agent: visitData.user_agent,
+                    referrer: visitData.referrer,
+                    session_id: visitData.session_id,
+                    metadata: {
+                        utm_source: visitData.utm_source,
+                        utm_medium: visitData.utm_medium,
+                        utm_campaign: visitData.utm_campaign,
+                        screen_resolution: visitData.screen_resolution,
+                        language: visitData.language,
+                        timezone: visitData.timezone
+                    }
+                }])
                 .select()
                 .single();
 
@@ -140,7 +155,7 @@ exports.handler = async (event, context) => {
             },
             body: JSON.stringify({
                 success: true,
-                line_friend_url: trackingLink.line_friend_url,
+                line_friend_url: trackingLink.destination_url || trackingLink.line_friend_url || 'https://lin.ee/4NLfSqH',
                 tracking_link: {
                     name: trackingLink.name,
                     utm_source: trackingLink.utm_source,
