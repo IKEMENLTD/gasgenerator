@@ -219,12 +219,12 @@ function adminDashboard() {
             }
         },
 
-        async copyToClipboard(text) {
+        async copyToClipboard(text, event) {
             try {
                 await navigator.clipboard.writeText(text);
 
                 // Show temporary success message
-                const button = event.target;
+                const button = event.currentTarget;
                 const originalText = button.innerHTML;
                 button.innerHTML = '<i class="fas fa-check"></i> コピー済み！';
                 button.classList.remove('bg-emerald-100', 'hover:bg-emerald-200', 'text-emerald-600');
