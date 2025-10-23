@@ -1342,17 +1342,21 @@ async function handleFollowEvent(event: any): Promise<void> {
 
     if (isPremium) {
       // プレミアムユーザーには通常のウェルカムメッセージ
-      await lineClient.pushMessage(userId, [{
+      const success = await lineClient.pushMessage(userId, [{
         type: 'text',
         text: '🎉 おかえりなさい！\n\nプレミアムプランご利用中です。\n無制限でGASコードを生成できます。\n\n「スプレッドシート操作」「Gmail自動化」など、作りたいコードのカテゴリを送信してください。'
       }])
+
+      if (!success) {
+        throw new Error('Failed to send premium welcome message')
+      }
     } else if (isNewUser) {
       // 新規無料ユーザーには決済ボタン付きウェルカムメッセージ
       const welcomeMessages = MessageTemplates.createWelcomeMessage()
-      
+
       // LINE User IDをBase64エンコードしてStripeリンクに追加
       const encodedUserId = Buffer.from(userId).toString('base64')
-      
+
       // Stripeリンクにclient_reference_idを追加
       const updatedMessages = welcomeMessages.map(msg => {
         if (msg.type === 'template' && 'template' in msg && msg.template.type === 'buttons') {
@@ -1369,7 +1373,12 @@ async function handleFollowEvent(event: any): Promise<void> {
 
       // メッセージを個別に送信（確実に全て送信されるように）
       for (let i = 0; i < updatedMessages.length; i++) {
-        await lineClient.pushMessage(userId, [updatedMessages[i]])
+        const success = await lineClient.pushMessage(userId, [updatedMessages[i]])
+
+        if (!success) {
+          throw new Error(`Failed to send welcome message ${i + 1}/${updatedMessages.length}`)
+        }
+
         // メッセージ間に100ms遅延を入れて順番を保証
         if (i < updatedMessages.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 100))
@@ -1377,7 +1386,7 @@ async function handleFollowEvent(event: any): Promise<void> {
       }
     } else {
       // 既存無料ユーザー（ブロック解除/再追加）
-      await lineClient.pushMessage(userId, [{
+      const success = await lineClient.pushMessage(userId, [{
         type: 'text',
         text: 'おかえりなさい！😊\n\nまたご利用いただきありがとうございます。\n\n作りたいコードのカテゴリを選んでください：',
         quickReply: {
@@ -1441,6 +1450,10 @@ async function handleFollowEvent(event: any): Promise<void> {
           ]
         }
       }])
+
+      if (!success) {
+        throw new Error('Failed to send returning user welcome message')
+      }
     }
 
   } catch (error) {
