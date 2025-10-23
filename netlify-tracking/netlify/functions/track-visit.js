@@ -75,11 +75,14 @@ exports.handler = async (event, context) => {
             clientIP = getClientIPFromHeaders(event.headers);
         }
 
+        // Parse User-Agent for device info
+        const userAgent = trackingData.user_agent || event.headers['user-agent'] || 'Unknown';
+
         // Create visit record
         const visitData = {
             tracking_link_id: trackingLink.id,
             ip_address: clientIP,
-            user_agent: trackingData.user_agent || 'Unknown',
+            user_agent: userAgent,
             referrer: trackingData.referrer,
             utm_source: trackingData.utm_source || trackingLink.utm_source,
             utm_medium: trackingData.utm_medium || trackingLink.utm_medium,
@@ -88,7 +91,10 @@ exports.handler = async (event, context) => {
             language: trackingData.language,
             timezone: trackingData.timezone,
             visited_at: trackingData.visited_at || new Date().toISOString(),
-            session_id: generateSessionId()
+            session_id: generateSessionId(),
+            device_type: getUserDeviceType(userAgent),
+            browser: getUserBrowser(userAgent),
+            os: getUserOS(userAgent)
         };
 
         // Check for duplicate visits within the last 5 minutes from same IP
@@ -113,6 +119,9 @@ exports.handler = async (event, context) => {
                     user_agent: visitData.user_agent,
                     referrer: visitData.referrer,
                     session_id: visitData.session_id,
+                    device_type: visitData.device_type,
+                    browser: visitData.browser,
+                    os: visitData.os,
                     metadata: {
                         utm_source: visitData.utm_source,
                         utm_medium: visitData.utm_medium,
@@ -130,6 +139,19 @@ exports.handler = async (event, context) => {
                 // Don't fail the request if visit tracking fails
             } else {
                 visitId = visit.id;
+
+                // Increment visit count for the tracking link
+                const { error: updateError } = await supabase
+                    .from('agency_tracking_links')
+                    .update({
+                        visit_count: trackingLink.visit_count + 1,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', trackingLink.id);
+
+                if (updateError) {
+                    console.error('Error updating visit count:', updateError);
+                }
             }
         }
 
@@ -210,6 +232,40 @@ function getClientIPFromHeaders(headers) {
 // Helper function to generate session ID
 function generateSessionId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Helper function to parse User-Agent for device type
+function getUserDeviceType(userAgent) {
+    if (!userAgent) return 'unknown';
+
+    if (/mobile/i.test(userAgent)) return 'mobile';
+    if (/tablet/i.test(userAgent)) return 'tablet';
+    if (/bot/i.test(userAgent)) return 'bot';
+    return 'desktop';
+}
+
+// Helper function to parse User-Agent for browser
+function getUserBrowser(userAgent) {
+    if (!userAgent) return 'unknown';
+
+    if (/chrome/i.test(userAgent) && !/edge/i.test(userAgent)) return 'Chrome';
+    if (/safari/i.test(userAgent) && !/chrome/i.test(userAgent)) return 'Safari';
+    if (/firefox/i.test(userAgent)) return 'Firefox';
+    if (/edge/i.test(userAgent)) return 'Edge';
+    if (/line/i.test(userAgent)) return 'LINE';
+    return 'other';
+}
+
+// Helper function to parse User-Agent for OS
+function getUserOS(userAgent) {
+    if (!userAgent) return 'unknown';
+
+    if (/windows/i.test(userAgent)) return 'Windows';
+    if (/macintosh|mac os x/i.test(userAgent)) return 'macOS';
+    if (/linux/i.test(userAgent)) return 'Linux';
+    if (/android/i.test(userAgent)) return 'Android';
+    if (/iphone|ipad|ipod/i.test(userAgent)) return 'iOS';
+    return 'other';
 }
 
 // Validate environment variables on cold start
