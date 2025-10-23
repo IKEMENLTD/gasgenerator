@@ -43,16 +43,31 @@ exports.handler = async (event, context) => {
 
         // level=0が見つからない場合、level=1を探す
         if (level0Error || !masterAgency) {
-            const { data: level1Agency, error: level1Error } = await supabase
+            const { data: level1Agencies, error: level1Error } = await supabase
                 .from('agencies')
                 .select('code, name, level')
                 .eq('level', 1)
                 .eq('status', 'active')
                 .order('created_at', { ascending: true })
-                .limit(1)
-                .single();
+                .limit(1);
 
-            if (level1Error || !level1Agency) {
+            if (level1Error) {
+                console.error('❌ level=1代理店の検索に失敗:', level1Error);
+                return {
+                    statusCode: 500,
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        error: 'データベースエラーが発生しました: ' + level1Error.message
+                    })
+                };
+            }
+
+            const level1Agency = level1Agencies?.[0];
+
+            if (!level1Agency) {
                 // 最上位代理店が見つからない場合
                 return {
                     statusCode: 404,

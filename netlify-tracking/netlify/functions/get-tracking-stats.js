@@ -160,11 +160,12 @@ async function getTrackingLinks() {
 async function getVisits() {
     try {
         // Try agency_tracking_visits first (new table)
+        // LEFT JOINを使用して削除されたtracking_linkの訪問記録も表示
         const { data: agencyVisits, error: agencyError } = await supabase
             .from('agency_tracking_visits')
             .select(`
                 *,
-                agency_tracking_links!inner(name, tracking_code),
+                agency_tracking_links(name, tracking_code),
                 line_profiles(user_id, display_name, fetched_at)
             `)
             .order('created_at', { ascending: false })

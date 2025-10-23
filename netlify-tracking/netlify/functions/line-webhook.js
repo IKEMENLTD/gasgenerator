@@ -293,30 +293,36 @@ async function handleMessageEvent(event) {
 
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-        // 未紐付けの訪問記録を検索
+        // 未紐付けの訪問記録を検索（metadataも取得してN+1クエリ回避）
         const { data: unlinkedVisits, error: searchError } = await supabase
             .from('agency_tracking_visits')
-            .select('id, tracking_link_id, agency_id, created_at')
+            .select('id, tracking_link_id, agency_id, created_at, metadata')
             .is('line_user_id', null)
             .gte('created_at', oneHourAgo)
             .order('created_at', { ascending: false })
             .limit(5);
 
-        if (!searchError && unlinkedVisits && unlinkedVisits.length > 0) {
-            console.log(`✅ ${unlinkedVisits.length}件の未紐付け訪問記録を発見`);
+        if (searchError) {
+            console.error('❌ 未紐付け訪問記録の検索に失敗:', searchError);
+            return; // エラー時は処理を中断
+        }
 
-            // すべての未紐付け訪問記録に紐付け（既存友達として記録）
-            for (const visit of unlinkedVisits) {
-                // 各訪問記録を個別に更新してメタデータを保持
-                const { data: currentVisit } = await supabase
-                    .from('agency_tracking_visits')
-                    .select('metadata')
-                    .eq('id', visit.id)
-                    .single();
+        if (!unlinkedVisits || unlinkedVisits.length === 0) {
+            console.log('ℹ️ 過去1時間以内の未紐付け訪問記録なし');
+            return;
+        }
 
-                const currentMetadata = currentVisit?.metadata || {};
+        console.log(`✅ ${unlinkedVisits.length}件の未紐付け訪問記録を発見`);
 
-                await supabase
+        // すべての未紐付け訪問記録に紐付け（既存友達として記録）
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const visit of unlinkedVisits) {
+            try {
+                const currentMetadata = visit.metadata || {};
+
+                const { error: updateError } = await supabase
                     .from('agency_tracking_visits')
                     .update({
                         line_user_id: userId,
@@ -328,16 +334,14 @@ async function handleMessageEvent(event) {
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', visit.id);
-            }
 
-            const { error: updateError } = null; // エラーチェック用（上記ループで個別処理）
+                if (updateError) {
+                    console.error(`❌ Visit ${visit.id} の更新に失敗:`, updateError);
+                    errorCount++;
+                } else {
+                    successCount++;
 
-            if (!updateError) {
-                console.log(`✅ ${unlinkedVisits.length}件の訪問記録を既存友達に紐付けました`);
-
-                // コンバージョン記録も作成
-                for (const visit of unlinkedVisits) {
-                    // セッション情報を構築
+                    // コンバージョン記録も作成
                     const sessionData = {
                         id: null, // セッションIDがない場合
                         agency_id: visit.agency_id,
@@ -345,13 +349,21 @@ async function handleMessageEvent(event) {
                         visit_id: visit.id
                     };
 
-                    await createAgencyLineConversion(sessionData, userId, userId);
+                    await createAgencyLineConversion(sessionData, userId, userId).catch(err => {
+                        console.error(`❌ Visit ${visit.id} のコンバージョン記録作成に失敗:`, err);
+                    });
                 }
-            } else {
-                console.error('❌ 訪問記録の紐付けに失敗:', updateError);
+            } catch (error) {
+                console.error(`❌ Visit ${visit.id} の処理中にエラー:`, error);
+                errorCount++;
             }
-        } else {
-            console.log('ℹ️ 過去1時間以内の未紐付け訪問記録なし');
+        }
+
+        if (successCount > 0) {
+            console.log(`✅ ${successCount}件の訪問記録を既存友達に紐付けました`);
+        }
+        if (errorCount > 0) {
+            console.error(`⚠️ ${errorCount}件の紐付けに失敗しました`);
         }
 
         // ⚠️ Netlify側ではメッセージ返信は行わない（Render側のみが返信）
