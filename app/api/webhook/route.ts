@@ -1365,8 +1365,15 @@ async function handleFollowEvent(event: any): Promise<void> {
         }
         return msg
       })
-      
-      await lineClient.pushMessage(userId, updatedMessages)
+
+      // メッセージを個別に送信（確実に全て送信されるように）
+      for (let i = 0; i < updatedMessages.length; i++) {
+        await lineClient.pushMessage(userId, [updatedMessages[i]])
+        // メッセージ間に100ms遅延を入れて順番を保証
+        if (i < updatedMessages.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+      }
     }
     
   } catch (error) {
