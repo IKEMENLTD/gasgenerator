@@ -60,6 +60,12 @@
   to = "/robots.txt"
   status = 200
 
+# ===== トラッキングリンク用リダイレクト（重要！）=====
+[[redirects]]
+  from = "/t/*"
+  to = "/t/index.html"
+  status = 200
+
 # Agency dashboard is now at root (/)
 # SPA routing - serve index.html for all routes (最後に配置)
 [[redirects]]
