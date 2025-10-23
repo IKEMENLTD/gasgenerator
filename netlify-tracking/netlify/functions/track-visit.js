@@ -256,15 +256,52 @@ function getUserBrowser(userAgent) {
     return 'other';
 }
 
-// Helper function to parse User-Agent for OS
+// Helper function to parse User-Agent for OS (with version details)
 function getUserOS(userAgent) {
     if (!userAgent) return 'unknown';
 
-    if (/windows/i.test(userAgent)) return 'Windows';
-    if (/macintosh|mac os x/i.test(userAgent)) return 'macOS';
+    // iOS (iPhone, iPad, iPod)
+    // Example: Mozilla/5.0 (iPhone; CPU iPhone OS 17_1_1 like Mac OS X)
+    const iosMatch = userAgent.match(/(?:iPhone|iPad|iPod).*?OS ([\d_]+)/i);
+    if (iosMatch) {
+        const version = iosMatch[1].replace(/_/g, '.');
+        const device = /iPad/i.test(userAgent) ? 'iPadOS' : 'iOS';
+        return `${device} ${version}`;
+    }
+
+    // Android
+    // Example: Mozilla/5.0 (Linux; Android 14; SM-S911B)
+    const androidMatch = userAgent.match(/Android ([\d.]+)/i);
+    if (androidMatch) {
+        return `Android ${androidMatch[1]}`;
+    }
+
+    // Windows
+    // Example: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+    const windowsMatch = userAgent.match(/Windows NT ([\d.]+)/i);
+    if (windowsMatch) {
+        const ntVersion = windowsMatch[1];
+        const windowsVersion = {
+            '10.0': '10/11', // Windows 10 and 11 both use NT 10.0
+            '6.3': '8.1',
+            '6.2': '8',
+            '6.1': '7',
+            '6.0': 'Vista'
+        }[ntVersion] || ntVersion;
+        return `Windows ${windowsVersion}`;
+    }
+
+    // macOS
+    // Example: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)
+    const macMatch = userAgent.match(/Mac OS X ([\d_]+)/i);
+    if (macMatch) {
+        const version = macMatch[1].replace(/_/g, '.');
+        return `macOS ${version}`;
+    }
+
+    // Linux (generic)
     if (/linux/i.test(userAgent)) return 'Linux';
-    if (/android/i.test(userAgent)) return 'Android';
-    if (/iphone|ipad|ipod/i.test(userAgent)) return 'iOS';
+
     return 'other';
 }
 

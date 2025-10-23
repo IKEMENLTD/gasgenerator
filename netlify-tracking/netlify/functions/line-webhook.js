@@ -356,8 +356,7 @@ async function handleMessageEvent(event) {
                             ...currentMetadata,
                             friend_type: 'existing_friend',
                             linked_at: new Date().toISOString()
-                        },
-                        updated_at: new Date().toISOString()
+                        }
                     })
                     .eq('id', visit.id);
 
