@@ -1333,20 +1333,21 @@ async function handleFollowEvent(event: any): Promise<void> {
   try {
     // ユーザー作成・更新
     const user = await UserQueries.createOrUpdate(userId)
-    
+    const isNewUser = (user as any)?.isNewUser
+
     // 既にプレミアムユーザーかチェック
-    const isPremium = (user as any)?.subscription_status === 'premium' && 
-                     (user as any)?.subscription_end_date && 
+    const isPremium = (user as any)?.subscription_status === 'premium' &&
+                     (user as any)?.subscription_end_date &&
                      new Date((user as any).subscription_end_date) > new Date()
-    
+
     if (isPremium) {
       // プレミアムユーザーには通常のウェルカムメッセージ
       await lineClient.pushMessage(userId, [{
         type: 'text',
         text: '🎉 おかえりなさい！\n\nプレミアムプランご利用中です。\n無制限でGASコードを生成できます。\n\n「スプレッドシート操作」「Gmail自動化」など、作りたいコードのカテゴリを送信してください。'
       }])
-    } else {
-      // 無料ユーザーまたは期限切れユーザーには決済ボタン付きメッセージ
+    } else if (isNewUser) {
+      // 新規無料ユーザーには決済ボタン付きウェルカムメッセージ
       const welcomeMessages = MessageTemplates.createWelcomeMessage()
       
       // LINE User IDをBase64エンコードしてStripeリンクに追加
@@ -1374,8 +1375,74 @@ async function handleFollowEvent(event: any): Promise<void> {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
       }
+    } else {
+      // 既存無料ユーザー（ブロック解除/再追加）
+      await lineClient.pushMessage(userId, [{
+        type: 'text',
+        text: 'おかえりなさい！😊\n\nまたご利用いただきありがとうございます。\n\n作りたいコードのカテゴリを選んでください：',
+        quickReply: {
+          items: [
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '📊 スプレッドシート',
+                text: 'スプレッドシート操作'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '📧 Gmail',
+                text: 'Gmail自動化'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '📅 カレンダー',
+                text: 'カレンダー連携'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '🔗 API',
+                text: 'API連携'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '✨ その他',
+                text: 'その他'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '👨‍💻 エンジニア相談',
+                text: 'エンジニアに相談する'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '📋 メニュー',
+                text: 'メニュー'
+              }
+            }
+          ]
+        }
+      }])
     }
-    
+
   } catch (error) {
     logger.error('Failed to send welcome message', { 
       userId, 

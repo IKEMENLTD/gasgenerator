@@ -46,7 +46,7 @@ export class UserQueries {
           .single()
 
         if (error) throw error
-        return data
+        return { ...data, isNewUser: false }
       } else {
         // 新規ユーザーを作成
         const { data, error } = await (supabaseAdmin as any)
@@ -65,7 +65,7 @@ export class UserQueries {
           .single()
 
         if (error) throw error
-        return data
+        return { ...data, isNewUser: true }
       }
     } catch (error) {
       logger.error('UserQueries.createOrUpdate error', { error })
@@ -76,7 +76,8 @@ export class UserQueries {
         display_name: null,
         skill_level: 'beginner',
         subscription_status: 'free',
-        monthly_usage_count: 0
+        monthly_usage_count: 0,
+        isNewUser: false  // エラー時は既存扱い（安全側）
       }
     }
   }
