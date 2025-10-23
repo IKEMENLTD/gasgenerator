@@ -74,10 +74,8 @@ exports.handler = async (event, context) => {
 
         if (hasMessageEvent && !isForwarded) {
             console.log('🚀 Render転送を開始します...');
-            // Renderに転送（非同期・バックグラウンド）
-            forwardToRender(body, signature).catch(err => {
-                console.error('❌ Background forward to Render failed:', err);
-            });
+            // Renderに転送（完了を待つ）
+            await forwardToRender(body, signature);
         } else {
             if (!hasMessageEvent) {
                 console.log('ℹ️ メッセージイベントがないため、Render転送をスキップ');
