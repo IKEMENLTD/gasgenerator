@@ -185,32 +185,56 @@ exports.handler = async (event) => {
             logger.error('- 代理店名:', user.agencies.name);
 
             const lineOfficialUrl = process.env.LINE_OFFICIAL_URL;
+            const agencyStatus = user.agencies.status;
 
-            // 環境変数チェック
-            if (!lineOfficialUrl || lineOfficialUrl.includes('@xxx') || lineOfficialUrl.includes('@your-line-id')) {
-                logger.error('❌ LINE_OFFICIAL_URLが正しく設定されていません');
-                return {
-                    statusCode: 500,
-                    headers,
-                    body: JSON.stringify({
-                        success: false,
-                        error: 'LINE友達追加機能の設定が完了していません。管理者にお問い合わせください。'
-                    })
-                };
-            }
+            // ステータスごとに適切なメッセージを返す
+            let errorResponse;
 
-            return {
-                statusCode: 401,
-                headers,
-                body: JSON.stringify({
-                    error: 'アカウントの有効化が完了していません',
-                    error_type: 'agency_pending_activation',
-                    agency_status: user.agencies.status,
-                    message: user.agencies.status === 'pending_friend_add'
-                        ? 'LINE公式アカウントを友達追加して、アカウントを有効化してください。'
-                        : 'アカウントの有効化処理中です。しばらくお待ちください。',
-                    actions: user.agencies.status === 'pending_friend_add'
-                        ? [
+            switch (agencyStatus) {
+                case 'pending':
+                    // 承認待ち
+                    errorResponse = {
+                        error: '代理店登録の承認をお待ちください',
+                        error_type: 'agency_pending_approval',
+                        agency_status: agencyStatus,
+                        message: '代理店登録が完了しました。運営側で承認処理を行っております。承認完了後、ログイン可能になります。',
+                        actions: [
+                            {
+                                type: 'info',
+                                label: '承認完了後にメールでお知らせします',
+                                url: null
+                            },
+                            {
+                                type: 'contact_support',
+                                label: 'お急ぎの場合はサポートへ',
+                                url: 'https://ikemen.ltd/contact/',
+                                email: 'info@ikemen.ltd'
+                            }
+                        ]
+                    };
+                    break;
+
+                case 'pending_friend_add':
+                    // LINE友達追加待ち
+                    // 環境変数チェック
+                    if (!lineOfficialUrl || lineOfficialUrl.includes('@xxx') || lineOfficialUrl.includes('@your-line-id')) {
+                        logger.error('❌ LINE_OFFICIAL_URLが正しく設定されていません');
+                        return {
+                            statusCode: 500,
+                            headers,
+                            body: JSON.stringify({
+                                success: false,
+                                error: 'LINE友達追加機能の設定が完了していません。管理者にお問い合わせください。'
+                            })
+                        };
+                    }
+
+                    errorResponse = {
+                        error: 'アカウントの有効化が完了していません',
+                        error_type: 'agency_pending_friend_add',
+                        agency_status: agencyStatus,
+                        message: 'LINE公式アカウントを友達追加して、アカウントを有効化してください。',
+                        actions: [
                             {
                                 type: 'add_line_friend',
                                 label: 'LINE友達追加してアカウントを有効化',
@@ -223,20 +247,67 @@ exports.handler = async (event) => {
                                 email: 'info@ikemen.ltd'
                             }
                         ]
-                        : [
-                            {
-                                type: 'retry',
-                                label: '数分後に再度ログインを試す',
-                                url: null
-                            },
+                    };
+                    break;
+
+                case 'rejected':
+                    // 申請却下
+                    errorResponse = {
+                        error: '代理店登録申請が却下されました',
+                        error_type: 'agency_rejected',
+                        agency_status: agencyStatus,
+                        message: '代理店登録申請が却下されました。詳細については管理者にお問い合わせください。',
+                        actions: [
                             {
                                 type: 'contact_support',
-                                label: 'サポートに問い合わせる',
+                                label: '管理者に問い合わせる',
                                 url: 'https://ikemen.ltd/contact/',
                                 email: 'info@ikemen.ltd'
                             }
                         ]
-                })
+                    };
+                    break;
+
+                case 'suspended':
+                    // アカウント停止
+                    errorResponse = {
+                        error: 'アカウントが停止されています',
+                        error_type: 'agency_suspended',
+                        agency_status: agencyStatus,
+                        message: 'このアカウントは管理者により停止されています。詳細については管理者にお問い合わせください。',
+                        actions: [
+                            {
+                                type: 'contact_support',
+                                label: '管理者に問い合わせる',
+                                url: 'https://ikemen.ltd/contact/',
+                                email: 'info@ikemen.ltd'
+                            }
+                        ]
+                    };
+                    break;
+
+                default:
+                    // 不明なステータス
+                    errorResponse = {
+                        error: 'アカウント状態が不正です',
+                        error_type: 'agency_invalid_status',
+                        agency_status: agencyStatus,
+                        message: 'アカウント状態が不正です。管理者にお問い合わせください。',
+                        actions: [
+                            {
+                                type: 'contact_support',
+                                label: '管理者に問い合わせる',
+                                url: 'https://ikemen.ltd/contact/',
+                                email: 'info@ikemen.ltd'
+                            }
+                        ]
+                    };
+            }
+
+            return {
+                statusCode: 401,
+                headers,
+                body: JSON.stringify(errorResponse)
             };
         }
 
