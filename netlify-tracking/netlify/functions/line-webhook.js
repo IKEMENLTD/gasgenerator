@@ -248,8 +248,8 @@ async function handleFollowEvent(event) {
                 return;
             }
 
-            // Try to link with recent tracking visit
-            await linkUserToTracking(userId, userId);
+            // Try to link with recent tracking visit (新規友達として記録)
+            await linkUserToTracking(userId, userId, 'new_friend');
         }
 
         // ⚠️ Netlify側ではメッセージ送信は行わない（Render側のみが送信）
@@ -286,6 +286,74 @@ async function handleMessageEvent(event) {
             })
             .eq('user_id', userId);
 
+        // 🆕 既存友達の訪問記録紐付けロジック
+        // followイベントが発生しない既存友達がトラッキングリンク経由で来た場合、
+        // メッセージ送信時に過去1時間以内の未紐付け訪問記録を紐付ける
+        console.log('🔗 既存友達の訪問記録紐付けチェック開始:', userId);
+
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
+        // 未紐付けの訪問記録を検索
+        const { data: unlinkedVisits, error: searchError } = await supabase
+            .from('agency_tracking_visits')
+            .select('id, tracking_link_id, agency_id, created_at')
+            .is('line_user_id', null)
+            .gte('created_at', oneHourAgo)
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        if (!searchError && unlinkedVisits && unlinkedVisits.length > 0) {
+            console.log(`✅ ${unlinkedVisits.length}件の未紐付け訪問記録を発見`);
+
+            // すべての未紐付け訪問記録に紐付け（既存友達として記録）
+            for (const visit of unlinkedVisits) {
+                // 各訪問記録を個別に更新してメタデータを保持
+                const { data: currentVisit } = await supabase
+                    .from('agency_tracking_visits')
+                    .select('metadata')
+                    .eq('id', visit.id)
+                    .single();
+
+                const currentMetadata = currentVisit?.metadata || {};
+
+                await supabase
+                    .from('agency_tracking_visits')
+                    .update({
+                        line_user_id: userId,
+                        metadata: {
+                            ...currentMetadata,
+                            friend_type: 'existing_friend',
+                            linked_at: new Date().toISOString()
+                        },
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', visit.id);
+            }
+
+            const { error: updateError } = null; // エラーチェック用（上記ループで個別処理）
+
+            if (!updateError) {
+                console.log(`✅ ${unlinkedVisits.length}件の訪問記録を既存友達に紐付けました`);
+
+                // コンバージョン記録も作成
+                for (const visit of unlinkedVisits) {
+                    // セッション情報を構築
+                    const sessionData = {
+                        id: null, // セッションIDがない場合
+                        agency_id: visit.agency_id,
+                        tracking_link_id: visit.tracking_link_id,
+                        visit_id: visit.id
+                    };
+
+                    await createAgencyLineConversion(sessionData, userId, userId);
+                }
+            } else {
+                console.error('❌ 訪問記録の紐付けに失敗:', updateError);
+            }
+        } else {
+            console.log('ℹ️ 過去1時間以内の未紐付け訪問記録なし');
+        }
+
         // ⚠️ Netlify側ではメッセージ返信は行わない（Render側のみが返信）
         // 代理店プログラムのコンバージョン記録のみを担当
         // if (event.message.type === 'text') {
@@ -318,8 +386,9 @@ async function getLineUserProfile(userId) {
 }
 
 // Link user to recent tracking visit with enhanced agency attribution
-async function linkUserToTracking(lineUserId, userId) {
+async function linkUserToTracking(lineUserId, userId, friendType = 'new_friend') {
     try {
+        console.log(`🔗 訪問記録紐付け開始 - User: ${lineUserId}, Type: ${friendType}`);
         // First, try to find an active session for this user
         const { data: activeSession, error: sessionError } = await supabase
             .from('user_sessions')
@@ -382,14 +451,27 @@ async function linkUserToTracking(lineUserId, userId) {
 
         if (!agencyError && agencyVisits && agencyVisits.length > 0) {
             // Link all recent visits to this user (not just the first one)
-            const { error: updateError } = await supabase
-                .from('agency_tracking_visits')
-                .update({ line_user_id: lineUserId })
-                .in('id', agencyVisits.map(v => v.id));
+            // メタデータに友達タイプを記録
+            for (const visit of agencyVisits) {
+                const currentMetadata = visit.metadata || {};
+                const { error: updateError } = await supabase
+                    .from('agency_tracking_visits')
+                    .update({
+                        line_user_id: lineUserId,
+                        metadata: {
+                            ...currentMetadata,
+                            friend_type: friendType,
+                            linked_at: new Date().toISOString()
+                        }
+                    })
+                    .eq('id', visit.id);
 
-            if (!updateError) {
-                console.log(`Linked LINE user ${lineUserId} to ${agencyVisits.length} agency visit(s)`);
+                if (updateError) {
+                    console.error(`❌ Visit ${visit.id} の更新に失敗:`, updateError);
+                }
             }
+
+            console.log(`✅ LINE user ${lineUserId} を ${agencyVisits.length}件の訪問記録に紐付け (${friendType})`);
         }
 
         // Also check old tracking_visits table

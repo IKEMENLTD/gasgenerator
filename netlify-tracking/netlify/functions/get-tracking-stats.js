@@ -159,6 +159,70 @@ async function getTrackingLinks() {
 // Get recent visits with tracking link info
 async function getVisits() {
     try {
+        // Try agency_tracking_visits first (new table)
+        const { data: agencyVisits, error: agencyError } = await supabase
+            .from('agency_tracking_visits')
+            .select(`
+                *,
+                agency_tracking_links!inner(name, tracking_code),
+                line_profiles(user_id, display_name, fetched_at)
+            `)
+            .order('created_at', { ascending: false })
+            .limit(100); // Limit to latest 100 visits
+
+        if (!agencyError && agencyVisits) {
+            // Transform data for better frontend consumption with friend_type detection
+            const visitsWithInfo = agencyVisits.map(visit => {
+                let friendType = '未追加';
+
+                if (visit.line_user_id) {
+                    // メタデータにfriend_typeが記録されている場合はそれを使用
+                    if (visit.metadata?.friend_type) {
+                        friendType = visit.metadata.friend_type === 'new_friend' ? '新規友達' : '既存友達';
+                    } else {
+                        // メタデータがない場合は、訪問日時とLINEプロフィール取得日時を比較
+                        const visitDate = new Date(visit.created_at);
+                        const profileDate = visit.line_profiles?.fetched_at
+                            ? new Date(visit.line_profiles.fetched_at)
+                            : null;
+
+                        if (profileDate) {
+                            // 訪問日時がプロフィール取得日時より前 → 既存友達
+                            // 訪問日時がプロフィール取得日時とほぼ同時（±30分） → 新規友達
+                            const timeDiff = Math.abs(visitDate.getTime() - profileDate.getTime());
+                            const thirtyMinutes = 30 * 60 * 1000;
+
+                            friendType = timeDiff <= thirtyMinutes ? '新規友達' : '既存友達';
+                        } else {
+                            // プロフィール情報がない場合はデフォルトで新規友達と判定
+                            friendType = '新規友達';
+                        }
+                    }
+                }
+
+                return {
+                    ...visit,
+                    tracking_link: visit.agency_tracking_links,
+                    line_user: visit.line_profiles,
+                    friend_type: friendType,
+                    ip_address: visit.visitor_ip,
+                    visited_at: visit.created_at
+                };
+            });
+
+            return {
+                statusCode: 200,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    visits: visitsWithInfo
+                })
+            };
+        }
+
+        // Fallback to old table structure
         const { data: visits, error } = await supabase
             .from('tracking_sessions')
             .select(`
@@ -166,7 +230,7 @@ async function getVisits() {
                 tracking_links(name, code)
             `)
             .order('created_at', { ascending: false })
-            .limit(100); // Limit to latest 100 visits
+            .limit(100);
 
         if (error) throw error;
 
@@ -174,7 +238,8 @@ async function getVisits() {
         const visitsWithInfo = visits.map(visit => ({
             ...visit,
             tracking_link: visit.tracking_links,
-            line_user: visit.line_users
+            line_user: visit.line_users,
+            friend_type: visit.line_user_id ? '新規友達' : '未追加'
         }));
 
         return {

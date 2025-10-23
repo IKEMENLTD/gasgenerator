@@ -43,6 +43,7 @@ function adminDashboard() {
             rejected: 0,
             suspended: 0
         },
+        masterAgencyCode: '', // 運営の代理店コード
 
         // Configuration - Security Note: Move credentials to environment variables
         config: {
@@ -107,10 +108,26 @@ function adminDashboard() {
             try {
                 await Promise.all([
                     this.loadStats(),
-                    this.loadTrackingLinks()
+                    this.loadTrackingLinks(),
+                    this.loadMasterAgencyCode()
                 ]);
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
+            }
+        },
+
+        async loadMasterAgencyCode() {
+            try {
+                // 運営の代理店コード（level=0または1の最上位代理店）を取得
+                const response = await fetch('/.netlify/functions/get-master-agency');
+                if (response.ok) {
+                    const data = await response.json();
+                    this.masterAgencyCode = data.code || '';
+                }
+            } catch (error) {
+                console.error('Error loading master agency code:', error);
+                // エラーの場合はデフォルト値を設定
+                this.masterAgencyCode = '取得中...';
             }
         },
 
