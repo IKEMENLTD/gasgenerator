@@ -291,13 +291,26 @@ async function handleMessageEvent(event) {
     const userId = event.source.userId;
 
     try {
-        // Update user's last activity (using updated_at)
-        await supabase
-            .from('line_profiles')
-            .update({
-                updated_at: new Date().toISOString()
-            })
-            .eq('user_id', userId);
+        // Get user profile from LINE API and upsert to line_profiles
+        // This ensures existing friends (who didn't trigger follow event) are also recorded
+        const userProfile = await getLineUserProfile(userId);
+
+        if (userProfile) {
+            await supabase
+                .from('line_profiles')
+                .upsert({
+                    user_id: userId,
+                    display_name: userProfile.displayName,
+                    picture_url: userProfile.pictureUrl,
+                    status_message: userProfile.statusMessage,
+                    fetched_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                }, {
+                    onConflict: 'user_id'
+                });
+
+            console.log('✅ LINE Profile upsert成功:', userProfile.displayName);
+        }
 
         // 🆕 既存友達の訪問記録紐付けロジック
         // followイベントが発生しない既存友達がトラッキングリンク経由で来た場合、
