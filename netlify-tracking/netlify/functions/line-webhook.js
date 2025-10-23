@@ -59,17 +59,32 @@ exports.handler = async (event, context) => {
         }
 
         // Netlify側の処理（コンバージョン記録のみ）[v2.0]
+        console.log('=== Netlify Webhook処理開始 ===');
+        console.log('Events count:', events.length);
+
         for (const event of events) {
+            console.log('Processing event type:', event.type);
             await processLineEvent(event);
         }
 
         // メッセージイベント処理（Renderに転送）
         const hasMessageEvent = events.some(e => e.type === 'message');
+        console.log('Has message event:', hasMessageEvent);
+        console.log('Is forwarded:', isForwarded);
+
         if (hasMessageEvent && !isForwarded) {
+            console.log('🚀 Render転送を開始します...');
             // Renderに転送（非同期・バックグラウンド）
             forwardToRender(body, signature).catch(err => {
-                console.error('Background forward to Render failed:', err);
+                console.error('❌ Background forward to Render failed:', err);
             });
+        } else {
+            if (!hasMessageEvent) {
+                console.log('ℹ️ メッセージイベントがないため、Render転送をスキップ');
+            }
+            if (isForwarded) {
+                console.log('ℹ️ 既に転送済みのため、Render転送をスキップ（無限ループ防止）');
+            }
         }
 
         return {
