@@ -1,7 +1,8 @@
 # Global security headers
 /*
   # Content Security Policy (XSS保護 - 最重要)
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  # Updated for index.html: added Font Awesome (cdnjs), YouTube iframes, Google Analytics
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://www.google-analytics.com; frame-src https://www.youtube.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
 
   # Clickjacking保護
   X-Frame-Options: DENY
@@ -15,11 +16,11 @@
   # Referrer Policy（プライバシー保護）
   Referrer-Policy: strict-origin-when-cross-origin
 
-  # HTTPS強制（本番環境で有効化推奨）
-  # Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  # HTTPS強制（全リソースHTTPS化完了により有効化）
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
   # 不要な機能を無効化（プライバシー保護）
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
 
 # Admin pages - no cache
 /admin/*

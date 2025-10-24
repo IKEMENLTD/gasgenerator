@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
     
     <!-- Styles -->
     <link rel="stylesheet" href="/css/styles.css">
@@ -74,11 +74,11 @@
                     <a href="#pricing" class="nav-link">料金</a>
                     <a href="#testimonials" class="nav-link">導入事例</a>
                     <a href="#faq" class="nav-link">FAQ</a>
-                    <a href="http://agency.ikemen.ltd/" class="nav-link" style="font-size: 0.875rem; padding: 0.5rem 1rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; background: white; color: var(--gray-700); transition: all 0.2s;">
+                    <a href="https://agency.ikemen.ltd/" class="nav-link" style="font-size: 0.875rem; padding: 0.5rem 1rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; background: white; color: var(--gray-700); transition: all 0.2s;">
                         <i class="fas fa-building" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
                         代理店様はこちら
                     </a>
-                    <a href="https://lin.ee/nvDPCj9" class="btn btn-primary" target="_blank">
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
                         <i class="fab fa-line"></i>
                         無料相談
                     </a>
@@ -120,11 +120,11 @@
                 </p>
                 
                 <div class="hero-cta fade-in-up delay-3">
-                    <a href="https://lin.ee/nvDPCj9" class="btn btn-primary btn-xl" target="_blank">
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-primary btn-xl" target="_blank" rel="noopener noreferrer">
                         <i class="fab fa-line"></i>
                         無料診断を予約する
                     </a>
-                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary btn-lg" target="_blank">
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary btn-lg" target="_blank" rel="noopener noreferrer">
                         <i class="fab fa-line" style="font-size: 20px;"></i>
                         LINEで相談
                     </a>
@@ -419,7 +419,7 @@
                     </div>
                     
                     <div style="text-align: center; margin-top: var(--space-6);">
-                        <a href="https://lin.ee/nvDPCj9" class="btn btn-primary btn-xl" target="_blank">
+                        <a href="https://lin.ee/nvDPCj9" class="btn btn-primary btn-xl" target="_blank" rel="noopener noreferrer">
                             <i class="fab fa-line" style="font-size: 24px; color: white;"></i>
                             LINEでGASコード生成を試す
                         </a>
@@ -478,12 +478,14 @@
                             </button>
                         </div>
                         <div class="demo-iframe-wrapper">
-                            <iframe 
+                            <iframe
                                 id="demo-iframe"
                                 src="https://script.google.com/macros/s/AKfycbwL1r1VhdsSmfn0XrJ5dnz7q9zS0YX_nGlwqZLEbPRAaAT-rQX5p1VWJlmVaB2AsJSv/exec"
                                 frameborder="0"
                                 allowfullscreen
-                                loading="lazy">
+                                loading="lazy"
+                                sandbox="allow-scripts allow-forms allow-same-origin"
+                                title="GAS自動化デモアプリケーション">
                             </iframe>
                             <div class="demo-loading" id="demo-loading">
                                 <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-500);"></i>
@@ -509,12 +511,14 @@
                             </button>
                         </div>
                         <div class="demo-iframe-wrapper">
-                            <iframe 
+                            <iframe
                                 id="sheet-iframe"
                                 src="https://docs.google.com/spreadsheets/d/1oh3dG9TNpU1NbCgPa_w6TmKWYQ4RnbgxFeg5JpWFtnQ/preview"
                                 frameborder="0"
                                 allowfullscreen
-                                loading="lazy">
+                                loading="lazy"
+                                sandbox="allow-scripts allow-same-origin"
+                                title="Googleスプレッドシート自動化デモ">
                             </iframe>
                             <div class="demo-loading" id="sheet-loading">
                                 <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #0f9d58;"></i>
@@ -559,11 +563,11 @@
                         このようなアプリケーションを御社の業務に合わせてカスタマイズ開発します
                     </p>
                     <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                        <a href="https://lin.ee/nvDPCj9" class="btn btn-primary btn-xl" target="_blank">
+                        <a href="https://lin.ee/nvDPCj9" class="btn btn-primary btn-xl" target="_blank" rel="noopener noreferrer">
                             <i class="fab fa-line"></i>
                             無料で相談する
                         </a>
-                        <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary btn-xl" target="_blank">
+                        <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary btn-xl" target="_blank" rel="noopener noreferrer">
                             <i class="fab fa-line"></i>
                             LINEで問い合わせ
                         </a>
@@ -657,7 +661,7 @@
                             <span>LINE連携対応</span>
                         </li>
                     </ul>
-                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary" style="width: 100%;" target="_blank">
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary" style="width: 100%;" target="_blank" rel="noopener noreferrer">
                         無料利用開始
                     </a>
                 </div>
@@ -697,7 +701,7 @@
                             <span>30日間返金保証</span>
                         </li>
                     </ul>
-                    <a href="https://lin.ee/nvDPCj9" class="btn btn-primary" style="width: 100%;" target="_blank">
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-primary" style="width: 100%;" target="_blank" rel="noopener noreferrer">
                         このプランで始める
                     </a>
                 </div>
@@ -737,7 +741,7 @@
                             <span>※同時複数プロジェクトは追加契約要</span>
                         </li>
                     </ul>
-                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary" style="width: 100%;" target="_blank">
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary" style="width: 100%;" target="_blank" rel="noopener noreferrer">
                         詳細を確認
                     </a>
                 </div>
@@ -775,7 +779,7 @@
                             <span>24時間緊急対応</span>
                         </li>
                     </ul>
-                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary" style="width: 100%;" target="_blank">
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary" style="width: 100%;" target="_blank" rel="noopener noreferrer">
                         お問い合わせ
                     </a>
                 </div>
@@ -997,9 +1001,27 @@
                     30日間の全額返金保証付き。リスクなしで始められます
                 </p>
                 
-                <form class="cta-form">
-                    <input type="text" class="cta-input" placeholder="会社名" required>
-                    <input type="tel" class="cta-input" placeholder="電話番号" required>
+                <form class="cta-form" name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+                    <!-- Netlify form detection -->
+                    <input type="hidden" name="form-name" value="contact">
+
+                    <!-- Honeypot field (hidden from users, catches bots) -->
+                    <div style="display: none;">
+                        <label>Don't fill this out if you're human: <input name="bot-field"></label>
+                    </div>
+
+                    <input type="text" name="company" class="cta-input" placeholder="会社名" required minlength="2" maxlength="100">
+                    <input type="email" name="email" class="cta-input" placeholder="メールアドレス" required maxlength="100">
+                    <input type="tel" name="phone" class="cta-input" placeholder="電話番号（例: 03-1234-5678 または 09012345678）" required pattern="^(0\d{1,4}-?\d{1,4}-?\d{4}|0\d{9,10})$" title="有効な電話番号を入力してください（例: 03-1234-5678 または 09012345678）">
+
+                    <!-- Privacy policy consent -->
+                    <div style="text-align: left; margin: 1rem 0; font-size: 0.875rem;">
+                        <label style="display: flex; align-items: flex-start; gap: 0.5rem; color: white; cursor: pointer;">
+                            <input type="checkbox" name="privacy-consent" required style="margin-top: 0.25rem;">
+                            <span><a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer" style="color: white; text-decoration: underline;">プライバシーポリシー</a>に同意します</span>
+                        </label>
+                    </div>
+
                     <button type="submit" class="btn btn-xl" style="background: white; color: var(--primary-700);">
                         <i class="fas fa-paper-plane"></i>
                         無料診断を申込む
@@ -1078,7 +1100,7 @@
     </footer>
     
     <!-- Floating CTA -->
-    <a href="https://lin.ee/nvDPCj9" class="floating-cta" id="floating-cta" target="_blank">
+    <a href="https://lin.ee/nvDPCj9" class="floating-cta" id="floating-cta" target="_blank" rel="noopener noreferrer">
         <i class="fab fa-line" style="font-size: 32px; color: white;"></i>
         <div class="floating-cta-tooltip">
             <span>LINEで相談</span>
