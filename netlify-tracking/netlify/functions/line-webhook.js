@@ -67,18 +67,24 @@ exports.handler = async (event, context) => {
             await processLineEvent(event);
         }
 
-        // メッセージイベント処理（Renderに転送）
-        const hasMessageEvent = events.some(e => e.type === 'message');
-        console.log('Has message event:', hasMessageEvent);
+        // メッセージ・フォロー・アンフォローイベント処理（Renderに転送）
+        const shouldForwardToRender = events.some(e =>
+            e.type === 'message' ||
+            e.type === 'follow' ||
+            e.type === 'unfollow'
+        );
+        const eventTypes = events.map(e => e.type).join(', ');
+        console.log('Event types:', eventTypes);
+        console.log('Should forward to Render:', shouldForwardToRender);
         console.log('Is forwarded:', isForwarded);
 
-        if (hasMessageEvent && !isForwarded) {
-            console.log('🚀 Render転送を開始します...');
+        if (shouldForwardToRender && !isForwarded) {
+            console.log('🚀 Render転送を開始します... (event types:', eventTypes, ')');
             // Renderに転送（完了を待つ）
             await forwardToRender(body, signature);
         } else {
-            if (!hasMessageEvent) {
-                console.log('ℹ️ メッセージイベントがないため、Render転送をスキップ');
+            if (!shouldForwardToRender) {
+                console.log('ℹ️ 転送対象イベントがないため、Render転送をスキップ (types:', eventTypes, ')');
             }
             if (isForwarded) {
                 console.log('ℹ️ 既に転送済みのため、Render転送をスキップ（無限ループ防止）');
