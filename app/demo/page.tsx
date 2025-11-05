@@ -96,10 +96,12 @@ export default function DemoPage() {
               <p className="text-sm text-gray-600 mt-1">プログラミング不要のGAS自動生成</p>
             </div>
             <a
-              href="https://taskmateai.net/"
+              href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+              target="_blank"
+              rel="noopener noreferrer"
               className="hidden md:block bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
             >
-              無料で始める
+              無料相談を予約
             </a>
           </div>
         </div>
@@ -183,16 +185,18 @@ export default function DemoPage() {
 
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">
                       <a
-                        href="https://taskmateai.net/"
+                        href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors"
                       >
-                        今すぐ無料で始める
+                        無料相談を予約（15分）
                       </a>
                       <a
-                        href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+                        href="https://taskmateai.net/"
                         className="flex-1 bg-white hover:bg-gray-50 text-emerald-600 font-semibold py-3 px-6 rounded-lg text-center border-2 border-emerald-500 transition-colors"
                       >
-                        無料相談を予約
+                        サービス詳細を見る
                       </a>
                     </div>
 

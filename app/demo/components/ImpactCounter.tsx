@@ -53,16 +53,18 @@ export default function ImpactCounter({ timeSaved, costSaved, errorReduction, de
       </div>
       <div className="mt-6 space-y-2">
         <a
-          href="https://taskmateai.net/"
+          href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+          target="_blank"
+          rel="noopener noreferrer"
           className="block w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg text-center transition-colors"
         >
-          無料で始める
+          無料相談を予約（15分）
         </a>
         <a
-          href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+          href="https://taskmateai.net/"
           className="block w-full bg-white hover:bg-gray-50 text-emerald-600 font-semibold py-3 px-4 rounded-lg text-center border-2 border-emerald-500 transition-colors"
         >
-          無料相談を予約
+          サービス詳細を見る
         </a>
       </div>
     </div>
