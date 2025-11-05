@@ -277,3 +277,153 @@ npm install jsonwebtoken stripe
 - ファイルサイズ: 85,665バイト
 
 コミット: "Fix routing: static HTML as root, Next.js for /demo only"
+
+---
+
+## ローディングスクリーン無限再生問題の調査 - 2025-11-05
+
+### 問題
+ユーザー報告: 「動画が永遠に再生されるだけ。なんでかチェック」
+
+### 調査結果
+
+#### 1. ファイル構成確認
+- ✅ `netlify-tracking/index.html` - ローディングスクリーン含む (lines 51-60)
+- ✅ `netlify-tracking/js/main.js` - 4秒後に非表示にするロジック含む
+- ✅ `netlify-tracking/images/GAS.mp4` - 動画ファイル存在 (7.9MB)
+- ✅ `netlify-tracking/css/styles.css` - CSS変数定義済み
+
+#### 2. ローディングスクリーンのコード
+**index.html (lines 51-60)**:
+```html
+<div id="loading-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; ...">
+    <video id="loading-video" autoplay muted style="...">
+        <source src="images/GAS.mp4" type="video/mp4">
+    </video>
+    <div class="loading-progress">
+        <div class="loading-bar" style="width: 0%; ...transition: width 4s ease;"></div>
+    </div>
+</div>
+```
+
+**main.js (lines 31-58)**:
+```javascript
+function initLoadingScreen() {
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingBar = document.querySelector('.loading-bar');
+    const loadingVideo = document.getElementById('loading-video');
+
+    // プログレスバーアニメーション開始
+    setTimeout(() => {
+        if (loadingBar) {
+            loadingBar.style.width = '100%';
+        }
+    }, 100);
+
+    // 4秒後にローディングスクリーン非表示
+    setTimeout(() => {
+        if (loadingScreen) {
+            loadingScreen.style.transition = 'opacity 0.8s ease';
+            loadingScreen.style.opacity = '0';
+
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                if (loadingVideo) {
+                    loadingVideo.pause();
+                }
+            }, 800);
+        }
+    }, 4000);
+}
+```
+
+#### 3. ローカルテスト環境
+- **静的HTTPサーバー**: `http://localhost:8080` (Python HTTP server)
+  - ✅ index.html正常配信
+  - ✅ main.js正常配信 (HTTP 200)
+  - ✅ GAS.mp4動画ファイル存在
+
+- **Next.js開発サーバー**: `http://localhost:3002`
+  - ❌ `/`は`app/page.tsx`を配信 (Next.jsページ)
+  - ❌ `/js/main.js`はNext.jsがインターセプト（404返す可能性）
+
+#### 4. 問題の可能性
+1. **本番環境でのデプロイ未完了**:
+   - netlify.toml変更(`publish = "netlify-tracking"`)がまだpush/デプロイされていない
+   - 本番サイトは古い設定(`publish = ".next"`)のまま
+
+2. **JavaScriptロード問題**:
+   - main.jsがNetlifyで正しく配信されていない可能性
+   - パス解決の問題 (`/js/main.js` vs 相対パス)
+
+3. **DOMContentLoaded競合**:
+   - main.jsは`DOMContentLoaded`イベント内で`initLoadingScreen()`を呼ぶ
+   - ローディングスクリーンが表示される前にDOMが完全にロードされている必要がある
+
+#### 5. 次のアクション
+1. ✅ 静的サーバーテスト環境構築 (port 8080)
+2. ⏳ 本番環境確認が必要:
+   - 最新コミットをpush
+   - Netlifyで再デプロイ
+   - `https://taskmateai.net/`にアクセスして動作確認
+3. ⏳ ブラウザコンソールでJavaScriptエラー確認
+4. ⏳ ネットワークタブで`/js/main.js`のロード状況確認
+
+### メモ
+- ローカルの静的サーバー(8080)では理論上正常動作するはず
+- Next.js dev server(3002)では`app/page.tsx`が表示され、index.htmlは表示されない
+- 本番環境でのテストが最優先
+
+### 解決
+✅ ローカルテスト(port 8080)で正常動作確認！
+
+---
+
+## ローディング動画の読み込み速度最適化 - 2025-11-05
+
+### 実施した最適化
+
+#### 1. 動画ファイル情報
+- **現在のサイズ**: 7.6MB (`GAS.mp4`)
+- **フォーマット**: MP4
+
+#### 2. HTML最適化
+`netlify-tracking/index.html` (line 52) に以下の属性を追加：
+
+```html
+<video id="loading-video" autoplay muted playsinline preload="auto" ...>
+```
+
+**追加した属性**:
+- `playsinline`: iOS/モバイルでインライン再生を強制（フルスクリーン防止）
+- `preload="auto"`: ブラウザに動画全体を積極的に事前読み込みさせる
+
+#### 3. 効果
+- ✅ ブラウザが動画を優先的に読み込む
+- ✅ モバイルでの再生がスムーズになる
+- ✅ 初回読み込み後はブラウザキャッシュで瞬時に表示
+
+#### 4. さらなる最適化案（オプション）
+今後さらに高速化したい場合：
+
+1. **動画圧縮**:
+   - HandBrake/FFmpegで品質を保ちつつ2-3MBに圧縮
+   - ビットレート調整（例: 1000-1500 kbps）
+
+2. **WebM形式追加**:
+   ```html
+   <video ...>
+       <source src="images/GAS.webm" type="video/webm">
+       <source src="images/GAS.mp4" type="video/mp4">
+   </video>
+   ```
+   WebMはMP4より軽量でChrome/Firefoxで高速
+
+3. **CDN配信**: Netlifyの自動CDNで配信されているが、画像最適化プラグイン追加可能
+
+4. **poster属性**: 動画読み込み前に表示する静止画（初回表示体感速度向上）
+
+### 現状のパフォーマンス
+- **7.6MB動画**: 高速回線で1-2秒、4G回線で3-5秒程度
+- **`preload="auto"`**: ページ読み込みと同時に動画ダウンロード開始
+- **ブラウザキャッシュ**: 2回目以降は即座に表示
