@@ -193,8 +193,10 @@ export default function DemoPage() {
                         無料相談を予約（15分）
                       </a>
                       <a
-                        href="https://taskmateai.net/"
+                        href="https://timerex.net/s/cz1917903_47c5/7caf7949"
                         className="flex-1 bg-white hover:bg-gray-50 text-emerald-600 font-semibold py-3 px-6 rounded-lg text-center border-2 border-emerald-500 transition-colors"
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
                         サービス詳細を見る
                       </a>

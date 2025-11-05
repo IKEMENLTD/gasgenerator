@@ -874,3 +874,57 @@ https://timerex.net/s/cz1917903_47c5/7caf7949
 8. その他のCTAボタン
 
 **次のステップ**: コミット&プッシュしてNetlifyに反映
+
+---
+
+## リンク修正の最終調整 - 2025-11-05
+
+### ユーザーからの修正依頼
+「デモページだけだよ。index.htmlの方は元のリンクに戻して」
+
+### 実施内容
+
+**修正方針の変更**:
+- **index.html（ランディングページ）**: LINEリンク維持（元に戻す）
+- **デモページ（/demo）**: Timerexリンクに変更
+
+#### 1. index.htmlをLINEリンクに復元
+```bash
+# netlify-tracking/index.html: 11箇所
+# public/index.html: 11箇所
+# 全て https://lin.ee/nvDPCj9 に戻す
+```
+
+#### 2. デモページのみTimerexリンクに変更
+**対象ファイル**:
+- `app/demo/page.tsx`: 「サービス詳細を見る」ボタン
+- `app/demo/components/ImpactCounter.tsx`: 「サービス詳細を見る」ボタン
+
+**変更内容**:
+```tsx
+// 変更前
+href="https://taskmateai.net/"
+
+// 変更後
+href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+target="_blank"
+rel="noopener noreferrer"
+```
+
+### 最終的なリンク構成
+
+#### ランディングページ（/）
+- 全てのCTAボタン → `https://lin.ee/nvDPCj9`（LINE公式）
+  - 無料相談
+  - 無料診断を予約する
+  - LINEで相談
+  - 詳細を確認（料金プラン）
+  - その他CTAボタン
+
+#### デモページ（/demo）
+- 「サービス詳細を見る」ボタン → `https://timerex.net/s/cz1917903_47c5/7caf7949`（Timerex予約）
+- 「無料相談を予約」ボタン → `https://taskmateai.net/`（既存のまま）
+
+### 理由
+- ランディングページはLINE誘導を維持（既存のマーケティング戦略）
+- デモページはTimerex予約へ誘導（デモ体験後の直接予約を促進）
