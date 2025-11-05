@@ -9,6 +9,7 @@ import ImpactCounter from './components/ImpactCounter'
 import ChartIcon from './components/icons/ChartIcon'
 import BoxIcon from './components/icons/BoxIcon'
 import MailIcon from './components/icons/MailIcon'
+import LogoIcon from './components/icons/LogoIcon'
 import { scenarios, ScenarioId } from './scenarios'
 import { Message } from './scenarios/types'
 
@@ -113,8 +114,8 @@ export default function DemoPage() {
               {/* チャットヘッダー */}
               <div className="bg-emerald-500 text-white px-6 py-4 rounded-t-xl">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <span className="text-2xl">🤖</span>
+                  <div className="flex items-center justify-center">
+                    <LogoIcon className="w-10 h-10" />
                   </div>
                   <div>
                     <h2 className="font-semibold">TaskMate AI</h2>
