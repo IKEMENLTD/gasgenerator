@@ -1,19 +1,15 @@
-# Netlify Configuration for TaskMate (Next.js App)
+# Netlify Configuration for TaskMate Next.js App
 [build]
   command = "npm run build"
-  # Next.js with @netlify/plugin-nextjs: don't set publish directory
+  # Don't set publish directory - let @netlify/plugin-nextjs handle it
 
 [build.environment]
   NODE_VERSION = "18"
 
-# Ignore tracking directory for builds
-[build.ignore]
-  path = "netlify-tracking"
-
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# ===== ブログのリダイレクト（修正版）=====
+# ===== Redirects =====
 [[redirects]]
   from = "/blog"
   to = "https://elegant-gumdrop-9a983a.netlify.app"
@@ -26,7 +22,6 @@
   status = 200
   force = true
 
-# ===== 既存のトラッキング用リダイレクト =====
 [[redirects]]
   from = "/t/:code"
   to = "/.netlify/functions/track"
@@ -39,7 +34,7 @@
   status = 200
   query = {campaign = ":campaign"}
 
-# Headers for security
+# ===== Headers =====
 [[headers]]
   for = "/*"
   [headers.values]
@@ -55,7 +50,7 @@
     Access-Control-Allow-Methods = "GET, POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, Authorization"
 
-# Function configuration
+# ===== Functions (for tracking only) =====
 [functions]
   directory = "netlify-tracking/netlify/functions"
   node_bundler = "esbuild"
