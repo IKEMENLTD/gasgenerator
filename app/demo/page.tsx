@@ -228,6 +228,7 @@ export default function DemoPage() {
                 timeSaved={scenario.timeSaved}
                 costSaved={scenario.costSaved}
                 errorReduction={scenario.errorReduction}
+                details={scenario.details}
               />
             ) : (
               <div className="bg-white rounded-xl border border-gray-200 p-6">

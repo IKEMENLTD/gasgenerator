@@ -8,9 +8,14 @@ interface ImpactCounterProps {
   timeSaved: number // 時間（月）
   costSaved: number // コスト（円/月）
   errorReduction: number // エラー削減率（%）
+  details?: {
+    timeSavedDetail: string
+    costSavedDetail: string
+    errorReductionDetail: string
+  }
 }
 
-export default function ImpactCounter({ timeSaved, costSaved, errorReduction }: ImpactCounterProps) {
+export default function ImpactCounter({ timeSaved, costSaved, errorReduction, details }: ImpactCounterProps) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
       <h3 className="font-bold text-lg mb-4 text-gray-900">削減効果</h3>
@@ -22,7 +27,7 @@ export default function ImpactCounter({ timeSaved, costSaved, errorReduction }: 
           <div>
             <p className="text-2xl font-bold text-gray-900">{timeSaved}時間</p>
             <p className="text-sm text-gray-600">月間削減時間</p>
-            <p className="text-xs text-gray-400 mt-1">※手動作業5分/日 → 自動化</p>
+            <p className="text-xs text-gray-500 mt-1 font-medium">{details?.timeSavedDetail || '※手動作業を自動化'}</p>
           </div>
         </div>
         <div className="flex items-start gap-3">
@@ -32,7 +37,7 @@ export default function ImpactCounter({ timeSaved, costSaved, errorReduction }: 
           <div>
             <p className="text-2xl font-bold text-gray-900">{costSaved.toLocaleString()}円</p>
             <p className="text-sm text-gray-600">月間コスト削減</p>
-            <p className="text-xs text-gray-400 mt-1">※時給2,000円換算</p>
+            <p className="text-xs text-gray-500 mt-1 font-medium">{details?.costSavedDetail || '※時給2,000円換算'}</p>
           </div>
         </div>
         <div className="flex items-start gap-3">
@@ -42,7 +47,7 @@ export default function ImpactCounter({ timeSaved, costSaved, errorReduction }: 
           <div>
             <p className="text-2xl font-bold text-gray-900">{errorReduction}%</p>
             <p className="text-sm text-gray-600">ミス削減率</p>
-            <p className="text-xs text-gray-400 mt-1">※手入力ミスを自動化で解消</p>
+            <p className="text-xs text-gray-500 mt-1 font-medium">{details?.errorReductionDetail || '※手入力ミスを解消'}</p>
           </div>
         </div>
       </div>

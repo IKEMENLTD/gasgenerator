@@ -270,5 +270,10 @@ SLACK_WEBHOOK_URL = 'YOUR_SLACK_WEBHOOK_URL_HERE'
    - 完了！1時間ごとに在庫チェックが実行されます`,
   timeSaved: 30,
   costSaved: 60000,
-  errorReduction: 98
+  errorReduction: 98,
+  details: {
+    timeSavedDetail: '1日3回の在庫確認 × 5分 × 20営業日',
+    costSavedDetail: '時給2,000円 × 30時間分の人件費',
+    errorReductionDetail: '在庫切れ見逃しによる機会損失を防止'
+  }
 }

@@ -205,5 +205,10 @@ function showHowToGetIds() {
 ※初回は手動で aggregateSalesData() を実行して動作確認してください`,
   timeSaved: 40,
   costSaved: 80000,
-  errorReduction: 95
+  errorReduction: 95,
+  details: {
+    timeSavedDetail: '毎日20分の手動集計作業 × 20営業日',
+    costSavedDetail: '時給2,000円 × 40時間分の人件費',
+    errorReductionDetail: '手入力ミス（転記・計算）を完全自動化'
+  }
 }

@@ -144,5 +144,10 @@ function createWeeklyTrigger() {
 6. 完了！毎週金曜17時にレポートが送信されます`,
   timeSaved: 20,
   costSaved: 40000,
-  errorReduction: 100
+  errorReduction: 100,
+  details: {
+    timeSavedDetail: '週次レポート作成 × 5時間 × 4週',
+    costSavedDetail: '時給2,000円 × 20時間分の人件費',
+    errorReductionDetail: '自動生成により報告漏れ・遅延ゼロ'
+  }
 }

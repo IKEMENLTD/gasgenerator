@@ -16,4 +16,9 @@ export interface Scenario {
   timeSaved: number
   costSaved: number
   errorReduction: number
+  details?: {
+    timeSavedDetail: string
+    costSavedDetail: string
+    errorReductionDetail: string
+  }
 }
