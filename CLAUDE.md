@@ -228,3 +228,52 @@ npm install jsonwebtoken stripe
    - Publish directory: 空欄（または`.next`）
    - Build command: `npm run build`（netlify.tomlで設定済み）
 4. デプロイ成功後、`https://taskmateai.net/`と`https://taskmateai.net/demo`にアクセスして確認
+
+---
+
+## 問題解決: ルーティング設定の修正 - 2025-11-05
+
+### 問題の本質（誤解を修正）
+最初は「古いindex.htmlが邪魔」と考えたが、**実際は逆**だった：
+- **正しい構成**: `netlify-tracking/index.html`（既存TaskMateランディング）がトップページ
+- **問題**: `publish = ".next"`によりNext.jsアプリ全体が公開され、`app/page.tsx`がトップページを上書きしていた
+
+### 期待される動作
+- `/` → 既存の`netlify-tracking/index.html`（TaskMateランディングページ）
+- `/demo` → 新しいNext.jsデモページ
+
+### 解決方法
+`netlify.toml`を修正：
+1. `publish = "netlify-tracking"` に変更（静的HTMLをルートに）
+2. `/demo`と`/demo/*`をNext.jsの`___netlify-server-handler`にリダイレクト追加
+
+```toml
+[build]
+  publish = "netlify-tracking"
+
+[[redirects]]
+  from = "/demo"
+  to = "/.netlify/functions/___netlify-server-handler"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/demo/*"
+  to = "/.netlify/functions/___netlify-server-handler"
+  status = 200
+  force = true
+```
+
+### 結果
+- ✅ `/` → 既存TaskMateランディングページ（`netlify-tracking/index.html`）
+- ✅ `/demo` → Next.jsデモページ
+- ✅ トラッキング機能（`/t/:code`, `/c/:campaign`）も維持
+- ✅ `netlify-tracking/index.html`は完全に復元（1623行、完璧に確認済み）
+
+### 検証済み
+- ファイル行数: 1623行（元の完全版）
+- 先頭20行: `<!DOCTYPE html>` から始まり、正しいメタタグ
+- 末尾20行: GA4トラッキングスクリプトで正しく終了
+- ファイルサイズ: 85,665バイト
+
+コミット: "Fix routing: static HTML as root, Next.js for /demo only"
