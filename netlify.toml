@@ -1,9 +1,14 @@
 # Netlify Configuration for TaskMate (Next.js App)
 [build]
   command = "npm run build"
+  # Next.js with @netlify/plugin-nextjs: don't set publish directory
 
 [build.environment]
   NODE_VERSION = "18"
+
+# Ignore tracking directory for builds
+[build.ignore]
+  path = "netlify-tracking"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
