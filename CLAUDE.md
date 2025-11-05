@@ -170,3 +170,61 @@ Route: /demo - Size: 7.37 kB, First Load JS: 94.6 kB
 ### アクセス方法
 デモページURL: `/demo`
 メールからのリンク例: `https://taskmateai.net/demo?utm_source=email&utm_campaign=demo`
+
+---
+
+## Netlifyデプロイ問題の修正 - 2025-11-05
+
+### 問題1: Tailwind CSSが適用されない
+**原因**:
+- `package.json`に`tailwindcss`、`autoprefixer`、`postcss`がなかった
+- `postcss.config.js`が存在しなかった
+- `app/layout.tsx`に`globals.css`のインポートがなかった
+
+**修正**:
+```bash
+npm install -D tailwindcss autoprefixer postcss
+```
+- `postcss.config.js`を作成
+- `app/layout.tsx`に`import './globals.css'`を追加
+
+### 問題2: netlify.toml解析エラー
+**原因**: `build.ignore`の書き方がオブジェクト形式だったが、Netlifyは文字列を期待
+
+**修正**: `netlify.toml`の`build.ignore`を削除し、`publish = ".next"`を明示的に指定
+
+### 問題3: Netlify Functionsの依存関係エラー
+**原因**: `netlify-tracking/netlify/functions`で使用している以下のパッケージがルートの`package.json`にない
+- `jsonwebtoken`
+- `stripe`
+
+**修正**:
+```bash
+npm install jsonwebtoken stripe
+```
+
+### 問題4: トップページが本番で正しく表示されない
+**現象**:
+- ローカル（`http://localhost:3002/`）では正常に表示
+- 本番（`https://taskmateai.net/`）では古いコンテンツが表示される
+- デモページ（`/demo`）は存在するがトップページからリンクがない
+
+**調査中**:
+- 最新のNetlifyデプロイが成功しているか確認が必要
+- Netlify管理画面のBuild設定（Base directory、Publish directory）の確認が必要
+- キャッシュのクリアが必要かどうか
+
+### 現在の状態
+- ✅ ローカル開発環境: 完全に動作
+- ✅ デモページ: 実装完了（`/demo`）
+- ❌ 本番デプロイ: 最新版が反映されていない
+- ❌ トップページ: 本番で古いバージョンが表示
+
+### 次のアクション
+1. `git push`して最新コミットをpush
+2. Netlifyの最新デプロイログを確認
+3. Netlify管理画面で以下を確認:
+   - Base directory: 空欄
+   - Publish directory: 空欄（または`.next`）
+   - Build command: `npm run build`（netlify.tomlで設定済み）
+4. デプロイ成功後、`https://taskmateai.net/`と`https://taskmateai.net/demo`にアクセスして確認
