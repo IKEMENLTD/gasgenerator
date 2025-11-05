@@ -8,6 +8,8 @@ import ScenarioButton from './components/ScenarioButton'
 import ImpactCounter from './components/ImpactCounter'
 import ProgressBar from './components/ProgressBar'
 import SocialProof from './components/SocialProof'
+import BeforeAfter from './components/BeforeAfter'
+import VisualWorkflow from './components/VisualWorkflow'
 import ChartIcon from './components/icons/ChartIcon'
 import BoxIcon from './components/icons/BoxIcon'
 import MailIcon from './components/icons/MailIcon'
@@ -205,6 +207,11 @@ export default function DemoPage() {
                 {/* タイピングインジケーター */}
                 {(state === 'thinking' || state === 'generating') && <TypingIndicator />}
 
+                {/* Before/After比較 */}
+                {state === 'complete' && selectedScenario && (
+                  <BeforeAfter scenarioId={selectedScenario} />
+                )}
+
                 {/* コード表示 */}
                 {state === 'complete' && scenario && (
                   <div className="mt-4">
@@ -323,6 +330,7 @@ export default function DemoPage() {
                     </div>
                   </div>
                 </div>
+                <VisualWorkflow />
                 <SocialProof />
               </>
             )}
