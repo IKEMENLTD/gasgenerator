@@ -1,8 +1,16 @@
 'use client'
 
+import ChatBubbleIcon from './icons/ChatBubbleIcon'
+import RobotIcon from './icons/RobotIcon'
+import LightningIcon from './icons/LightningIcon'
+import ClipboardIcon from './icons/ClipboardIcon'
+import PartyIcon from './icons/PartyIcon'
+import SparklesIcon from './icons/SparklesIcon'
+import { ReactNode } from 'react'
+
 interface WorkflowStep {
   number: number
-  icon: string
+  icon: ReactNode
   title: string
   description: string
   color: string
@@ -12,35 +20,35 @@ export default function VisualWorkflow() {
   const steps: WorkflowStep[] = [
     {
       number: 1,
-      icon: '💬',
+      icon: <ChatBubbleIcon className="w-7 h-7 text-white" />,
       title: 'LINEで相談',
       description: '「○○を自動化したい」と日本語で送信',
       color: 'from-blue-500 to-blue-600'
     },
     {
       number: 2,
-      icon: '🤖',
+      icon: <RobotIcon className="w-7 h-7 text-white" />,
       title: 'AI が理解',
       description: 'TaskMateが要件を分析・最適化',
       color: 'from-purple-500 to-purple-600'
     },
     {
       number: 3,
-      icon: '⚡',
+      icon: <LightningIcon className="w-7 h-7 text-white" />,
       title: 'コード生成',
       description: 'GASコードを自動生成（数分）',
       color: 'from-emerald-500 to-emerald-600'
     },
     {
       number: 4,
-      icon: '📋',
+      icon: <ClipboardIcon className="w-7 h-7 text-white" />,
       title: 'コピペ',
       description: 'Apps Scriptエディタに貼り付け',
       color: 'from-orange-500 to-orange-600'
     },
     {
       number: 5,
-      icon: '🎉',
+      icon: <PartyIcon className="w-7 h-7 text-white" />,
       title: '完成！',
       description: '業務が自動化され時間を削減',
       color: 'from-pink-500 to-pink-600'
@@ -65,7 +73,7 @@ export default function VisualWorkflow() {
             <div className="relative bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-4">
                 {/* Step Number Circle */}
-                <div className={`flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br ${step.color} flex items-center justify-center text-2xl shadow-lg`}>
+                <div className={`flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br ${step.color} flex items-center justify-center shadow-lg`}>
                   {step.icon}
                 </div>
 
@@ -90,7 +98,7 @@ export default function VisualWorkflow() {
             <p className="font-bold mb-1">プログラミング知識不要</p>
             <p className="text-sm text-emerald-100">初回5分で設定完了、以降は完全自動</p>
           </div>
-          <div className="text-4xl">✨</div>
+          <SparklesIcon className="w-10 h-10 text-white" />
         </div>
       </div>
 

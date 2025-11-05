@@ -101,11 +101,11 @@ export default function ProgressBar({ currentStep, totalSteps, steps }: Progress
       {currentStep < totalSteps && (
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
-            {currentStep === 1 && '👋 ようこそ！シナリオを選択してください'}
-            {currentStep === 2 && '🎯 素晴らしい！詳細を確認しています...'}
-            {currentStep === 3 && '⚡ コードを生成中...少々お待ちください'}
-            {currentStep === 4 && '📋 あと少しでセットアップガイドが完成します！'}
-            {currentStep === 5 && '🎉 もうすぐ完了です！無料相談で次のステップへ'}
+            {currentStep === 1 && 'シナリオを選択してください'}
+            {currentStep === 2 && '素晴らしい！詳細を確認しています...'}
+            {currentStep === 3 && 'コードを生成中...少々お待ちください'}
+            {currentStep === 4 && 'あと少しでセットアップガイドが完成します！'}
+            {currentStep === 5 && 'もうすぐ完了です！無料相談で次のステップへ'}
           </p>
         </div>
       )}
@@ -113,7 +113,7 @@ export default function ProgressBar({ currentStep, totalSteps, steps }: Progress
       {currentStep === totalSteps && (
         <div className="mt-4 text-center">
           <p className="text-sm font-semibold text-emerald-600">
-            🎊 デモ完了！実際に使ってみませんか？
+            デモ完了！実際に使ってみませんか？
           </p>
         </div>
       )}
