@@ -16,7 +16,7 @@ export default function ProgressBar({ currentStep, totalSteps, steps }: Progress
   const progress = (currentStep / totalSteps) * 100
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-sm p-4 mb-6 sticky top-0 z-10">
+    <div className="w-full bg-white rounded-lg shadow-sm p-4 mb-6">
       {/* Progress Percentage */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-semibold text-gray-700">

@@ -17,7 +17,7 @@ interface ImpactCounterProps {
 
 export default function ImpactCounter({ timeSaved, costSaved, errorReduction, details }: ImpactCounterProps) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
       <h3 className="font-bold text-lg mb-4 text-gray-900">削減効果</h3>
       <div className="space-y-4">
         <div className="flex items-start gap-3">
