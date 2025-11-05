@@ -1,7 +1,7 @@
 # Netlify Configuration for TaskMate Next.js App
 [build]
   command = "npm run build"
-  # Don't set publish directory - let @netlify/plugin-nextjs handle it
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "18"
