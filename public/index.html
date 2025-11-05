@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMate（タスクメイト）｜ 業務自動化で月40時間削減するGASソリューション</title>
+    <meta name="description" content="150社導入、累計7,200時間の業務削減実績。Google Apps Scriptで御社のスプレッドシート業務を完全自動化。初期費用0円、30日間返金保証付き">
+    
+    <!-- OGP -->
+    <meta property="og:title" content="TaskMate - 業務自動化で生産性を最大化">
+    <meta property="og:description" content="月40時間の単純作業を月額1万円で自動化。30日間返金保証付き">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://taskmate.jp/">
+    <meta property="og:image" content="https://taskmate.jp/images/og-image.jpg">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/styles.css">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VDT2MSCZ6N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      // 拡張GA4設定
+      gtag('config', 'G-VDT2MSCZ6N', {
+        custom_map: {
+          'custom_parameter_1': 'traffic_type'
+        },
+        user_properties: {
+          visitor_type: 'prospect'
+        }
+      });
+    </script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center;">
+        <video id="loading-video" autoplay muted playsinline preload="auto" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8;">
+            <source src="images/GAS.mp4" type="video/mp4">
+        </video>
+        <div style="position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%);">
+            <div class="loading-progress" style="width: 300px; height: 4px; background: rgba(255,255,255,0.2); border-radius: var(--radius-full); overflow: hidden;">
+                <div class="loading-bar" style="width: 0%; height: 100%; background: var(--primary-500); transition: width 4s ease;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <img src="images/logo.png" alt="TaskMate" class="logo-image">
+                    <span class="logo-text">TaskMate</span>
+                </a>
+                
+                <nav class="nav">
+                    <a href="#features" class="nav-link">機能</a>
+                    <a href="#process" class="nav-link">導入の流れ</a>
+                    <a href="#pricing" class="nav-link">料金</a>
+                    <a href="#testimonials" class="nav-link">導入事例</a>
+                    <a href="#faq" class="nav-link">FAQ</a>
+                    <a href="https://agency.ikemen.ltd/" class="nav-link" style="font-size: 0.875rem; padding: 0.5rem 1rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; background: white; color: var(--gray-700); transition: all 0.2s;">
+                        <i class="fas fa-building" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
+                        代理店様はこちら
+                    </a>
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-line"></i>
+                        無料相談
+                    </a>
+                </nav>
+                
+                <button class="mobile-menu-btn" aria-label="メニュー">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero" style="position: relative; overflow: hidden;">
+        <!-- Video Background -->
+        <div class="hero-video-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;">
+            <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                <source src="images/GAS.mp4" type="video/mp4">
+            </video>
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge fade-in-up">
+                    <i class="fas fa-trophy"></i>
+                    導入企業150社・継続率95%
+                </div>
+                
+                <h1 class="hero-title fade-in-up delay-1">
+                    スプレッドシートの手作業、<br>
+                    <span class="text-gradient">AI×GAS</span>で今すぐ自動化
+                </h1>
+                
+                <p class="hero-subtitle fade-in-up delay-2">
+                    プログラミング知識不要。LINEで指示するだけで、<br>
+                    あなたの業務をAIがGoogle Apps Scriptで自動化します
+                </p>
+                
+                <div class="hero-cta fade-in-up delay-3">
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-primary btn-xl" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-line"></i>
+                        無料診断を予約する
+                    </a>
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary btn-lg" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-line" style="font-size: 20px;"></i>
+                        LINEで相談
+                    </a>
+                </div>
+                
+                <div class="social-proof fade-in-up delay-4">
+                    <div class="social-proof-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>30日間返金保証</span>
+                    </div>
+                    <div class="social-proof-item">
+                        <i class="fas fa-clock"></i>
+                        <span>最短5分で導入</span>
+                    </div>
+                    <div class="social-proof-item">
+                        <i class="fas fa-headset"></i>
+                        <span>24時間LINEサポート</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Preview -->
+            <div class="hero-visual fade-in-up delay-4">
+            </div>
+        </div>
+    </section>
+    
+    <!-- Trust Badges -->
+    <section class="trust-badges">
+        <div class="trust-badge-item fade-in">
+            <div class="trust-badge-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="trust-badge-label">150社導入実績</div>
+            <div class="trust-badge-sublabel">累計7,200時間削減</div>
+        </div>
+        <div class="trust-badge-item fade-in">
+            <div class="trust-badge-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <div class="trust-badge-label">最短5分導入</div>
+            <div class="trust-badge-sublabel">即効性のある改善</div>
+        </div>
+        <div class="trust-badge-item fade-in">
+            <div class="trust-badge-icon" style="background: linear-gradient(135deg, #00B900, #009900);">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div class="trust-badge-label">LINE即時対応</div>
+            <div class="trust-badge-sublabel">平均5分以内に返信</div>
+        </div>
+        <div class="trust-badge-item fade-in">
+            <div class="trust-badge-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="trust-badge-label">30日間返金保証</div>
+            <div class="trust-badge-sublabel">効果がなければ全額返金</div>
+        </div>
+    </section>
+    
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card fade-in">
+                    <div class="stat-number" data-target="40" data-suffix="時間">0<span style="font-size: 0.5em; font-weight: 600;">時間</span></div>
+                    <div class="stat-label">月間削減時間</div>
+                    <div class="stat-description">1社あたり平均</div>
+                </div>
+                <div class="stat-card fade-in">
+                    <div class="stat-number" data-target="96" data-suffix="万円">0<span style="font-size: 0.5em; font-weight: 600;">万円</span></div>
+                    <div class="stat-label">年間コスト削減</div>
+                    <div class="stat-description">人件費換算</div>
+                </div>
+                <div class="stat-card fade-in">
+                    <div class="stat-number" data-target="97" data-suffix="%">0<span style="font-size: 0.5em; font-weight: 600;">%</span></div>
+                    <div class="stat-label">顧客満足度</div>
+                    <div class="stat-description">2025年度調査</div>
+                </div>
+                <div class="stat-card fade-in">
+                    <div class="stat-number" data-target="5" data-suffix="分">0<span style="font-size: 0.5em; font-weight: 600;">分</span></div>
+                    <div class="stat-label">導入スピード</div>
+                    <div class="stat-description">申込から稼働まで</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-badge">Features</div>
+                <h2 class="section-title">まだスプシでこんな作業していませんか？</h2>
+                <p class="section-subtitle">
+                    もし一つでも当てはまるなら、その作業は今すぐGASで自動化できます。<br>
+                    プログラミング知識は一切不要。弊社が全て代行します。
+                </p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                        <i class="fas fa-chart-line" style="color: white;"></i>
+                    </div>
+                    <h3 class="feature-title">売上データ集計</h3>
+                    <p class="feature-description">
+                        複数店舗・ECサイトの売上データを自動で収集・集計。日次レポートをメールやSlackに自動配信。
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> 複数データソースの統合</li>
+                        <li><i class="fas fa-check"></i> グラフ・チャート自動生成</li>
+                        <li><i class="fas fa-check"></i> 前日比・前年比の自動計算</li>
+                        <li><i class="fas fa-check"></i> 異常値アラート機能</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fas fa-box" style="color: white;"></i>
+                    </div>
+                    <h3 class="feature-title">在庫管理システム</h3>
+                    <p class="feature-description">
+                        在庫数の自動計算、発注点到達時のアラート送信、発注書の自動作成まで一括対応。
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> リアルタイム在庫更新</li>
+                        <li><i class="fas fa-check"></i> 自動発注書作成</li>
+                        <li><i class="fas fa-check"></i> 在庫切れ予測</li>
+                        <li><i class="fas fa-check"></i> QRコード連携</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        <i class="fas fa-clock" style="color: white;"></i>
+                    </div>
+                    <h3 class="feature-title">勤怠管理・給与計算</h3>
+                    <p class="feature-description">
+                        タイムカードデータから勤務時間・残業代を自動計算。給与明細の作成も自動化。
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> 打刻データ自動取込</li>
+                        <li><i class="fas fa-check"></i> 残業時間の自動計算</li>
+                        <li><i class="fas fa-check"></i> 有給残数管理</li>
+                        <li><i class="fas fa-check"></i> 給与明細PDF作成</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-users" style="color: white;"></i>
+                    </div>
+                    <h3 class="feature-title">顧客管理CRM</h3>
+                    <p class="feature-description">
+                        顧客情報の一元管理、フォローアップメールの自動送信、購買履歴の分析まで対応。
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> 顧客情報の自動更新</li>
+                        <li><i class="fas fa-check"></i> セグメント別メール配信</li>
+                        <li><i class="fas fa-check"></i> 購買パターン分析</li>
+                        <li><i class="fas fa-check"></i> リピート率の可視化</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <i class="fas fa-file-alt" style="color: white;"></i>
+                    </div>
+                    <h3 class="feature-title">請求書・見積書作成</h3>
+                    <p class="feature-description">
+                        顧客情報と商品データから請求書・見積書を自動生成。PDFでメール送信まで自動化。
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> テンプレート自動適用</li>
+                        <li><i class="fas fa-check"></i> 消費税自動計算</li>
+                        <li><i class="fas fa-check"></i> PDF自動生成・送信</li>
+                        <li><i class="fas fa-check"></i> 入金管理連携</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #ec4899, #db2777);">
+                        <i class="fas fa-chart-bar" style="color: white;"></i>
+                    </div>
+                    <h3 class="feature-title">定期レポート作成</h3>
+                    <p class="feature-description">
+                        KPIダッシュボード、月次レポート、プレゼン資料を自動作成。経営判断を迅速化。
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> KPI自動集計</li>
+                        <li><i class="fas fa-check"></i> グラフ・チャート生成</li>
+                        <li><i class="fas fa-check"></i> PowerPoint連携</li>
+                        <li><i class="fas fa-check"></i> 役員向けサマリー作成</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- AI Code Generation Section -->
+    <section class="process" style="background: linear-gradient(135deg, var(--primary-50) 0%, var(--gray-50) 100%);">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-badge" style="background: var(--accent-purple); color: white;">NEW</div>
+                <h2 class="section-title">AIがGASコード生成をサポート</h2>
+                <p class="section-subtitle">
+                    「Google Apps Scriptで自動化したいけどプログラミングが難しい…」<br>
+                    そんなあなたに、AIがLINE経由で最適なコードを生成します
+                </p>
+            </div>
+            
+            <div class="ai-section-grid">
+                <div>
+                    <h3 style="font-size: var(--text-3xl); margin-bottom: var(--space-6); line-height: 1.3;">
+                        <span class="text-gradient">LINE×AI</span>で<br>
+                        GASコードを簡単作成
+                    </h3>
+                    
+                    <div style="margin-bottom: var(--space-8);">
+                        <div class="ai-feature-item">
+                            <div class="ai-feature-icon" style="background: var(--accent-purple);">
+                                <i class="fas fa-code" style="font-size: 24px;"></i>
+                            </div>
+                            <div>
+                                <h4 style="font-weight: 700; margin-bottom: var(--space-2);">日本語でコード生成依頼</h4>
+                                <p>「スプレッドシートの売上データを毎朝9時に集計するコードが欲しい」と伝えるだけで、AIが完全なGASコードを生成</p>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-feature-item">
+                            <div class="ai-feature-icon" style="background: var(--accent-blue);">
+                                <i class="fas fa-robot" style="font-size: 24px;"></i>
+                            </div>
+                            <div>
+                                <h4 style="font-weight: 700; margin-bottom: var(--space-2);">エラー解決もAIがサポート</h4>
+                                <p>「コードが動かない」「エラーが出た」という時も、エラー内容を送るだけでAIが修正方法を教えてくれます</p>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-feature-item">
+                            <div class="ai-feature-icon" style="background: #00B900;">
+                                <i class="fas fa-book" style="font-size: 24px;"></i>
+                            </div>
+                            <div>
+                                <h4 style="font-weight: 700; margin-bottom: var(--space-2);">学習しながら使える</h4>
+                                <p>AIが生成したコードには詳しい解説付き。少しずつGASの知識を身につけながら、自分でカスタマイズも可能に</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-code-showcase">
+                        <h4 style="color: white; margin-bottom: var(--space-3);">こんなGASコードが作れます！</h4>
+                        <ul style="list-style: none; font-size: var(--text-sm);">
+                            <li style="margin-bottom: var(--space-2);">📝 スプレッドシートのデータを自動集計</li>
+                            <li style="margin-bottom: var(--space-2);">📧 特定条件でメール自動送信</li>
+                            <li style="margin-bottom: var(--space-2);">📅 カレンダー予定の自動登録</li>
+                            <li style="margin-bottom: var(--space-2);">🗋️ フォーム回答の自動処理</li>
+                            <li>📊 データのグラフ化・レポート作成</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="line-mockup">
+                        <div class="line-header">
+                            <i class="fab fa-line" style="font-size: 24px; color: white;"></i>
+                            <span style="color: white; font-weight: 700;">スマートビジネスコンシェルジュ</span>
+                        </div>
+                        <div class="line-chat">
+                            <div class="chat-message chat-message-user">
+                                スプレッドシートのデータを毎朝集計するコードが欲しい
+                            </div>
+                            <div class="chat-message chat-message-bot">
+                                承知しました！以下のコードをお使いください💻<br>
+                                <pre style="margin: var(--space-2) 0; background: var(--gray-200); padding: var(--space-2); border-radius: var(--radius); overflow-x: auto;">function dailyReport() {
+  const sheet = SpreadsheetApp.getActive();
+  const data = sheet.getDataRange();
+  // 集計処理...
+}</pre>
+                                コピーして使ってください！
+                            </div>
+                            <div class="chat-message chat-message-user">
+                                エラーが出た… TypeError: Cannot read property
+                            </div>
+                            <div class="chat-message chat-message-bot">
+                                このエラーはシートが選択されていない時に発生します🔧<br>
+                                <br>
+                                以下のように修正してみてください：<br>
+                                <code style="background: var(--gray-200); padding: var(--space-1); border-radius: var(--radius-sm);">getActiveSheet()</code> に変更
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: var(--space-6);">
+                        <a href="https://lin.ee/nvDPCj9" class="btn btn-primary btn-xl" target="_blank" rel="noopener noreferrer">
+                            <i class="fab fa-line" style="font-size: 24px; color: white;"></i>
+                            LINEでGASコード生成を試す
+                        </a>
+                        <p style="font-size: var(--text-sm); color: var(--gray-600); margin-top: var(--space-2);">※友だち追加で無料で使えます</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Live Demo Section -->
+    <section class="demo-section" id="demo">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-badge" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white;">LIVE DEMO</div>
+                <h2 class="section-title">実際のGASアプリを体験</h2>
+                <p class="section-subtitle">
+                    TaskMateで開発した実際のアプリケーションをお試しください<br>
+                    <span style="color: var(--primary-600); font-weight: 600;">↓ 下のデモ画面で直接操作できます ↓</span>
+                </p>
+            </div>
+            
+            <div class="demo-container fade-in">
+                <!-- Tab Navigation -->
+                <div class="demo-tabs">
+                    <button class="demo-tab active" onclick="switchDemoView('app')">
+                        <i class="fas fa-desktop"></i>
+                        <span>アプリケーション画面</span>
+                    </button>
+                    <button class="demo-tab" onclick="switchDemoView('sheet')">
+                        <i class="fas fa-table"></i>
+                        <span>データベース（スプレッドシート）</span>
+                    </button>
+                    <button class="demo-tab" onclick="switchDemoView('split')">
+                        <i class="fas fa-columns"></i>
+                        <span>同時表示（連携確認）</span>
+                    </button>
+                </div>
+                
+                <!-- Demo Content Container -->
+                <div class="demo-content-wrapper" id="demo-content">
+                    <!-- Application View -->
+                    <div class="demo-browser" id="app-view">
+                        <div class="demo-browser-header">
+                            <div class="demo-browser-dots">
+                                <span class="demo-dot" style="background: #ef4444;"></span>
+                                <span class="demo-dot" style="background: #f59e0b;"></span>
+                                <span class="demo-dot" style="background: #22c55e;"></span>
+                            </div>
+                            <div class="demo-browser-title">
+                                <i class="fas fa-lock" style="color: var(--success); margin-right: 8px;"></i>
+                                TaskMate Demo Application
+                            </div>
+                            <button class="demo-fullscreen-btn" onclick="toggleFullscreen('app')" title="全画面表示">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div class="demo-iframe-wrapper">
+                            <iframe
+                                id="demo-iframe"
+                                src="https://script.google.com/macros/s/AKfycbwL1r1VhdsSmfn0XrJ5dnz7q9zS0YX_nGlwqZLEbPRAaAT-rQX5p1VWJlmVaB2AsJSv/exec"
+                                frameborder="0"
+                                allowfullscreen
+                                loading="lazy"
+                                sandbox="allow-scripts allow-forms allow-same-origin"
+                                title="GAS自動化デモアプリケーション">
+                            </iframe>
+                            <div class="demo-loading" id="demo-loading">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-500);"></i>
+                                <p style="margin-top: 1rem; color: var(--gray-600);">デモアプリケーションを読み込み中...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Spreadsheet View -->
+                    <div class="demo-browser" id="sheet-view" style="display: none;">
+                        <div class="demo-browser-header">
+                            <div class="demo-browser-dots">
+                                <span class="demo-dot" style="background: #ef4444;"></span>
+                                <span class="demo-dot" style="background: #f59e0b;"></span>
+                                <span class="demo-dot" style="background: #22c55e;"></span>
+                            </div>
+                            <div class="demo-browser-title">
+                                <i class="fas fa-table" style="color: #0f9d58; margin-right: 8px;"></i>
+                                Google Sheets Database
+                            </div>
+                            <button class="demo-fullscreen-btn" onclick="toggleFullscreen('sheet')" title="全画面表示">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                        <div class="demo-iframe-wrapper">
+                            <iframe
+                                id="sheet-iframe"
+                                src="https://docs.google.com/spreadsheets/d/1oh3dG9TNpU1NbCgPa_w6TmKWYQ4RnbgxFeg5JpWFtnQ/preview"
+                                frameborder="0"
+                                allowfullscreen
+                                loading="lazy"
+                                sandbox="allow-scripts allow-same-origin"
+                                title="Googleスプレッドシート自動化デモ">
+                            </iframe>
+                            <div class="demo-loading" id="sheet-loading">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #0f9d58;"></i>
+                                <p style="margin-top: 1rem; color: var(--gray-600);">スプレッドシートを読み込み中...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Integration Info -->
+                <div class="demo-integration-info fade-in">
+                    <div class="integration-arrow">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="integration-text">
+                        <h4>リアルタイムデータ連携</h4>
+                        <p>アプリケーションで入力・編集したデータは、即座にGoogleスプレッドシートに反映されます。<br>
+                        逆にスプレッドシートの変更も、アプリケーションに自動的に反映される双方向連携を実現。</p>
+                    </div>
+                </div>
+                
+                <div class="demo-features">
+                    <div class="demo-feature-card">
+                        <i class="fas fa-mouse-pointer" style="color: var(--primary-500); font-size: 1.5rem;"></i>
+                        <h4>インタラクティブ</h4>
+                        <p>実際に操作して機能を確認できます</p>
+                    </div>
+                    <div class="demo-feature-card">
+                        <i class="fas fa-shield-alt" style="color: var(--success); font-size: 1.5rem;"></i>
+                        <h4>安全なデモ環境</h4>
+                        <p>テストデータで安心して試せます</p>
+                    </div>
+                    <div class="demo-feature-card">
+                        <i class="fas fa-code" style="color: var(--accent-purple); font-size: 1.5rem;"></i>
+                        <h4>実際のGASアプリ</h4>
+                        <p>本番環境と同じ技術で構築</p>
+                    </div>
+                </div>
+                
+                <div class="demo-cta fade-in">
+                    <p style="text-align: center; margin-bottom: 2rem; color: var(--gray-700);">
+                        このようなアプリケーションを御社の業務に合わせてカスタマイズ開発します
+                    </p>
+                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <a href="https://lin.ee/nvDPCj9" class="btn btn-primary btn-xl" target="_blank" rel="noopener noreferrer">
+                            <i class="fab fa-line"></i>
+                            無料で相談する
+                        </a>
+                        <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary btn-xl" target="_blank" rel="noopener noreferrer">
+                            <i class="fab fa-line"></i>
+                            LINEで問い合わせ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Process Section -->
+    <section class="process" id="process">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-badge">Process</div>
+                <h2 class="section-title">最短5分で業務自動化を実現</h2>
+                <p class="section-subtitle">
+                    お申込みから導入まで、経験豊富な専門チームが徹底サポート
+                </p>
+            </div>
+            
+            <div class="process-timeline">
+                <div class="process-step fade-in">
+                    <div class="process-number">1</div>
+                    <h3 class="process-title">専用LINE追加</h3>
+                    <p class="process-description">
+                        まずは専用のLINEアカウントを友だち追加。
+                    </p>
+                </div>
+
+                <div class="process-step fade-in">
+                    <div class="process-number">2</div>
+                    <h3 class="process-title">決済リンクから登録</h3>
+                    <p class="process-description">
+                        LINEで送られてくる決済リンクから、お好みのプランを選択してサブスクリプション登録を完了。
+                    </p>
+                </div>
+
+                <div class="process-step fade-in">
+                    <div class="process-number">3</div>
+                    <h3 class="process-title">利用開始</h3>
+                    <p class="process-description">
+                        決済完了後、すぐにサービス利用開始。AIによるGASコード生成やサポートを受けられます。
+                    </p>
+                </div>
+
+                <div class="process-step fade-in">
+                    <div class="process-number">4</div>
+                    <h3 class="process-title">面談・サポート</h3>
+                    <p class="process-description">
+                        プロフェッショナルプラン（5万円）の方は運営との面談を実施。全プランでLINEサポートを継続提供。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-badge">Pricing</div>
+                <h2 class="section-title">シンプルで透明な料金体系</h2>
+                <p class="section-subtitle">
+                    初期費用0円・解約金0円・追加料金なし。全てのプランに30日間返金保証付き
+                </p>
+            </div>
+            
+            <div class="pricing-grid">
+                <div class="pricing-card fade-in">
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">お試し</h3>
+                        <div class="pricing-price">
+                            <span class="pricing-amount">無料</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>1か月10回まで自動コーディング無料</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>GASコード自動生成</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>基本的なサポート</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>LINE連携対応</span>
+                        </li>
+                    </ul>
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary" style="width: 100%;" target="_blank" rel="noopener noreferrer">
+                        無料利用開始
+                    </a>
+                </div>
+                
+                <div class="pricing-card featured fade-in">
+                    <div class="pricing-badge">人気No.1</div>
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">ビジネスプラン</h3>
+                        <div class="pricing-price">
+                            <span class="pricing-currency">¥</span>
+                            <span class="pricing-amount">10,000</span>
+                            <span class="pricing-period">/月</span>
+                        </div>
+                        <p style="color: var(--primary-600); font-weight: 600; margin-top: var(--space-2);">
+                            今なら30日返金保証
+                        </p>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>LINE即時サポート</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>現役エンジニアのチャットサポート</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>月1回の改善提案</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>操作マニュアル付き</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>30日間返金保証</span>
+                        </li>
+                    </ul>
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-primary" style="width: 100%;" target="_blank" rel="noopener noreferrer">
+                        このプランで始める
+                    </a>
+                </div>
+                
+                <div class="pricing-card fade-in">
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">プロフェッショナル</h3>
+                        <div class="pricing-price">
+                            <span class="pricing-currency">¥</span>
+                            <span class="pricing-amount">50,000</span>
+                            <span class="pricing-period">/月</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>運営とのコーディング代行</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>運営とのミーティング必須</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>1プロジェクトずつコーディング代行</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>優先サポート対応</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>API連携対応</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>※同時複数プロジェクトは追加契約要</span>
+                        </li>
+                    </ul>
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary" style="width: 100%;" target="_blank" rel="noopener noreferrer">
+                        詳細を確認
+                    </a>
+                </div>
+                
+                <div class="pricing-card enterprise fade-in">
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">エンタープライズ</h3>
+                        <div class="pricing-price">
+                            <span class="pricing-amount">個別見積</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>フルカスタマイズ開発</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>専用開発チーム</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>現役エンジニアのチャットサポート</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>SLA保証</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>オンサイト対応</span>
+                        </li>
+                        <li class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>24時間緊急対応</span>
+                        </li>
+                    </ul>
+                    <a href="https://lin.ee/nvDPCj9" class="btn btn-secondary" style="width: 100%;" target="_blank" rel="noopener noreferrer">
+                        お問い合わせ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Testimonials -->
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-badge">Testimonials</div>
+                <h2 class="section-title">導入企業様からの声</h2>
+                <p class="section-subtitle">
+                    150社以上の企業様にご利用いただき、高い評価をいただいています
+                </p>
+            </div>
+            
+            <div class="testimonials-grid">
+                <div class="testimonial-card fade-in">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-content">
+                        「在庫管理の自動化により、月40時間以上の削減に成功しました。発注ミスもゼロになり、欠品による機会損失もなくなりました。投資は2ヶ月で回収できました。」
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">
+                            <img src="images/takahashiyuuto.png" alt="高橋悠人様">
+                        </div>
+                        <div class="testimonial-info">
+                            <div class="testimonial-name">高橋悠人 様</div>
+                            <div class="testimonial-role">株式会社ネオビジョンテックス 代表取締役</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card fade-in">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-content">
+                        「5店舗の売上データが毎朝自動で届くようになり、経営判断のスピードが格段に上がりました。データ分析の時間も取れるようになり、売上も15%向上しました。」
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">
+                            <img src="images/mizuno.png" alt="水野様">
+                        </div>
+                        <div class="testimonial-info">
+                            <div class="testimonial-name">水野 様</div>
+                            <div class="testimonial-role">グローバルヴォーグ株式会社 代表取締役</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card fade-in">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-content">
+                        「勤怠管理と給与計算の自動化で、月末の残業がなくなりました。ミスもゼロになり、従業員からの問い合わせも激減。本来の人事業務に集中できています。」
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">
+                            <img src="images/akabaneyui.png" alt="赤羽根由唯様">
+                        </div>
+                        <div class="testimonial-info">
+                            <div class="testimonial-name">赤羽根由唯 様</div>
+                            <div class="testimonial-role">オプティカル通信株式会社 代表取締役</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card fade-in">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-content">
+                        「LINEから簡単に指示できるのが本当に便利です。プログラミングの知識がなくても、AIが最適なGASコードを生成してくれるので、業務改善のアイデアがすぐに形になります。導入後、チーム全体の生産性が30%向上しました。」
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">
+                            <img src="images/koikehiroto.png" alt="小池寛人様">
+                        </div>
+                        <div class="testimonial-info">
+                            <div class="testimonial-name">小池寛人 様</div>
+                            <div class="testimonial-role">株式会社リバイラル 代表取締役</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- FAQ Section -->
+    <section class="features" id="faq">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-badge">FAQ</div>
+                <h2 class="section-title">よくあるご質問</h2>
+            </div>
+            
+            <div style="max-width: 800px; margin: 0 auto;">
+                <details class="feature-card" style="margin-bottom: var(--space-4);">
+                    <summary style="cursor: pointer; font-weight: 700; padding: var(--space-6); margin: calc(var(--space-8) * -1);">
+                        Q. 契約期間の縛りはありますか？
+                    </summary>
+                    <p style="margin-top: var(--space-4);">
+                        3か月の契約期間になります。月単位での契約となり、3か月単位で解約可能です。また、条件付き30日間の返金保証もありますので、安心してお試しいただけます。
+                    </p>
+                </details>
+                
+                <details class="feature-card" style="margin-bottom: var(--space-4);">
+                    <summary style="cursor: pointer; font-weight: 700; padding: var(--space-6); margin: calc(var(--space-8) * -1);">
+                        Q. 支払い方法は何がありますか？
+                    </summary>
+                    <p style="margin-top: var(--space-4);">
+                        銀行振込、クレジットカード（VISA/Master/JCB/AMEX）、請求書払い（法人のみ）に対応しています。お支払いは月払い・年払いから選択可能で、年払いの場合は10%割引となります。
+                    </p>
+                </details>
+                
+                <details class="feature-card" style="margin-bottom: var(--space-4);">
+                    <summary style="cursor: pointer; font-weight: 700; padding: var(--space-6); margin: calc(var(--space-8) * -1);">
+                        Q. セキュリティは大丈夫ですか？
+                    </summary>
+                    <p style="margin-top: var(--space-4);">
+                        はい、安心してご利用いただけます。データは全てGoogle Workspace内で処理され、外部サーバーには保存されません。全ての通信はSSL暗号化され、定期的なセキュリティ監査を実施しています。
+                    </p>
+                </details>
+                
+                <details class="feature-card" style="margin-bottom: var(--space-4);">
+                    <summary style="cursor: pointer; font-weight: 700; padding: var(--space-6); margin: calc(var(--space-8) * -1);">
+                        Q. 既存のシステムと連携できますか？
+                    </summary>
+                    <p style="margin-top: var(--space-4);">
+                        はい、可能です。API連携により、会計ソフト、CRM、在庫管理システムなど、様々な既存システムとの連携実績があります。詳細は無料診断時にご相談ください。
+                    </p>
+                </details>
+                
+                <details class="feature-card" style="margin-bottom: var(--space-4);">
+                    <summary style="cursor: pointer; font-weight: 700; padding: var(--space-6); margin: calc(var(--space-8) * -1);">
+                        Q. プログラミングの知識がなくても本当に使えますか？
+                    </summary>
+                    <p style="margin-top: var(--space-4);">
+                        はい、全く問題ありません。LINEで日本語で「○○を自動化したい」と伝えるだけで、AIが最適なGASコードを生成します。コードの設置や実行方法も、わかりやすい動画マニュアルと個別サポートでご案内しますので、どなたでも簡単にご利用いただけます。
+                    </p>
+                </details>
+                
+                <details class="feature-card" style="margin-bottom: var(--space-4);">
+                    <summary style="cursor: pointer; font-weight: 700; padding: var(--space-6); margin: calc(var(--space-8) * -1);">
+                        Q. どのような業務を自動化できますか？
+                    </summary>
+                    <p style="margin-top: var(--space-4);">
+                        スプレッドシートを使った業務であれば、ほぼすべて自動化可能です。売上集計、在庫管理、勤怠管理、請求書作成、データ分析、レポート作成など、定期的に行う作業や、ルールに基づいた処理は特に効果的です。無料診断で貴社の業務に合わせた具体的な提案をさせていただきます。
+                    </p>
+                </details>
+                
+                <details class="feature-card" style="margin-bottom: var(--space-4);">
+                    <summary style="cursor: pointer; font-weight: 700; padding: var(--space-6); margin: calc(var(--space-8) * -1);">
+                        Q. 導入後のサポート体制はどうなっていますか？
+                    </summary>
+                    <p style="margin-top: var(--space-4);">
+                        LINEによる即時サポート（平均返信時間5分以内）をご提供しています。操作方法の質問、エラーの解決、新しい自動化の相談など、どんなことでもお気軽にご相談ください。また、月1回の定期レビューで、より効果的な活用方法もご提案します。
+                    </p>
+                </details>
+                
+                <details class="feature-card" style="margin-bottom: var(--space-4);">
+                    <summary style="cursor: pointer; font-weight: 700; padding: var(--space-6); margin: calc(var(--space-8) * -1);">
+                        Q. 初期費用はかかりますか？
+                    </summary>
+                    <p style="margin-top: var(--space-4);">
+                        いいえ、初期費用は一切かかりません。月額料金のみで、すべてのサービスをご利用いただけます。また、今なら30日間返金保証付きですので、安心してお試しいただけます。
+                    </p>
+                </details>
+                
+                <details class="feature-card" style="margin-bottom: var(--space-4);">
+                    <summary style="cursor: pointer; font-weight: 700; padding: var(--space-6); margin: calc(var(--space-8) * -1);">
+                        Q. 自社のデータは安全に管理されますか？
+                    </summary>
+                    <p style="margin-top: var(--space-4);">
+                        はい、お客様のデータは厳重に保護されています。すべての処理はGoogle Workspace内で完結し、外部サーバーにデータを保存することはありません。また、アクセス権限の管理も細かく設定できるため、必要な人だけがデータにアクセスできるようコントロール可能です。
+                    </p>
+                </details>
+                
+                <details class="feature-card">
+                    <summary style="cursor: pointer; font-weight: 700; padding: var(--space-6); margin: calc(var(--space-8) * -1);">
+                        Q. 他社の自動化ツールとの違いは何ですか？
+                    </summary>
+                    <p style="margin-top: var(--space-4);">
+                        最大の違いは、AIによるコード生成機能です。他社ツールでは決められた機能しか使えませんが、TaskMateではAIが貴社の業務に合わせて最適なコードを生成するため、完全なカスタマイズが可能です。また、LINEで簡単に操作できる点も大きな特徴です。
+                    </p>
+                </details>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta" id="contact">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">今すぐ業務効率化を始めよう</h2>
+                <p class="cta-subtitle">
+                    30日間の全額返金保証付き。リスクなしで始められます
+                </p>
+                
+                <form class="cta-form" name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+                    <!-- Netlify form detection -->
+                    <input type="hidden" name="form-name" value="contact">
+
+                    <!-- Honeypot field (hidden from users, catches bots) -->
+                    <div style="display: none;">
+                        <label>Don't fill this out if you're human: <input name="bot-field"></label>
+                    </div>
+
+                    <input type="text" name="company" class="cta-input" placeholder="会社名" required minlength="2" maxlength="100">
+                    <input type="email" name="email" class="cta-input" placeholder="メールアドレス" required maxlength="100">
+                    <input type="tel" name="phone" class="cta-input" placeholder="電話番号（例: 03-1234-5678 または 09012345678）" required pattern="^(0\d{1,4}-?\d{1,4}-?\d{4}|0\d{9,10})$" title="有効な電話番号を入力してください（例: 03-1234-5678 または 09012345678）">
+
+                    <!-- Privacy policy consent -->
+                    <div style="text-align: left; margin: 1rem 0; font-size: 0.875rem;">
+                        <label style="display: flex; align-items: flex-start; gap: 0.5rem; color: white; cursor: pointer;">
+                            <input type="checkbox" name="privacy-consent" required style="margin-top: 0.25rem;">
+                            <span><a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer" style="color: white; text-decoration: underline;">プライバシーポリシー</a>に同意します</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-xl" style="background: white; color: var(--primary-700);">
+                        <i class="fas fa-paper-plane"></i>
+                        無料診断を申込む
+                    </button>
+                </form>
+                
+                <p style="margin-top: var(--space-4); font-size: var(--text-sm); opacity: 0.9;">
+                    ※営業電話は一切いたしません。お気軽にお申し込みください。
+                </p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="images/logo.png" alt="TaskMate" class="footer-logo-image">
+                        <span class="logo-text" style="color: white;">TaskMate</span>
+                    </div>
+                    <p class="footer-description">
+                        AIがLINE経由でGASコード生成をサポート。プログラミングが苦手でも、簡単にスプレッドシートの自動化が実現できます。
+                    </p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>サービス</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">機能一覧</a></li>
+                        <li><a href="#pricing">料金プラン</a></li>
+                        <li><a href="#testimonials">導入事例</a></li>
+                        <li><a href="#faq">よくある質問</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>会社情報</h4>
+                    <ul class="footer-links">
+                        <li>株式会社イケメン</li>
+                        <li>〒141-0032</li>
+                        <li>東京都品川区大崎4丁目4-24</li>
+                        <li><a href="privacy.html">プライバシーポリシー</a></li>
+                        <li><a href="legal.html">特定商取引法に基づく表記</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>お問い合わせ</h4>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-phone"></i> 050-8890-8975</li>
+                        <li><i class="fas fa-envelope"></i> info@ikemen.ltd</li>
+                        <li>営業時間: 平日 10:00-18:00</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="footer-copyright">
+                    &copy; 2025 株式会社イケメン All rights reserved.
+                </p>
+                <div class="footer-social">
+                    <a href="#" aria-label="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" aria-label="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Floating CTA -->
+    <a href="https://lin.ee/nvDPCj9" class="floating-cta" id="floating-cta" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-line" style="font-size: 32px; color: white;"></i>
+        <div class="floating-cta-tooltip">
+            <span>LINEで相談</span>
+        </div>
+    </a>
+    
+    <!-- Scripts -->
+    <script src="/js/main.js"></script>
+    
+    <!-- Initialize Phosphor Icons -->
+    <script>
+        // Ensure Phosphor Icons are loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                if (window.PhosphorIconsReplace) {
+                    window.PhosphorIconsReplace();
+                }
+            }, 100);
+        });
+    </script>
+
+    <!-- GA4 Event Tracking Implementation -->
+    <script>
+    (function() {
+        'use strict';
+
+        // デバッグモード設定（本番環境ではfalseに設定）
+        const DEBUG_MODE = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1');
+
+        // デバッグログ関数
+        function debugLog(eventName, params) {
+            if (DEBUG_MODE) {
+                console.log('🔥 GA4 Event:', eventName, params);
+            }
+        }
+
+        // GA4イベント送信ラッパー
+        function sendGA4Event(eventName, params) {
+            try {
+                if (typeof gtag === 'function') {
+                    gtag('event', eventName, params);
+                    debugLog(eventName, params);
+                } else {
+                    console.error('GA4: gtag is not defined');
+                }
+            } catch (error) {
+                console.error('GA4 Event Error:', error);
+            }
+        }
+
+        // ============================================================
+        // 1. 重要コンバージョンイベント
+        // ============================================================
+
+        // A. LINE友だち追加ボタンクリック
+        function trackLineFriendAdd() {
+            document.querySelectorAll('a[href*="lin.ee"]').forEach(function(element) {
+                element.addEventListener('click', function(e) {
+                    const buttonText = this.textContent.trim();
+                    sendGA4Event('line_friend_add', {
+                        event_category: 'conversion',
+                        event_label: buttonText,
+                        custom_parameter_1: 'line_cta'
+                    });
+                });
+            });
+        }
+
+        // B. 料金プラン関心度トラッキング
+        function trackPricingInterest() {
+            document.querySelectorAll('.pricing-card .btn').forEach(function(element) {
+                element.addEventListener('click', function(e) {
+                    const card = this.closest('.pricing-card');
+                    const planName = card ? card.querySelector('.pricing-name').textContent.trim() : 'Unknown';
+                    const price = card ? card.querySelector('.pricing-amount').textContent.trim() : '0';
+
+                    sendGA4Event('plan_interest', {
+                        event_category: 'conversion',
+                        event_label: planName,
+                        value: parseInt(price.replace(/[^0-9]/g, '')) || 0,
+                        custom_parameter_1: 'pricing_click'
+                    });
+                });
+            });
+        }
+
+        // C. CTAフォーム送信
+        function trackFormSubmit() {
+            const ctaForm = document.querySelector('.cta-form');
+            if (ctaForm) {
+                ctaForm.addEventListener('submit', function(e) {
+                    // GA4イベントを送信
+                    sendGA4Event('form_submit', {
+                        event_category: 'conversion',
+                        event_label: '無料診断申込',
+                        custom_parameter_1: 'cta_form'
+                    });
+
+                    // フォームデータも追跡
+                    const companyInput = this.querySelector('input[placeholder="会社名"]');
+                    const phoneInput = this.querySelector('input[placeholder="電話番号"]');
+
+                    if (companyInput && companyInput.value) {
+                        sendGA4Event('form_field_filled', {
+                            event_category: 'form_interaction',
+                            event_label: 'company_name',
+                            custom_parameter_1: 'form_completion'
+                        });
+                    }
+
+                    if (phoneInput && phoneInput.value) {
+                        sendGA4Event('form_field_filled', {
+                            event_category: 'form_interaction',
+                            event_label: 'phone_number',
+                            custom_parameter_1: 'form_completion'
+                        });
+                    }
+
+                    // 実際の送信処理はそのまま継続
+                    // e.preventDefault()をコメントアウトして実際の送信を許可
+                    // e.preventDefault();
+                });
+            }
+        }
+
+        // D. 全般CTAボタントラッキング
+        function trackCTAClicks() {
+            document.querySelectorAll('.btn-primary, .btn-secondary').forEach(function(element) {
+                // LINE以外のボタンのみ
+                if (!element.href || !element.href.includes('lin.ee')) {
+                    element.addEventListener('click', function(e) {
+                        const buttonText = this.textContent.trim();
+                        const buttonClass = this.classList.contains('btn-primary') ? 'primary' : 'secondary';
+
+                        sendGA4Event('cta_click', {
+                            event_category: 'engagement',
+                            event_label: buttonText,
+                            custom_parameter_1: 'cta_' + buttonClass
+                        });
+                    });
+                }
+            });
+        }
+
+        // ============================================================
+        // 2. エンゲージメント計測
+        // ============================================================
+
+        // A. スクロール深度トラッキング
+        function trackScrollDepth() {
+            const scrollThresholds = [25, 50, 75, 100];
+            const scrolledThresholds = new Set();
+            let scrollTimer = null;
+
+            function checkScrollDepth() {
+                const scrollPercent = Math.round(
+                    (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100
+                );
+
+                scrollThresholds.forEach(function(threshold) {
+                    if (scrollPercent >= threshold && !scrolledThresholds.has(threshold)) {
+                        scrolledThresholds.add(threshold);
+
+                        sendGA4Event('scroll_depth', {
+                            event_category: 'engagement',
+                            event_label: threshold + '%',
+                            value: threshold,
+                            custom_parameter_1: 'scroll_milestone'
+                        });
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(checkScrollDepth, 100);
+            }, { passive: true });
+        }
+
+        // B. セクション表示・滞在時間トラッキング
+        function trackSectionEngagement() {
+            const sectionTimers = new Map();
+            const viewedSections = new Set();
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    const sectionId = entry.target.id;
+
+                    if (entry.isIntersecting) {
+                        // セクション表示イベント
+                        if (!viewedSections.has(sectionId)) {
+                            viewedSections.add(sectionId);
+                            sendGA4Event('section_view', {
+                                event_category: 'engagement',
+                                event_label: sectionId,
+                                custom_parameter_1: 'section_enter'
+                            });
+                        }
+
+                        // 滞在時間計測開始
+                        sectionTimers.set(sectionId, Date.now());
+                    } else {
+                        // 滞在時間計測終了
+                        const startTime = sectionTimers.get(sectionId);
+                        if (startTime) {
+                            const duration = Math.round((Date.now() - startTime) / 1000);
+
+                            // 5秒以上滞在した場合のみ送信
+                            if (duration >= 5) {
+                                sendGA4Event('section_engagement', {
+                                    event_category: 'engagement',
+                                    event_label: sectionId,
+                                    value: duration,
+                                    custom_parameter_1: 'section_time'
+                                });
+                            }
+                            sectionTimers.delete(sectionId);
+                        }
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            // すべてのセクションを監視
+            document.querySelectorAll('section[id]').forEach(function(section) {
+                observer.observe(section);
+            });
+        }
+
+        // C. FAQ展開トラッキング
+        function trackFAQExpansion() {
+            document.querySelectorAll('details').forEach(function(element) {
+                element.addEventListener('toggle', function(e) {
+                    if (this.open) {
+                        const question = this.querySelector('summary').textContent.trim();
+
+                        sendGA4Event('faq_expand', {
+                            event_category: 'engagement',
+                            event_label: question,
+                            custom_parameter_1: 'faq_interaction'
+                        });
+                    }
+                });
+            });
+        }
+
+        // ============================================================
+        // 3. 特殊コンテンツ計測
+        // ============================================================
+
+        // A. デモアプリ表示トラッキング
+        function trackDemoView() {
+            const demoIframe = document.getElementById('demo-iframe');
+            if (demoIframe) {
+                // iframe読み込み完了時
+                demoIframe.addEventListener('load', function() {
+                    sendGA4Event('demo_view', {
+                        event_category: 'engagement',
+                        event_label: 'GAS Demo Application',
+                        custom_parameter_1: 'demo_loaded'
+                    });
+                });
+
+                // デモセクションが表示された時も計測
+                const demoSection = document.getElementById('demo');
+                if (demoSection) {
+                    const observer = new IntersectionObserver(function(entries) {
+                        if (entries[0].isIntersecting) {
+                            sendGA4Event('demo_section_view', {
+                                event_category: 'engagement',
+                                event_label: 'Demo Section',
+                                custom_parameter_1: 'demo_section'
+                            });
+                            observer.disconnect();
+                        }
+                    }, { threshold: 0.3 });
+                    observer.observe(demoSection);
+                }
+            }
+        }
+
+        // B. 動画再生トラッキング
+        function trackVideoPlay() {
+            const loadingVideo = document.getElementById('loading-video');
+            if (loadingVideo) {
+                loadingVideo.addEventListener('play', function() {
+                    sendGA4Event('video_play', {
+                        event_category: 'engagement',
+                        event_label: 'Loading Video',
+                        custom_parameter_1: 'video_interaction'
+                    });
+                });
+            }
+
+            // ヒーローセクションの動画も監視
+            const heroVideo = document.querySelector('.hero-video-container video');
+            if (heroVideo) {
+                heroVideo.addEventListener('play', function() {
+                    sendGA4Event('video_play', {
+                        event_category: 'engagement',
+                        event_label: 'Hero Background Video',
+                        custom_parameter_1: 'hero_video'
+                    });
+                });
+            }
+        }
+
+        // C. デモタブ切り替えトラッキング
+        function trackDemoTabs() {
+            // switchDemoView関数をラップ（タイミング調整）
+            setTimeout(function() {
+                const originalSwitchDemoView = window.switchDemoView;
+                if (typeof originalSwitchDemoView === 'function') {
+                    window.switchDemoView = function(viewType) {
+                        sendGA4Event('demo_tab_switch', {
+                            event_category: 'engagement',
+                            event_label: viewType,
+                            custom_parameter_1: 'demo_navigation'
+                        });
+
+                        // 元の関数を実行
+                        return originalSwitchDemoView.apply(this, arguments);
+                    };
+                }
+            }, 1000); // main.jsロード後に実行
+
+            // タブボタンクリックも追跡
+            document.querySelectorAll('.demo-tab').forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    const spanElement = this.querySelector('span');
+                    const tabText = spanElement ? spanElement.textContent.trim() : 'Unknown Tab';
+                    sendGA4Event('demo_tab_click', {
+                        event_category: 'engagement',
+                        event_label: tabText,
+                        custom_parameter_1: 'demo_tab'
+                    });
+                });
+            });
+        }
+
+        // ============================================================
+        // 4. 追加トラッキング
+        // ============================================================
+
+        // ナビゲーションリンククリック
+        function trackNavigation() {
+            document.querySelectorAll('.nav-link').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    const linkText = this.textContent.trim();
+                    const targetSection = this.getAttribute('href');
+
+                    sendGA4Event('navigation_click', {
+                        event_category: 'navigation',
+                        event_label: linkText,
+                        custom_parameter_1: targetSection
+                    });
+                });
+            });
+        }
+
+        // フローティングCTAクリック
+        function trackFloatingCTA() {
+            const floatingCTA = document.getElementById('floating-cta');
+            if (floatingCTA) {
+                floatingCTA.addEventListener('click', function() {
+                    sendGA4Event('floating_cta_click', {
+                        event_category: 'conversion',
+                        event_label: 'Floating LINE CTA',
+                        custom_parameter_1: 'floating_button'
+                    });
+                });
+            }
+        }
+
+        // 外部リンククリック
+        function trackExternalLinks() {
+            document.querySelectorAll('a[href^="http"]:not([href*="' + window.location.hostname + '"])').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    const destination = this.href;
+                    sendGA4Event('external_link_click', {
+                        event_category: 'engagement',
+                        event_label: destination,
+                        custom_parameter_1: 'outbound'
+                    });
+                });
+            });
+        }
+
+        // ============================================================
+        // 5. パフォーマンス計測
+        // ============================================================
+
+        // ページ読み込み時間
+        function trackPageLoadTime() {
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    const perfData = performance.getEntriesByType('navigation')[0];
+                    if (perfData) {
+                        const loadTime = Math.round(perfData.loadEventEnd - perfData.fetchStart);
+
+                        sendGA4Event('page_load_time', {
+                            event_category: 'performance',
+                            event_label: 'Page Load',
+                            value: loadTime,
+                            custom_parameter_1: 'performance_metric'
+                        });
+                    }
+                }, 0);
+            });
+        }
+
+        // ============================================================
+        // 追加: ページビュー時の追加情報
+        // ============================================================
+
+        function trackEnhancedPageView() {
+            // ページビュー時に追加情報を送信
+            const pageInfo = {
+                page_title: document.title,
+                page_location: window.location.href,
+                page_path: window.location.pathname,
+                referrer: document.referrer,
+                user_agent: navigator.userAgent,
+                screen_resolution: window.screen.width + 'x' + window.screen.height,
+                viewport_size: window.innerWidth + 'x' + window.innerHeight,
+                traffic_source: document.referrer ? new URL(document.referrer).hostname : 'direct'
+            };
+
+            sendGA4Event('enhanced_page_view', {
+                event_category: 'page_tracking',
+                event_label: pageInfo.page_title,
+                custom_parameter_1: pageInfo.traffic_source
+            });
+        }
+
+        // モバイルメニュートラッキング
+        function trackMobileMenu() {
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    const isOpen = this.classList.contains('active');
+                    sendGA4Event('mobile_menu_toggle', {
+                        event_category: 'navigation',
+                        event_label: isOpen ? 'close' : 'open',
+                        custom_parameter_1: 'mobile_navigation'
+                    });
+                });
+            }
+        }
+
+        // Trust Badge クリックトラッキング
+        function trackTrustBadges() {
+            document.querySelectorAll('.trust-badge-item').forEach(function(badge) {
+                badge.addEventListener('click', function() {
+                    const badgeLabel = this.querySelector('.trust-badge-label');
+                    const badgeText = badgeLabel ? badgeLabel.textContent.trim() : 'Unknown Badge';
+
+                    sendGA4Event('trust_badge_click', {
+                        event_category: 'engagement',
+                        event_label: badgeText,
+                        custom_parameter_1: 'social_proof'
+                    });
+                });
+            });
+        }
+
+        // ============================================================
+        // 初期化
+        // ============================================================
+
+        function initGA4Tracking() {
+            try {
+                // 拡張ページビュー
+                trackEnhancedPageView();
+
+                // コンバージョントラッキング
+                trackLineFriendAdd();
+                trackPricingInterest();
+                trackFormSubmit();
+                trackCTAClicks();
+
+                // エンゲージメントトラッキング
+                trackScrollDepth();
+                trackSectionEngagement();
+                trackFAQExpansion();
+
+                // 特殊コンテンツトラッキング
+                trackDemoView();
+                trackVideoPlay();
+                trackDemoTabs();
+
+                // 追加トラッキング
+                trackNavigation();
+                trackFloatingCTA();
+                trackExternalLinks();
+                trackMobileMenu();
+                trackTrustBadges();
+
+                // パフォーマンストラッキング
+                trackPageLoadTime();
+
+                if (DEBUG_MODE) {
+                    console.log('✅ GA4 Event Tracking Initialized Successfully');
+                    console.log('📊 Debug Mode: Events will be logged to console');
+                }
+            } catch (error) {
+                console.error('GA4 Tracking Initialization Error:', error);
+            }
+        }
+
+        // DOMContentLoaded後に初期化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initGA4Tracking);
+        } else {
+            // 既にDOMが読み込まれている場合
+            initGA4Tracking();
+        }
+
+    })();
+    </script>
+</body>
+</html>

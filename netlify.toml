@@ -1,7 +1,7 @@
 # Netlify Configuration for TaskMate
 [build]
   command = "npm run build"
-  publish = "netlify-tracking"
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -10,19 +10,6 @@
   package = "@netlify/plugin-nextjs"
 
 # ===== Redirects =====
-# Next.js demo page
-[[redirects]]
-  from = "/demo"
-  to = "/.netlify/functions/___netlify-server-handler"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/demo/*"
-  to = "/.netlify/functions/___netlify-server-handler"
-  status = 200
-  force = true
-
 [[redirects]]
   from = "/blog"
   to = "https://elegant-gumdrop-9a983a.netlify.app"

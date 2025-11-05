@@ -427,3 +427,77 @@ function initLoadingScreen() {
 - **7.6MB動画**: 高速回線で1-2秒、4G回線で3-5秒程度
 - **`preload="auto"`**: ページ読み込みと同時に動画ダウンロード開始
 - **ブラウザキャッシュ**: 2回目以降は即座に表示
+
+---
+
+## Netlifyデプロイエラー修正 - 2025-11-05
+
+### 問題
+Netlifyデプロイ失敗:
+```
+Error: Your publish directory does not contain expected Next.js build output.
+Please check your build settings
+```
+
+**原因**: `publish = "netlify-tracking"`に設定したため、`@netlify/plugin-nextjs`が`.next`ディレクトリを見つけられなかった。
+
+### 解決策
+ハイブリッドアプローチから、Next.jsをメインにして静的ファイルをpublicディレクトリに配置する方式に変更：
+
+#### 1. netlify.toml修正
+```toml
+[build]
+  command = "npm run build"
+  publish = ".next"  # netlify-trackingから変更
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"  # プラグイン有効化
+```
+
+`/demo`専用のリダイレクト設定を削除（Next.jsが全ルートを処理）
+
+#### 2. 静的ファイルの移動
+```bash
+cp -r netlify-tracking/* public/
+```
+
+**結果**:
+- `public/index.html` - TaskMateランディングページ
+- `public/css/`, `public/js/`, `public/images/` - 全アセット
+- `/demo` - Next.jsデモページ
+
+#### 3. app/page.tsx修正
+ルート`/`にアクセスした際に`/index.html`（静的HTML）にリダイレクト：
+
+```typescript
+'use client'
+
+import { useEffect } from 'react'
+
+export default function Home() {
+  useEffect(() => {
+    window.location.href = '/index.html'
+  }, [])
+
+  return null
+}
+```
+
+### 最終的なルーティング
+- **`/`** → `app/page.tsx` → リダイレクト → `/index.html` (静的HTML)
+- **`/index.html`** → `public/index.html` (TaskMateランディング)
+- **`/demo`** → `app/demo/page.tsx` (Next.jsデモページ)
+- **`/t/:code`, `/c/:campaign`** → Netlify Functions (トラッキング)
+- **`/blog`** → 外部サイトへリダイレクト
+
+### メリット
+- ✅ Next.jsプラグインが正常動作
+- ✅ 静的HTMLとNext.jsの共存
+- ✅ デプロイ設定がシンプル
+- ✅ 既存のトラッキングFunctions維持
+
+### 次のアクション
+1. ローカルで動作確認: `http://localhost:3002/`
+2. コミット&プッシュ
+3. Netlifyで自動デプロイ
+4. 本番確認: `https://taskmateai.net/`と`https://taskmateai.net/demo`
