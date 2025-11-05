@@ -972,3 +972,216 @@ rel="noopener noreferrer"
 ### 目的
 - ランディングページからのコンバージョンを代理店システムでトラッキング
 - デモページは別のファネル（Timerex直接予約）でトラッキング
+
+---
+
+## デモページCVR向上プロジェクト開始 - 2025-11-05
+
+### 調査結果サマリー
+
+**現状の問題点**:
+- パーソナライゼーション不足（ユーザーが自分の業務として認識しづらい）
+- インタラクション不足（選択するだけの一方向体験）
+- エンゲージメント時間短い（2-3分で完了）
+- 社会的証明の欠如（導入実績・ユーザーの声がない）
+
+**目標CVR向上**: +50-80%（フェーズ1完了時）
+
+### フェーズ1実装計画（クイックウィン）
+
+#### 1. プログレスバー + マイクロコンバージョン設計
+**ファイル**:
+- `/app/demo/components/ProgressBar.tsx` ✅ 作成完了
+- `/app/demo/page.tsx` （統合待ち）
+
+**設計**:
+```
+Step 1: シナリオ選択
+Step 2: 詳細確認
+Step 3: コード生成
+Step 4: セットアップガイド確認
+Step 5: CTA（無料相談予約）
+```
+
+**実装内容**:
+- 5ステップのプログレスバー
+- 各ステップで達成感を演出（チェックマーク、進捗%）
+- 励ましメッセージ表示
+- スティッキーヘッダーで常に進捗を表示
+
+**期待効果**: CVR +20-30%
+
+#### 2. 導入事例・社会的証明
+**実装予定**:
+```tsx
+// ImpactCounter の下に追加
+<div className="bg-white rounded-lg p-6 shadow-sm">
+  <h3 className="font-bold text-lg mb-4">導入実績</h3>
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="text-center">
+      <div className="text-3xl font-bold text-emerald-600">120+</div>
+      <div className="text-sm text-gray-600">導入企業</div>
+    </div>
+    <div className="text-center">
+      <div className="text-3xl font-bold text-emerald-600">500+</div>
+      <div className="text-sm text-gray-600">自動化スクリプト</div>
+    </div>
+    <div className="text-center">
+      <div className="text-3xl font-bold text-emerald-600">10,000+</div>
+      <div className="text-sm text-gray-600">削減時間（h/月）</div>
+    </div>
+  </div>
+
+  {/* ユーザーの声 */}
+  <div className="mt-6 space-y-4">
+    <div className="bg-gray-50 p-4 rounded-lg">
+      <p className="text-sm italic">"毎週5時間かかっていた売上集計が完全自動化されました"</p>
+      <p className="text-xs text-gray-600 mt-2">- 不動産業 営業部長</p>
+    </div>
+    <div className="bg-gray-50 p-4 rounded-lg">
+      <p className="text-sm italic">"在庫管理の見落としがゼロになり、機会損失を防げました"</p>
+      <p className="text-xs text-gray-600 mt-2">- 小売業 店舗マネージャー</p>
+    </div>
+  </div>
+</div>
+```
+
+**期待効果**: CVR +15-25%
+
+#### 3. Before/After比較ビュー
+**実装予定**:
+各シナリオに `beforeAfter` データを追加
+
+```typescript
+// scenarios/types.ts に追加
+export interface BeforeAfter {
+  before: {
+    steps: { time: string; task: string }[]
+    totalTime: string
+  }
+  after: {
+    steps: { time: string; task: string }[]
+    totalTime: string
+  }
+  savings: {
+    timePerMonth: string
+    costPerMonth: string
+    errorReduction: string
+  }
+}
+```
+
+**表示UI**:
+```
+[手動の場合]                [TaskMate使用後]
+1. フォーム確認 5分    →    1. 自動実行 0分
+2. データ転記 10分     →    完全自動化
+3. 集計 5分            →
+4. グラフ作成 10分     →
+合計: 30分/回          →    合計: 0分/回
+
+月間削減: 20時間 = 40,000円相当
+```
+
+**期待効果**: CVR +25-35%
+
+#### 4. 動画デモ機能
+**実装予定**:
+```tsx
+// コード表示の前に動画プレビュー
+<div className="mb-4">
+  <button
+    onClick={() => setShowVideo(!showVideo)}
+    className="w-full bg-blue-50 hover:bg-blue-100 p-4 rounded-lg flex items-center justify-between"
+  >
+    <span className="font-semibold text-blue-900">
+      📹 実際の動作を見る（30秒）
+    </span>
+    <svg className="w-5 h-5" .../>
+  </button>
+
+  {showVideo && (
+    <div className="mt-4 rounded-lg overflow-hidden">
+      <video controls className="w-full">
+        <source src={`/videos/${scenarioId}-demo.mp4`} type="video/mp4" />
+      </video>
+    </div>
+  )}
+</div>
+```
+
+**必要な動画**:
+- `salesAggregation-demo.mp4` (Loomで録画)
+- `inventoryAlert-demo.mp4`
+- `weeklyReport-demo.mp4`
+
+**期待効果**: CVR +20-30%
+
+#### 5. ビジュアルワークフロー
+**実装予定**:
+```tsx
+// コンポーネント: WorkflowDiagram.tsx
+<div className="bg-white rounded-lg p-6 mb-4">
+  <h3 className="font-semibold mb-4">このコードがやること</h3>
+  <div className="flex items-center justify-between">
+    {workflow.map((step, index) => (
+      <>
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+            {step.icon}
+          </div>
+          <p className="text-xs mt-2 text-center">{step.label}</p>
+        </div>
+        {index < workflow.length - 1 && (
+          <div className="flex-1 h-0.5 bg-emerald-300 mx-2">
+            <div className="text-emerald-600 text-center">→</div>
+          </div>
+        )}
+      </>
+    ))}
+  </div>
+</div>
+```
+
+**期待効果**: CVR +25-35%
+
+### 実装優先順位
+
+1. **即実装可能（今日-明日）**:
+   - ✅ ProgressBar コンポーネント作成完了
+   - ⏳ ProgressBar を page.tsx に統合
+   - ⏳ 導入事例・社会的証明追加
+
+2. **短期（2-3日）**:
+   - Before/After比較データ追加
+   - ビジュアルワークフローコンポーネント
+
+3. **中期（1週間）**:
+   - 動画デモ録画 + 埋め込み
+
+### 次のセッションでやること
+
+1. `ProgressBar` を `page.tsx` に統合
+   - `currentStep` state 追加
+   - 各ステップで `setCurrentStep` を呼ぶ
+
+2. 導入事例コンポーネント追加
+   - `SocialProof.tsx` 作成
+   - ImpactCounter の下に配置
+
+3. ローカルでテスト
+   - `http://localhost:3002/demo` で動作確認
+
+4. デプロイ
+   - git commit & push
+   - Netlify自動デプロイ
+
+### 測定指標（追加予定）
+
+- Google Analytics イベント追加:
+  - `demo_step_1_complete` (シナリオ選択)
+  - `demo_step_2_complete` (詳細確認)
+  - `demo_step_3_complete` (コード表示)
+  - `demo_step_4_complete` (セットアップ確認)
+  - `demo_code_copied` (コードコピー)
+  - `demo_cta_clicked` (CTA クリック)

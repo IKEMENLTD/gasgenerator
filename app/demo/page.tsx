@@ -6,6 +6,8 @@ import TypingIndicator from './components/TypingIndicator'
 import CodeBlock from './components/CodeBlock'
 import ScenarioButton from './components/ScenarioButton'
 import ImpactCounter from './components/ImpactCounter'
+import ProgressBar from './components/ProgressBar'
+import SocialProof from './components/SocialProof'
 import ChartIcon from './components/icons/ChartIcon'
 import BoxIcon from './components/icons/BoxIcon'
 import MailIcon from './components/icons/MailIcon'
@@ -15,11 +17,27 @@ import { Message } from './scenarios/types'
 
 type ConversationState = 'initial' | 'thinking' | 'responding' | 'generating' | 'complete'
 
+interface Step {
+  id: number
+  label: string
+  completed: boolean
+}
+
 export default function DemoPage() {
   const [selectedScenario, setSelectedScenario] = useState<ScenarioId | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [state, setState] = useState<ConversationState>('initial')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Progress tracking state
+  const [currentStep, setCurrentStep] = useState(1)
+  const [steps, setSteps] = useState<Step[]>([
+    { id: 1, label: 'シナリオ選択', completed: false },
+    { id: 2, label: '詳細確認', completed: false },
+    { id: 3, label: 'コード生成', completed: false },
+    { id: 4, label: 'セットアップ', completed: false },
+    { id: 5, label: '相談予約', completed: false }
+  ])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -46,9 +64,19 @@ export default function DemoPage() {
     return `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
   }
 
+  const updateStepProgress = (stepId: number) => {
+    setSteps(prev => prev.map(step =>
+      step.id === stepId ? { ...step, completed: true } : step
+    ))
+    setCurrentStep(stepId + 1)
+  }
+
   const handleScenarioSelect = async (scenarioId: ScenarioId) => {
     setSelectedScenario(scenarioId)
     const scenario = scenarios[scenarioId]
+
+    // Step 1 完了: シナリオ選択
+    updateStepProgress(1)
 
     // ユーザーメッセージ
     const userMessage: Message = {
@@ -73,12 +101,22 @@ export default function DemoPage() {
     }
     setMessages(prev => [...prev, aiMessage])
 
+    // Step 2 完了: 詳細確認
+    updateStepProgress(2)
+
     // コード生成中
     setState('generating')
     await sleep(2000)
 
+    // Step 3 完了: コード生成
+    updateStepProgress(3)
+
     // 完成
     setState('complete')
+
+    // Step 4 完了: セットアップガイド表示
+    await sleep(500)
+    updateStepProgress(4)
   }
 
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -109,6 +147,9 @@ export default function DemoPage() {
 
       {/* メインコンテンツ */}
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Progress Bar */}
+        <ProgressBar currentStep={currentStep} totalSteps={5} steps={steps} />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* チャットエリア */}
           <div className="lg:col-span-2">
@@ -188,6 +229,7 @@ export default function DemoPage() {
                         href="https://timerex.net/s/cz1917903_47c5/7caf7949"
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => updateStepProgress(5)}
                         className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors"
                       >
                         無料相談を予約（15分）
@@ -197,6 +239,7 @@ export default function DemoPage() {
                         className="flex-1 bg-white hover:bg-gray-50 text-emerald-600 font-semibold py-3 px-6 rounded-lg text-center border-2 border-emerald-500 transition-colors"
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => updateStepProgress(5)}
                       >
                         サービス詳細を見る
                       </a>
@@ -214,6 +257,15 @@ export default function DemoPage() {
                           }
                         ])
                         setState('initial')
+                        // Reset progress
+                        setCurrentStep(1)
+                        setSteps([
+                          { id: 1, label: 'シナリオ選択', completed: false },
+                          { id: 2, label: '詳細確認', completed: false },
+                          { id: 3, label: 'コード生成', completed: false },
+                          { id: 4, label: 'セットアップ', completed: false },
+                          { id: 5, label: '相談予約', completed: false }
+                        ])
                       }}
                       className="w-full mt-4 text-gray-600 hover:text-gray-900 font-medium py-2 transition-colors"
                     >
@@ -230,43 +282,49 @@ export default function DemoPage() {
           {/* サイドバー - 削減効果 */}
           <div className="lg:col-span-1">
             {scenario ? (
-              <ImpactCounter
-                timeSaved={scenario.timeSaved}
-                costSaved={scenario.costSaved}
-                errorReduction={scenario.errorReduction}
-                details={scenario.details}
-              />
+              <>
+                <ImpactCounter
+                  timeSaved={scenario.timeSaved}
+                  costSaved={scenario.costSaved}
+                  errorReduction={scenario.errorReduction}
+                  details={scenario.details}
+                />
+                <SocialProof />
+              </>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="font-bold text-lg mb-4 text-gray-900">TaskMateとは？</h3>
-                <div className="space-y-4 text-sm text-gray-700">
-                  <p>
-                    TaskMateは、LINEで日本語指示を送るだけでGoogle Apps Script（GAS）を自動生成するAIサービスです。
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <span className="text-emerald-500 mt-1">✓</span>
-                      <span>プログラミング知識一切不要</span>
+              <>
+                <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+                  <h3 className="font-bold text-lg mb-4 text-gray-900">TaskMateとは？</h3>
+                  <div className="space-y-4 text-sm text-gray-700">
+                    <p>
+                      TaskMateは、LINEで日本語指示を送るだけでGoogle Apps Script（GAS）を自動生成するAIサービスです。
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2">
+                        <span className="text-emerald-500 mt-1">✓</span>
+                        <span>プログラミング知識一切不要</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-emerald-500 mt-1">✓</span>
+                        <span>LINEで「○○したい」と送るだけ</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-emerald-500 mt-1">✓</span>
+                        <span>データ集計、在庫管理など幅広く対応</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-emerald-500 mt-1">✓</span>
+                        <span>月額1万円から利用可能</span>
+                      </div>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-emerald-500 mt-1">✓</span>
-                      <span>LINEで「○○したい」と送るだけ</span>
+                    <div className="pt-4 border-t border-gray-200">
+                      <p className="font-semibold text-gray-900 mb-2">導入実績</p>
+                      <p className="text-gray-600">平均月40時間の業務時間削減を実現</p>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-emerald-500 mt-1">✓</span>
-                      <span>データ集計、在庫管理など幅広く対応</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-emerald-500 mt-1">✓</span>
-                      <span>月額1万円から利用可能</span>
-                    </div>
-                  </div>
-                  <div className="pt-4 border-t border-gray-200">
-                    <p className="font-semibold text-gray-900 mb-2">導入実績</p>
-                    <p className="text-gray-600">平均月40時間の業務時間削減を実現</p>
                   </div>
                 </div>
-              </div>
+                <SocialProof />
+              </>
             )}
           </div>
         </div>
