@@ -1,0 +1,30 @@
+[
+  {
+    "id": "task-1762165261534-8feba7",
+    "name": "このプロジェクトの構造を説明して",
+    "model": "Claude Code",
+    "status": "working",
+    "importance": "medium",
+    "urgency": "medium",
+    "branchName": null,
+    "baseBranch": null,
+    "worktreePath": null,
+    "createWorktree": false,
+    "createdAt": "2025-11-03T10:21:01.534Z",
+    "updatedAt": "2025-11-03T10:38:17.388Z",
+    "requiresTerminal": true,
+    "bookmarked": false,
+    "aiCompetitionEntry": false,
+    "aiCompetitionResult": null,
+    "aiCompetitionGroupId": null,
+    "aiCompetitionGroupName": null,
+    "useTmux": false,
+    "taskType": null,
+    "modelId": null,
+    "latestVersion": null,
+    "currentVersion": null,
+    "installSteps": [],
+    "installCommand": null,
+    "createdAutomatically": false
+  }
+]
