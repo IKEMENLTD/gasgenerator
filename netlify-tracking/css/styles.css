@@ -2431,3 +2431,32 @@ h2 {
     }
 }
 
+/* ========================================
+   Blog Articles Slider Animation
+   ======================================== */
+
+@keyframes slide-blog {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.blog-slider-wrapper:hover .blog-slider {
+    animation-play-state: paused;
+}
+
+.blog-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+}
+
+@media (max-width: 768px) {
+    .blog-slider .blog-card {
+        min-width: 300px !important;
+        max-width: 300px !important;
+    }
+}
+
