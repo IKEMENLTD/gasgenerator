@@ -2407,3 +2407,27 @@ h2 {
     }
 }
 
+/* ========================================
+   Testimonials Slider Animation
+   ======================================== */
+
+@keyframes slide-testimonials {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.testimonials-slider-wrapper:hover .testimonials-slider {
+    animation-play-state: paused;
+}
+
+@media (max-width: 768px) {
+    .testimonials-slider .testimonial-card {
+        min-width: 280px !important;
+        max-width: 280px !important;
+    }
+}
+
