@@ -2225,3 +2225,185 @@ h2 {
     }
 }
 
+/* ========================================
+   What is GAS Section Styles
+   ======================================== */
+
+.what-is-gas {
+    background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+}
+
+.gas-explanation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-6);
+    margin: var(--space-12) 0;
+}
+
+.gas-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gas-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.gas-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-4);
+}
+
+.gas-card h3 {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+    color: var(--gray-900);
+}
+
+.gas-card p {
+    color: var(--gray-600);
+    line-height: 1.6;
+}
+
+.gas-benefits {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    border-radius: var(--radius-xl);
+    padding: var(--space-10);
+    color: white;
+    text-align: center;
+    margin-top: var(--space-12);
+}
+
+.gas-benefits h3 {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-6);
+}
+
+.benefits-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: left;
+    padding-left: 0;
+}
+
+.benefits-list li {
+    font-size: var(--text-lg);
+    font-weight: 500;
+}
+
+/* ========================================
+   Plan Details Section Styles
+   ======================================== */
+
+.plan-details {
+    background: var(--gray-100);
+}
+
+.plan-detail-card {
+    max-width: 1000px;
+    margin: 0 auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+}
+
+.plan-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-6);
+}
+
+.plan-feature-block {
+    background: white;
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.plan-feature-block h4 {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.plan-feature-block h4 i {
+    color: var(--primary-500);
+}
+
+.plan-feature-block p {
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.plan-ideal-for ul li {
+    padding: var(--space-2) 0;
+    color: var(--gray-700);
+}
+
+.plan-highlight {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+    }
+}
+
+/* ========================================
+   Responsive Adjustments for New Sections
+   ======================================== */
+
+@media (max-width: 768px) {
+    .gas-explanation-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
+    }
+
+    .gas-icon {
+        font-size: 2.5rem;
+    }
+
+    .benefits-list {
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
+    }
+
+    .plan-detail-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
+    }
+
+    .gas-benefits,
+    .plan-detail-header,
+    .plan-detail-body {
+        padding: var(--space-6);
+    }
+
+    .benefits-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .benefits-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+

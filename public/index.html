@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
     
     <!-- Styles -->
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-VDT2MSCZ6N"></script>
@@ -54,7 +54,7 @@
         </video>
         <div style="position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%);">
             <div class="loading-progress" style="width: 300px; height: 4px; background: rgba(255,255,255,0.2); border-radius: var(--radius-full); overflow: hidden;">
-                <div class="loading-bar" style="width: 0%; height: 100%; background: var(--primary-500); transition: width 4s ease;"></div>
+                <div class="loading-bar" style="width: 0%; height: 100%; background: var(--primary-500); transition: width 1.5s ease;"></div>
             </div>
         </div>
     </div>
@@ -151,7 +151,110 @@
             </div>
         </div>
     </section>
-    
+
+    <!-- What is GAS Section -->
+    <section class="what-is-gas" style="background: linear-gradient(180deg, var(--gray-50) 0%, white 100%); padding: var(--space-16) 0;">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-badge">Google Apps Script とは？</div>
+                <h2 class="section-title">プログラミング不要で業務を自動化</h2>
+                <p class="section-subtitle">
+                    GASは、Googleが提供する無料の自動化プラットフォーム。<br>
+                    スプレッドシート、Gmail、カレンダーを連携して、面倒な定型作業を完全自動化
+                </p>
+            </div>
+
+            <div class="gas-explanation-grid">
+                <div class="gas-card feature-card fade-in">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-table" style="color: white;"></i>
+                    </div>
+                    <h3 class="feature-title">スプレッドシート自動化</h3>
+                    <p class="feature-description">
+                        データ入力、集計、レポート作成を完全自動化。毎日の手作業から完全に解放されます
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> データ自動収集・統合</li>
+                        <li><i class="fas fa-check"></i> リアルタイム集計処理</li>
+                        <li><i class="fas fa-check"></i> レポート自動生成</li>
+                    </ul>
+                </div>
+
+                <div class="gas-card feature-card fade-in">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                        <i class="fas fa-envelope" style="color: white;"></i>
+                    </div>
+                    <h3 class="feature-title">メール・通知の自動送信</h3>
+                    <p class="feature-description">
+                        条件に応じて自動でメール送信。リマインダーやアラート通知も完全自動化
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> 条件分岐メール送信</li>
+                        <li><i class="fas fa-check"></i> スケジュール送信</li>
+                        <li><i class="fas fa-check"></i> Slack/Teams連携</li>
+                    </ul>
+                </div>
+
+                <div class="gas-card feature-card fade-in">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        <i class="fas fa-sync-alt" style="color: white;"></i>
+                    </div>
+                    <h3 class="feature-title">API連携・データ同期</h3>
+                    <p class="feature-description">
+                        複数のツールやシステムを自動連携。データの二重入力を完全に削減
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> 外部API自動連携</li>
+                        <li><i class="fas fa-check"></i> データベース同期</li>
+                        <li><i class="fas fa-check"></i> クラウドストレージ連携</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="gas-benefits fade-in" style="background: linear-gradient(135deg, var(--primary-500), var(--primary-600)); border-radius: var(--radius-xl); padding: var(--space-12); margin-top: var(--space-12); position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
+                <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(40px);"></div>
+                <div style="position: relative; z-index: 1;">
+                    <div style="text-align: center; margin-bottom: var(--space-8);">
+                        <div style="display: inline-block; background: rgba(255,255,255,0.2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); margin-bottom: var(--space-4);">
+                            <span style="font-size: var(--text-sm); font-weight: 600; color: white;">TaskMate の強み</span>
+                        </div>
+                        <h3 style="font-size: var(--text-3xl); font-weight: 800; color: white; margin: 0;">GASを誰でも簡単に導入できます</h3>
+                    </div>
+                    <div class="benefits-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin: 0 auto;">
+                        <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: var(--space-6); border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.2);">
+                            <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                                <i class="fas fa-magic" style="font-size: 24px; color: white;"></i>
+                            </div>
+                            <h4 style="font-size: var(--text-lg); font-weight: 700; color: white; margin-bottom: var(--space-2);">プログラミング知識不要</h4>
+                            <p style="color: rgba(255,255,255,0.9); font-size: var(--text-sm); margin: 0;">技術的な知識は一切不要。誰でも使えます</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: var(--space-6); border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.2);">
+                            <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                                <i class="fab fa-line" style="font-size: 24px; color: white;"></i>
+                            </div>
+                            <h4 style="font-size: var(--text-lg); font-weight: 700; color: white; margin-bottom: var(--space-2);">LINEで即座にコード生成</h4>
+                            <p style="color: rgba(255,255,255,0.9); font-size: var(--text-sm); margin: 0;">AIが最適なコードを自動生成</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: var(--space-6); border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.2);">
+                            <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                                <i class="fas fa-headset" style="font-size: 24px; color: white;"></i>
+                            </div>
+                            <h4 style="font-size: var(--text-lg); font-weight: 700; color: white; margin-bottom: var(--space-2);">設置・運用サポート付き</h4>
+                            <p style="color: rgba(255,255,255,0.9); font-size: var(--text-sm); margin: 0;">現役エンジニアが徹底サポート</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: var(--space-6); border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.2);">
+                            <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                                <i class="fas fa-yen-sign" style="font-size: 24px; color: white;"></i>
+                            </div>
+                            <h4 style="font-size: var(--text-lg); font-weight: 700; color: white; margin-bottom: var(--space-2);">月額1万円〜で使い放題</h4>
+                            <p style="color: rgba(255,255,255,0.9); font-size: var(--text-sm); margin: 0;">圧倒的なコストパフォーマンス</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Trust Badges -->
     <section class="trust-badges">
         <div class="trust-badge-item fade-in">
@@ -388,42 +491,28 @@
                 </div>
                 
                 <div>
-                    <div class="line-mockup">
-                        <div class="line-header">
-                            <i class="fab fa-line" style="font-size: 24px; color: white;"></i>
-                            <span style="color: white; font-weight: 700;">スマートビジネスコンシェルジュ</span>
+                    <!-- 動画デモ -->
+                    <div class="demo-video-container" style="background: white; border-radius: var(--radius-xl); overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12);">
+                        <video
+                            controls
+                            autoplay
+                            muted
+                            loop
+                            playsinline
+                            style="width: 100%; height: auto; display: block;"
+                        >
+                            <source src="images/demo.mp4" type="video/mp4">
+                            お使いのブラウザは動画再生に対応していません。
+                        </video>
+                        <div style="padding: var(--space-6); background: var(--gray-50); text-align: center;">
+                            <p style="font-size: var(--text-sm); color: var(--gray-600); margin-bottom: var(--space-4);">
+                                実際のAIコード生成の様子をご覧ください
+                            </p>
+                            <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-primary btn-lg" target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-line"></i>
+                                今すぐLINEで試す
+                            </a>
                         </div>
-                        <div class="line-chat">
-                            <div class="chat-message chat-message-user">
-                                スプレッドシートのデータを毎朝集計するコードが欲しい
-                            </div>
-                            <div class="chat-message chat-message-bot">
-                                承知しました！以下のコードをお使いください💻<br>
-                                <pre style="margin: var(--space-2) 0; background: var(--gray-200); padding: var(--space-2); border-radius: var(--radius); overflow-x: auto;">function dailyReport() {
-  const sheet = SpreadsheetApp.getActive();
-  const data = sheet.getDataRange();
-  // 集計処理...
-}</pre>
-                                コピーして使ってください！
-                            </div>
-                            <div class="chat-message chat-message-user">
-                                エラーが出た… TypeError: Cannot read property
-                            </div>
-                            <div class="chat-message chat-message-bot">
-                                このエラーはシートが選択されていない時に発生します🔧<br>
-                                <br>
-                                以下のように修正してみてください：<br>
-                                <code style="background: var(--gray-200); padding: var(--space-1); border-radius: var(--radius-sm);">getActiveSheet()</code> に変更
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="text-align: center; margin-top: var(--space-6);">
-                        <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-primary btn-xl" target="_blank" rel="noopener noreferrer">
-                            <i class="fab fa-line" style="font-size: 24px; color: white;"></i>
-                            LINEでGASコード生成を試す
-                        </a>
-                        <p style="font-size: var(--text-sm); color: var(--gray-600); margin-top: var(--space-2);">※友だち追加で無料で使えます</p>
                     </div>
                 </div>
             </div>
@@ -786,7 +875,185 @@
             </div>
         </div>
     </section>
-    
+
+    <!-- Plan Details Section -->
+    <section class="plan-details" style="background: linear-gradient(180deg, white 0%, var(--gray-50) 100%); padding: var(--space-20) 0;">
+        <div class="container">
+            <div class="section-header fade-in">
+                <div class="section-badge">プラン詳細比較</div>
+                <h2 class="section-title">あなたに最適なプランを選択</h2>
+                <p class="section-subtitle">
+                    内製化志向なら1万円プラン、完全代行なら5万円プラン。<br>
+                    どちらも現役エンジニアによる徹底サポート付き
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: var(--space-8); max-width: 1200px; margin: 0 auto;">
+                <!-- ビジネスプラン詳細 -->
+                <div class="plan-detail-card feature-card fade-in" style="background: white; border: 2px solid var(--primary-500); position: relative; overflow: visible;">
+                    <div style="position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--primary-500), var(--primary-600)); color: white; padding: var(--space-2) var(--space-6); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        内製化プラン
+                    </div>
+
+                    <div style="text-align: center; padding: var(--space-8) var(--space-6) var(--space-6);">
+                        <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary-500), var(--primary-600)); border-radius: var(--radius-xl); margin-bottom: var(--space-4); box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);">
+                            <i class="fas fa-graduation-cap" style="font-size: 36px; color: white;"></i>
+                        </div>
+                        <h3 style="font-size: var(--text-3xl); font-weight: 800; color: var(--gray-900); margin-bottom: var(--space-2);">ビジネスプラン</h3>
+                        <div style="display: flex; align-items: baseline; justify-content: center; margin-bottom: var(--space-2);">
+                            <span style="font-size: var(--text-5xl); font-weight: 800; color: var(--primary-600);">¥10,000</span>
+                            <span style="font-size: var(--text-lg); color: var(--gray-600); margin-left: var(--space-2);">/月</span>
+                        </div>
+                        <p style="color: var(--gray-600); font-size: var(--text-base);">GASを学びながら業務を内製化</p>
+                    </div>
+
+                    <div style="padding: 0 var(--space-6) var(--space-8);">
+                        <div style="background: var(--gray-50); padding: var(--space-6); border-radius: var(--radius-lg); margin-bottom: var(--space-6);">
+                            <h4 style="font-size: var(--text-lg); font-weight: 700; color: var(--gray-900); margin-bottom: var(--space-4); display: flex; align-items: center;">
+                                <i class="fas fa-star" style="color: #fbbf24; margin-right: var(--space-2);"></i>
+                                主な機能
+                            </h4>
+                            <ul class="feature-list" style="margin: 0;">
+                                <li><i class="fas fa-check"></i> AIによる自動コード生成</li>
+                                <li><i class="fas fa-check"></i> 現役エンジニアのチャットサポート</li>
+                                <li><i class="fas fa-check"></i> コード解説付き（学習サポート）</li>
+                                <li><i class="fas fa-check"></i> 月1回の改善提案ミーティング</li>
+                                <li><i class="fas fa-check"></i> エラー解決サポート無制限</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: var(--space-6); border-radius: var(--radius-lg); border: 1px solid var(--primary-300);">
+                            <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--primary-900); margin-bottom: var(--space-3); display: flex; align-items: center;">
+                                <i class="fas fa-user-check" style="margin-right: var(--space-2);"></i>
+                                こんな方におすすめ
+                            </h4>
+                            <ul style="list-style: none; padding: 0; margin: 0; font-size: var(--text-sm); color: var(--primary-900);">
+                                <li style="padding: var(--space-1) 0; display: flex; align-items: center;">
+                                    <i class="fas fa-angle-right" style="margin-right: var(--space-2); color: var(--primary-600);"></i>
+                                    GASを少しずつ学習したい
+                                </li>
+                                <li style="padding: var(--space-1) 0; display: flex; align-items: center;">
+                                    <i class="fas fa-angle-right" style="margin-right: var(--space-2); color: var(--primary-600);"></i>
+                                    将来的に自社で運用・改善したい
+                                </li>
+                                <li style="padding: var(--space-1) 0; display: flex; align-items: center;">
+                                    <i class="fas fa-angle-right" style="margin-right: var(--space-2); color: var(--primary-600);"></i>
+                                    コストを抑えて効率化を始めたい
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: var(--space-3); border-radius: var(--radius); border-left: 3px solid var(--primary-500); margin-top: var(--space-6); margin-bottom: var(--space-4);">
+                            <p style="color: var(--primary-900); margin: 0; font-size: var(--text-xs); display: flex; align-items: start; gap: var(--space-2);">
+                                <i class="fas fa-info-circle" style="margin-top: 2px; font-size: 12px;"></i>
+                                <span>※3ヶ月契約（最低利用期間）</span>
+                            </p>
+                        </div>
+
+                        <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-primary" style="width: 100%; font-size: var(--text-lg); padding: var(--space-4);" target="_blank" rel="noopener noreferrer">
+                            <i class="fab fa-line"></i>
+                            このプランで始める
+                        </a>
+                    </div>
+                </div>
+
+                <!-- プロフェッショナルプラン詳細 -->
+                <div class="plan-detail-card feature-card fade-in" style="background: white; border: 2px solid #06b6d4; position: relative; overflow: visible;">
+                    <div style="position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; padding: var(--space-2) var(--space-6); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        完全代行プラン
+                    </div>
+
+                    <div style="text-align: center; padding: var(--space-8) var(--space-6) var(--space-6);">
+                        <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: linear-gradient(135deg, #06b6d4, #0891b2); border-radius: var(--radius-xl); margin-bottom: var(--space-4); box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3);">
+                            <i class="fas fa-rocket" style="font-size: 36px; color: white;"></i>
+                        </div>
+                        <h3 style="font-size: var(--text-3xl); font-weight: 800; color: var(--gray-900); margin-bottom: var(--space-2);">プロフェッショナルプラン</h3>
+                        <div style="display: flex; align-items: baseline; justify-content: center; margin-bottom: var(--space-2);">
+                            <span style="font-size: var(--text-5xl); font-weight: 800; color: #06b6d4;">¥50,000</span>
+                            <span style="font-size: var(--text-lg); color: var(--gray-600); margin-left: var(--space-2);">/月</span>
+                        </div>
+                        <p style="color: var(--gray-600); font-size: var(--text-base);">システム開発を完全代行</p>
+                    </div>
+
+                    <div style="padding: 0 var(--space-6) var(--space-2);">
+                        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: var(--space-4); border-radius: var(--radius-lg); margin-bottom: var(--space-6); border: 2px solid #fbbf24; animation: pulse-glow 2s ease-in-out infinite;">
+                            <div style="display: flex; align-items: center; gap: var(--space-2);">
+                                <i class="fas fa-fire" style="color: #ef4444; font-size: 20px;"></i>
+                                <p style="color: #92400e; margin: 0; font-weight: 700; font-size: var(--text-sm);">
+                                    月額5万円でシステム開発し放題
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="padding: 0 var(--space-6) var(--space-8);">
+                        <div style="background: var(--gray-50); padding: var(--space-6); border-radius: var(--radius-lg); margin-bottom: var(--space-6);">
+                            <h4 style="font-size: var(--text-lg); font-weight: 700; color: var(--gray-900); margin-bottom: var(--space-4); display: flex; align-items: center;">
+                                <i class="fas fa-star" style="color: #fbbf24; margin-right: var(--space-2);"></i>
+                                主な機能
+                            </h4>
+                            <ul class="feature-list" style="margin: 0;">
+                                <li><i class="fas fa-check"></i> フルコーディング完全代行</li>
+                                <li><i class="fas fa-check"></i> 月1-2回の進捗ミーティング</li>
+                                <li><i class="fas fa-check"></i> 要件定義から納品まで全て対応</li>
+                                <li><i class="fas fa-check"></i> 納期調整で利益を最適化</li>
+                                <li><i class="fas fa-check"></i> 優先サポート対応</li>
+                                <li><i class="fas fa-check"></i> API連携・外部システム統合</li>
+                            </ul>
+                        </div>
+
+                        <div style="background: linear-gradient(135deg, #a5f3fc, #67e8f9); padding: var(--space-6); border-radius: var(--radius-lg); border: 1px solid #22d3ee; margin-bottom: var(--space-6);">
+                            <h4 style="font-size: var(--text-base); font-weight: 700; color: #0e7490; margin-bottom: var(--space-3); display: flex; align-items: center;">
+                                <i class="fas fa-user-check" style="margin-right: var(--space-2);"></i>
+                                こんな方におすすめ
+                            </h4>
+                            <ul style="list-style: none; padding: 0; margin: 0; font-size: var(--text-sm); color: #0e7490);">
+                                <li style="padding: var(--space-1) 0; display: flex; align-items: center;">
+                                    <i class="fas fa-angle-right" style="margin-right: var(--space-2); color: #06b6d4;"></i>
+                                    プログラミング不要で完成品が欲しい
+                                </li>
+                                <li style="padding: var(--space-1) 0; display: flex; align-items: center;">
+                                    <i class="fas fa-angle-right" style="margin-right: var(--space-2); color: #06b6d4;"></i>
+                                    複雑なシステムを定期的に開発したい
+                                </li>
+                                <li style="padding: var(--space-1) 0; display: flex; align-items: center;">
+                                    <i class="fas fa-angle-right" style="margin-right: var(--space-2); color: #06b6d4;"></i>
+                                    専属チームが欲しいが予算は抑えたい
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div style="background: rgba(6, 182, 212, 0.1); padding: var(--space-3); border-radius: var(--radius); border-left: 3px solid #06b6d4; margin-top: var(--space-6); margin-bottom: var(--space-4);">
+                            <p style="color: #0e7490; margin: 0; font-size: var(--text-xs);">
+                                <i class="fas fa-info-circle" style="font-size: 12px; margin-right: var(--space-1);"></i>
+                                ※3ヶ月契約（最低利用期間）
+                            </p>
+                        </div>
+
+                        <div style="background: #fef2f2; padding: var(--space-4); border-radius: var(--radius-lg); border-left: 4px solid #ef4444; margin-bottom: var(--space-6);">
+                            <p style="color: #991b1b; margin: 0; font-size: var(--text-sm); display: flex; flex-direction: column; gap: var(--space-2);">
+                                <span style="display: flex; align-items: start; gap: var(--space-2);">
+                                    <i class="fas fa-exclamation-triangle" style="margin-top: 2px;"></i>
+                                    <strong>納期について</strong>
+                                </span>
+                                <span style="font-size: var(--text-xs); line-height: 1.6;">
+                                    • 1プロジェクトずつ順次対応<br>
+                                    • 追加チャージ（5万円/件）で納期短縮・同時進行が可能<br>
+                                    • チャージは都度払いで柔軟に対応
+                                </span>
+                            </p>
+                        </div>
+
+                        <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn" style="width: 100%; font-size: var(--text-lg); padding: var(--space-4); background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; border: none;" target="_blank" rel="noopener noreferrer">
+                            <i class="fab fa-line"></i>
+                            このプランで始める
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Testimonials -->
     <section class="testimonials" id="testimonials">
         <div class="container">
@@ -882,7 +1149,7 @@
                         </div>
                         <div class="testimonial-info">
                             <div class="testimonial-name">小池寛人 様</div>
-                            <div class="testimonial-role">株式会社リバイラル 代表取締役</div>
+                            <div class="testimonial-role">株式会社リバイバル 代表取締役</div>
                         </div>
                     </div>
                 </div>
@@ -1108,7 +1375,7 @@
     </a>
     
     <!-- Scripts -->
-    <script src="/js/main.js"></script>
+    <script src="js/main.js"></script>
     
     <!-- Initialize Phosphor Icons -->
     <script>

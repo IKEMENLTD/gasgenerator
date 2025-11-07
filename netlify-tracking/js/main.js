@@ -39,22 +39,22 @@ function initLoadingScreen() {
             loadingBar.style.width = '100%';
         }
     }, 100);
-    
-    // Hide loading screen after 4 seconds
+
+    // Hide loading screen after 1.5 seconds (短縮)
     setTimeout(() => {
         if (loadingScreen) {
-            loadingScreen.style.transition = 'opacity 0.8s ease';
+            loadingScreen.style.transition = 'opacity 0.5s ease';
             loadingScreen.style.opacity = '0';
-            
+
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
                 // Pause loading video to save resources
                 if (loadingVideo) {
                     loadingVideo.pause();
                 }
-            }, 800);
+            }, 500);
         }
-    }, 4000);
+    }, 1500);
 }
 
 // Smooth Scroll
