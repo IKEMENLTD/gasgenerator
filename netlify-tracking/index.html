@@ -492,14 +492,14 @@
                 
                 <div>
                     <!-- 動画デモ -->
-                    <div class="demo-video-container" style="background: white; border-radius: var(--radius-xl); overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12);">
+                    <div class="demo-video-container" style="background: linear-gradient(135deg, #f0fdf4, #dbeafe); border-radius: var(--radius-xl); overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12); padding: var(--space-4);">
                         <video
                             controls
                             autoplay
                             muted
                             loop
                             playsinline
-                            style="width: 100%; height: auto; display: block;"
+                            style="width: 100%; height: auto; display: block; border-radius: var(--radius-lg); box-shadow: 0 4px 16px rgba(0,0,0,0.1);"
                         >
                             <source src="images/demo.mp4" type="video/mp4">
                             お使いのブラウザは動画再生に対応していません。
@@ -888,7 +888,7 @@
                 </p>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: var(--space-8); max-width: 1200px; margin: 0 auto;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 1fr)); gap: var(--space-8); max-width: 1200px; margin: 0 auto;">
                 <!-- ビジネスプラン詳細 -->
                 <div class="plan-detail-card feature-card fade-in" style="background: white; border: 2px solid var(--primary-500); position: relative; overflow: visible;">
                     <div style="position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--primary-500), var(--primary-600)); color: white; padding: var(--space-2) var(--space-6); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
