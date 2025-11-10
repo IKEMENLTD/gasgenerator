@@ -483,19 +483,20 @@ export function createCodeShareMessage(shareUrl: string, title: string, expiresI
 
 /**
  * コード生成待ち時間にブログ記事へ誘導するカルーセルメッセージ
+ * 3つの異なる記事を紹介
  */
 export function createWaitingTimeCarousel(): Message {
   return {
     type: 'template',
-    altText: '【待ち時間に読む】エラー10回は普通です｜ベテランエンジニアも毎日エラーと戦っている現実',
+    altText: '【待ち時間に読む】プログラミング初心者向けの記事をご紹介',
     template: {
       type: 'carousel',
       columns: [
         {
           thumbnailImageUrl: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1024&h=1024&fit=crop',
           imageBackgroundColor: '#FFFFFF',
-          title: 'エラーは失敗じゃない！',
-          text: 'プログラミング初心者が陥る「自分には才能がない」という誤解を解消',
+          title: 'エラー10回は普通です',
+          text: 'ベテランエンジニアも毎日エラーと戦っている。エラーは学習の道しるべ',
           actions: [
             {
               type: 'uri',
@@ -507,26 +508,26 @@ export function createWaitingTimeCarousel(): Message {
         {
           thumbnailImageUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1024&h=1024&fit=crop',
           imageBackgroundColor: '#FFFFFF',
-          title: '10〜20回は普通です',
-          text: 'ベテランエンジニアも毎日エラーと戦っている。エラーは学習の道しるべ',
+          title: 'もうダメだと思ったあなたへ',
+          text: 'エラーが怖い？大丈夫、誰もが通る道です。初心者が知るべき真実',
           actions: [
             {
               type: 'uri',
               label: '詳しく見る',
-              uri: 'https://blog.taskmateai.net/posts/beginner-error-ten-times-normal/'
+              uri: 'https://blog.taskmateai.net/posts/beginner-error-mindset-first-truth/'
             }
           ]
         },
         {
           thumbnailImageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1024&h=1024&fit=crop',
           imageBackgroundColor: '#FFFFFF',
-          title: 'TaskMateが解決',
-          text: '日本語で要望を送るだけ。エラー対応も自動サポートで安心',
+          title: '完璧なコードは不要',
+          text: '動けばOK！事務職が始める業務自動化の新常識',
           actions: [
             {
               type: 'uri',
               label: '使い方を見る',
-              uri: 'https://blog.taskmateai.net/posts/beginner-error-ten-times-normal/'
+              uri: 'https://blog.taskmateai.net/posts/beginner-perfect-code-myth/'
             }
           ]
         }
