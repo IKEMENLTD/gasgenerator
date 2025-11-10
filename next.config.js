@@ -12,6 +12,27 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@line/bot-sdk'],
   },
+  // Rewrite rules to ensure Next.js routes work correctly
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // Ensure /demo routes to Next.js app router, not public/index.html
+        {
+          source: '/demo',
+          destination: '/demo',
+        },
+        {
+          source: '/demo/:path*',
+          destination: '/demo/:path*',
+        },
+        // Ensure API routes work
+        {
+          source: '/api/:path*',
+          destination: '/api/:path*',
+        },
+      ],
+    }
+  },
   webpack: (config, { isServer }) => {
     // Renderのビルド環境でのパス解決を修正
     config.resolve.alias = {
