@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LineApiClient } from '../../../lib/line/client'
-import { MessageTemplates } from '../../../lib/line/message-templates'
+import { MessageTemplates, createWaitingTimeCarousel } from '../../../lib/line/message-templates'
 import { QueueManager } from '../../../lib/queue/manager'
 import { UserQueries } from '../../../lib/supabase/queries'
 import { PremiumChecker } from '../../../lib/premium/premium-checker'
@@ -1304,10 +1304,15 @@ async function startCodeGeneration(
     }, 2000) // 2秒後に処理開始
 
     // 確認メッセージを送信
-    await lineClient.replyMessage(replyToken, [{
-      type: 'text',
-      text: '🚀 コード生成を開始しました！\n\n⏰ 2-3分で完成します\n完了したら自動通知でお知らせします'
-    }])
+    await lineClient.replyMessage(replyToken, [
+      {
+        type: 'text',
+        text: '🚀 コード生成を開始しました！\n\n⏰ 2-3分で完成します\n完了したら自動通知でお知らせします\n\n📖 待ち時間にこちらの記事もどうぞ ↓'
+      },
+      createWaitingTimeCarousel()
+    ])
+
+    logger.info('Code generation started with waiting time carousel', { userId, jobId: job.id })
     
   } catch (error) {
     logger.error('Queue error', { error })
