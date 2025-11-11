@@ -1,24 +1,14 @@
 #!/bin/bash
-
-# GitHubにプッシュするスクリプト
-echo "🚀 Pushing to GitHub..."
-
-# 現在のブランチ名を取得
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-echo "📌 Current branch: $BRANCH"
-echo "📦 Latest commit:"
-git log -1 --oneline
-
+echo "========================================="
+echo "Git Push Helper"
+echo "========================================="
 echo ""
-echo "⚠️  手動でプッシュしてください:"
+echo "Please run the following command:"
 echo ""
-echo "1. GitHubにログイン"
-echo "2. 以下のコマンドを実行:"
+echo "git push"
 echo ""
-echo "   git push origin $BRANCH"
+echo "If asked for credentials, enter your GitHub Personal Access Token as password"
 echo ""
-echo "または、GitHub Desktop/SourceTreeなどのGUIツールを使用してください。"
+echo "Or use:"
+echo "git push https://YOUR_TOKEN@github.com/IKEMENLTD/gasgenerator.git main"
 echo ""
-echo "📝 最新のコミット:"
-git log -3 --oneline

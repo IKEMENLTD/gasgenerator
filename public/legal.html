@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特定商取引法に基づく表記 | TaskMate（タスクメイト）</title>
+    <meta name="description" content="TaskMateの特定商取引法に基づく表記">
+    
+    <!-- ファビコン -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- スタイルシート -->
+    <link rel="stylesheet" href="/css/styles.css">
+    
+    <!-- フォント -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VDT2MSCZ6N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-VDT2MSCZ6N');
+    </script>
+
+    <style>
+        .legal-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-8) var(--space-6);
+        }
+        
+        @media (max-width: 768px) {
+            .legal-container {
+                padding: var(--space-6) var(--space-4);
+            }
+        }
+        
+        @media (max-width: 425px) {
+            .legal-container {
+                padding: var(--space-4) var(--space-3);
+            }
+        }
+        
+        @media (max-width: 375px) {
+            .legal-container {
+                padding: var(--space-3) var(--space-2);
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .legal-container {
+                padding: var(--space-2) var(--space-1);
+            }
+        }
+        
+        .legal-section {
+            margin-bottom: var(--space-8);
+        }
+        
+        .legal-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: var(--space-4);
+        }
+        
+        .legal-table th,
+        .legal-table td {
+            border: 1px solid var(--gray-200);
+            padding: var(--space-4);
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        @media (max-width: 768px) {
+            .legal-table th,
+            .legal-table td {
+                padding: var(--space-3);
+                font-size: var(--text-sm);
+            }
+        }
+        
+        @media (max-width: 425px) {
+            .legal-table th,
+            .legal-table td {
+                padding: var(--space-2);
+                font-size: calc(var(--text-xs) + 0.1rem);
+            }
+        }
+        
+        @media (max-width: 375px) {
+            .legal-table th,
+            .legal-table td {
+                padding: var(--space-1);
+                font-size: var(--text-xs);
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .legal-table th,
+            .legal-table td {
+                padding: 4px;
+                font-size: calc(var(--text-xs) - 0.05rem);
+                word-wrap: break-word;
+            }
+        }
+        
+        .legal-table th {
+            background: var(--primary-50);
+            font-weight: 600;
+            width: 30%;
+        }
+        
+        .legal-table td {
+            background: var(--white);
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+            color: white;
+            margin-top: 80px;
+            padding: var(--space-16) 0;
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: var(--text-3xl);
+            margin-bottom: var(--space-4);
+        }
+        
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: var(--text-2xl);
+                margin-bottom: var(--space-3);
+            }
+        }
+        
+        @media (max-width: 425px) {
+            .page-title {
+                font-size: var(--text-xl);
+                margin-bottom: var(--space-2);
+            }
+        }
+        
+        @media (max-width: 375px) {
+            .page-title {
+                font-size: calc(var(--text-lg) + 0.2rem);
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .page-title {
+                font-size: var(--text-lg);
+                padding: 0 var(--space-2);
+                word-wrap: break-word;
+            }
+        }
+        
+        .breadcrumb {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-2);
+            font-size: var(--text-sm);
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .breadcrumb a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            color: var(--white);
+        }
+        
+        @media (max-width: 768px) {
+            .legal-table th {
+                width: 40%;
+            }
+            
+            .page-header {
+                padding: var(--space-12) 0;
+            }
+        }
+        
+        @media (max-width: 425px) {
+            .legal-table th {
+                width: 45%;
+            }
+            
+            .page-header {
+                padding: var(--space-10) 0;
+            }
+        }
+        
+        @media (max-width: 375px) {
+            .legal-table th {
+                width: 50%;
+            }
+            
+            .page-header {
+                padding: var(--space-8) 0;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .legal-table,
+            .legal-table tbody,
+            .legal-table tr,
+            .legal-table td,
+            .legal-table th {
+                display: block;
+            }
+            
+            .legal-table tr {
+                border: 1px solid var(--gray-200);
+                border-radius: var(--radius);
+                margin-bottom: var(--space-4);
+                padding: var(--space-4);
+                background: white;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            .legal-table th {
+                background: none;
+                font-weight: 700;
+                color: var(--primary-700);
+                margin-bottom: var(--space-2);
+                border: none;
+                padding: 0;
+                width: auto;
+                font-size: var(--text-base);
+            }
+            
+            .legal-table td {
+                border: none;
+                padding: 0;
+                padding-left: var(--space-2);
+                word-wrap: break-word;
+                font-size: var(--text-sm);
+                line-height: 1.6;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .page-header {
+                padding: var(--space-6) 0;
+            }
+            
+            .legal-table th {
+                font-size: var(--text-sm);
+            }
+            
+            .legal-table td {
+                font-size: var(--text-xs);
+                padding-left: var(--space-1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ヘッダー -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <img src="images/logo.png" alt="TaskMate" class="logo-image">
+                    <span class="logo-text">TaskMate</span>
+                </a>
+                <nav class="nav-menu">
+                    <a href="/" class="nav-link">ホーム</a>
+                    <a href="/#pricing" class="nav-link">料金プラン</a>
+                    <a href="/#contact" class="nav-link">お問い合わせ</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- ページヘッダー -->
+    <div class="page-header">
+        <div class="container">
+            <h1 class="page-title">特定商取引法に基づく表記</h1>
+            <nav class="breadcrumb">
+                <a href="/">ホーム</a>
+                <span>/</span>
+                <span>特定商取引法に基づく表記</span>
+            </nav>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <main class="legal-container">
+        <section class="legal-section">
+            <p style="margin-bottom: var(--space-6);">
+                「特定商取引に関する法律」第11条に基づき、以下のとおり表記いたします。
+            </p>
+            
+            <table class="legal-table">
+                <tbody>
+                    <tr>
+                        <th>販売事業者名</th>
+                        <td>株式会社イケメン</td>
+                    </tr>
+                    <tr>
+                        <th>代表者名</th>
+                        <td>代表取締役　沼倉 隆平</td>
+                    </tr>
+                    <tr>
+                        <th>所在地</th>
+                        <td>
+                            〒141-0032<br>
+                            東京都品川区大崎4丁目4-24
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>電話番号</th>
+                        <td>
+                            050-8890-8975<br>
+                            ※お問い合わせはメールにてお願いいたします
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>メールアドレス</th>
+                        <td>info@ikemen.ltd</td>
+                    </tr>
+                    <tr>
+                        <th>ホームページURL</th>
+                        <td>https://taskmate.jp/</td>
+                    </tr>
+                    <tr>
+                        <th>サービス名称</th>
+                        <td>タスクメイト（Google Apps Script業務自動化サービス）</td>
+                    </tr>
+                    <tr>
+                        <th>販売価格</th>
+                        <td>
+                            ・お試し診断：無料<br>
+                            ・ビジネスプラン：月額10,000円（税別）<br>
+                            ・プロフェッショナルプラン：月額25,000円（税別）<br>
+                            ・エンタープライズプラン：月額40,000円〜（税別）<br>
+                            ※詳細は<a href="/#pricing" style="color: var(--green-600);">料金プランページ</a>をご確認ください
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>商品代金以外の必要料金</th>
+                        <td>
+                            ・消費税<br>
+                            ・初期設定費用：無料（キャンペーン期間中）<br>
+                            ・カスタマイズ費用：別途見積もり
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>お支払い方法</th>
+                        <td>
+                            ・銀行振込（前払い）<br>
+                            ・クレジットカード決済（VISA、MasterCard、JCB、AMEX、Diners）<br>
+                            ・請求書払い（法人のみ、審査あり）
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>お支払い期限</th>
+                        <td>
+                            ・銀行振込：ご請求書発行日より7営業日以内<br>
+                            ・クレジットカード：即時決済<br>
+                            ・請求書払い：月末締め翌月末払い
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>サービス提供時期</th>
+                        <td>
+                            ・お申し込み後、5営業日以内にヒアリング実施<br>
+                            ・ヒアリング後、10営業日以内に初期設定完了<br>
+                            ・サービス開始日は双方協議の上決定
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>返品・キャンセルについて</th>
+                        <td>
+                            ・サービスの性質上、返品は承っておりません<br>
+                            ・初回ヒアリング前：キャンセル料無料<br>
+                            ・設計開始後：月額料金の50%<br>
+                            ・サービス開始後：当月分は返金不可<br>
+                            ※翌月以降の解約は、前月20日までにお申し出ください
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>動作環境</th>
+                        <td>
+                            ・Google Workspace（旧G Suite）アカウントが必要<br>
+                            ・推奨ブラウザ：Google Chrome最新版<br>
+                            ・インターネット接続環境必須
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>免責事項</th>
+                        <td>
+                            ・Google社のサービス変更による影響は保証対象外<br>
+                            ・お客様の操作ミスによる損害は補償いたしません<br>
+                            ・効果には個人差があります
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>個人情報の取り扱い</th>
+                        <td>
+                            お客様の個人情報は、当社の<a href="/privacy" style="color: var(--green-600);">プライバシーポリシー</a>に基づき、適切に管理いたします。
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>事業者の連絡先</th>
+                        <td>
+                            株式会社イケメン カスタマーサポート<br>
+                            メール：info@ikemen.ltd<br>
+                            営業時間：平日10:00〜18:00（土日祝日を除く）
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section class="legal-section">
+            <h2 style="margin-bottom: var(--space-4);">改定履歴</h2>
+            <ul style="list-style: none; padding: 0;">
+                <li style="padding: var(--space-2) 0;">2024年8月2日：初版制定</li>
+            </ul>
+        </section>
+        
+        <div style="text-align: center; margin-top: var(--space-12);">
+            <a href="/" class="btn btn-secondary">
+                トップページに戻る
+            </a>
+        </div>
+    </main>
+
+    <!-- フッター -->
+    <footer style="background: var(--green-950); color: var(--white); padding: var(--space-12) 0; margin-top: var(--space-20);">
+        <div class="container">
+            <div class="text-center">
+                <p style="margin-bottom: var(--space-4);">タスクメイト - Google Apps Script業務自動化サービス</p>
+                <p style="font-size: var(--text-sm); opacity: 0.8;">
+                    &copy; 2024 株式会社イケメン All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
