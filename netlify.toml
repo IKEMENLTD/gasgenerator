@@ -1,6 +1,6 @@
 # Netlify Configuration for TaskMate
 [build]
-  command = "npm run build"
+  command = "npm run build && cp -r public .next/public"
   publish = ".next"
 
 [build.environment]
