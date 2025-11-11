@@ -89,10 +89,63 @@ Netlifyの`publish = ".next"`設定では、プロジェクトルートの他の
 
 ### 関連コミット
 
-- `4b186d4`: **最終的な修正コミット（成功）**
+- `4b186d4`: **最終的な修正コミット（失敗）** - public/agencyにコピーしたがデプロイされず
 - `0b83c4b`: リダイレクト試行（失敗）
 - `e924c56`: public/agency/を削除したコミット（問題の原因）
 - `d425e23`: public/netlify.tomlを削除したコミット
+
+### 追記: 実際の根本原因が判明（2025-11-11 19:53）
+
+**上記の修正（コミット4b186d4）でも404エラーが継続していた。**
+
+#### 真の根本原因
+
+**Netlifyの`publish = ".next"`設定**が問題だった。
+
+1. Next.jsは`public`ディレクトリを`.next`にコピーしない（仕様）
+2. `public`のファイルは実行時にNext.jsサーバーが直接提供する
+3. しかしNetlifyは`.next`ディレクトリ**のみ**をpublish
+4. 結果: `public/agency/`がデプロイに含まれず404エラー
+
+#### 最終的な解決策（コミットb7a695f）
+
+**netlify.tomlのbuildコマンドを変更**:
+
+```toml
+# 変更前
+command = "npm run build"
+
+# 変更後
+command = "npm run build && cp -r public .next/public"
+```
+
+これにより、ビルド後に`public`ディレクトリが`.next/public`にコピーされ、Netlifyが`.next`をpublishする際に`agency`ファイルも含まれる。
+
+#### 検証結果
+
+```bash
+$ ls -la .next/public/agency/
+dashboard.js (65,952 bytes)
+index.html (140,015 bytes)
+privacy.html
+reset-password.html
+simple-reset.html
+terms.html
+xss-protection.js
+```
+
+すべてのファイルが`.next/public/agency/`に正常にコピーされた。
+
+#### 学んだこと（重要）
+
+- **Next.jsの`public`ディレクトリは`.next`にコピーされない**（仕様）
+- Netlifyで`publish = ".next"`を使う場合、`public`を手動でコピーする必要がある
+- この問題はNext.jsの仕様とNetlifyの設定の組み合わせによるもの
+- ログを確認せずに推測で修正すると時間がかかる
+
+#### 最終コミット
+
+- `b7a695f`: **真の根本原因を解決（これで成功するはず）**
 
 ---
 
