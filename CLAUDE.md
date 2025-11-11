@@ -20,6 +20,82 @@ Claude Codeを利用する際は、必ず以下のルールを守ってくださ
 
 ---
 
+## 2025-11-11: 代理店管理画面（/agency）のアクセス復旧（最終解決）
+
+### 問題
+
+コミット`e924c56`（2025-11-11 11:10）で`public/agency/`ディレクトリが削除されたため、`https://agency.ikemen.ltd/agency/`にアクセスしても代理店管理画面（紹介リンクを含む）が表示されなくなった。
+
+### 原因分析
+
+1. Next.jsのルーティング競合を解決するため、`public/agency/`が削除された
+2. 代理店管理画面のファイルは`netlify-tracking/agency/`に存在していた
+3. しかし、**Netlifyのpublish設定が`.next`だったため、netlify-tracking/のファイルがデプロイされていなかった**
+4. リダイレクト設定だけでは不十分（ファイルが存在しないため404エラー）
+
+### 修正の試行錯誤
+
+**第1回目（コミット0b83c4b）**: netlify.tomlにリダイレクト設定を追加
+- 結果: 404エラー継続
+- 理由: publish = ".next"の設定により、netlify-tracking/のファイルがデプロイに含まれていなかった
+
+**第2回目（コミット4b186d4）**: public/agency/にファイルをコピー
+- 結果: **成功** ✅
+- 理由: Next.jsはpublicディレクトリのファイルを自動的に.nextビルドに含めるため
+
+### 最終的な解決策
+
+**アプローチ**: `netlify-tracking/agency/`のすべてのファイルを`public/agency/`にコピー
+
+**コピーしたファイル**:
+- dashboard.js (65,952 bytes)
+- index.html (140,015 bytes)
+- privacy.html
+- terms.html
+- reset-password.html
+- simple-reset.html
+- xss-protection.js
+
+**netlify.toml変更**: リダイレクト設定を削除（不要になった）
+
+### デプロイ方法
+
+```bash
+# ファイルをコピー
+cp -r netlify-tracking/agency/* public/agency/
+
+# コミット
+git add public/agency netlify.toml
+git commit -m "Fix: Restore agency dashboard by copying to public/agency/"
+git push origin main
+```
+
+### 効果
+
+- `https://agency.ikemen.ltd/agency/` で代理店管理画面が正常に表示される
+- ログイン画面、ダッシュボード、**紹介リンク**などがすべて動作する
+- Next.jsのpublicディレクトリ経由で自動的にデプロイされる
+
+### 技術的な決定事項
+
+- **public/agency/を復元**：コミットe924c56で削除されていたが、再度追加
+- **netlify-trackingではなくpublicを使用**：Next.jsビルドシステムとの互換性
+- **リダイレクト不要**：publicディレクトリのファイルは自動的に提供される
+- **今後の管理方針**：public/agency/とnetlify-tracking/agency/の両方を同期して管理
+
+### 学んだこと
+
+Netlifyの`publish = ".next"`設定では、プロジェクトルートの他のディレクトリ（netlify-tracking/等）は自動的にデプロイされない。Next.jsの`public`ディレクトリのみが`.next`ビルドに含まれる。
+
+### 関連コミット
+
+- `4b186d4`: **最終的な修正コミット（成功）**
+- `0b83c4b`: リダイレクト試行（失敗）
+- `e924c56`: public/agency/を削除したコミット（問題の原因）
+- `d425e23`: public/netlify.tomlを削除したコミット
+
+---
+
 ## 2025-11-05: デモサイト実装
 
 ### 要件
