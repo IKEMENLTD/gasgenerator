@@ -10,18 +10,8 @@
   package = "@netlify/plugin-nextjs"
 
 # ===== Redirects =====
-# Agency Dashboard (代理店管理画面)
-[[redirects]]
-  from = "/agency"
-  to = "/netlify-tracking/agency/index.html"
-  status = 200
-  force = false
-
-[[redirects]]
-  from = "/agency/*"
-  to = "/netlify-tracking/agency/:splat"
-  status = 200
-  force = false
+# Agency Dashboard (代理店管理画面) - public/agencyにコピー済み
+# Next.jsのpublicディレクトリから自動的に配信される
 
 [[redirects]]
   from = "/blog"
