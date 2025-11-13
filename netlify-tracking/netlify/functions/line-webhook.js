@@ -62,9 +62,10 @@ exports.handler = async (event, context) => {
         console.log('=== Netlify Webhook処理開始 ===');
         console.log('Events count:', events.length);
 
-        for (const event of events) {
-            console.log('Processing event type:', event.type);
-            await processLineEvent(event);
+        for (const lineEvent of events) {
+            console.log('Processing event type:', lineEvent.type);
+            // クライアント情報をイベントに追加（スコアリングマッチング用）
+            await processLineEvent(lineEvent, event.headers);
         }
 
         // メッセージ・フォロー・アンフォローイベント処理（Renderに転送）
@@ -123,17 +124,17 @@ function verifySignature(body, signature) {
 }
 
 // Process individual LINE events
-async function processLineEvent(event) {
+async function processLineEvent(event, headers) {
     try {
         switch (event.type) {
             case 'follow':
-                await handleFollowEvent(event);
+                await handleFollowEvent(event, headers);
                 break;
             case 'unfollow':
                 await handleUnfollowEvent(event);
                 break;
             case 'message':
-                await handleMessageEvent(event);
+                await handleMessageEvent(event, headers);
                 break;
             default:
                 console.log('Unhandled event type:', event.type);
@@ -144,12 +145,18 @@ async function processLineEvent(event) {
 }
 
 // Handle follow events (user adds bot as friend)
-async function handleFollowEvent(event) {
+async function handleFollowEvent(event, headers) {
     const userId = event.source.userId;
 
     try {
         console.log('=== FOLLOW EVENT 受信 ===');
         console.log('LINE User ID:', userId);
+
+        // クライアント情報を取得（スコアリングマッチング用）
+        const clientIp = headers['x-forwarded-for'] || headers['client-ip'] || '';
+        const userAgent = headers['user-agent'] || '';
+        console.log('📍 Client IP:', clientIp);
+        console.log('🖥️  User-Agent:', userAgent?.substring(0, 100) + '...');
 
         // Get user profile from LINE API
         const userProfile = await getLineUserProfile(userId);
@@ -268,7 +275,7 @@ async function handleFollowEvent(event) {
             }
 
             // Try to link with recent tracking visit (新規友達として記録)
-            await linkUserToTracking(userId, userId, 'new_friend');
+            await linkUserToTracking(userId, userId, clientIp, userAgent, 'new_friend');
         }
 
         // ⚠️ Netlify側ではメッセージ送信は行わない（Render側のみが送信）
@@ -293,8 +300,12 @@ async function handleUnfollowEvent(event) {
 }
 
 // Handle message events
-async function handleMessageEvent(event) {
+async function handleMessageEvent(event, headers) {
     const userId = event.source.userId;
+
+    // クライアント情報を取得
+    const clientIp = headers?.['x-forwarded-for'] || headers?.['client-ip'] || '';
+    const userAgent = headers?.['user-agent'] || '';
 
     try {
         // Get user profile from LINE API and upsert to line_profiles
@@ -346,55 +357,46 @@ async function handleMessageEvent(event) {
 
         console.log(`✅ ${unlinkedVisits.length}件の未紐付け訪問記録を発見`);
 
-        // すべての未紐付け訪問記録に紐付け（既存友達として記録）
-        let successCount = 0;
-        let errorCount = 0;
+        // 🆕 既存友達用の簡易スコアリング（最も最近の1件のみ紐付け）
+        // followイベントと違い、クライアント情報が信頼できないため時間のみで判定
+        const mostRecentVisit = unlinkedVisits[0];  // 既にcreated_at降順でソート済み
 
-        for (const visit of unlinkedVisits) {
-            try {
-                const currentMetadata = visit.metadata || {};
+        try {
+            const currentMetadata = mostRecentVisit.metadata || {};
 
-                const { error: updateError } = await supabase
-                    .from('agency_tracking_visits')
-                    .update({
-                        line_user_id: userId,
-                        metadata: {
-                            ...currentMetadata,
-                            friend_type: 'existing_friend',
-                            linked_at: new Date().toISOString()
-                        }
-                    })
-                    .eq('id', visit.id);
+            const { error: updateError } = await supabase
+                .from('agency_tracking_visits')
+                .update({
+                    line_user_id: userId,
+                    metadata: {
+                        ...currentMetadata,
+                        friend_type: 'existing_friend',
+                        linked_at: new Date().toISOString(),
+                        match_method: 'message_event'
+                    }
+                })
+                .eq('id', mostRecentVisit.id)
+                .is('line_user_id', null);  // 既に紐付けられていたら更新しない
 
-                if (updateError) {
-                    console.error(`❌ Visit ${visit.id} の更新に失敗:`, updateError);
-                    errorCount++;
-                } else {
-                    successCount++;
+            if (updateError) {
+                console.error(`❌ Visit ${mostRecentVisit.id} の更新に失敗:`, updateError);
+            } else {
+                console.log(`✅ 最新の訪問記録 ${mostRecentVisit.id} を既存友達に紐付けました`);
 
-                    // コンバージョン記録も作成
-                    const sessionData = {
-                        id: null, // セッションIDがない場合
-                        agency_id: visit.agency_id,
-                        tracking_link_id: visit.tracking_link_id,
-                        visit_id: visit.id
-                    };
+                // コンバージョン記録も作成
+                const sessionData = {
+                    id: null, // セッションIDがない場合
+                    agency_id: mostRecentVisit.agency_id,
+                    tracking_link_id: mostRecentVisit.tracking_link_id,
+                    visit_id: mostRecentVisit.id
+                };
 
-                    await createAgencyLineConversion(sessionData, userId, userId).catch(err => {
-                        console.error(`❌ Visit ${visit.id} のコンバージョン記録作成に失敗:`, err);
-                    });
-                }
-            } catch (error) {
-                console.error(`❌ Visit ${visit.id} の処理中にエラー:`, error);
-                errorCount++;
+                await createAgencyLineConversion(sessionData, userId, userId).catch(err => {
+                    console.error(`❌ Visit ${mostRecentVisit.id} のコンバージョン記録作成に失敗:`, err);
+                });
             }
-        }
-
-        if (successCount > 0) {
-            console.log(`✅ ${successCount}件の訪問記録を既存友達に紐付けました`);
-        }
-        if (errorCount > 0) {
-            console.error(`⚠️ ${errorCount}件の紐付けに失敗しました`);
+        } catch (error) {
+            console.error(`❌ Visit ${mostRecentVisit.id} の処理中にエラー:`, error);
         }
 
         // ⚠️ Netlify側ではメッセージ返信は行わない（Render側のみが返信）
@@ -429,9 +431,10 @@ async function getLineUserProfile(userId) {
 }
 
 // Link user to recent tracking visit with enhanced agency attribution
-async function linkUserToTracking(lineUserId, userId, friendType = 'new_friend') {
+async function linkUserToTracking(lineUserId, userId, clientIp, userAgent, friendType = 'new_friend') {
     try {
         console.log(`🔗 訪問記録紐付け開始 - User: ${lineUserId}, Type: ${friendType}`);
+        console.log(`📍 Client IP: ${clientIp}, UA: ${userAgent?.substring(0, 50)}...`);
         // First, try to find an active session for this user
         const { data: activeSession, error: sessionError } = await supabase
             .from('user_sessions')
@@ -483,16 +486,17 @@ async function linkUserToTracking(lineUserId, userId, friendType = 'new_friend')
         // Fallback to old method for backward compatibility
         // 🔧 時間制限を1時間 → 24時間に延長（2025-11-13）
         const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const followTime = new Date();
         console.log(`🔍 訪問記録検索: ${oneDayAgo} 以降, line_user_id=NULL`);
 
-        // Try agency_tracking_visits first
+        // Try agency_tracking_visits first - 候補を多めに取得してスコアリング
         const { data: agencyVisits, error: agencyError } = await supabase
             .from('agency_tracking_visits')
             .select('*')
             .is('line_user_id', null)
             .gte('created_at', oneDayAgo)
             .order('created_at', { ascending: false })
-            .limit(5);
+            .limit(20);  // 候補を20件に増やす
 
         // 🔧 検索エラーのログ追加（2025-11-13）
         if (agencyError) {
@@ -500,17 +504,76 @@ async function linkUserToTracking(lineUserId, userId, friendType = 'new_friend')
         } else if (!agencyVisits || agencyVisits.length === 0) {
             console.log(`⚠️ 紐付け可能な訪問記録が見つかりませんでした (過去24時間, line_user_id=NULL)`);
         } else {
-            console.log(`✅ ${agencyVisits.length}件の訪問記録を検出`);
+            console.log(`✅ ${agencyVisits.length}件の訪問記録を候補として検出`);
         }
 
         if (!agencyError && agencyVisits && agencyVisits.length > 0) {
-            // Link all recent visits to this user (not just the first one)
-            // メタデータに友達タイプを記録
-            let successCount = 0;
-            let failCount = 0;
+            // 🆕 スコアリングマッチング（2025-11-13）
+            let bestMatch = { visit: null, score: 0, reasons: [] };
 
             for (const visit of agencyVisits) {
-                const currentMetadata = visit.metadata || {};
+                let score = 0;
+                let reasons = [];
+
+                // IP一致 (40点)
+                if (clientIp && visit.visitor_ip && visit.visitor_ip === clientIp) {
+                    score += 40;
+                    reasons.push('IP一致(+40)');
+                }
+
+                // User-Agent一致 (30点)
+                if (userAgent && visit.user_agent && visit.user_agent === userAgent) {
+                    score += 30;
+                    reasons.push('UA一致(+30)');
+                }
+
+                // 時間近接度 (最大20点)
+                const timeDiff = Math.abs(followTime - new Date(visit.created_at));
+                const minutes = timeDiff / (60 * 1000);
+
+                if (minutes < 5) {
+                    score += 20;
+                    reasons.push('5分以内(+20)');
+                } else if (minutes < 15) {
+                    score += 15;
+                    reasons.push('15分以内(+15)');
+                } else if (minutes < 30) {
+                    score += 10;
+                    reasons.push('30分以内(+10)');
+                } else if (minutes < 60) {
+                    score += 5;
+                    reasons.push('1時間以内(+5)');
+                }
+
+                // デバイスタイプ一致 (10点)
+                if (userAgent && visit.user_agent) {
+                    const currentDeviceType = getUserDeviceType(userAgent);
+                    const visitDeviceType = visit.device_type;
+                    if (currentDeviceType === visitDeviceType && currentDeviceType !== 'unknown') {
+                        score += 10;
+                        reasons.push(`デバイス一致:${currentDeviceType}(+10)`);
+                    }
+                }
+
+                if (score > bestMatch.score) {
+                    bestMatch = { visit, score, reasons };
+                }
+
+                console.log(`📊 Visit ${visit.id}: スコア=${score}, 理由=[${reasons.join(', ')}]`);
+            }
+
+            // 閾値判定（最低50点以上）
+            const THRESHOLD = 50;
+
+            if (bestMatch.score < THRESHOLD) {
+                console.log(`❌ 紐付け失敗: 最高スコア=${bestMatch.score} < 閾値=${THRESHOLD}`);
+                console.log(`   候補数=${agencyVisits.length}件, 全てスコア不足`);
+            } else {
+                console.log(`✅ ベストマッチ検出: Visit ${bestMatch.visit.id}, スコア=${bestMatch.score}`);
+                console.log(`   理由: ${bestMatch.reasons.join(', ')}`);
+
+                // 🆕 1件のみ紐付け（他のユーザーの記録を守る）
+                const currentMetadata = bestMatch.visit.metadata || {};
                 const { error: updateError } = await supabase
                     .from('agency_tracking_visits')
                     .update({
@@ -518,21 +581,20 @@ async function linkUserToTracking(lineUserId, userId, friendType = 'new_friend')
                         metadata: {
                             ...currentMetadata,
                             friend_type: friendType,
-                            linked_at: new Date().toISOString()
+                            linked_at: new Date().toISOString(),
+                            match_score: bestMatch.score,
+                            match_reasons: bestMatch.reasons
                         }
                     })
-                    .eq('id', visit.id);
+                    .eq('id', bestMatch.visit.id)
+                    .is('line_user_id', null);  // 既に紐付けられていたら更新しない
 
                 if (updateError) {
-                    console.error(`❌ Visit ${visit.id} の更新に失敗:`, updateError);
-                    failCount++;
+                    console.error(`❌ Visit ${bestMatch.visit.id} の更新に失敗:`, updateError);
                 } else {
-                    console.log(`✅ Visit ${visit.id} を LINE user ${lineUserId} に紐付け成功`);
-                    successCount++;
+                    console.log(`🎯 紐付け成功: Visit ${bestMatch.visit.id} ← LINE user ${lineUserId} (スコア=${bestMatch.score})`);
                 }
             }
-
-            console.log(`🎯 紐付け結果: 成功=${successCount}件, 失敗=${failCount}件 (${friendType})`);
         }
 
         // Also check old tracking_visits table
@@ -902,6 +964,20 @@ async function sendAgencyWelcomeMessage(userId, agency) {
     } catch (error) {
         console.error('❌ 代理店ウェルカムメッセージ送信失敗:', error);
     }
+}
+
+// ========================================
+// ヘルパー関数
+// ========================================
+
+// デバイスタイプ判定（User-Agentから）
+function getUserDeviceType(userAgent) {
+    if (!userAgent) return 'unknown';
+
+    if (/mobile/i.test(userAgent)) return 'mobile';
+    if (/tablet/i.test(userAgent)) return 'tablet';
+    if (/bot/i.test(userAgent)) return 'bot';
+    return 'desktop';
 }
 
 // Validate environment variables on cold start
