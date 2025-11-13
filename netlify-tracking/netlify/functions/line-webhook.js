@@ -481,20 +481,34 @@ async function linkUserToTracking(lineUserId, userId, friendType = 'new_friend')
         }
 
         // Fallback to old method for backward compatibility
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        // 🔧 時間制限を1時間 → 24時間に延長（2025-11-13）
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        console.log(`🔍 訪問記録検索: ${oneDayAgo} 以降, line_user_id=NULL`);
 
         // Try agency_tracking_visits first
         const { data: agencyVisits, error: agencyError } = await supabase
             .from('agency_tracking_visits')
             .select('*')
             .is('line_user_id', null)
-            .gte('created_at', oneHourAgo)
+            .gte('created_at', oneDayAgo)
             .order('created_at', { ascending: false })
             .limit(5);
+
+        // 🔧 検索エラーのログ追加（2025-11-13）
+        if (agencyError) {
+            console.error(`❌ agency_tracking_visits 検索エラー:`, agencyError);
+        } else if (!agencyVisits || agencyVisits.length === 0) {
+            console.log(`⚠️ 紐付け可能な訪問記録が見つかりませんでした (過去24時間, line_user_id=NULL)`);
+        } else {
+            console.log(`✅ ${agencyVisits.length}件の訪問記録を検出`);
+        }
 
         if (!agencyError && agencyVisits && agencyVisits.length > 0) {
             // Link all recent visits to this user (not just the first one)
             // メタデータに友達タイプを記録
+            let successCount = 0;
+            let failCount = 0;
+
             for (const visit of agencyVisits) {
                 const currentMetadata = visit.metadata || {};
                 const { error: updateError } = await supabase
@@ -511,24 +525,37 @@ async function linkUserToTracking(lineUserId, userId, friendType = 'new_friend')
 
                 if (updateError) {
                     console.error(`❌ Visit ${visit.id} の更新に失敗:`, updateError);
+                    failCount++;
+                } else {
+                    console.log(`✅ Visit ${visit.id} を LINE user ${lineUserId} に紐付け成功`);
+                    successCount++;
                 }
             }
 
-            console.log(`✅ LINE user ${lineUserId} を ${agencyVisits.length}件の訪問記録に紐付け (${friendType})`);
+            console.log(`🎯 紐付け結果: 成功=${successCount}件, 失敗=${failCount}件 (${friendType})`);
         }
 
         // Also check old tracking_visits table
+        console.log(`🔍 旧tracking_visitsテーブル検索中...`);
         const { data: recentVisits, error } = await supabase
             .from('tracking_visits')
             .select('*')
             .is('line_user_id', null)
-            .gte('visited_at', oneHourAgo)
+            .gte('visited_at', oneDayAgo)
             .order('visited_at', { ascending: false })
             .limit(5);
 
-        if (error || !recentVisits || recentVisits.length === 0) {
+        if (error) {
+            console.error(`❌ tracking_visits 検索エラー:`, error);
             return null;
         }
+
+        if (!recentVisits || recentVisits.length === 0) {
+            console.log(`⚠️ tracking_visits にも紐付け可能な記録なし`);
+            return null;
+        }
+
+        console.log(`✅ tracking_visits で ${recentVisits.length}件検出`);
 
         // Link the most recent visit to this user
         const { error: updateError } = await supabase
@@ -536,8 +563,10 @@ async function linkUserToTracking(lineUserId, userId, friendType = 'new_friend')
             .update({ line_user_id: userId })
             .eq('id', recentVisits[0].id);
 
-        if (!updateError) {
-            console.log(`Linked LINE user ${lineUserId} to visit ${recentVisits[0].id}`);
+        if (updateError) {
+            console.error(`❌ tracking_visits 更新エラー:`, updateError);
+        } else {
+            console.log(`✅ tracking_visits: LINE user ${lineUserId} を visit ${recentVisits[0].id} に紐付け成功`);
         }
 
         return null;
