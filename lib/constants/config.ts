@@ -69,12 +69,12 @@ export const SECURITY_CONFIG = {
 
 // Gemini API設定
 export const GEMINI_CONFIG = {
-  MODEL: process.env.GEMINI_MODEL || 'gemini-3-pro-preview',
+  MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
   MAX_OUTPUT_TOKENS: 8192,
   TEMPERATURE: 0.1,
-  // コスト計算（Gemini 3 Pro料金）
-  COST_PER_INPUT_TOKEN: 0.125 / 1_000_000,
-  COST_PER_OUTPUT_TOKEN: 0.50 / 1_000_000
+  // コスト計算（Gemini 2.5 Flash料金）
+  COST_PER_INPUT_TOKEN: 0.075 / 1_000_000,
+  COST_PER_OUTPUT_TOKEN: 0.30 / 1_000_000
 } as const
 
 // 外部API設定
