@@ -1,5 +1,5 @@
 import { QueueManager } from './manager'
-import { ClaudeApiClient } from '@/lib/claude/client'
+import { aiProvider } from '@/lib/ai/provider'
 import { PromptBuilder } from '@/lib/claude/prompt-builder'
 import { ResponseParser } from '@/lib/claude/response-parser'
 import { ClaudeUsageTracker } from '@/lib/claude/usage-tracker'
@@ -15,13 +15,11 @@ import { ConversationSessionStore } from '@/lib/conversation/session-store'
 import type { CodeGenerationRequest } from '@/types/claude'
 
 export class QueueProcessor {
-  private claudeClient: ClaudeApiClient
   private lineClient: LineApiClient
   private isProcessing: boolean = false
   private currentJobs: Set<string> = new Set()
 
   constructor() {
-    this.claudeClient = new ClaudeApiClient()
     this.lineClient = new LineApiClient()
   }
 
@@ -137,16 +135,16 @@ export class QueueProcessor {
       if (job.requirements?.prompt) {
         // 会話型: すでに生成されたプロンプトを使用
         prompt = job.requirements.prompt
-        
-        // Claude API呼び出し（コード生成用に最大32Kトークンを使用）
-        const claudeResponse = await this.claudeClient.sendMessage([{
+
+        // AI API呼び出し（コード生成用に最大32Kトークンを使用、自動フォールバック付き）
+        const aiResponse = await aiProvider.sendMessage([{
           role: 'user',
           content: prompt
         }], job.line_user_id, 3, 32000)
 
         // レスポンス解析
-        codeResponse = ResponseParser.parseCodeResponse(claudeResponse)
-        
+        codeResponse = ResponseParser.parseCodeResponse(aiResponse)
+
       } else {
         // 従来型: プロンプトを構築
         const request: CodeGenerationRequest = {
@@ -162,14 +160,14 @@ export class QueueProcessor {
         // プロンプト構築
         prompt = await PromptBuilder.buildCodeGenerationPrompt(request)
 
-        // Claude API呼び出し（コード生成用に最大32Kトークンを使用）
-        const claudeResponse = await this.claudeClient.sendMessage([{
+        // AI API呼び出し（コード生成用に最大32Kトークンを使用、自動フォールバック付き）
+        const aiResponse = await aiProvider.sendMessage([{
           role: 'user',
           content: prompt
         }], job.line_user_id, 3, 32000)
 
         // レスポンス解析
-        codeResponse = ResponseParser.parseCodeResponse(claudeResponse)
+        codeResponse = ResponseParser.parseCodeResponse(aiResponse)
       }
 
       // 3. 品質チェック

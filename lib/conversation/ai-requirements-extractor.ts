@@ -1,4 +1,4 @@
-import { ClaudeApiClient } from '../claude/client'
+import { aiProvider } from '../ai/provider'
 import { logger } from '../utils/logger'
 
 export interface ExtractedRequirements {
@@ -13,7 +13,6 @@ export interface ExtractedRequirements {
 }
 
 export class AIRequirementsExtractor {
-  private static claudeClient = new ClaudeApiClient()
 
   /**
    * 会話履歴から要件を構造化して抽出
@@ -53,7 +52,7 @@ ${conversationText}
 - confidenceLevelは理解度を0-100で評価
 - mainPurposeは必ず記載`
 
-      const response = await this.claudeClient.sendMessage(
+      const response = await aiProvider.sendMessage(
         [{ role: 'user', content: prompt }],
         userId,
         3,
@@ -156,7 +155,7 @@ ${missingInfo.slice(0, 3).map(info => `- ${info}`).join('\n')}
 親切な日本語で、最も重要な不足情報を1つだけ聞いてください。
 選択肢がある場合は2-3個提示してください。`
 
-      const response = await this.claudeClient.sendMessage(
+      const response = await aiProvider.sendMessage(
         [{ role: 'user', content: prompt }],
         undefined,
         3,

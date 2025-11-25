@@ -67,6 +67,16 @@ export const SECURITY_CONFIG = {
     : ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000'] // 開発環境でも具体的なオリジンを指定
 } as const
 
+// Gemini API設定
+export const GEMINI_CONFIG = {
+  MODEL: process.env.GEMINI_MODEL || 'gemini-3-pro-preview',
+  MAX_OUTPUT_TOKENS: 8192,
+  TEMPERATURE: 0.1,
+  // コスト計算（Gemini 3 Pro料金）
+  COST_PER_INPUT_TOKEN: 0.125 / 1_000_000,
+  COST_PER_OUTPUT_TOKEN: 0.50 / 1_000_000
+} as const
+
 // 外部API設定
 export const EXTERNAL_API_CONFIG = {
   LINE: {
@@ -76,6 +86,9 @@ export const EXTERNAL_API_CONFIG = {
   ANTHROPIC: {
     API_BASE_URL: 'https://api.anthropic.com/v1',
     API_VERSION: '2023-06-01'
+  },
+  GEMINI: {
+    API_BASE_URL: 'https://generativelanguage.googleapis.com/v1beta'
   }
 } as const
 

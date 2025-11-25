@@ -1,9 +1,8 @@
-import { ClaudeApiClient } from '../claude/client'
+import { aiProvider } from '../ai/provider'
 import { logger } from '../utils/logger'
 import { CATEGORY_DEFINITIONS } from './category-definitions'
 
 export class CategoryDetector {
-  private static claudeClient = new ClaudeApiClient()
 
   /**
    * メッセージ内容から自動的にカテゴリを検出
@@ -43,7 +42,7 @@ export class CategoryDetector {
 - 複数カテゴリに該当する場合は最も主要なものを選択
 - confidenceが50未満の場合はnullを返す`
 
-      const response = await this.claudeClient.sendMessage(
+      const response = await aiProvider.sendMessage(
         [{ role: 'user', content: prompt }],
         userId,
         3,

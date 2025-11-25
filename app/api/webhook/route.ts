@@ -13,7 +13,7 @@ import { SessionManager } from '../../../lib/conversation/session-manager'
 import { LineImageHandler } from '../../../lib/line/image-handler'
 import { rateLimiters } from '../../../lib/middleware/rate-limiter'
 import { engineerSupport } from '../../../lib/line/engineer-support'
-import { ClaudeApiClient } from '../../../lib/claude/client'
+import { aiProvider } from '../../../lib/ai/provider'
 import { isSpam } from '../../../lib/middleware/spam-detector'
 import { MemoryMonitor } from '../../../lib/monitoring/memory-monitor'
 import { RecoveryManager } from '../../../lib/error-recovery/recovery-manager'
@@ -25,7 +25,6 @@ export const maxDuration = 30  // Webhookは30秒で応答
 const lineClient = new LineApiClient()
 const sessionManager = SessionManager.getInstance()
 const imageHandler = new LineImageHandler()
-const claudeClient = new ClaudeApiClient()
 
 // メモリ監視を開始（アプリケーション起動時に一度だけ）
 if (typeof process !== 'undefined' && !(global as any).__memoryMonitorStarted) {
@@ -441,7 +440,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           }
         ]
 
-        const finalResponse = await claudeClient.sendMessage(messages, userId, 1, 300)
+        const finalResponse = await aiProvider.sendMessage(messages, userId, 1, 300)
 
         const responseText = finalResponse.content[0].text
 

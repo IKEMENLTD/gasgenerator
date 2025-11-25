@@ -284,32 +284,14 @@ export class ClaudeApiClient {
 
     // すべてのリトライが失敗した場合
     const errorMessage = this.formatError(lastError)
-    logger.error('Claude API request failed after all retries', { 
-      maxRetries, 
+    logger.error('Claude API request failed after all retries', {
+      maxRetries,
       error: errorMessage,
-      userId 
+      userId
     })
-    
-    // フォールバック処理
-    const fallbackText = '申し訳ございません。エラーが発生しました。もう一度お試しください。'
-    
-    // フォールバックレスポンスを返す（エラーをthrowしない）
-    return {
-      content: [{
-        type: 'text',
-        text: fallbackText
-      }],
-      id: 'fallback-' + Date.now(),
-      model: this.config.model,
-      role: 'assistant',
-      stop_reason: 'end_turn' as const,
-      stop_sequence: null,
-      type: 'message',
-      usage: {
-        input_tokens: 0,
-        output_tokens: 0
-      }
-    }
+
+    // エラーをthrowしてAIProviderManagerにフォールバックを任せる
+    throw lastError || new Error(`Claude API failed: ${errorMessage}`)
   }
 
   /**

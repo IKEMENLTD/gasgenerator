@@ -1,23 +1,19 @@
-import { Anthropic } from '@anthropic-ai/sdk'
 import { logger } from '../utils/logger'
 import { AIRequirementsExtractor } from './ai-requirements-extractor'
+import { aiProvider } from '../ai/provider'
 
-// Anthropic SDKの型定義
-interface AnthropicMessage {
+// レスポンスの型定義
+interface AIMessage {
   content: Array<{ text: string }>
 }
 
 // 型ガード関数
-function isAnthropicMessage(obj: any): obj is AnthropicMessage {
-  return obj && 
-         Array.isArray(obj.content) && 
-         obj.content.length > 0 && 
+function isAIMessage(obj: any): obj is AIMessage {
+  return obj &&
+         Array.isArray(obj.content) &&
+         obj.content.length > 0 &&
          typeof obj.content[0].text === 'string'
 }
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || ''
-})
 
 export interface ConversationContext {
   sessionId?: string
@@ -246,24 +242,21 @@ export class ConversationalFlow {
         .map(m => `${m.role === 'user' ? 'ユーザー' : 'アシスタント'}: ${m.content}`)
         .join('\n\n')
 
-      const response = await anthropic.messages.create({
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 500,
-        temperature: 0.7,  // 自然な会話のために温度を上げる
-        system: systemPrompt,
-        messages: [{
-          role: 'user',
-          content: `これまでの会話:
+      // AIプロバイダーマネージャー経由でリクエスト（自動フォールバック付き）
+      const response = await aiProvider.sendMessage([{
+        role: 'user',
+        content: `${systemPrompt}
+
+これまでの会話:
 ${conversationHistory}
 
 ユーザーの最新の発言を踏まえて、自然な日本語で返答してください。
 必要な情報が十分に集まったら、返答の最後に [READY_FOR_CODE] を追加してください。`
-        }]
-      })
+      }], context.userId, 3, 500)
 
       // 型安全なキャスト
-      if (!isAnthropicMessage(response)) {
-        throw new Error('Invalid response format from Anthropic API')
+      if (!isAIMessage(response)) {
+        throw new Error('Invalid response format from AI API')
       }
       const responseText = response.content[0].text
       

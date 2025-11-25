@@ -1,0 +1,90 @@
+
+> gas-generator@1.0.0 build
+> next build
+
+  ▲ Next.js 14.2.32
+  - Environments: .env.local, .env.production
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+ ⚠ Using edge runtime on a page currently disables static generation for that page
+{"timestamp":"2025-11-11T10:51:54.390Z","level":"info","message":"Starting memory monitor","context":{"warningThreshold":"80%","criticalThreshold":"90%","checkInterval":"30s"}}
+{"timestamp":"2025-11-11T10:51:54.391Z","level":"info","message":"Memory monitor initialized"}
+🔍 Premium codes loaded: {
+  count: 4,
+  env: 'production',
+  hasAmebas: true,
+  amebasLength: 72,
+  hasCode1: true,
+  hasCode2: true,
+  hasCode3: true,
+  code1Length: 72,
+  code2Length: 75,
+  code3Length: 74
+}
+   Generating static pages (0/17) ...
+{"timestamp":"2025-11-11T10:51:57.201Z","level":"info","message":"Starting memory monitor","context":{"warningThreshold":"80%","criticalThreshold":"90%","checkInterval":"30s"}}
+{"timestamp":"2025-11-11T10:51:57.203Z","level":"info","message":"Memory monitor initialized"}
+{"timestamp":"2025-11-11T10:51:57.202Z","level":"warn","message":"High memory usage detected","context":{"heapUsed":20,"heapTotal":25,"heapUsagePercent":80,"rss":77,"external":3,"sessionStoreSize":"[REDACTED]","sessionStoreUtilization":"[REDACTED]","threshold":"80%","action":"monitoring"}}
+   Generating static pages (4/17) 
+   Generating static pages (8/17) 
+🔍 Premium codes loaded: {
+  count: 4,
+  env: 'production',
+  hasAmebas: true,
+  amebasLength: 72,
+  hasCode1: true,
+  hasCode2: true,
+  hasCode3: true,
+  code1Length: 72,
+  code2Length: 75,
+  code3Length: 74
+}
+   Generating static pages (12/17) 
+ ✓ Generating static pages (17/17)
+{"timestamp":"2025-11-11T10:51:59.890Z","level":"info","message":"SIGINT received, stopping memory monitor"}
+{"timestamp":"2025-11-11T10:51:59.890Z","level":"info","message":"Memory monitor stopped"}
+{"timestamp":"2025-11-11T10:51:59.890Z","level":"info","message":"SIGINT received, cleaning up..."}
+{"timestamp":"2025-11-11T10:51:59.896Z","level":"info","message":"SIGINT received, stopping memory monitor"}
+{"timestamp":"2025-11-11T10:51:59.896Z","level":"info","message":"Memory monitor stopped"}
+{"timestamp":"2025-11-11T10:51:59.896Z","level":"info","message":"SIGINT received, cleaning up..."}
+{"timestamp":"2025-11-11T10:52:00.390Z","level":"info","message":"SIGTERM received, stopping memory monitor"}
+{"timestamp":"2025-11-11T10:52:00.390Z","level":"info","message":"SIGTERM received, cleaning up..."}
+{"timestamp":"2025-11-11T10:52:00.390Z","level":"info","message":"SIGTERM received, stopping memory monitor"}
+{"timestamp":"2025-11-11T10:52:00.390Z","level":"info","message":"SIGTERM received, cleaning up..."}
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    146 B          87.3 kB
+├ ○ /_not-found                          873 B          88.1 kB
+├ ƒ /api/admin/analytics                 0 B                0 B
+├ ƒ /api/admin/premium                   0 B                0 B
+├ ƒ /api/admin/sessions                  0 B                0 B
+├ ƒ /api/admin/tracking-links            0 B                0 B
+├ ƒ /api/admin/vision-stats              0 B                0 B
+├ ƒ /api/cron/cleanup                    0 B                0 B
+├ ƒ /api/cron/process-queue              0 B                0 B
+├ ƒ /api/health                          0 B                0 B
+├ ƒ /api/share/[shortId]                 0 B                0 B
+├ ƒ /api/share/create                    0 B                0 B
+├ ƒ /api/stripe/webhook                  0 B                0 B
+├ ƒ /api/webhook                         0 B                0 B
+├ ○ /auth                                35 kB           131 kB
+├ ○ /demo                                15.4 kB         103 kB
+├ ○ /icon                                0 B                0 B
+├ ○ /opengraph-image                     0 B                0 B
+├ ○ /privacy                             9.09 kB         105 kB
+├ ƒ /s/[id]                              2.21 kB        89.4 kB
+└ ○ /terms                               10.8 kB         115 kB
++ First Load JS shared by all            87.2 kB
+  ├ chunks/117-34c1d03ef00a140e.js       31.6 kB
+  ├ chunks/fd9d1056-1aae0987937804d3.js  53.6 kB
+  └ other shared chunks (total)          1.97 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
