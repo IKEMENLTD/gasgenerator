@@ -261,17 +261,15 @@ export class ClaudeApiClient {
           )
         }
 
-        // レート制限の場合は待機
-        if (this.isRateLimitError(error) && attempt < maxRetries) {
-          const waitTime = this.calculateWaitTime(attempt, error)
-          logger.info('Rate limited, waiting...', { waitTime, attempt })
-          await new Promise(resolve => setTimeout(resolve, waitTime))
-          continue
+        // レート制限の場合は即座にフォールバック（リトライしない）
+        if (this.isRateLimitError(error)) {
+          logger.info('Rate limited, skipping retries for fallback', { attempt })
+          break
         }
 
-        // タイムアウトやネットワークエラーの場合は即座にリトライ
+        // タイムアウトやネットワークエラーの場合は1回だけリトライ
         if (this.isRetryableError(error) && attempt < maxRetries) {
-          const waitTime = Math.pow(2, attempt) * 1000 // 指数バックオフ
+          const waitTime = Math.min(Math.pow(2, attempt) * 500, 2000) // 最大2秒
           logger.info('Retryable error, waiting...', { waitTime, attempt })
           await new Promise(resolve => setTimeout(resolve, waitTime))
           continue
@@ -442,19 +440,6 @@ export class ClaudeApiClient {
   private isRetryableError(error: unknown): boolean {
     const errorType = this.getErrorType(error)
     return ['timeout', 'network_error', 'rate_limit'].includes(errorType)
-  }
-
-  /**
-   * 待機時間を計算
-   */
-  private calculateWaitTime(attempt: number, error: unknown): number {
-    // レート制限の場合は長めに待機
-    if (this.isRateLimitError(error)) {
-      return Math.pow(4, attempt) * 1000 // 4秒, 16秒, 64秒
-    }
-    
-    // その他は指数バックオフ
-    return Math.pow(2, attempt) * 1000 // 2秒, 4秒, 8秒
   }
 
   /**

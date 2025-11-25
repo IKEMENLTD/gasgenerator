@@ -14,8 +14,8 @@ interface ProviderStatus {
 
 // フォールバック設定
 const FALLBACK_CONFIG = {
-  // 連続失敗でフォールバック発動
-  MAX_CONSECUTIVE_FAILURES: 2,
+  // 連続失敗でフォールバック発動（1回失敗で即切り替え）
+  MAX_CONSECUTIVE_FAILURES: 1,
   // エラー後のクールダウン時間（ミリ秒）
   COOLDOWN_MS: 5 * 60 * 1000, // 5分
   // フォールバック対象のエラーパターン
