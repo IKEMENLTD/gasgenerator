@@ -116,8 +116,8 @@ export class SessionQueries {
       // セッションを削除せず、非アクティブ化する
       const { error } = await (supabaseAdmin as any)
         .from('conversation_sessions')
-        .update({ 
-          status: 'inactive',
+        .update({
+          status: 'abandoned',
           updated_at: new Date().toISOString()
         })
         .eq('user_id', userId)
@@ -143,11 +143,11 @@ export class SessionQueries {
     try {
       // 1時間以上更新されていないセッションを非アクティブ化
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-      
+
       const { data, error } = await (supabaseAdmin as any)
         .from('conversation_sessions')
-        .update({ 
-          status: 'inactive',
+        .update({
+          status: 'abandoned',
           updated_at: new Date().toISOString()
         })
         .eq('status', 'active')

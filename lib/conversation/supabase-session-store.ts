@@ -332,7 +332,7 @@ export class SupabaseSessionStore {
         // 履歴を保持する場合は、既存セッションを非アクティブに
         await this.supabase
           .from('conversation_sessions')
-          .update({ status: 'inactive', updated_at: new Date().toISOString() })
+          .update({ status: 'abandoned', updated_at: new Date().toISOString() })
           .eq('user_id', userId)
           .eq('status', 'active')
       }
