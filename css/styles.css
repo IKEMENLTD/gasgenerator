@@ -837,7 +837,7 @@ h6 {
     flex-shrink: 0;
 }
 
-.faq-item.active .faq-icon {
+.faq-item.faq-active .faq-icon {
     transform: rotate(180deg);
     background: var(--accent);
     color: white;
@@ -850,7 +850,7 @@ h6 {
     opacity: 0;
 }
 
-.faq-item.active .faq-answer {
+.faq-item.faq-active .faq-answer {
     max-height: 500px;
     opacity: 1;
     transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease 0.1s;

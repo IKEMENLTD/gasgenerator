@@ -645,11 +645,11 @@
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
                     const faqItem = this.parentElement;
-                    const isActive = faqItem.classList.contains('active');
+                    const isActive = faqItem.classList.contains('faq-active');
 
-                    // Close all FAQ items
+                    // Close all FAQ items (use 'faq-active' to avoid conflict with reveal animation 'active')
                     document.querySelectorAll('.faq-item').forEach(function(item) {
-                        item.classList.remove('active');
+                        item.classList.remove('faq-active');
                         const questionBtn = item.querySelector('.faq-question');
                         if (questionBtn) {
                             questionBtn.setAttribute('aria-expanded', 'false');
@@ -658,7 +658,7 @@
 
                     // Open clicked item if it wasn't active
                     if (!isActive) {
-                        faqItem.classList.add('active');
+                        faqItem.classList.add('faq-active');
                         this.setAttribute('aria-expanded', 'true');
                     }
                 });
