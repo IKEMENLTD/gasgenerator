@@ -149,6 +149,11 @@ function agencyDashboard() {
         inactivityTimer: null,
         INACTIVITY_TIMEOUT: 30 * 60 * 1000,  // 30分
 
+        // SECURITY: Brute force protection
+        loginAttempts: 0,
+        maxLoginAttempts: 5,
+        lockoutUntil: null,
+
         async init() {
             console.log('🚀 Agency Dashboard init() started');
 
@@ -254,25 +259,48 @@ function agencyDashboard() {
         },
 
         async login() {
-            console.log('=== 🔐 フロントエンド: ログイン処理開始 ===');
-            console.log('入力メールアドレス:', this.loginForm.email);
-            console.log('パスワード長:', this.loginForm.password ? this.loginForm.password.length : 0);
+            // SECURITY: Check lockout status
+            if (this.lockoutUntil && Date.now() < this.lockoutUntil) {
+                const remainingSeconds = Math.ceil((this.lockoutUntil - Date.now()) / 1000);
+                this.loginError = `ログイン試行回数が上限に達しました。${remainingSeconds}秒後に再試行してください。`;
+                return;
+            }
+
+            // SECURITY: Input validation
+            const email = this.loginForm.email.trim().toLowerCase();
+            const password = this.loginForm.password;
+
+            // Email format validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email)) {
+                this.loginError = '有効なメールアドレスを入力してください';
+                return;
+            }
+
+            if (email.length > 254) {
+                this.loginError = 'メールアドレスが長すぎます';
+                return;
+            }
+
+            if (!password || password.length < 8 || password.length > 100) {
+                this.loginError = 'パスワードは8〜100文字で入力してください';
+                return;
+            }
 
             this.loading = true;
             this.loginError = '';
-            this.loginErrorData = null;  // エラーデータをリセット
+            this.loginErrorData = null;
 
-            try{
-                console.log('API呼び出し: /.netlify/functions/agency-auth');
+            try {
                 const response = await fetch('/.netlify/functions/agency-auth', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    credentials: 'include',  // Cookie認証のために必要
+                    credentials: 'include',
                     body: JSON.stringify({
-                        email: this.loginForm.email,
-                        password: this.loginForm.password
+                        email: email,
+                        password: password
                     })
                 });
 
@@ -283,9 +311,9 @@ function agencyDashboard() {
                 console.log('API応答データ:', result);
 
                 if (response.ok && result.success) {
-                    console.log('✅ ログイン成功');
-                    console.log('ユーザー情報:', result.user);
-                    console.log('代理店情報:', result.agency);
+                    // SECURITY: Reset brute force counter on successful login
+                    this.loginAttempts = 0;
+                    this.lockoutUntil = null;
 
                     this.isAuthenticated = true;
 
@@ -316,14 +344,18 @@ function agencyDashboard() {
 
                     console.log('=== ✅✅✅ ログイン処理完了 ✅✅✅ ===');
                 } else {
-                    console.error('❌ ログイン失敗');
-                    console.error('ステータス:', response.status);
-                    console.error('エラーメッセージ:', result.error);
-                    console.error('エラー詳細データ:', result);
+                    // SECURITY: Increment failed login attempts
+                    this.loginAttempts++;
 
-                    // エラーメッセージとアクション情報を保存
-                    this.loginError = result.message || result.error || 'メールアドレスまたはパスワードが間違っています';
-                    this.loginErrorData = result;  // アクション情報を含む完全なエラーデータを保存
+                    if (this.loginAttempts >= this.maxLoginAttempts) {
+                        // Lock out for 5 minutes
+                        this.lockoutUntil = Date.now() + (5 * 60 * 1000);
+                        this.loginError = 'ログイン試行回数が上限に達しました。5分後に再試行してください。';
+                    } else {
+                        const remaining = this.maxLoginAttempts - this.loginAttempts;
+                        this.loginError = (result.message || result.error || 'メールアドレスまたはパスワードが間違っています') + `（残り${remaining}回）`;
+                    }
+                    this.loginErrorData = result;
                 }
             } catch (error) {
                 console.error('❌❌❌ ログイン処理でエラー発生 ❌❌❌');

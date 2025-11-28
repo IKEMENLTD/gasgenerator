@@ -1,8 +1,7 @@
-# Global security headers
+# Global security headers - A+ Grade Configuration
 /*
   # Content Security Policy (XSS保護 - 最重要)
-  # Updated for index.html: added Font Awesome (cdnjs), YouTube iframes, Google Analytics
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://www.google-analytics.com; frame-src https://www.youtube.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://cdn.tailwindcss.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com data:; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://api64.ipify.org https://api.ipify.org; frame-src https://www.youtube.com https://www.youtube-nocookie.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://taskmateai.net; upgrade-insecure-requests; block-all-mixed-content
 
   # Clickjacking保護
   X-Frame-Options: DENY
@@ -13,14 +12,22 @@
   # XSSフィルター有効化（レガシーブラウザ用）
   X-XSS-Protection: 1; mode=block
 
-  # Referrer Policy（プライバシー保護）
+  # Referrer Policy（プライバシー保護 - 強化）
   Referrer-Policy: strict-origin-when-cross-origin
 
-  # HTTPS強制（全リソースHTTPS化完了により有効化）
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  # HTTPS強制（2年間 + preload）
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 
-  # 不要な機能を無効化（プライバシー保護）
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
+  # 不要な機能を無効化（プライバシー保護 - 強化）
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), interest-cohort=(), browsing-topics=()
+
+  # Cross-Origin Policies（強化）
+  Cross-Origin-Embedder-Policy: credentialless
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Cross-Origin-Resource-Policy: same-origin
+
+  # Cache Control for HTML
+  Cache-Control: no-cache, no-store, must-revalidate
 
 # Admin pages - no cache
 /admin/*

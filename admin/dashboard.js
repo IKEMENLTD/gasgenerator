@@ -9,6 +9,11 @@ function adminDashboard() {
         loginError: '',
         loading: false,
 
+        // SECURITY: Brute force protection
+        loginAttempts: 0,
+        maxLoginAttempts: 5,
+        lockoutUntil: null,
+
         // Dashboard state
         activeTab: 'create',
         stats: {
@@ -49,44 +54,95 @@ function adminDashboard() {
         // No sensitive data should be stored client-side
 
         async init() {
-            // Check for existing authentication
-            const authToken = localStorage.getItem('trackingAdminAuth');
+            // SECURITY: Use sessionStorage instead of localStorage
+            // Token is cleared when browser tab/window closes
+            const authToken = sessionStorage.getItem('trackingAdminAuth');
             if (authToken) {
-                this.isAuthenticated = true;
-                await this.loadDashboardData();
+                // Validate token format before accepting
+                if (this.isValidToken(authToken)) {
+                    this.isAuthenticated = true;
+                    await this.loadDashboardData();
+                } else {
+                    // Invalid token, clear it
+                    sessionStorage.removeItem('trackingAdminAuth');
+                }
             }
         },
 
+        isValidToken(token) {
+            // Basic token validation - should be non-empty string
+            // Server-side validation is the primary security measure
+            return typeof token === 'string' && token.length > 10 && token.length < 500;
+        },
+
         async login() {
+            // SECURITY: Check lockout status
+            if (this.lockoutUntil && Date.now() < this.lockoutUntil) {
+                const remainingSeconds = Math.ceil((this.lockoutUntil - Date.now()) / 1000);
+                this.loginError = `ログイン試行回数が上限に達しました。${remainingSeconds}秒後に再試行してください。`;
+                return;
+            }
+
+            // SECURITY: Input validation
+            const username = this.loginForm.username.trim();
+            const password = this.loginForm.password;
+
+            if (!username || username.length < 3 || username.length > 50) {
+                this.loginError = 'ユーザー名は3〜50文字で入力してください';
+                return;
+            }
+
+            if (!password || password.length < 8 || password.length > 100) {
+                this.loginError = 'パスワードは8〜100文字で入力してください';
+                return;
+            }
+
+            // SECURITY: Block common injection patterns
+            const dangerousPattern = /[<>'";&|`$(){}[\]\\]/;
+            if (dangerousPattern.test(username)) {
+                this.loginError = 'ユーザー名に使用できない文字が含まれています';
+                this.loginAttempts++;
+                return;
+            }
+
             this.loading = true;
             this.loginError = '';
 
             try {
-                // サーバーサイドで環境変数を使って認証
                 const response = await fetch('/.netlify/functions/validate-admin', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        username: this.loginForm.username,
-                        password: this.loginForm.password
+                        username: username,
+                        password: password
                     })
                 });
 
                 const result = await response.json();
 
                 if (response.ok && result.success) {
+                    // Reset attempts on successful login
+                    this.loginAttempts = 0;
+                    this.lockoutUntil = null;
                     this.isAuthenticated = true;
-                    localStorage.setItem('trackingAdminAuth', result.token);
+                    sessionStorage.setItem('trackingAdminAuth', result.token);
                     await this.loadDashboardData();
                 } else {
-                    this.loginError = result.error || 'ユーザー名またはパスワードが間違っています';
+                    // SECURITY: Increment failed attempts
+                    this.loginAttempts++;
+                    if (this.loginAttempts >= this.maxLoginAttempts) {
+                        // Lock out for 5 minutes
+                        this.lockoutUntil = Date.now() + (5 * 60 * 1000);
+                        this.loginError = 'ログイン試行回数が上限に達しました。5分後に再試行してください。';
+                    } else {
+                        const remaining = this.maxLoginAttempts - this.loginAttempts;
+                        this.loginError = `ユーザー名またはパスワードが間違っています（残り${remaining}回）`;
+                    }
                 }
             } catch (error) {
-                // Security: Removed client-side fallback authentication
-                // All authentication must go through server-side validation
-                this.loginError = 'ログイン失敗: サーバーに接続できません。管理者にお問い合わせください。';
+                this.loginError = 'ログイン失敗: サーバーに接続できません。';
                 console.error('Authentication error:', error);
             } finally {
                 this.loading = false;
@@ -95,9 +151,15 @@ function adminDashboard() {
 
         logout() {
             this.isAuthenticated = false;
-            localStorage.removeItem('trackingAdminAuth');
+            sessionStorage.removeItem('trackingAdminAuth');
+            // SECURITY: Clear all sensitive data on logout
             this.loginForm = { username: '', password: '' };
             this.loginError = '';
+            this.trackingLinks = [];
+            this.visits = [];
+            this.lineUsers = [];
+            this.agencies = [];
+            this.filteredAgencies = [];
         },
 
         async loadDashboardData() {
@@ -251,7 +313,7 @@ function adminDashboard() {
             try {
                 const response = await fetch('/.netlify/functions/admin-agencies', {
                     headers: {
-                        'Authorization': `Bearer admin:${localStorage.getItem('trackingAdminAuth')}`
+                        'Authorization': `Bearer admin:${sessionStorage.getItem('trackingAdminAuth')}`
                     }
                 });
 
@@ -311,7 +373,7 @@ function adminDashboard() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer admin:${localStorage.getItem('trackingAdminAuth')}`
+                        'Authorization': `Bearer admin:${sessionStorage.getItem('trackingAdminAuth')}`
                     },
                     body: JSON.stringify({
                         action,
