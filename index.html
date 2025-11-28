@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMate（タスクメイト）｜ 業務自動化で月40時間削減するGASソリューション</title>
+    <meta name="description" content="150社導入、累計7,200時間の業務削減実績。Google Apps Scriptで御社のスプレッドシート業務を完全自動化。初期費用0円、30日間返金保証付き">
+    <link rel="icon" href="images/logo.png" type="image/png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- God-Tier V8 Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Floating Background Elements -->
+    <div class="floating-container">
+        <div class="floater shape"
+            style="top: 10%; left: 5%; width: 50px; height: 50px; border-radius: 10px; animation-delay: 0s;"></div>
+        <div class="floater shape"
+            style="top: 20%; right: 10%; width: 80px; height: 80px; border-radius: 50%; animation-delay: -5s;"></div>
+        <div class="floater filled"
+            style="bottom: 15%; left: 15%; width: 120px; height: 120px; border-radius: 20px; animation-delay: -2s; transform: rotate(45deg);">
+        </div>
+
+        <!-- Existing Middle/Bottom Elements -->
+        <i class="fas fa-code floater" style="top: 40%; left: 80%; font-size: 3rem; animation-delay: -8s;"></i>
+        <i class="fab fa-google floater" style="top: 60%; left: 10%; font-size: 2.5rem; animation-delay: -3s;"></i>
+        <i class="fas fa-robot floater" style="bottom: 30%; right: 20%; font-size: 4rem; animation-delay: -6s;"></i>
+
+        <!-- New Middle Elements -->
+        <i class="fas fa-file-excel floater"
+            style="top: 35%; left: 25%; font-size: 2.5rem; animation-delay: -4s; opacity: 0.1;"></i>
+        <i class="fas fa-bolt floater"
+            style="top: 48%; right: 15%; font-size: 3.5rem; animation-delay: -7s; color: var(--accent); opacity: 0.08;"></i>
+        <div class="floater shape"
+            style="top: 55%; left: 45%; width: 60px; height: 60px; border-radius: 50%; border-color: var(--accent); animation-delay: -2s; opacity: 0.1;">
+        </div>
+        <i class="fas fa-table floater"
+            style="top: 28%; right: 35%; font-size: 2rem; animation-delay: -5s; opacity: 0.1;"></i>
+        <i class="fas fa-check-double floater"
+            style="top: 68%; right: 45%; font-size: 2.5rem; animation-delay: -9s; opacity: 0.1;"></i>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav-glass">
+        <div class="container nav-content">
+            <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+                <img src="images/logo.png" alt="TaskMate" class="logo-img" style="margin-right: 10px;">
+                <span
+                    style="font-family: 'Oswald'; font-size: 1.5rem; color: var(--text-main); font-weight: 700;">TaskMate</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="#problem" class="nav-link">課題</a>
+                <a href="#features" class="nav-link">機能</a>
+                <a href="#roi" class="nav-link">費用対効果</a>
+                <a href="#pricing" class="nav-link">料金</a>
+                <a href="https://agency.ikemen.ltd/agency/" class="nav-link"
+                    style="font-size: 0.85rem; color: var(--text-muted);">
+                    <i class="fas fa-lock" style="margin-right: 4px; font-size: 0.8rem;"></i> 代理店様ログイン
+                </a>
+                <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-primary"
+                    style="padding: 0.6rem 1.5rem; margin-left: 1.5rem; font-size: 0.9rem;">
+                    無料相談
+                </a>
+            </div>
+
+            <button class="mobile-menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section style="min-height: 100vh; padding-top: 120px; display: flex; align-items: center;">
+        <div class="container">
+            <div class="hero-grid">
+                <div class="reveal">
+                    <div
+                        style="display: inline-flex; align-items: center; background: rgba(16, 185, 129, 0.1); color: var(--accent); padding: 0.5rem 1rem; border-radius: 100px; margin-bottom: 1.5rem; font-weight: 700; font-size: 0.9rem;">
+                        <i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i> 30日間全額返金保証
+                    </div>
+                    <h1 class="jp-heading display-xl"
+                        style="margin-bottom: 1.5rem; word-break: keep-all; overflow-wrap: break-word;">
+                        スプレッドシートの<br>
+                        <span style="color: var(--accent);">「手作業」</span>をゼロにする
+                    </h1>
+                    <p style="font-size: 1.2rem; color: var(--text-body); margin-bottom: 3rem; max-width: 500px;">
+                        あなたの業務、まだ手動でやりますか？<br>
+                        AI×GASで、月40時間のムダな作業を今すぐ自動化。
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-primary">
+                            無料診断を予約する
+                        </a>
+                        <button class="btn btn-glass open-modal-btn">
+                            <i class="fas fa-play" style="margin-right: 8px;"></i> 1分でわかる動画
+                        </button>
+                    </div>
+                    <div class="hero-badges">
+                        <span><i class="fas fa-check-circle" style="color: var(--accent);"></i> 導入150社突破</span>
+                        <span><i class="fas fa-check-circle" style="color: var(--accent);"></i> 継続率95%</span>
+                    </div>
+                </div>
+
+                <div class="reveal glass-panel hero-video-container"
+                    style="padding: 1rem; transform: rotate(-2deg); max-width: 400px; margin: 0 auto;">
+                    <div style="border-radius: 16px; overflow: hidden; position: relative; aspect-ratio: 9/16;">
+                        <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                            <source src="images/GAS.mp4" type="video/mp4">
+                        </video>
+                        <div class="hero-video-overlay open-modal-btn">
+                            <div class="hero-video-play-btn">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Agitation Section (NEW) -->
+    <section id="problem" class="section-padding problem-section">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 5rem;">
+                <span class="section-label" style="color: var(--danger);">THE PROBLEM</span>
+                <h2 class="jp-heading display-lg">あなたの会社、時間を<br>「浪費」していませんか？</h2>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div class="problem-card reveal">
+                    <div class="pain-stat">40h</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">毎月のムダな作業時間</h3>
+                    <p style="color: var(--text-body);">
+                        データのコピペ、請求書の作成、メール送信...。単純作業に社員の大切な時間を奪われていませんか？
+                    </p>
+                </div>
+                <div class="problem-card reveal">
+                    <div class="pain-stat">¥20万</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">毎月の見えない損失</h3>
+                    <p style="color: var(--text-body);">
+                        時給換算すると、単純作業だけで毎月数十万円のコストが発生しています。年間では数百万円の損失です。
+                    </p>
+                </div>
+                <div class="problem-card reveal">
+                    <div class="pain-stat">Risk</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">ヒューマンエラーの恐怖</h3>
+                    <p style="color: var(--text-body);">
+                        手入力によるミスは信用問題に直結します。疲れた人間はミスをしますが、プログラムはミスをしません。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visual ROI Calculator (NEW) -->
+    <section id="roi" class="section-padding" style="background: var(--text-main);">
+        <div class="container">
+            <div class="roi-container">
+                <div class="roi-grid">
+                    <div>
+                        <span class="section-label" style="color: var(--accent);">ROI CALCULATION</span>
+                        <h2 class="jp-heading display-lg" style="margin-bottom: 2rem;">圧倒的な<br>費用対効果</h2>
+                        <p style="font-size: 1.2rem; color: rgba(255,255,255,0.8); margin-bottom: 2rem;">
+                            TaskMateを導入するだけで、コストは1/10以下に。<br>
+                            浮いた予算と時間は、もっと重要な「売上を作る仕事」に使ってください。
+                        </p>
+                        <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-primary">
+                            コスト削減をシミュレーション
+                        </a>
+                    </div>
+
+                    <div class="roi-visual">
+                        <div style="margin-bottom: 2rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; color: rgba(255,255,255,0.7); margin-bottom: 0.5rem;">
+                                <span>現状のコスト（人件費）</span>
+                                <span>¥200,000 / 月</span>
+                            </div>
+                            <div class="roi-bar cost">
+                                <span style="position: relative; z-index: 2;">人手による作業コスト</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div
+                                style="display: flex; justify-content: space-between; color: rgba(255,255,255,0.7); margin-bottom: 0.5rem;">
+                                <span>TaskMate導入後</span>
+                                <span style="color: var(--accent); font-weight: 700;">¥10,000 / 月</span>
+                            </div>
+                            <div class="roi-bar saving">
+                                <span style="position: absolute; left: 1rem; white-space: nowrap;">TaskMate</span>
+                            </div>
+                        </div>
+
+                        <div
+                            style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.2); text-align: center;">
+                            <div style="font-size: 1rem; color: rgba(255,255,255,0.7);">年間削減額</div>
+                            <div
+                                style="font-size: 3rem; font-weight: 900; color: var(--accent); font-family: var(--font-display);">
+                                ¥2,280,000
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-scroll-wrapper">
+                <table class="comparison-table reveal">
+                    <thead>
+                        <tr>
+                            <th class="table-first-col">比較項目</th>
+                            <th class="highlight">TaskMate</th>
+                            <th>エンジニア採用</th>
+                            <th>制作会社へ外注</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-first-col">月額コスト</td>
+                            <td class="highlight highlight-price">¥10,000〜</td>
+                            <td>¥400,000〜</td>
+                            <td>¥500,000〜</td>
+                        </tr>
+                        <tr>
+                            <td class="table-first-col">初期費用</td>
+                            <td class="highlight">¥0</td>
+                            <td>採用コスト</td>
+                            <td>¥200,000〜</td>
+                        </tr>
+                        <tr>
+                            <td class="table-first-col">納期</td>
+                            <td class="highlight">即日〜3日</td>
+                            <td>1ヶ月〜</td>
+                            <td>2ヶ月〜</td>
+                        </tr>
+                        <tr>
+                            <td class="table-first-col">修正対応</td>
+                            <td class="highlight">無制限・無料</td>
+                            <td>担当者次第</td>
+                            <td>都度見積もり</td>
+                        </tr>
+                        <tr>
+                            <td class="table-first-col">返金保証</td>
+                            <td class="highlight"><i class="fas fa-check-circle"></i> 30日間</td>
+                            <td>なし</td>
+                            <td>なし</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Flow (Visual) -->
+    <section class="section-padding">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 5rem;">
+                <span class="section-label">HOW IT WORKS</span>
+                <h2 class="jp-heading display-lg">驚くほど、簡単です。</h2>
+            </div>
+
+            <div class="process-visual reveal" style="justify-content: center; gap: 4rem;">
+                <div
+                    style="text-align: center; position: relative; z-index: 2; background: var(--bg-base); padding: 0 1rem; flex: 1; max-width: 250px;">
+                    <div class="process-step-node" style="margin: 0 auto;">1</div>
+                    <h3 style="margin-top: 1.5rem;">LINE登録</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">
+                        まずは公式LINEを<br>友だち追加
+                    </p>
+                </div>
+
+                <div
+                    style="text-align: center; position: relative; z-index: 2; background: var(--bg-base); padding: 0 1rem; flex: 1; max-width: 250px;">
+                    <div class="process-step-node" style="margin: 0 auto;">2</div>
+                    <h3 style="margin-top: 1.5rem;">要望を送信</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">
+                        「○○を自動化したい」と<br>メッセージを送る
+                    </p>
+                </div>
+
+                <div
+                    style="text-align: center; position: relative; z-index: 2; background: var(--bg-base); padding: 0 1rem; flex: 1; max-width: 250px;">
+                    <div class="process-step-node" style="margin: 0 auto;">3</div>
+                    <h3 style="margin-top: 1.5rem;">自動化完了</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">
+                        エンジニアもしくは<br>TaskMateAIが実装し、<br>あなたのシートに反映
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Founder Message -->
+    <section class="section-padding">
+        <div class="container">
+            <div class="founder-section reveal">
+                <img src="images/founder.jpg" alt="沼倉隆平" class="founder-img">
+                <div>
+                    <h3 style="font-size: 1.8rem; margin-bottom: 1.5rem;">「単純作業」で人生を終えないでほしい。</h3>
+                    <p style="color: var(--text-body); margin-bottom: 1.5rem;">
+                        私たちは、日本のビジネスパーソンが「本来やるべきクリエイティブな仕事」に集中できる世界を作りたいと考えています。<br>
+                        スプレッドシートのコピペや、メールの定型文送信。そんな作業にあなたの貴重な時間を使わないでください。<br>
+                        TaskMateは、あなたの時間を「取り戻す」ためのツールです。
+                    </p>
+                    <div style="font-family: var(--font-display); font-weight: 700; color: var(--text-main);">
+                        株式会社イケメン 代表取締役<br>
+                        沼倉隆平
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="section-padding">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 5rem;">
+                <span class="section-label">PRICING</span>
+                <h2 class="jp-heading display-lg">料金プラン</h2>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Free Plan -->
+                <div class="glass-panel reveal" style="padding: 3rem 2rem; text-align: center;">
+                    <h3>お試し</h3>
+                    <div class="price-tag">無料</div>
+                    <div class="price-period">（期間制限なし）</div>
+                    <p style="color: var(--text-muted); margin: 1.5rem 0;">
+                        まずは試してみたい方向け<br>基本的な機能を確認
+                    </p>
+                    <ul class="check-list" style="list-style: none; padding: 0; text-align: left; margin: 2rem 0;">
+                        <li><i class="fas fa-check-circle"></i> 1か月10回まで自動コーディング無料</li>
+                        <li><i class="fas fa-check-circle"></i> GASコード自動生成</li>
+                        <li><i class="fas fa-check-circle"></i> 基本的なサポート</li>
+                        <li><i class="fas fa-check-circle"></i> LINE連携対応</li>
+                    </ul>
+                    <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-glass"
+                        style="width: 100%;">無料利用開始</a>
+                </div>
+
+                <!-- AI Code Gen Plan -->
+                <div class="glass-panel reveal" style="padding: 3rem 2rem; text-align: center;">
+                    <h3>AIコード生成プラン</h3>
+                    <div class="price-tag">¥10,000</div>
+                    <div class="price-period">月額（税抜）</div>
+                    <p style="color: var(--text-muted); margin: 1.5rem 0;">
+                        自社で開発したい方向け<br>AIがコード作成をサポート
+                    </p>
+                    <ul class="check-list" style="list-style: none; padding: 0; text-align: left; margin: 2rem 0;">
+                        <li><i class="fas fa-check-circle"></i> LINEでコード生成し放題</li>
+                        <li><i class="fas fa-check-circle"></i> エラー修正サポート</li>
+                        <li><i class="fas fa-check-circle"></i> GAS学習コンテンツ閲覧</li>
+                        <li><i class="fas fa-check-circle"></i> 30日間返金保証</li>
+                    </ul>
+                    <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-glass"
+                        style="width: 100%;">選択する</a>
+                </div>
+
+                <!-- Marunage Plan -->
+                <div class="glass-panel reveal"
+                    style="padding: 3rem 2rem; text-align: center; border: 2px solid var(--accent); position: relative; transform: scale(1.05); z-index: 10; background: white;">
+                    <div
+                        style="position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: var(--accent); color: white; padding: 0.5rem 1.5rem; border-radius: 50px; font-size: 0.8rem; font-weight: 700;">
+                        人気No.1</div>
+                    <h3>丸投げ開発プラン</h3>
+                    <div class="price-tag">¥50,000</div>
+                    <div class="price-period">月額（税抜）</div>
+                    <p style="color: var(--text-muted); margin: 1.5rem 0;">
+                        開発から運用まで全てお任せ<br>専属エンジニアが担当
+                    </p>
+                    <ul class="check-list" style="list-style: none; padding: 0; text-align: left; margin: 2rem 0;">
+                        <li><i class="fas fa-check-circle"></i> <strong>開発・修正し放題</strong></li>
+                        <li><i class="fas fa-check-circle"></i> 専属エンジニア担当</li>
+                        <li><i class="fas fa-check-circle"></i> チャット・Zoomサポート</li>
+                        <li><i class="fas fa-check-circle"></i> 30日間返金保証</li>
+                        <li><i class="fas fa-check-circle"></i> 最短3日で納品</li>
+                    </ul>
+                    <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-primary"
+                        style="width: 100%;">無料相談する</a>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="glass-panel reveal" style="padding: 3rem 2rem; text-align: center;">
+                    <h3>エンタープライズ</h3>
+                    <div class="price-tag">要見積もり</div>
+                    <div class="price-period">（規模による）</div>
+                    <p style="color: var(--text-muted); margin: 1.5rem 0;">
+                        大規模システム開発<br>複数部署連携など
+                    </p>
+                    <ul class="check-list" style="list-style: none; padding: 0; text-align: left; margin: 2rem 0;">
+                        <li><i class="fas fa-check-circle"></i> 専任チーム体制</li>
+                        <li><i class="fas fa-check-circle"></i> 高度なセキュリティ要件対応</li>
+                        <li><i class="fas fa-check-circle"></i> オンプレミス連携</li>
+                        <li><i class="fas fa-check-circle"></i> 請求書払い対応</li>
+                    </ul>
+                    <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-glass"
+                        style="width: 100%;">お問い合わせ</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="section-padding">
+        <div class="container" style="max-width: 800px;">
+            <div style="text-align: center; margin-bottom: 4rem;">
+                <span class="section-label">FAQ</span>
+                <h2 class="jp-heading display-lg">よくある質問</h2>
+            </div>
+
+            <div class="faq-list">
+                <div class="faq-item glass-panel reveal">
+                    <button class="faq-question" aria-expanded="false">
+                        <span class="faq-q-mark">Q.</span>
+                        <span class="faq-q-text">月額5万円のプランは本当に丸投げで良いのですか？</span>
+                        <span class="faq-icon"><i class="fas fa-chevron-down"></i></span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>はい、もちろんです。ヒアリングから要件定義、開発、テスト、導入サポートまで全て弊社エンジニアが担当します。お客様は「こういうことをしたい」と伝えるだけで大丈夫です。</p>
+                    </div>
+                </div>
+                <div class="faq-item glass-panel reveal">
+                    <button class="faq-question" aria-expanded="false">
+                        <span class="faq-q-mark">Q.</span>
+                        <span class="faq-q-text">月額1万円のプランはどのような人向けですか？</span>
+                        <span class="faq-icon"><i class="fas fa-chevron-down"></i></span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>社内に「CIO（情報統括役員）」を置くイメージで、自社でシステム開発を行いたい企業様向けです。AIツールと弊社のナレッジを活用して、低コストで内製化を進めることができます。</p>
+                    </div>
+                </div>
+                <div class="faq-item glass-panel reveal">
+                    <button class="faq-question" aria-expanded="false">
+                        <span class="faq-q-mark">Q.</span>
+                        <span class="faq-q-text">契約期間の縛りはありますか？</span>
+                        <span class="faq-icon"><i class="fas fa-chevron-down"></i></span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>いいえ、ありません。1ヶ月単位でのご契約となりますので、必要な期間だけご利用いただけます。また、初回30日間は全額返金保証が付いています。</p>
+                    </div>
+                </div>
+                <div class="faq-item glass-panel reveal">
+                    <button class="faq-question" aria-expanded="false">
+                        <span class="faq-q-mark">Q.</span>
+                        <span class="faq-q-text">セキュリティは大丈夫ですか？</span>
+                        <span class="faq-icon"><i class="fas fa-chevron-down"></i></span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>はい。作成したスクリプトはお客様のGoogle環境内で動作します。弊社がお客様の顧客データなどを外部サーバーに保存することはありませんのでご安心ください。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                        <img src="images/logo.png" alt="TaskMate" class="logo-img" style="margin-right: 10px;">
+                        <span style="font-family: 'Oswald'; font-size: 1.5rem; font-weight: 700;">TaskMate</span>
+                    </div>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+                        業務自動化で、企業の成長を加速させる。<br>
+                        無駄な作業をゼロにし、人が輝く社会へ。
+                    </p>
+                    <a href="https://blog.taskmateai.net/" target="_blank" rel="noopener noreferrer"
+                        style="color: var(--accent); text-decoration: none; font-weight: 700;">
+                        <i class="fas fa-external-link-alt" style="margin-right: 5px;"></i> 公式ブログ
+                    </a>
+                </div>
+                <div class="footer-cta">
+                    <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-primary">
+                        無料相談を予約する
+                    </a>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 2rem; margin: 2rem 0; flex-wrap: wrap;">
+                <a href="privacy.html"
+                    style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">プライバシーポリシー</a>
+                <a href="legal.html"
+                    style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">特定商取引法に基づく表記</a>
+            </div>
+            <div
+                style="border-top: 1px solid rgba(0,0,0,0.1); padding-top: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+                &copy; 2025 株式会社イケメン All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Video Modal -->
+    <div class="modal-overlay" id="videoModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeModal">&times;</button>
+            <video id="demoVideo" controls style="width: 100%; height: 100%;">
+                <source src="images/demo.mp4" type="video/mp4">
+                お使いのブラウザは動画タグに対応していません。
+            </video>
+        </div>
+    </div>
+
+    <!-- Floating Mobile CTA -->
+    <div class="floating-mobile-cta">
+        <div class="cta-text">
+            <span>30日間</span>返金保証
+        </div>
+        <a href="https://agency.ikemen.ltd/t/3ziinbhuytjk" class="btn btn-primary">
+            LINEで無料相談
+        </a>
+    </div>
+
+    <script>
+        // Modal Logic
+        const modal = document.getElementById('videoModal');
+        const video = document.getElementById('demoVideo');
+        const openBtns = document.querySelectorAll('.open-modal-btn');
+        const closeBtn = document.getElementById('closeModal');
+
+        openBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modal.classList.add('active');
+                video.play();
+            });
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+            video.pause();
+            video.currentTime = 0;
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                video.pause();
+                video.currentTime = 0;
+            }
+        });
+
+        // Reveal Animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Mobile Menu Toggle
+        const mobileBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+        let menuOpen = false;
+
+        mobileBtn.addEventListener('click', () => {
+            menuOpen = !menuOpen;
+            mobileBtn.classList.toggle('active', menuOpen);
+
+            if (menuOpen) {
+                navLinks.style.cssText = `
+                    display: flex;
+                    flex-direction: column;
+                    position: absolute;
+                    top: 80px;
+                    left: 0;
+                    width: 100%;
+                    background: white;
+                    padding: 1.5rem;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    gap: 0.5rem;
+                    border-top: 1px solid rgba(0,0,0,0.05);
+                    z-index: 100;
+                `;
+                // Fix button margin for mobile
+                const ctaBtn = navLinks.querySelector('.btn-primary');
+                if (ctaBtn) {
+                    ctaBtn.style.marginLeft = '0';
+                    ctaBtn.style.marginTop = '1rem';
+                    ctaBtn.style.width = '100%';
+                    ctaBtn.style.justifyContent = 'center';
+                }
+                // Fix nav links margin for mobile
+                navLinks.querySelectorAll('.nav-link').forEach(link => {
+                    link.style.marginLeft = '0';
+                    link.style.padding = '0.75rem 0';
+                });
+            } else {
+                navLinks.style.cssText = '';
+                // Reset button styles
+                const ctaBtn = navLinks.querySelector('.btn-primary');
+                if (ctaBtn) {
+                    ctaBtn.style.cssText = '';
+                }
+                navLinks.querySelectorAll('.nav-link').forEach(link => {
+                    link.style.cssText = '';
+                });
+            }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (menuOpen && !mobileBtn.contains(e.target) && !navLinks.contains(e.target)) {
+                mobileBtn.click();
+            }
+        });
+
+        // Close menu on window resize (if desktop width)
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && menuOpen) {
+                menuOpen = false;
+                mobileBtn.classList.remove('active');
+                navLinks.style.cssText = '';
+                const ctaBtn = navLinks.querySelector('.btn-primary');
+                if (ctaBtn) ctaBtn.style.cssText = '';
+                navLinks.querySelectorAll('.nav-link').forEach(link => link.style.cssText = '');
+            }
+        });
+
+        // FAQ Accordion
+        document.querySelectorAll('.faq-question').forEach(button => {
+            button.addEventListener('click', () => {
+                const faqItem = button.parentElement;
+                const isActive = faqItem.classList.contains('active');
+
+                // Close all FAQ items
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.classList.remove('active');
+                    item.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+                });
+
+                // Open clicked item if it wasn't active
+                if (!isActive) {
+                    faqItem.classList.add('active');
+                    button.setAttribute('aria-expanded', 'true');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

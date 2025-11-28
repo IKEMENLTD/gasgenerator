@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMate AI - リダイレクト中...</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --taskmate-green: #00B900;
+            --taskmate-green-light: #22c55e;
+            --taskmate-green-dark: #16a34a;
+            --taskmate-black: #0a0a0a;
+            --taskmate-gray: #1a1a1a;
+            --taskmate-gray-light: #2a2a2a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--taskmate-black) 0%, var(--taskmate-gray) 50%, var(--taskmate-gray-light) 100%);
+            color: #ffffff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated grid background */
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 185, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 185, 0, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(50px, 50px);
+            }
+        }
+
+        /* Glowing orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.15;
+            z-index: 0;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--taskmate-green);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: var(--taskmate-green-light);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: 5s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: var(--taskmate-green-dark);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(30px, -30px) scale(1.1);
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 3rem 2rem;
+            background: rgba(26, 26, 26, 0.95);
+            border-radius: 32px;
+            backdrop-filter: blur(20px);
+            box-shadow:
+                0 0 0 1px rgba(0, 185, 0, 0.1),
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 100px rgba(0, 185, 0, 0.1);
+            max-width: 480px;
+            width: 90%;
+            animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(0, 185, 0, 0.1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--taskmate-green-light) 0%, var(--taskmate-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+            text-shadow: 0 0 40px rgba(0, 185, 0, 0.3);
+        }
+
+        .logo-subtitle {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-bottom: 2.5rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* LINE icon with glow */
+        .line-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--taskmate-green-light) 0%, var(--taskmate-green) 100%);
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            position: relative;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow:
+                0 0 40px rgba(0, 185, 0, 0.4),
+                0 10px 30px rgba(0, 185, 0, 0.3);
+        }
+
+        .line-icon::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(135deg, var(--taskmate-green-light), var(--taskmate-green));
+            border-radius: 22px;
+            z-index: -1;
+            opacity: 0.5;
+            filter: blur(10px);
+        }
+
+        .line-icon i {
+            color: white;
+            font-size: 36px;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow:
+                    0 0 40px rgba(0, 185, 0, 0.4),
+                    0 10px 30px rgba(0, 185, 0, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow:
+                    0 0 60px rgba(0, 185, 0, 0.6),
+                    0 15px 40px rgba(0, 185, 0, 0.5);
+            }
+        }
+
+        /* Modern spinner */
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2.5rem 0;
+            height: 100px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(0, 185, 0, 0.1);
+            border-top: 3px solid var(--taskmate-green);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            box-shadow: 0 0 20px rgba(0, 185, 0, 0.2);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            font-size: 1.25rem;
+            color: #ffffff;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .sub-message {
+            font-size: 0.9375rem;
+            color: #9ca3af;
+            margin-bottom: 2.5rem;
+            font-weight: 500;
+        }
+
+        /* Loading dots animation */
+        .loading-dots {
+            display: inline-flex;
+            gap: 6px;
+            margin-left: 6px;
+        }
+
+        .loading-dots span {
+            width: 6px;
+            height: 6px;
+            background: var(--taskmate-green);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+            box-shadow: 0 0 10px rgba(0, 185, 0, 0.5);
+        }
+
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+                opacity: 0.3;
+            }
+            40% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        /* Progress bar */
+        .progress-container {
+            width: 100%;
+            height: 3px;
+            background: rgba(0, 185, 0, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 2.5rem;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--taskmate-green-light) 0%, var(--taskmate-green) 100%);
+            width: 0%;
+            animation: progress 3s ease-out forwards;
+            box-shadow: 0 0 10px rgba(0, 185, 0, 0.5);
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes progress {
+            to {
+                width: 100%;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Error state */
+        .error-container {
+            display: none;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .error-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 2rem;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+        }
+
+        .error-icon i {
+            color: white;
+            font-size: 36px;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            font-weight: 500;
+            line-height: 1.7;
+            backdrop-filter: blur(10px);
+        }
+
+        .error-message strong {
+            color: #fecaca;
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+        }
+
+        .retry-button {
+            background: linear-gradient(135deg, var(--taskmate-green-light) 0%, var(--taskmate-green) 100%);
+            color: white;
+            border: none;
+            padding: 1.125rem 3rem;
+            border-radius: 16px;
+            font-size: 1.0625rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow:
+                0 0 30px rgba(0, 185, 0, 0.4),
+                0 10px 25px rgba(0, 185, 0, 0.3);
+            font-family: inherit;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .retry-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .retry-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .retry-button:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 0 40px rgba(0, 185, 0, 0.6),
+                0 15px 35px rgba(0, 185, 0, 0.5);
+        }
+
+        .retry-button:active {
+            transform: translateY(0);
+        }
+
+        .retry-button i {
+            margin-right: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Security badge */
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: rgba(0, 185, 0, 0.05);
+            border: 1px solid rgba(0, 185, 0, 0.2);
+            border-radius: 12px;
+            color: #9ca3af;
+            font-size: 0.8125rem;
+            margin-top: 2rem;
+        }
+
+        .security-badge i {
+            color: var(--taskmate-green);
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .container {
+                padding: 2rem 1.5rem;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .line-icon {
+                width: 64px;
+                height: 64px;
+            }
+
+            .line-icon i {
+                font-size: 32px;
+            }
+
+            .message {
+                font-size: 1.125rem;
+            }
+
+            .retry-button {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated background -->
+    <div class="grid-background"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="container">
+        <div class="logo">TaskMate</div>
+        <div class="logo-subtitle">業務自動化で生産性を最大化</div>
+
+        <!-- Loading state -->
+        <div id="loading-state">
+            <div class="line-icon">
+                <i class="fab fa-line"></i>
+            </div>
+            <div class="spinner-container">
+                <div class="spinner"></div>
+            </div>
+            <div class="message" id="message">
+                LINEへリダイレクト中
+                <span class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </div>
+            <div class="sub-message">少々お待ちください...</div>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+            <div class="security-badge">
+                <i class="fas fa-shield-check"></i>
+                <span>安全な接続で保護されています</span>
+            </div>
+        </div>
+
+        <!-- Error state -->
+        <div id="error-container" class="error-container">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="error-message" id="error-message"></div>
+            <button class="retry-button" onclick="handleRedirect()">
+                <i class="fas fa-redo-alt"></i>再試行
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            defaultLineUrl: 'https://lin.ee/4NLfSqH'
+        };
+
+        // Track the visit and redirect
+        async function handleRedirect() {
+            try {
+                document.getElementById('error-container').style.display = 'none';
+                document.getElementById('loading-state').style.display = 'block';
+                document.getElementById('message').innerHTML = 'LINEへリダイレクト中<span class="loading-dots"><span></span><span></span><span></span></span>';
+
+                // Get tracking code from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const trackingCode = window.location.pathname.split('/').filter(Boolean).pop() || urlParams.get('t');
+
+                if (!trackingCode || trackingCode === 'index.html') {
+                    throw new Error('トラッキングコードが見つかりません');
+                }
+
+                // Collect tracking data
+                const trackingData = {
+                    tracking_code: trackingCode,
+                    ip_address: await getClientIP(),
+                    user_agent: navigator.userAgent,
+                    referrer: document.referrer || null,
+                    utm_source: urlParams.get('utm_source'),
+                    utm_medium: urlParams.get('utm_medium'),
+                    utm_campaign: urlParams.get('utm_campaign'),
+                    screen_resolution: `${screen.width}x${screen.height}`,
+                    language: navigator.language,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    visited_at: new Date().toISOString()
+                };
+
+                // Track the visit
+                const response = await fetch('/.netlify/functions/track-visit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(trackingData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'トラッキングに失敗しました');
+                }
+
+                const result = await response.json();
+                const lineUrl = result.line_friend_url || CONFIG.defaultLineUrl;
+
+                // Validate redirect URL
+                if (!isValidRedirectUrl(lineUrl)) {
+                    throw new Error('無効なリダイレクトURLです');
+                }
+
+                // Add UTM parameters to LINE URL if they exist
+                const finalUrl = addUtmParameters(lineUrl, trackingData);
+
+                document.getElementById('message').textContent = 'リダイレクト準備完了！';
+
+                // Redirect after a short delay
+                setTimeout(() => {
+                    if (isValidRedirectUrl(finalUrl)) {
+                        window.location.href = finalUrl;
+                    } else {
+                        showError('セキュリティ検証に失敗しました');
+                    }
+                }, 800);
+
+            } catch (error) {
+                console.error('Tracking error:', error);
+                showError(error.message || '予期しないエラーが発生しました');
+            }
+        }
+
+        // URL validation for security
+        function isValidRedirectUrl(url) {
+            try {
+                const urlObj = new URL(url);
+
+                // Allowed domains (whitelist)
+                const allowedDomains = [
+                    'line.me',
+                    'liff.line.me',
+                    'access.line.me',
+                    'timeline.line.me',
+                    'page.line.me',
+                    'lin.ee',
+                    window.location.hostname
+                ];
+
+                // Protocol check
+                if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+                    return false;
+                }
+
+                // Domain check
+                const hostname = urlObj.hostname.toLowerCase();
+                const isAllowed = allowedDomains.some(domain => {
+                    return hostname === domain || hostname.endsWith('.' + domain);
+                });
+
+                return isAllowed;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function addUtmParameters(url, trackingData) {
+            try {
+                if (!isValidRedirectUrl(url)) {
+                    throw new Error('無効なリダイレクトURLです');
+                }
+
+                const urlObj = new URL(url);
+
+                if (trackingData.utm_source) {
+                    urlObj.searchParams.set('utm_source', trackingData.utm_source);
+                }
+                if (trackingData.utm_medium) {
+                    urlObj.searchParams.set('utm_medium', trackingData.utm_medium);
+                }
+                if (trackingData.utm_campaign) {
+                    urlObj.searchParams.set('utm_campaign', trackingData.utm_campaign);
+                }
+
+                return urlObj.toString();
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        async function getClientIP() {
+            try {
+                const services = [
+                    'https://api64.ipify.org?format=json',
+                    'https://api.ipify.org?format=json'
+                ];
+
+                for (const service of services) {
+                    try {
+                        const response = await fetch(service, {
+                            timeout: 3000,
+                            signal: AbortSignal.timeout(3000)
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            return data.ip;
+                        }
+                    } catch (error) {
+                        continue;
+                    }
+                }
+
+                return 'unknown';
+            } catch (error) {
+                return 'unknown';
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-message').innerHTML = `
+                <strong>エラーが発生しました</strong>
+                ${message}
+            `;
+            document.getElementById('error-container').style.display = 'block';
+        }
+
+        // Initialize tracking on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            handleRedirect();
+        });
+
+        // Fallback timeout
+        setTimeout(() => {
+            if (window.location.href.includes('/t/')) {
+                showError('リダイレクトに時間がかかっています。再試行するか、サポートにお問い合わせください。');
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /.netlify/
+Disallow: /t/
+
+Allow: /
+
+Sitemap: https://taskmateai.net/sitemap.xml
