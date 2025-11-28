@@ -846,11 +846,14 @@ h6 {
 .faq-answer {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s ease, padding 0.3s ease;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
 }
 
 .faq-item.active .faq-answer {
-    max-height: 300px;
+    max-height: 500px;
+    opacity: 1;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease 0.1s;
 }
 
 .faq-answer p {

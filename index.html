@@ -634,22 +634,30 @@
         });
 
         // FAQ Accordion
-        document.querySelectorAll('.faq-question').forEach(button => {
-            button.addEventListener('click', () => {
-                const faqItem = button.parentElement;
-                const isActive = faqItem.classList.contains('active');
+        document.addEventListener('DOMContentLoaded', function() {
+            const faqQuestions = document.querySelectorAll('.faq-question');
 
-                // Close all FAQ items
-                document.querySelectorAll('.faq-item').forEach(item => {
-                    item.classList.remove('active');
-                    item.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+            faqQuestions.forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const faqItem = this.parentElement;
+                    const isActive = faqItem.classList.contains('active');
+
+                    // Close all FAQ items
+                    document.querySelectorAll('.faq-item').forEach(function(item) {
+                        item.classList.remove('active');
+                        const questionBtn = item.querySelector('.faq-question');
+                        if (questionBtn) {
+                            questionBtn.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+
+                    // Open clicked item if it wasn't active
+                    if (!isActive) {
+                        faqItem.classList.add('active');
+                        this.setAttribute('aria-expanded', 'true');
+                    }
                 });
-
-                // Open clicked item if it wasn't active
-                if (!isActive) {
-                    faqItem.classList.add('active');
-                    button.setAttribute('aria-expanded', 'true');
-                }
             });
         });
     </script>
