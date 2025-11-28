@@ -73,19 +73,23 @@
                         >
                     </div>
 
-                    <!-- 現在のパスワード（オプション） -->
+                    <!-- 現在のパスワード（必須） -->
                     <div>
                         <label for="currentPassword" class="block text-sm font-medium text-gray-700">
                             現在のパスワード
-                            <span class="text-xs text-gray-500">（覚えている場合）</span>
+                            <span class="text-xs text-red-500">*必須</span>
                         </label>
                         <input
                             type="password"
                             id="currentPassword"
                             x-model="currentPassword"
+                            required
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
                             placeholder="現在のパスワード"
                         >
+                        <p class="mt-1 text-xs text-gray-500">
+                            パスワードを忘れた場合は <a href="/agency/reset-password.html" class="text-emerald-600 hover:underline">こちら</a> からリセットしてください
+                        </p>
                     </div>
 
                     <!-- 新しいパスワード -->
@@ -184,69 +188,50 @@
                         return;
                     }
 
+                    // SECURITY: Password change requires current password authentication
+                    // This prevents unauthorized password changes even if email is known
+                    if (!this.currentPassword) {
+                        this.error = '現在のパスワードを入力してください。パスワードを忘れた場合は、メールでのリセットをご利用ください。';
+                        this.loading = false;
+                        return;
+                    }
+
                     try {
-                        // Step 1: リセットトークンを取得
-                        const resetResponse = await fetch('/.netlify/functions/password-reset-request', {
+                        // Authenticate with current password first
+                        const authResponse = await fetch('/.netlify/functions/agency-auth', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email: this.email })
+                            body: JSON.stringify({
+                                email: this.email,
+                                password: this.currentPassword
+                            })
                         });
 
-                        const resetData = await resetResponse.json();
-
-                        if (!resetResponse.ok || !resetData.token) {
-                            // 現在のパスワードで認証を試みる
-                            if (this.currentPassword) {
-                                const authResponse = await fetch('/.netlify/functions/agency-auth', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        email: this.email,
-                                        password: this.currentPassword
-                                    })
-                                });
-
-                                if (authResponse.ok) {
-                                    // 認証成功 - 直接パスワード更新
-                                    const updateResponse = await fetch('/.netlify/functions/agency-update-password', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'Authorization': `Bearer ${(await authResponse.json()).token}`
-                                        },
-                                        body: JSON.stringify({
-                                            newPassword: this.newPassword
-                                        })
-                                    });
-
-                                    if (updateResponse.ok) {
-                                        this.success = true;
-                                        return;
-                                    }
-                                }
-                            }
-
-                            this.error = 'メールアドレスが登録されていないか、現在のパスワードが正しくありません';
+                        if (!authResponse.ok) {
+                            this.error = 'メールアドレスまたは現在のパスワードが正しくありません';
                             this.loading = false;
                             return;
                         }
 
-                        // Step 2: トークンを使ってパスワードをリセット
-                        const confirmResponse = await fetch('/.netlify/functions/password-reset-confirm', {
+                        const authData = await authResponse.json();
+
+                        // Update password with authenticated token
+                        const updateResponse = await fetch('/.netlify/functions/agency-update-password', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${authData.token}`
+                            },
                             body: JSON.stringify({
-                                token: resetData.token,
-                                password: this.newPassword
+                                newPassword: this.newPassword
                             })
                         });
 
-                        const confirmData = await confirmResponse.json();
-
-                        if (confirmResponse.ok && confirmData.success) {
+                        if (updateResponse.ok) {
                             this.success = true;
                         } else {
-                            this.error = confirmData.error || 'パスワードの変更に失敗しました';
+                            const errorData = await updateResponse.json();
+                            this.error = errorData.error || 'パスワードの変更に失敗しました';
                         }
                     } catch (error) {
                         console.error('Error:', error);

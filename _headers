@@ -33,10 +33,12 @@
   Cache-Control: public, max-age=300
 
 # Functions CORS headers and security
+# SECURITY: Restrict CORS to specific domains only
 /.netlify/functions/*
-  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Origin: https://taskmateai.net
   Access-Control-Allow-Headers: Content-Type, Authorization, X-Agency-Id, X-CSRF-Token, X-Line-Signature
   Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+  Access-Control-Allow-Credentials: true
   Cache-Control: no-store, no-cache, must-revalidate, private
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

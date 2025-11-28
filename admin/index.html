@@ -8,9 +8,22 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="../images/logo.png">
     <link rel="apple-touch-icon" href="../images/logo.png">
+    <!-- Tailwind CSS - Production builds should use compiled CSS instead of CDN -->
+    <!-- Note: cdn.tailwindcss.com doesn't support SRI due to JIT compilation -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Alpine.js with SRI -->
+    <script src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"
+            integrity="sha384-xVPf/q4gIB8xO/GQEyq7mIFkTW1QZm4KvhZ5hwqOKypJmVP0cvPXZIaFfD3vu+7n"
+            crossorigin="anonymous"
+            defer></script>
+
+    <!-- Font Awesome with SRI -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div x-data="adminDashboard()" x-init="init()" class="min-h-screen">

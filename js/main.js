@@ -171,7 +171,15 @@ function initNumberAnimation() {
                     current = target;
                     clearInterval(timer);
                 }
-                stat.innerHTML = Math.floor(current) + '<span style="font-size: 0.5em; font-weight: 600;">' + suffix + '</span>';
+                // XSS Safe: Create elements instead of innerHTML
+                stat.textContent = '';
+                const numberText = document.createTextNode(Math.floor(current).toString());
+                const suffixSpan = document.createElement('span');
+                suffixSpan.style.fontSize = '0.5em';
+                suffixSpan.style.fontWeight = '600';
+                suffixSpan.textContent = suffix;
+                stat.appendChild(numberText);
+                stat.appendChild(suffixSpan);
             }, 16);
         });
     }

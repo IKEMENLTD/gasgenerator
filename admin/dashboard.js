@@ -45,12 +45,8 @@ function adminDashboard() {
         },
         masterAgencyCode: '', // 運営の代理店コード
 
-        // Configuration - Security Note: Move credentials to environment variables
-        config: {
-            supabaseUrl: 'https://your-project.supabase.co',
-            supabaseKey: 'your-anon-key'
-            // adminCredentials removed for security - use server-side validation only
-        },
+        // SECURITY: All configuration is now server-side via environment variables
+        // No sensitive data should be stored client-side
 
         async init() {
             // Check for existing authentication
@@ -223,15 +219,23 @@ function adminDashboard() {
             try {
                 await navigator.clipboard.writeText(text);
 
-                // Show temporary success message
+                // Show temporary success message (XSS safe)
                 const button = event.currentTarget;
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-check"></i> コピー済み！';
+                const originalContent = button.innerHTML;
+
+                // Clear and rebuild safely
+                button.textContent = '';
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-check';
+                const textNode = document.createTextNode(' コピー済み！');
+                button.appendChild(icon);
+                button.appendChild(textNode);
+
                 button.classList.remove('bg-emerald-100', 'hover:bg-emerald-200', 'text-emerald-600');
                 button.classList.add('bg-green-100', 'text-green-600');
 
                 setTimeout(() => {
-                    button.innerHTML = originalText;
+                    button.innerHTML = originalContent;
                     button.classList.remove('bg-green-100', 'text-green-600');
                     button.classList.add('bg-emerald-100', 'hover:bg-emerald-200', 'text-emerald-600');
                 }, 2000);
@@ -332,19 +336,32 @@ function adminDashboard() {
         },
 
         viewAgencyDetails(agency) {
-            alert(`
-代理店詳細:
-コード: ${agency.code}
-会社名: ${agency.company_name}
-代理店名: ${agency.name}
-担当者: ${agency.owner_name}
-メール: ${agency.contact_email}
-電話: ${agency.contact_phone}
-住所: ${agency.address || 'N/A'}
-手数料率: ${agency.commission_rate}%
-ステータス: ${this.getStatusLabel(agency.status)}
-登録日: ${this.formatDate(agency.created_at)}
-            `.trim());
+            // SECURITY: Escape all user-provided data before display
+            const escapeText = (str) => {
+                if (!str) return 'N/A';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#x27;');
+            };
+
+            const details = [
+                '代理店詳細:',
+                `コード: ${escapeText(agency.code)}`,
+                `会社名: ${escapeText(agency.company_name)}`,
+                `代理店名: ${escapeText(agency.name)}`,
+                `担当者: ${escapeText(agency.owner_name)}`,
+                `メール: ${escapeText(agency.contact_email)}`,
+                `電話: ${escapeText(agency.contact_phone)}`,
+                `住所: ${escapeText(agency.address)}`,
+                `手数料率: ${Number(agency.commission_rate) || 0}%`,
+                `ステータス: ${escapeText(this.getStatusLabel(agency.status))}`,
+                `登録日: ${escapeText(this.formatDate(agency.created_at))}`
+            ].join('\n');
+
+            alert(details);
         },
 
         getStatusLabel(status) {
