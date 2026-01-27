@@ -5,6 +5,16 @@ import { InputValidator } from '../utils/input-validator'
 // SessionQueriesを再エクスポート
 export { SessionQueries } from './session-queries'
 
+// サブスクリプション・システム関連クエリを再エクスポート
+export {
+  SubscriptionPlanQueries,
+  UserSubscriptionQueries,
+  SystemQueries,
+  SystemDocumentQueries,
+  DownloadQueries,
+  SystemAccessQueries
+} from './subscription-queries'
+
 export class UserQueries {
   static async createOrUpdate(lineUserId: string, displayName?: string) {
     try {

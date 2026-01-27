@@ -136,3 +136,6 @@ export type InsertUserState = Database['public']['Tables']['user_states']['Inser
 export type UpdateTrackingLink = Database['public']['Tables']['tracking_links']['Update']
 export type UpdateTrackingSession = Database['public']['Tables']['tracking_sessions']['Update']
 export type UpdateUserState = Database['public']['Tables']['user_states']['Update']
+
+// 新料金プラン・RAG関連の型をre-export
+export * from './subscription-types'

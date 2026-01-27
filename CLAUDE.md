@@ -2155,3 +2155,94 @@ Render無料プラン（512MB RAM）ではNode.jsヒープが約46MBに制限さ
 ### 修正日時
 2026-01-27
 
+---
+
+## 2026-01-27: 新料金プラン・RAGシステム データベース設計・実装
+
+### 実装内容
+
+議事録に基づき、新料金プラン（1万円/5万円）とRAGシステムの基盤を実装。
+
+### 作成したファイル
+
+#### 1. SQLマイグレーション
+- `migrations/001_subscription_and_rag_tables.sql`
+
+**新規テーブル:**
+| テーブル名 | 説明 |
+|------------|------|
+| `subscription_plans` | サブスクリプションプラン定義（1万円/5万円） |
+| `user_subscriptions` | ユーザーのサブスク状態 |
+| `systems` | インターン作成システムカタログ |
+| `system_documents` | システム設計書（RAG用） |
+| `system_embeddings` | ベクトル埋め込み（RAG用） |
+| `user_downloads` | ダウンロード履歴（ロック機能用） |
+| `user_system_access` | システムアクセス権管理 |
+
+**RPC関数:**
+- `can_download_system`: ダウンロード可否チェック
+- `execute_system_download`: ダウンロード実行
+- `reset_monthly_download_count`: 月次リセット
+
+#### 2. TypeScript型定義
+- `lib/supabase/subscription-types.ts`
+  - SubscriptionPlan, UserSubscription
+  - System, SystemDocument, SystemEmbedding
+  - UserDownload, UserSystemAccess
+  - CanDownloadResult, ExecuteDownloadResult
+
+#### 3. クエリクラス
+- `lib/supabase/subscription-queries.ts`
+  - SubscriptionPlanQueries: プラン取得
+  - UserSubscriptionQueries: サブスク管理
+  - SystemQueries: システムカタログ管理
+  - SystemDocumentQueries: ドキュメント管理
+  - DownloadQueries: ダウンロード管理
+  - SystemAccessQueries: アクセス権管理
+
+#### 4. RAGサービス
+- `lib/rag/embedding-service.ts`
+  - ドキュメントのチャンク化
+  - OpenAI text-embedding-ada-002でベクトル化
+  - 類似検索（pgvector対応 + フォールバック）
+
+- `lib/rag/qa-service.ts`
+  - 質問応答機能（Claude API使用）
+  - システム紹介文生成
+  - FAQ自動生成
+
+#### 5. 既存ファイルの更新
+- `lib/supabase/types.ts`: 新型定義のre-export追加
+- `lib/supabase/queries.ts`: 新クエリクラスのre-export追加
+
+### プラン詳細（実装済み）
+
+| 項目 | 1万円プラン (basic) | 5万円プラン (professional) |
+|------|---------------------|---------------------------|
+| 月額 | ¥10,000 | ¥50,000 |
+| 契約期間 | 6ヶ月 | 6ヶ月 |
+| システム閲覧 | 3システム | 無制限 |
+| 月間DL | 1回 | 5回 |
+| 無料サポート | 0回 | 1回/月 |
+| 追加サポート | ¥10,000/回 | - |
+
+### 次のステップ
+
+1. **マイグレーション実行**: Supabaseダッシュボードで`001_subscription_and_rag_tables.sql`を実行
+2. **pgvector有効化**: Supabaseで`CREATE EXTENSION vector;`を実行
+3. **システムデータ投入**: インターン作成システムを`systems`テーブルに登録
+4. **ドキュメント投入**: 設計書を`system_documents`テーブルに登録
+5. **embedding生成**: `EmbeddingService.processAllDocuments()`を実行
+6. **API実装**: LINE Bot統合用のAPIエンドポイント作成
+7. **管理画面**: システム管理用のAdmin UI作成
+
+### 技術的な決定事項
+
+1. **pgvectorフォールバック**: pgvectorが使えない環境でもJSONB + JS計算で動作
+2. **チャンクサイズ**: 1000文字、200文字オーバーラップ
+3. **類似度閾値**: 0.7以上を関連ドキュメントとして返す
+4. **embedding API**: OpenAI text-embedding-ada-002（1536次元）
+
+### 修正日時
+2026-01-27
+
