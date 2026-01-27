@@ -2,18 +2,17 @@ services:
   - type: web
     name: gas-generator
     runtime: node
-    buildCommand: NODE_OPTIONS="--max-old-space-size=1536" npm install && npm run build
-    startCommand: npm run start
+    plan: standard
+    buildCommand: npm ci && npm run build
+    startCommand: node --expose-gc --max-old-space-size=1536 node_modules/.bin/next start
     envVars:
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
         value: 18.17.0
       - key: NODE_OPTIONS
-        value: --max-old-space-size=1536 --expose-gc
-    healthCheckPath: /
+        value: "--max-old-space-size=1536"
+      - key: PORT
+        value: "10000"
+    healthCheckPath: /api/health
     autoDeploy: true
-
-  # Renderでは外部のcronサービスを使用するか、
-  # または管理画面からCron Jobsを手動で設定する必要があります
-  # 参考: https://render.com/docs/cronjobs
