@@ -174,7 +174,7 @@ export class MemoryManager {
       } catch (error) {
         // Edge Runtimeでのエラーは無視
       }
-    }, 30000) // 30秒ごとにチェック
+    }, 60000) // 60秒ごとにチェック（負荷軽減）
   }
 
   /**

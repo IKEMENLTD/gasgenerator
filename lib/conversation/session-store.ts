@@ -47,12 +47,12 @@ export class ConversationSessionStore {
   private timerManager: TimerManager
   private lastCleanupTime: number = 0
 
-  // 2時間のタイムアウト（メモリリーク対策、ユーザー体験のバランス）
-  private readonly SESSION_TIMEOUT = 2 * 60 * 60 * 1000 // 2時間
-  // 最大保持セッション数（メモリ管理のため適切な上限を設定）
-  private readonly MAX_SESSIONS = 100 // 100セッションまで対応
+  // 30分のタイムアウト（低メモリ環境最適化）
+  private readonly SESSION_TIMEOUT = 30 * 60 * 1000 // 30分（2時間から短縮）
+  // 最大保持セッション数（Render無料プラン対応で削減）
+  private readonly MAX_SESSIONS = 20 // 20セッションまで（100から削減）
   // クリーンアップ間隔
-  private readonly CLEANUP_INTERVAL = 5 * 60 * 1000 // 5分ごとにクリーンアップ
+  private readonly CLEANUP_INTERVAL = 3 * 60 * 1000 // 3分ごとにクリーンアップ（5分から短縮）
 
   private constructor() {
     // タイマーマネージャーを初期化

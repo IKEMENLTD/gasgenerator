@@ -3,6 +3,7 @@
  *
  * 🔧 修正履歴:
  * - 2025-10-17: メモリリーク対策として作成
+ * - 2026-01-27: 低メモリ環境最適化（CHECK_INTERVAL 60秒に延長）
  */
 
 import { logger } from '../utils/logger'
@@ -11,7 +12,7 @@ import { ConversationSessionStore } from '../conversation/session-store'
 export class MemoryMonitor {
   private static readonly WARNING_THRESHOLD = 0.8 // 80%
   private static readonly CRITICAL_THRESHOLD = 0.9 // 90%
-  private static readonly CHECK_INTERVAL = 30000 // 30秒
+  private static readonly CHECK_INTERVAL = 60000 // 60秒（30秒から延長して負荷軽減）
   private static checkTimer: NodeJS.Timeout | null = null
 
   /**
