@@ -2100,3 +2100,58 @@ CSSファイルも絶対パス (`href="/css/styles.css"`) で読み込まれて�
 ### 修正日時
 2025-11-07
 
+---
+
+## 2026-01-27: メモリ最適化 - Render無料プラン対応
+
+### 問題の発見
+
+Renderログ分析により、深刻なメモリ問題を発見:
+- **メモリ使用率**: 常に91-92%
+- **30秒ごとにCRITICALエラー**が発生
+- **GC実行後もfreedMB: 0**（解放されない）
+
+```
+heapUsed: 42MB / heapTotal: 46MB = 92%使用率
+```
+
+### 根本原因
+
+Render無料プラン（512MB RAM）ではNode.jsヒープが約46MBに制限される。
+現在の設定（MAX_SESSIONS=100, SESSION_TIMEOUT=2時間）は大きすぎた。
+
+### 修正内容
+
+| ファイル | 項目 | 変更前 | 変更後 |
+|----------|------|--------|--------|
+| `lib/conversation/session-store.ts` | MAX_SESSIONS | 100 | **20** |
+| `lib/conversation/session-store.ts` | SESSION_TIMEOUT | 2時間 | **30分** |
+| `lib/conversation/session-store.ts` | CLEANUP_INTERVAL | 5分 | **3分** |
+| `lib/monitoring/memory-monitor.ts` | CHECK_INTERVAL | 30秒 | **60秒** |
+| `lib/utils/memory-manager.ts` | 監視間隔 | 30秒 | **60秒** |
+
+### コミット
+- `6824c4c`: fix: メモリ最適化 - Render無料プラン対応
+
+### 技術的な決定事項
+
+1. **MAX_SESSIONS = 20**: 10は少なすぎ、20が妥当
+2. **SESSION_TIMEOUT = 30分**: 15分は短すぎ、30分がユーザー体験のバランス
+3. **CHECK_INTERVAL = 60秒**: 監視頻度を下げて負荷軽減
+
+### 今後のタスク
+
+1. **RAG構築**: インターン生のシステムをSupabase pgvectorに登録
+2. **ロック機能**: プラン別DL制限の実装
+3. **新料金プラン**: 1万円/5万円プランのシステム実装
+
+### 新ビジネスモデル概要（議事録より）
+
+| プラン | 月額 | 契約期間 | 機能 |
+|--------|------|----------|------|
+| 1万円プラン | 1万円 | 半年縛り | 3システム閲覧、1つDL、サポート1回1万円 |
+| 5万円プラン | 5万円 | 半年縛り | 全閲覧、月5つDL、サポート月1回無料 |
+
+### 修正日時
+2026-01-27
+
