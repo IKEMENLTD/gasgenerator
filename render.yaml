@@ -2,16 +2,18 @@ services:
   - type: web
     name: gas-generator
     runtime: node
-    buildCommand: npm install && npm run build
+    buildCommand: NODE_OPTIONS="--max-old-space-size=1536" npm install && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
         value: 18.17.0
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=1536 --expose-gc
     healthCheckPath: /
     autoDeploy: true
-  
+
   # Renderでは外部のcronサービスを使用するか、
   # または管理画面からCron Jobsを手動で設定する必要があります
   # 参考: https://render.com/docs/cronjobs

@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "node --expose-gc --max-old-space-size=1536 --optimize-for-size --no-deprecation node_modules/.bin/next start -p ${PORT:-10000}",
+    "build": "NODE_OPTIONS='--max-old-space-size=1536' next build",
+    "start": "next start -p 10000",
     "lint": "next lint",
     "type-check": "tsc --noEmit || true"
   },
