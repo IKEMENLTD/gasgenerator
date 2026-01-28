@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【デモ】経費精算ワークフロー</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #e0e5ec;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --primary: #4d7bf3;
+            --primary-dark: #3a5fc7;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --text: #4a4a4a;
+            --text-light: #7a7a7a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg); font-family: 'Noto Sans JP', sans-serif; color: var(--text); min-height: 100vh; }
+        .demo-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 12px 20px; text-align: center;
+            font-weight: 600; font-size: 14px; position: fixed;
+            top: 0; left: 0; right: 0; z-index: 9999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .app-container { min-height: 100vh; display: flex; flex-direction: column; padding-top: 44px; }
+        .main-content { flex: 1; padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; }
+        .soft-nav {
+            background: var(--bg); padding: 15px 20px;
+            display: flex; align-items: center; gap: 20px;
+            box-shadow: 0 4px 12px var(--shadow-dark);
+            position: sticky; top: 44px; z-index: 100;
+        }
+        .nav-brand { font-weight: 700; font-size: 1.2rem; color: var(--primary); white-space: nowrap; }
+        .nav-tabs { display: flex; gap: 8px; flex: 1; overflow-x: auto; }
+        .nav-tab {
+            border: none; background: var(--bg); color: var(--text-light);
+            font-family: inherit; font-size: 0.9rem; font-weight: 500;
+            padding: 10px 16px; border-radius: 25px; cursor: pointer; white-space: nowrap;
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            transition: all 0.2s;
+        }
+        .nav-tab:hover { color: var(--primary); }
+        .nav-tab.active { color: var(--primary); box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
+        .nav-user { font-size: 0.85rem; color: var(--text-light); white-space: nowrap; }
+        .soft-card {
+            background: var(--bg); border-radius: 30px;
+            box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+            padding: 30px; margin-bottom: 20px;
+        }
+        .soft-card h1 { text-align: center; color: var(--primary); margin-bottom: 25px; font-weight: 700; font-size: 1.5rem; }
+        .soft-card h2 { color: var(--text); margin-bottom: 15px; font-size: 1.1rem; font-weight: 600; }
+        .view { display: none; }
+        .view.active { display: block; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-card {
+            background: var(--bg); border-radius: 20px; padding: 20px; text-align: center;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+        }
+        .stat-label { font-size: 0.85rem; color: var(--text-light); margin-bottom: 8px; }
+        .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+        .expense-list { display: flex; flex-direction: column; gap: 15px; }
+        .expense-item {
+            background: var(--bg); border-radius: 20px; padding: 20px;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .expense-item:hover { transform: translateY(-2px); box-shadow: 7px 7px 14px var(--shadow-dark), -7px -7px 14px var(--shadow-light); }
+        .expense-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .expense-category { font-weight: 600; color: var(--text); }
+        .expense-status { font-size: 0.85rem; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+        .status-申請中 { background: #fff3cd; color: #856404; }
+        .status-承認済 { background: #d4edda; color: #155724; }
+        .status-差戻し { background: #f8d7da; color: #721c24; }
+        .status-精算済 { background: #cce5ff; color: #004085; }
+        .expense-body { display: flex; justify-content: space-between; align-items: flex-end; }
+        .expense-info { font-size: 0.9rem; color: var(--text-light); }
+        .expense-amount { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+        .expense-date { font-size: 0.85rem; color: var(--text-light); margin-top: 8px; }
+        .chart-section { margin-bottom: 30px; }
+        .chart-container {
+            background: var(--bg); border-radius: 15px; padding: 15px;
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+        }
+        .chart-bar { display: flex; align-items: center; margin-bottom: 12px; }
+        .chart-label { width: 80px; font-size: 0.85rem; color: var(--text); }
+        .chart-bar-container {
+            flex: 1; height: 24px; background: var(--bg); border-radius: 12px; overflow: hidden;
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light); margin: 0 10px;
+        }
+        .chart-bar-fill { height: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: 12px; transition: width 0.5s ease; }
+        .chart-value { width: 100px; text-align: right; font-size: 0.85rem; font-weight: 600; color: var(--text); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; padding-left: 10px; font-size: 0.95rem; }
+        input, select, textarea {
+            width: 100%; border: none; background: var(--bg); border-radius: 15px; padding: 15px;
+            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+            font-family: inherit; font-size: 1rem; color: var(--text); outline: none; transition: all 0.2s;
+        }
+        .btn-soft {
+            border: none; background: var(--bg); font-family: inherit; font-weight: 700; font-size: 1rem;
+            padding: 15px 30px; border-radius: 50px; cursor: pointer; transition: all 0.2s;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+        }
+        .btn-soft:hover { transform: translateY(-2px); }
+        .btn-primary { width: 100%; color: var(--primary); margin-top: 10px; }
+        .filter-bar { margin-bottom: 20px; }
+        .filter-bar select { max-width: 200px; }
+        .dashboard-period { text-align: center; font-size: 1.1rem; color: var(--text-light); margin-bottom: 20px; }
+        @media (max-width: 600px) {
+            .soft-nav { flex-wrap: wrap; gap: 10px; }
+            .nav-tabs { order: 3; width: 100%; justify-content: center; }
+            .nav-tab { padding: 8px 12px; font-size: 0.85rem; }
+            .soft-card { padding: 20px; border-radius: 20px; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-banner">
+        デモ版 - サンプルデータで動作を体験できます（データは保存されません）
+    </div>
+    <div class="app-container">
+        <nav class="soft-nav">
+            <div class="nav-brand">経費精算</div>
+            <div class="nav-tabs">
+                <button class="nav-tab" data-view="apply">申請</button>
+                <button class="nav-tab" data-view="history">履歴</button>
+                <button class="nav-tab" data-view="approve">承認</button>
+                <button class="nav-tab active" data-view="dashboard">集計</button>
+            </div>
+            <div class="nav-user">田中太郎</div>
+        </nav>
+
+        <main class="main-content">
+            <!-- 申請フォーム -->
+            <div id="applyView" class="view">
+                <div class="soft-card">
+                    <h1>経費申請</h1>
+                    <form id="expenseForm">
+                        <div class="form-group">
+                            <label>申請者</label>
+                            <select id="employeeId">
+                                <option value="1">田中太郎</option>
+                                <option value="2">鈴木花子</option>
+                                <option value="3">佐藤次郎</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>利用日</label>
+                            <input type="date" id="usageDate" value="2026-01-28">
+                        </div>
+                        <div class="form-group">
+                            <label>経費科目</label>
+                            <select id="categoryId">
+                                <option value="">選択してください</option>
+                                <option value="1">交通費</option>
+                                <option value="2">接待交際費</option>
+                                <option value="3">消耗品費</option>
+                                <option value="4">通信費</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>金額（税込）</label>
+                            <input type="number" id="amount" placeholder="例: 5000">
+                        </div>
+                        <div class="form-group">
+                            <label>支払先・店舗名</label>
+                            <input type="text" id="payee" placeholder="例：JR東日本">
+                        </div>
+                        <div class="form-group">
+                            <label>目的・用途</label>
+                            <textarea id="purpose" rows="2" placeholder="例：顧客訪問のための移動"></textarea>
+                        </div>
+                        <button type="button" class="btn-soft btn-primary" onclick="showDemoAlert()">申請する</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 履歴ビュー -->
+            <div id="historyView" class="view">
+                <div class="soft-card">
+                    <h1>申請履歴</h1>
+                    <div class="filter-bar">
+                        <select id="historyFilter">
+                            <option value="all">すべて</option>
+                            <option value="申請中">申請中</option>
+                            <option value="承認済">承認済</option>
+                        </select>
+                    </div>
+                    <div class="expense-list" id="expenseList"></div>
+                </div>
+            </div>
+
+            <!-- 承認ビュー -->
+            <div id="approveView" class="view">
+                <div class="soft-card">
+                    <h1>承認待ち一覧</h1>
+                    <div class="expense-list" id="pendingList"></div>
+                </div>
+            </div>
+
+            <!-- ダッシュボード -->
+            <div id="dashboardView" class="view active">
+                <div class="soft-card">
+                    <h1>経費集計</h1>
+                    <div class="dashboard-period">2026年1月</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">申請件数</div>
+                            <div class="stat-value">24件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">申請金額</div>
+                            <div class="stat-value">¥385,000</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">承認済</div>
+                            <div class="stat-value">18件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">承認待ち</div>
+                            <div class="stat-value">6件</div>
+                        </div>
+                    </div>
+                    <div class="chart-section">
+                        <h2>部署別経費</h2>
+                        <div class="chart-container" id="deptChart"></div>
+                    </div>
+                    <div class="chart-section">
+                        <h2>科目別経費</h2>
+                        <div class="chart-container" id="categoryChart"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // デモ用モックデータ
+        const MOCK_EXPENSES = [
+            { id: 'EXP001', category: '交通費', amount: 12500, status: '承認済', date: '2026-01-25', employee: '田中太郎', payee: 'JR東日本' },
+            { id: 'EXP002', category: '接待交際費', amount: 35000, status: '申請中', date: '2026-01-24', employee: '田中太郎', payee: '和食さとう' },
+            { id: 'EXP003', category: '消耗品費', amount: 8800, status: '承認済', date: '2026-01-23', employee: '鈴木花子', payee: 'ヨドバシカメラ' },
+            { id: 'EXP004', category: '交通費', amount: 4500, status: '差戻し', date: '2026-01-22', employee: '佐藤次郎', payee: '東京メトロ' },
+            { id: 'EXP005', category: '通信費', amount: 15000, status: '申請中', date: '2026-01-21', employee: '田中太郎', payee: 'NTTドコモ' },
+        ];
+
+        const MOCK_PENDING = [
+            { id: 'EXP002', category: '接待交際費', amount: 35000, date: '2026-01-24', employee: '田中太郎', payee: '和食さとう' },
+            { id: 'EXP005', category: '通信費', amount: 15000, date: '2026-01-21', employee: '田中太郎', payee: 'NTTドコモ' },
+        ];
+
+        const DEPT_DATA = [
+            { name: '営業部', amount: 185000 },
+            { name: '開発部', amount: 95000 },
+            { name: '総務部', amount: 55000 },
+            { name: '経理部', amount: 50000 },
+        ];
+
+        const CATEGORY_DATA = [
+            { name: '交通費', amount: 125000 },
+            { name: '接待費', amount: 98000 },
+            { name: '消耗品', amount: 75000 },
+            { name: '通信費', amount: 87000 },
+        ];
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            initNavigation();
+            renderExpenseList();
+            renderPendingList();
+            renderCharts();
+        });
+
+        function initNavigation() {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.view + 'View').classList.add('active');
+                });
+            });
+        }
+
+        function renderExpenseList() {
+            const container = document.getElementById('expenseList');
+            container.innerHTML = MOCK_EXPENSES.map(e => `
+                <div class="expense-item">
+                    <div class="expense-header">
+                        <span class="expense-category">${e.category}</span>
+                        <span class="expense-status status-${e.status}">${e.status}</span>
+                    </div>
+                    <div class="expense-body">
+                        <div class="expense-info">${e.payee}</div>
+                        <div class="expense-amount">¥${e.amount.toLocaleString()}</div>
+                    </div>
+                    <div class="expense-date">${e.date} - ${e.employee}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderPendingList() {
+            const container = document.getElementById('pendingList');
+            container.innerHTML = MOCK_PENDING.map(e => `
+                <div class="expense-item">
+                    <div class="expense-header">
+                        <span class="expense-category">${e.category}</span>
+                        <span class="expense-status status-申請中">承認待ち</span>
+                    </div>
+                    <div class="expense-body">
+                        <div class="expense-info">${e.employee} - ${e.payee}</div>
+                        <div class="expense-amount">¥${e.amount.toLocaleString()}</div>
+                    </div>
+                    <div class="expense-date">${e.date}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderCharts() {
+            const maxDept = Math.max(...DEPT_DATA.map(d => d.amount));
+            document.getElementById('deptChart').innerHTML = DEPT_DATA.map(d => `
+                <div class="chart-bar">
+                    <div class="chart-label">${d.name}</div>
+                    <div class="chart-bar-container">
+                        <div class="chart-bar-fill" style="width: ${(d.amount / maxDept * 100)}%"></div>
+                    </div>
+                    <div class="chart-value">¥${d.amount.toLocaleString()}</div>
+                </div>
+            `).join('');
+
+            const maxCat = Math.max(...CATEGORY_DATA.map(d => d.amount));
+            document.getElementById('categoryChart').innerHTML = CATEGORY_DATA.map(d => `
+                <div class="chart-bar">
+                    <div class="chart-label">${d.name}</div>
+                    <div class="chart-bar-container">
+                        <div class="chart-bar-fill" style="width: ${(d.amount / maxCat * 100)}%"></div>
+                    </div>
+                    <div class="chart-value">¥${d.amount.toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        function showDemoAlert() {
+            alert('【デモ】経費申請が完了しました（実際には保存されません）');
+        }
+    </script>
+</body>
+</html>

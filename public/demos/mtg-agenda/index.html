@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【デモ】定例MTGアジェンダ自動収集</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #e0e5ec;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --primary: #4d7bf3;
+            --primary-dark: #3a5fc7;
+            --secondary: #6c757d;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --text: #4a4a4a;
+            --text-light: #7a7a7a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg); font-family: 'Nunito', sans-serif; color: var(--text);
+            display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;
+        }
+        .demo-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 12px 20px; text-align: center;
+            font-weight: 600; font-size: 14px; position: fixed;
+            top: 0; left: 0; right: 0; z-index: 9999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .soft-card {
+            width: 100%; max-width: 500px; background: var(--bg); border-radius: 30px;
+            box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+            padding: 40px; position: relative; margin-top: 60px;
+        }
+        h1 { text-align: center; color: var(--primary); margin-top: 0; margin-bottom: 10px; font-weight: 700; font-size: 1.5rem; }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 10px; font-size: 1.2rem; }
+        .subtitle { text-align: center; color: var(--text-light); margin-bottom: 25px; font-size: 0.9rem; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; padding-left: 10px; font-size: 0.9rem; }
+        .required { color: var(--danger); }
+        input, select, textarea {
+            width: 100%; border: none; background: var(--bg); border-radius: 15px; padding: 15px;
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+            font-family: inherit; font-size: 1rem; color: var(--text); outline: none; transition: all 0.2s;
+        }
+        textarea { resize: vertical; min-height: 80px; }
+        .btn-soft {
+            width: 100%; border: none; background: var(--bg); color: var(--primary); font-weight: 700; font-size: 1rem;
+            padding: 15px; border-radius: 50px; cursor: pointer; transition: all 0.2s; margin-top: 10px;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-soft:hover { transform: translateY(-2px); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { color: var(--secondary); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 25px; justify-content: center; flex-wrap: wrap; }
+        .nav-tab {
+            border: none; background: var(--bg); color: var(--text-light); font-family: inherit;
+            font-size: 0.85rem; font-weight: 600; padding: 10px 20px; border-radius: 25px; cursor: pointer;
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light); transition: all 0.2s;
+        }
+        .nav-tab:hover { color: var(--primary); }
+        .nav-tab.active { color: var(--primary); box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .mtg-item, .member-item, .topic-item {
+            background: var(--bg); border-radius: 15px; padding: 15px;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            cursor: pointer; transition: all 0.2s; margin-bottom: 12px;
+        }
+        .mtg-item:hover, .member-item:hover { transform: translateY(-2px); }
+        .mtg-name { font-weight: 700; color: var(--text); margin-bottom: 5px; }
+        .mtg-info { font-size: 0.85rem; color: var(--text-light); }
+        .topic-item { cursor: default; }
+        .topic-title { font-weight: 700; color: var(--text); margin-bottom: 8px; }
+        .topic-meta { font-size: 0.85rem; color: var(--text-light); display: flex; gap: 15px; flex-wrap: wrap; }
+        .topic-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;
+        }
+        .badge-共有 { background: #e3f2fd; color: #1565c0; }
+        .badge-相談 { background: #fff3e0; color: #e65100; }
+        .badge-決定 { background: #e8f5e9; color: #2e7d32; }
+        .badge-ブレスト { background: #f3e5f5; color: #7b1fa2; }
+        .success-icon { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px; display: flex;
+            align-items: center; justify-content: center; font-size: 40px; color: var(--success);
+            background: var(--bg); box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light); }
+        .agenda-list { margin-top: 20px; }
+        .agenda-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .agenda-date { font-size: 0.9rem; color: var(--text-light); }
+        @media (max-width: 500px) {
+            .soft-card { padding: 25px; border-radius: 20px; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-banner">
+        デモ版 - サンプルデータで動作を体験できます（データは保存されません）
+    </div>
+
+    <div class="soft-card">
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="home">ホーム</button>
+            <button class="nav-tab" data-tab="agenda">アジェンダ</button>
+            <button class="nav-tab" data-tab="submit">議題投稿</button>
+        </nav>
+
+        <!-- ホームタブ -->
+        <div id="homeTab" class="view-section active">
+            <h1>定例MTGアジェンダ</h1>
+            <p class="subtitle">今週のMTGを選択してください</p>
+            <div id="mtgList">
+                <div class="mtg-item" onclick="selectMtg('weekly')">
+                    <div class="mtg-name">週次定例ミーティング</div>
+                    <div class="mtg-info">毎週月曜 10:00〜11:00</div>
+                </div>
+                <div class="mtg-item" onclick="selectMtg('project')">
+                    <div class="mtg-name">プロジェクト進捗会議</div>
+                    <div class="mtg-info">毎週水曜 14:00〜15:00</div>
+                </div>
+                <div class="mtg-item" onclick="selectMtg('team')">
+                    <div class="mtg-name">チームブレスト</div>
+                    <div class="mtg-info">毎週金曜 16:00〜17:00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- アジェンダタブ -->
+        <div id="agendaTab" class="view-section">
+            <h1>次回のアジェンダ</h1>
+            <div class="agenda-header">
+                <span class="mtg-name" id="agendaMtgName">週次定例ミーティング</span>
+                <span class="agenda-date">2026/01/27 10:00</span>
+            </div>
+            <div class="agenda-list" id="agendaList"></div>
+        </div>
+
+        <!-- 議題投稿タブ -->
+        <div id="submitTab" class="view-section">
+            <h1>議題投稿</h1>
+            <p class="subtitle">週次定例ミーティング</p>
+            <form id="topicForm">
+                <div class="form-group">
+                    <label>議題タイトル <span class="required">*</span></label>
+                    <input type="text" id="topicTitle" placeholder="例: 新機能の進捗共有">
+                </div>
+                <div class="form-group">
+                    <label>議題詳細</label>
+                    <textarea id="topicDetail" rows="3" placeholder="議題の詳細や背景を入力してください"></textarea>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>議題種別 <span class="required">*</span></label>
+                        <select id="topicType">
+                            <option value="">選択...</option>
+                            <option value="共有">共有</option>
+                            <option value="相談">相談</option>
+                            <option value="決定">決定</option>
+                            <option value="ブレスト">ブレスト</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>希望時間</label>
+                        <select id="topicDuration">
+                            <option value="5">5分</option>
+                            <option value="10" selected>10分</option>
+                            <option value="15">15分</option>
+                            <option value="20">20分</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>投稿者</label>
+                    <select id="topicMember">
+                        <option value="1">田中太郎</option>
+                        <option value="2">鈴木花子</option>
+                        <option value="3">佐藤次郎</option>
+                    </select>
+                </div>
+                <button type="button" class="btn-soft btn-primary" onclick="submitTopic()">送信する</button>
+            </form>
+        </div>
+
+        <!-- 完了画面 -->
+        <div id="successView" class="view-section">
+            <div class="success-icon">✓</div>
+            <h2>送信完了</h2>
+            <p class="subtitle">議題を登録しました</p>
+            <button class="btn-soft" onclick="resetForm()">続けて投稿</button>
+            <button class="btn-soft btn-secondary" onclick="showTab('home')">ホームに戻る</button>
+        </div>
+    </div>
+
+    <script>
+        // モックデータ
+        const MOCK_AGENDA = [
+            { title: '新機能リリース計画の共有', type: '共有', duration: 15, member: '田中太郎', priority: '高' },
+            { title: 'Q1の目標達成状況', type: '共有', duration: 10, member: '鈴木花子', priority: '中' },
+            { title: 'デザインシステムの導入について', type: '相談', duration: 20, member: '佐藤次郎', priority: '中' },
+            { title: '来期の予算配分', type: '決定', duration: 15, member: '田中太郎', priority: '高' },
+        ];
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            initNavigation();
+            renderAgenda();
+        });
+
+        function initNavigation() {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    showTab(this.dataset.tab);
+                });
+            });
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        function selectMtg(mtgType) {
+            showTab('agenda');
+        }
+
+        function renderAgenda() {
+            const container = document.getElementById('agendaList');
+            container.innerHTML = MOCK_AGENDA.map((topic, index) => `
+                <div class="topic-item">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div class="topic-title">${index + 1}. ${topic.title}</div>
+                        <span class="topic-badge badge-${topic.type}">${topic.type}</span>
+                    </div>
+                    <div class="topic-meta">
+                        <span>投稿者: ${topic.member}</span>
+                        <span>時間: ${topic.duration}分</span>
+                        <span>優先度: ${topic.priority}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function submitTopic() {
+            const title = document.getElementById('topicTitle').value;
+            const type = document.getElementById('topicType').value;
+
+            if (!title || !type) {
+                alert('議題タイトルと種別を入力してください');
+                return;
+            }
+
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.getElementById('successView').classList.add('active');
+        }
+
+        function resetForm() {
+            document.getElementById('topicTitle').value = '';
+            document.getElementById('topicDetail').value = '';
+            document.getElementById('topicType').value = '';
+            showTab('submit');
+        }
+    </script>
+</body>
+</html>
