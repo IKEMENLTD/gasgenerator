@@ -17,6 +17,8 @@ import { aiProvider } from '../../../lib/ai/provider'
 import { isSpam } from '../../../lib/middleware/spam-detector'
 import { MemoryMonitor } from '../../../lib/monitoring/memory-monitor'
 import { RecoveryManager } from '../../../lib/error-recovery/recovery-manager'
+import { QAService } from '../../../lib/rag/qa-service'
+import { supabaseAdmin } from '../../../lib/supabase/client'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -401,6 +403,126 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       return true // スパムは処理終了
     }
 
+    // RAG: システム一覧コマンド
+    if (messageText === 'システム一覧' || messageText === 'システムカタログ' || messageText === 'システムを見る') {
+      try {
+        // 公開システム一覧を取得
+        const { data: systems, error } = await (supabaseAdmin as any)
+          .from('systems')
+          .select('name, slug, description, category')
+          .eq('is_published', true)
+          .order('download_count', { ascending: false })
+          .limit(5)
+
+        if (error || !systems || systems.length === 0) {
+          await lineClient.replyMessage(replyToken, [{
+            type: 'text',
+            text: '現在利用可能なシステムはありません。\n\n新しいシステムが追加されるまでお待ちください。',
+            quickReply: {
+              items: [
+                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+              ]
+            }
+          }] as any)
+          return true
+        }
+
+        // システム一覧メッセージを作成
+        const systemList = systems.map((sys: any, i: number) =>
+          `${i + 1}. 【${sys.name}】\n   ${sys.description?.slice(0, 50) || 'システム説明なし'}${sys.description?.length > 50 ? '...' : ''}`
+        ).join('\n\n')
+
+        // クイックリプライでシステム選択を促す
+        const quickReplyItems = systems.slice(0, 4).map((sys: any) => ({
+          type: 'action',
+          action: {
+            type: 'message',
+            label: sys.name.slice(0, 12),
+            text: `${sys.name}について教えて`
+          }
+        }))
+
+        quickReplyItems.push({
+          type: 'action',
+          action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }
+        })
+
+        await lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: `📦 利用可能なシステム一覧\n\n${systemList}\n\n詳しく知りたいシステムを選んでください：`,
+          quickReply: { items: quickReplyItems as any }
+        }])
+
+        logger.info('System catalog displayed', { userId, systemCount: systems.length })
+        return true
+      } catch (error) {
+        logger.error('System catalog error', { error })
+        // エラー時は通常フローに継続
+      }
+    }
+
+    // RAG: システムに関する質問検出
+    const ragQueryPattern = /(.+)(について|とは|って何|の使い方|の機能|の特徴|を教えて|の説明)/
+    const ragMatch = messageText.match(ragQueryPattern)
+
+    if (ragMatch && messageText.length >= 5 && messageText.length <= 100) {
+      const querySubject = ragMatch[1].trim()
+
+      // システム名らしい質問かチェック（一般的な質問は除外）
+      const generalQuestions = ['使い方', 'ヘルプ', 'メニュー', '料金', 'プラン', 'GAS', 'TaskMate']
+      const isSystemQuery = !generalQuestions.some(g => querySubject.includes(g))
+
+      if (isSystemQuery) {
+        try {
+          logger.info('RAG query detected', { userId, query: messageText })
+
+          // ローディングアニメーション開始
+          lineClient.showLoadingAnimation(userId, 30).catch(err => {
+            logger.debug('Failed to show loading for RAG', { err })
+          })
+
+          // RAGで回答生成
+          const result = await QAService.answerQuestion(messageText)
+
+          if (result.confidence !== 'low' && result.sources.length > 0) {
+            // 信頼度が高い場合は回答を表示
+            const confidenceLabel = result.confidence === 'high' ? '✅' : '📝'
+            const sourceInfo = result.sources.length > 0
+              ? `\n\n📚 参照: ${result.sources[0].doc_title || 'ドキュメント'}`
+              : ''
+
+            await lineClient.replyMessage(replyToken, [{
+              type: 'text',
+              text: `${confidenceLabel} ${result.answer}${sourceInfo}`,
+              quickReply: {
+                items: [
+                  { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
+                  { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
+                  { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+                ]
+              }
+            }] as any)
+
+            logger.info('RAG answer sent', {
+              userId,
+              confidence: result.confidence,
+              searchMethod: result.search_method,
+              sourcesCount: result.sources.length
+            })
+            return true
+          }
+          // 信頼度が低い場合は通常フローに継続
+          logger.info('RAG confidence too low, falling back to normal flow', {
+            userId,
+            confidence: result.confidence
+          })
+        } catch (error) {
+          logger.error('RAG query error', { error })
+          // エラー時は通常フローに継続
+        }
+      }
+    }
+
     // 会話の最初のターンかどうかを判定
     const isFirstTurn = !context && !isResetCommand(messageText)
 
@@ -483,9 +605,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         quickReply: {
           items: [
             { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' }},
+            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
             { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' }},
             { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' }},
-            { type: 'action', action: { type: 'message', label: '📸 画像解析ガイド', text: '画像解析の使い方' }},
             { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談' }},
             { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }}
           ] as any
