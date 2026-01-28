@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【デモ】納期アラートシステム</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .demo-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .demo-banner span { opacity: 0.9; }
+        .app-container { margin-top: 44px; }
+        .sidebar { top: 44px; height: calc(100vh - 44px); }
+    </style>
+</head>
+<body>
+    <div class="demo-banner">
+        デモ版 - サンプルデータで動作を体験できます（データは保存されません）
+    </div>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>納期アラート</h1>
+                <span>Deadline Alert</span>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link active">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-text">ダッシュボード</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="Toast.warning('デモ版のため、この機能は使用できません'); return false;">
+                            <span class="nav-icon">➕</span>
+                            <span class="nav-text">案件登録</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="Toast.warning('デモ版のため、この機能は使用できません'); return false;">
+                            <span class="nav-icon">📋</span>
+                            <span class="nav-text">案件一覧</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="Toast.warning('デモ版のため、この機能は使用できません'); return false;">
+                            <span class="nav-icon">⚙️</span>
+                            <span class="nav-text">設定</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">ダッシュボード</h1>
+                    <p class="page-subtitle">案件の進捗状況を一覧で確認</p>
+                </div>
+                <a href="#" class="btn btn-primary" onclick="Toast.warning('デモ版のため、この機能は使用できません'); return false;">
+                    <span>➕</span> 新規案件登録
+                </a>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-icon primary">📁</div>
+                    <div class="stat-value" id="statTotal">-</div>
+                    <div class="stat-label">進行中案件</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon danger">⚠️</div>
+                    <div class="stat-value" id="statOverdue">-</div>
+                    <div class="stat-label">超過案件</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon warning">⏰</div>
+                    <div class="stat-value" id="statUrgent">-</div>
+                    <div class="stat-label">今週納期</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon success">✓</div>
+                    <div class="stat-value" id="statCompleted">-</div>
+                    <div class="stat-label">今月完了</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                <!-- Overdue Projects -->
+                <div class="soft-card">
+                    <div class="card-header">
+                        <h2 class="card-title">超過・緊急案件</h2>
+                    </div>
+                    <div id="urgentList">
+                        <div class="loading-state" style="text-align: center; padding: 40px;">
+                            <div class="loading-spinner"></div>
+                            <p style="margin-top: 15px; color: var(--text-light);">読み込み中...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Deadlines -->
+                <div class="soft-card">
+                    <div class="card-header">
+                        <h2 class="card-title">今週の納期</h2>
+                    </div>
+                    <div id="weeklyList">
+                        <div class="loading-state" style="text-align: center; padding: 40px;">
+                            <div class="loading-spinner"></div>
+                            <p style="margin-top: 15px; color: var(--text-light);">読み込み中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Projects Table -->
+            <div class="soft-card">
+                <div class="card-header">
+                    <h2 class="card-title">直近の案件</h2>
+                    <a href="#" class="btn btn-sm btn-primary" onclick="Toast.warning('デモ版のため、この機能は使用できません'); return false;">すべて見る</a>
+                </div>
+                <div class="table-container" id="recentTable">
+                    <div class="loading-state" style="text-align: center; padding: 40px;">
+                        <div class="loading-spinner"></div>
+                        <p style="margin-top: 15px; color: var(--text-light);">読み込み中...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

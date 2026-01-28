@@ -58,6 +58,42 @@ const systems = [
     previewUrl: 'https://upsell-teiann.netlify.app/',
     iframeAllowed: false,
   },
+  {
+    id: '07',
+    name: '納期アラートシステム',
+    tagline: '案件の納期を一元管理・アラート通知',
+    description: '案件の納期を一元管理し、超過・緊急案件を自動検出。ダッシュボードで進行中案件、超過案件、今週納期、今月完了を一目で確認。優先度別のリスト表示で見落としを防止します。',
+    tags: ['納期管理', 'アラート通知', '案件管理', 'ダッシュボード'],
+    previewUrl: '/demos/nouki-alert/index.html',
+    iframeAllowed: true,
+  },
+  {
+    id: '08',
+    name: '必須タスクチェックリスト',
+    tagline: 'テンプレートから漏れなくタスク管理',
+    description: '業務テンプレートから自動でチェックリストを生成。タスクの進捗状況を可視化し、担当者別・期限別に管理。完了率や期限超過率を統計表示し、業務の抜け漏れを防止します。',
+    tags: ['タスク管理', 'チェックリスト', 'テンプレート', '進捗管理'],
+    previewUrl: '/demos/task-checklist/index.html',
+    iframeAllowed: true,
+  },
+  {
+    id: '09',
+    name: 'LTV（顧客生涯価値）計算',
+    tagline: '顧客ランク別管理・特典自動設定',
+    description: '顧客の累計購入額からLTVを自動計算し、S/A/B/Cランクに分類。ランク別の特典（毎回10%OFF、ポイント2倍など）を自動設定。上位顧客リスト、ランク分布をダッシュボードで確認できます。',
+    tags: ['LTV計算', '顧客ランク', '特典管理', '売上分析'],
+    previewUrl: 'https://ltv-kokyakukannri.netlify.app/',
+    iframeAllowed: false,
+  },
+  {
+    id: '10',
+    name: '離脱顧客掘り起こし',
+    tagline: '休眠顧客を自動抽出・復帰キャンペーン',
+    description: '3ヶ月以上来店のない顧客を自動抽出し、セグメント別（3ヶ月/6ヶ月/1年）に分類。復帰キャンペーンメールをワンクリックで一括送信。クーポン発行・使用状況追跡機能も搭載。',
+    tags: ['離脱顧客', 'メール配信', 'クーポン管理', '顧客復帰'],
+    previewUrl: 'https://ridatukokyaku.netlify.app/',
+    iframeAllowed: false,
+  },
 ]
 
 export default function SystemCatalogPage() {
