@@ -403,62 +403,103 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       return true // スパムは処理終了
     }
 
-    // RAG: システム一覧コマンド
+    // RAG: システム一覧コマンド → カタログページへ誘導
     if (messageText === 'システム一覧' || messageText === 'システムカタログ' || messageText === 'システムを見る') {
-      try {
-        // 公開システム一覧を取得
-        const { data: systems, error } = await (supabaseAdmin as any)
-          .from('systems')
-          .select('name, slug, description, category')
-          .eq('is_published', true)
-          .order('download_count', { ascending: false })
-          .limit(5)
+      const catalogUrl = 'https://gasgenerator.onrender.com/systems/catalog'
 
-        if (error || !systems || systems.length === 0) {
-          await lineClient.replyMessage(replyToken, [{
-            type: 'text',
-            text: '現在利用可能なシステムはありません。\n\n新しいシステムが追加されるまでお待ちください。',
-            quickReply: {
-              items: [
-                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
-              ]
-            }
-          }] as any)
-          return true
-        }
-
-        // システム一覧メッセージを作成
-        const systemList = systems.map((sys: any, i: number) =>
-          `${i + 1}. 【${sys.name}】\n   ${sys.description?.slice(0, 50) || 'システム説明なし'}${sys.description?.length > 50 ? '...' : ''}`
-        ).join('\n\n')
-
-        // クイックリプライでシステム選択を促す
-        const quickReplyItems = systems.slice(0, 4).map((sys: any) => ({
-          type: 'action',
-          action: {
-            type: 'message',
-            label: sys.name.slice(0, 12),
-            text: `${sys.name}について教えて`
+      // Flex Messageでカタログページへのリンクを表示
+      await lineClient.replyMessage(replyToken, [{
+        type: 'flex',
+        altText: 'システムカタログ',
+        contents: {
+          type: 'bubble',
+          hero: {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'text',
+                text: '📦 システムカタログ',
+                weight: 'bold',
+                size: 'xl',
+                color: '#ffffff'
+              },
+              {
+                type: 'text',
+                text: '各システムをプレビューで実際に触れます',
+                size: 'sm',
+                color: '#ffffff',
+                margin: 'md'
+              }
+            ],
+            backgroundColor: '#06b6d4',
+            paddingAll: '20px'
+          },
+          body: {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'text',
+                text: '利用可能なシステム',
+                weight: 'bold',
+                size: 'md',
+                margin: 'none'
+              },
+              {
+                type: 'separator',
+                margin: 'md'
+              },
+              {
+                type: 'box',
+                layout: 'vertical',
+                margin: 'md',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '01 営業日報システム',
+                    size: 'sm',
+                    color: '#555555'
+                  },
+                  {
+                    type: 'text',
+                    text: '02 失客アラートシステム',
+                    size: 'sm',
+                    color: '#555555',
+                    margin: 'sm'
+                  }
+                ]
+              },
+              {
+                type: 'text',
+                text: '※プレビュー画面で実際に操作できます',
+                size: 'xs',
+                color: '#aaaaaa',
+                margin: 'lg'
+              }
+            ]
+          },
+          footer: {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'button',
+                action: {
+                  type: 'uri',
+                  label: 'カタログを見る',
+                  uri: catalogUrl
+                },
+                style: 'primary',
+                color: '#06b6d4'
+              }
+            ]
           }
-        }))
+        }
+      }] as any)
 
-        quickReplyItems.push({
-          type: 'action',
-          action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }
-        })
-
-        await lineClient.replyMessage(replyToken, [{
-          type: 'text',
-          text: `📦 利用可能なシステム一覧\n\n${systemList}\n\n詳しく知りたいシステムを選んでください：`,
-          quickReply: { items: quickReplyItems as any }
-        }])
-
-        logger.info('System catalog displayed', { userId, systemCount: systems.length })
-        return true
-      } catch (error) {
-        logger.error('System catalog error', { error })
-        // エラー時は通常フローに継続
-      }
+      logger.info('System catalog link sent', { userId, catalogUrl })
+      return true
     }
 
     // RAG: システムに関する質問検出
