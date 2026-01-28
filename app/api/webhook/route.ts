@@ -18,7 +18,6 @@ import { isSpam } from '../../../lib/middleware/spam-detector'
 import { MemoryMonitor } from '../../../lib/monitoring/memory-monitor'
 import { RecoveryManager } from '../../../lib/error-recovery/recovery-manager'
 import { QAService } from '../../../lib/rag/qa-service'
-import { supabaseAdmin } from '../../../lib/supabase/client'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
