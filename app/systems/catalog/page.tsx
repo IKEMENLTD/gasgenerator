@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 // システムデータ
 const systems = [
@@ -241,150 +241,292 @@ const systems = [
 ]
 
 export default function SystemCatalogPage() {
-  const [openSystemId, setOpenSystemId] = useState<string | null>(null)
+  const [selectedSystemId, setSelectedSystemId] = useState<string | null>('01')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
-  const togglePreview = (id: string) => {
-    setOpenSystemId(openSystemId === id ? null : id)
+  // 検索フィルタ
+  const filteredSystems = useMemo(() => {
+    if (!searchQuery.trim()) return systems
+    const query = searchQuery.toLowerCase()
+    return systems.filter(
+      (system) =>
+        system.name.toLowerCase().includes(query) ||
+        system.tagline.toLowerCase().includes(query) ||
+        system.tags.some((tag) => tag.toLowerCase().includes(query))
+    )
+  }, [searchQuery])
+
+  // 選択中のシステム
+  const selectedSystem = systems.find((s) => s.id === selectedSystemId)
+
+  // システム選択ハンドラー
+  const handleSelectSystem = (id: string) => {
+    setSelectedSystemId(id)
+    setIsSidebarOpen(false) // モバイルではサイドバーを閉じる
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-100">
       {/* ヘッダー */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold text-gray-900">システムカタログ</h1>
-          <p className="text-gray-600 mt-1">各システムをプレビューで実際に触れます</p>
+      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0 z-20">
+        <div className="flex items-center gap-3">
+          {/* モバイル用ハンバーガーボタン */}
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="lg:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">システムカタログ</h1>
+            <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">全{systems.length}システム</p>
+          </div>
+        </div>
+        <div className="text-xs text-gray-400">
+          {selectedSystem && (
+            <span className="hidden sm:inline">
+              選択中: <span className="text-cyan-600 font-medium">{selectedSystem.name}</span>
+            </span>
+          )}
         </div>
       </header>
 
-      {/* メインコンテンツ */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="space-y-6">
-          {systems.map((system) => (
-            <div
-              key={system.id}
-              className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300"
+      <div className="flex flex-1 overflow-hidden">
+        {/* モバイル用オーバーレイ */}
+        {isSidebarOpen && (
+          <div
+            className="lg:hidden fixed inset-0 bg-black/50 z-30"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
+        {/* サイドバー */}
+        <aside
+          className={`
+            fixed lg:static inset-y-0 left-0 z-40
+            w-80 bg-white border-r border-gray-200
+            transform transition-transform duration-300 ease-in-out
+            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            flex flex-col
+          `}
+        >
+          {/* サイドバーヘッダー（モバイル用閉じるボタン） */}
+          <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-200">
+            <span className="font-bold text-gray-900">システム一覧</span>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
             >
-              {/* カードヘッダー */}
-              <div className="p-4 sm:p-6">
-                <div className="flex flex-col gap-4">
-                  <div className="flex-1">
-                    {/* 番号 + 名前 */}
-                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                      <span className="text-cyan-500 font-bold text-base sm:text-lg">{system.id}</span>
-                      <h2 className="text-lg sm:text-xl font-bold text-gray-900">{system.name}</h2>
-                    </div>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-                    {/* キャッチコピー */}
-                    <p className="text-cyan-600 font-medium text-sm sm:text-base mb-2 sm:mb-3">{system.tagline}</p>
+          {/* 検索ボックス */}
+          <div className="p-3 border-b border-gray-100">
+            <div className="relative">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                type="text"
+                placeholder="システムを検索..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              />
+            </div>
+          </div>
 
-                    {/* 説明文 */}
-                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">
-                      {system.description}
-                    </p>
-
-                    {/* タグ */}
-                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4">
-                      {system.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 sm:px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* ボタンエリア（モバイルでは全幅） */}
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    {/* iframe対応サイトはOPEN PREVIEWボタン */}
-                    {system.iframeAllowed ? (
-                      <button
-                        onClick={() => togglePreview(system.id)}
-                        className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-3 sm:py-2 rounded-full font-medium text-sm transition-all ${
-                          openSystemId === system.id
-                            ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                            : 'bg-cyan-500 text-white hover:bg-cyan-600'
-                        }`}
+          {/* システムリスト */}
+          <nav className="flex-1 overflow-y-auto p-2">
+            {filteredSystems.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 text-sm">
+                該当するシステムがありません
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {filteredSystems.map((system) => (
+                  <button
+                    key={system.id}
+                    onClick={() => handleSelectSystem(system.id)}
+                    className={`
+                      w-full text-left p-3 rounded-xl transition-all duration-200
+                      ${
+                        selectedSystemId === system.id
+                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30'
+                          : 'hover:bg-gray-100 text-gray-700'
+                      }
+                    `}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={`
+                          text-xs font-bold px-2 py-1 rounded-md flex-shrink-0
+                          ${selectedSystemId === system.id ? 'bg-white/20 text-white' : 'bg-cyan-100 text-cyan-700'}
+                        `}
                       >
-                        {openSystemId === system.id ? (
-                          <>
-                            <span>CLOSE PREVIEW</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                            </svg>
-                          </>
-                        ) : (
-                          <>
-                            <span>OPEN PREVIEW</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </>
-                        )}
-                      </button>
-                    ) : (
-                      /* iframe非対応サイトは外部リンクボタン */
+                        {system.id}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className={`font-medium text-sm truncate ${selectedSystemId === system.id ? 'text-white' : 'text-gray-900'}`}>
+                          {system.name}
+                        </div>
+                        <div className={`text-xs truncate mt-0.5 ${selectedSystemId === system.id ? 'text-white/80' : 'text-gray-500'}`}>
+                          {system.tagline}
+                        </div>
+                      </div>
+                      {!system.iframeAllowed && (
+                        <svg
+                          className={`w-4 h-4 flex-shrink-0 ${selectedSystemId === system.id ? 'text-white/60' : 'text-gray-400'}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          title="外部リンクで開きます"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </nav>
+
+          {/* サイドバーフッター */}
+          <div className="p-3 border-t border-gray-100 bg-gray-50">
+            <div className="text-xs text-gray-500 text-center">
+              <svg className="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              = 外部リンク（プレビュー不可）
+            </div>
+          </div>
+        </aside>
+
+        {/* メインコンテンツエリア */}
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {selectedSystem ? (
+            <>
+              {/* プレビューエリア */}
+              <div className="flex-1 bg-gray-100 p-2 sm:p-4 overflow-hidden">
+                {selectedSystem.iframeAllowed ? (
+                  <div className="h-full bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                    {/* URLバー */}
+                    <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border-b border-gray-200">
+                      <div className="flex gap-1.5">
+                        <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                        <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                      </div>
+                      <div className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-200 text-xs text-gray-500 overflow-hidden">
+                        <svg className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+                        </svg>
+                        <span className="truncate">{selectedSystem.previewUrl}</span>
+                      </div>
                       <a
-                        href={system.previewUrl}
+                        href={selectedSystem.previewUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-3 sm:py-2 rounded-full font-medium text-sm bg-cyan-500 text-white hover:bg-cyan-600 transition-all"
+                        className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 rounded-lg transition-colors"
                       >
-                        <span>サイトを開く</span>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span className="hidden sm:inline">新しいタブ</span>
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
                       </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* プレビュー部分（iframe対応サイト＆展開時のみ表示） */}
-              {system.iframeAllowed && openSystemId === system.id && (
-                <div className="border-t border-gray-200 bg-gray-50 p-3 sm:p-4">
-                  {/* URL表示バー */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 sm:mb-4 bg-white rounded-lg px-3 sm:px-4 py-2 border border-gray-200">
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 overflow-hidden">
-                      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                      </svg>
-                      <span className="truncate">{system.previewUrl}</span>
                     </div>
-                    <a
-                      href={system.previewUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-cyan-600 hover:text-cyan-700 text-xs sm:text-sm font-medium whitespace-nowrap"
-                    >
-                      新しいタブで開く →
-                    </a>
-                  </div>
-
-                  {/* iframe プレビュー */}
-                  <div className="rounded-lg overflow-hidden border border-gray-200 bg-white">
+                    {/* iframe */}
                     <iframe
-                      src={system.previewUrl}
-                      className="w-full h-[400px] sm:h-[500px] md:h-[600px]"
-                      title={`${system.name} プレビュー`}
+                      src={selectedSystem.previewUrl}
+                      className="flex-1 w-full"
+                      title={`${selectedSystem.name} プレビュー`}
                       sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                     />
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+                ) : (
+                  /* iframe非対応の場合 */
+                  <div className="h-full bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col items-center justify-center p-8 text-center">
+                    <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mb-6">
+                      <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">埋め込みプレビュー不可</h3>
+                    <p className="text-gray-500 text-sm mb-6 max-w-md">
+                      このシステムはセキュリティ設定により、埋め込み表示ができません。<br />
+                      新しいタブで直接開いてご確認ください。
+                    </p>
+                    <a
+                      href={selectedSystem.previewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-500 text-white font-medium rounded-xl hover:bg-cyan-600 transition-colors shadow-lg shadow-cyan-500/30"
+                    >
+                      <span>サイトを開く</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                )}
+              </div>
 
-        {/* フッター */}
-        <div className="mt-12 text-center">
-          <p className="text-gray-500 text-sm">
-            各システムについて質問がある場合は、LINEで「○○について教えて」と聞いてください
-          </p>
-        </div>
-      </main>
+              {/* システム情報パネル */}
+              <div className="bg-white border-t border-gray-200 px-4 py-4 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-cyan-500 font-bold text-sm">{selectedSystem.id}</span>
+                      <h2 className="text-lg font-bold text-gray-900 truncate">{selectedSystem.name}</h2>
+                    </div>
+                    <p className="text-cyan-600 text-sm font-medium mb-2">{selectedSystem.tagline}</p>
+                    <p className="text-gray-600 text-sm line-clamp-2 hidden sm:block">{selectedSystem.description}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 sm:flex-shrink-0 sm:max-w-xs">
+                    {selectedSystem.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* システム未選択時 */
+            <div className="flex-1 flex items-center justify-center bg-gray-100">
+              <div className="text-center">
+                <div className="w-20 h-20 bg-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                  </svg>
+                </div>
+                <p className="text-gray-500 text-lg">左のリストからシステムを選択してください</p>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   )
 }
