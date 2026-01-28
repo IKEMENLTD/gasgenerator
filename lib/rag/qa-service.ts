@@ -2,10 +2,12 @@
  * RAG QA (Question-Answering) サービス
  *
  * 2026-01-27: システムに関する質問応答機能
+ * 2026-01-27: キーワード検索対応（OpenAI不要）
  */
 
 import { logger } from '../utils/logger'
 import { EmbeddingService } from './embedding-service'
+import { KeywordSearchService } from './keyword-search'
 import { SystemQueries } from '../supabase/subscription-queries'
 import Anthropic from '@anthropic-ai/sdk'
 
@@ -21,6 +23,14 @@ function getAnthropicClient(): Anthropic {
   return anthropicClient
 }
 
+interface SearchResult {
+  chunk_text: string
+  similarity: number
+  system_id: string
+  document_id: string
+  metadata: Record<string, unknown>
+}
+
 interface QAResponse {
   answer: string
   sources: Array<{
@@ -29,9 +39,36 @@ interface QAResponse {
     chunk_text: string
   }>
   confidence: 'high' | 'medium' | 'low'
+  search_method: 'embedding' | 'keyword'
 }
 
 export class QAService {
+  /**
+   * 検索メソッドを自動選択
+   * OpenAI API Keyがあればembedding、なければkeyword
+   */
+  private static async searchDocuments(
+    query: string,
+    limit: number,
+    systemId?: string
+  ): Promise<{ results: SearchResult[]; method: 'embedding' | 'keyword' }> {
+    // OpenAI API Keyがあればembedding検索を試みる
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        const results = await EmbeddingService.searchSimilar(query, limit, systemId)
+        if (results.length > 0) {
+          return { results, method: 'embedding' }
+        }
+      } catch (error) {
+        logger.warn('Embedding search failed, falling back to keyword search', { error })
+      }
+    }
+
+    // キーワード検索にフォールバック
+    const results = await KeywordSearchService.search(query, limit, systemId)
+    return { results: results as SearchResult[], method: 'keyword' }
+  }
+
   /**
    * システムに関する質問に回答
    */
@@ -40,6 +77,16 @@ export class QAService {
     systemSlug?: string
   ): Promise<QAResponse> {
     try {
+      // Anthropic API Keyチェック
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return {
+          answer: 'ANTHROPIC_API_KEYが設定されていません。管理者にお問い合わせください。',
+          sources: [],
+          confidence: 'low',
+          search_method: 'keyword'
+        }
+      }
+
       // 1. システムIDを取得（指定された場合）
       let systemId: string | undefined
       let systemName: string | undefined
@@ -52,8 +99,8 @@ export class QAService {
         }
       }
 
-      // 2. 関連ドキュメントを検索
-      const relevantChunks = await EmbeddingService.searchSimilar(
+      // 2. 関連ドキュメントを検索（自動でembeddingまたはkeywordを選択）
+      const { results: relevantChunks, method: searchMethod } = await this.searchDocuments(
         question,
         5,
         systemId
@@ -63,7 +110,8 @@ export class QAService {
         return {
           answer: 'この質問に関連する情報が見つかりませんでした。別の質問をお試しください。',
           sources: [],
-          confidence: 'low'
+          confidence: 'low',
+          search_method: searchMethod
         }
       }
 
@@ -93,7 +141,7 @@ ${context}
 質問: ${question}`
 
       const response = await client.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 1000,
         system: systemPrompt,
         messages: [
@@ -108,12 +156,17 @@ ${context}
       // 5. 信頼度を評価
       const avgSimilarity = relevantChunks.reduce((sum, c) => sum + c.similarity, 0) / relevantChunks.length
       let confidence: 'high' | 'medium' | 'low'
-      if (avgSimilarity > 0.85) {
-        confidence = 'high'
-      } else if (avgSimilarity > 0.75) {
-        confidence = 'medium'
+
+      if (searchMethod === 'embedding') {
+        // embedding検索の場合
+        if (avgSimilarity > 0.85) confidence = 'high'
+        else if (avgSimilarity > 0.75) confidence = 'medium'
+        else confidence = 'low'
       } else {
-        confidence = 'low'
+        // keyword検索の場合
+        if (avgSimilarity > 0.5) confidence = 'high'
+        else if (avgSimilarity > 0.3) confidence = 'medium'
+        else confidence = 'low'
       }
 
       // 6. ソース情報を整形
@@ -127,20 +180,23 @@ ${context}
         question: question.slice(0, 50),
         chunksFound: relevantChunks.length,
         confidence,
-        avgSimilarity
+        avgSimilarity,
+        searchMethod
       })
 
       return {
         answer,
         sources,
-        confidence
+        confidence,
+        search_method: searchMethod
       }
     } catch (error) {
       logger.error('QAService.answerQuestion error', { error })
       return {
         answer: 'エラーが発生しました。しばらく経ってからもう一度お試しください。',
         sources: [],
-        confidence: 'low'
+        confidence: 'low',
+        search_method: 'keyword'
       }
     }
   }
@@ -150,13 +206,17 @@ ${context}
    */
   static async generateSystemSummary(systemSlug: string): Promise<string | null> {
     try {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return null
+      }
+
       const system = await SystemQueries.getSystemBySlug(systemSlug)
       if (!system) {
         return null
       }
 
       // 関連ドキュメントを取得
-      const relevantChunks = await EmbeddingService.searchSimilar(
+      const { results: relevantChunks } = await this.searchDocuments(
         `${system.name}の機能と特徴`,
         3,
         system.id
@@ -186,7 +246,7 @@ ${context}
 シンプルで分かりやすい日本語で書いてください。`
 
       const response = await client.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 300,
         messages: [
           { role: 'user', content: prompt }
@@ -207,13 +267,17 @@ ${context}
    */
   static async generateFAQ(systemSlug: string): Promise<Array<{ question: string; answer: string }>> {
     try {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return []
+      }
+
       const system = await SystemQueries.getSystemBySlug(systemSlug)
       if (!system) {
         return []
       }
 
       // 関連ドキュメントを取得
-      const relevantChunks = await EmbeddingService.searchSimilar(
+      const { results: relevantChunks } = await this.searchDocuments(
         `${system.name}の使い方 設定 トラブル`,
         5,
         system.id
@@ -245,7 +309,7 @@ ${context}
 JSONのみを出力し、他のテキストは含めないでください。`
 
       const response = await client.messages.create({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 500,
         messages: [
           { role: 'user', content: prompt }
