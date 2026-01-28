@@ -484,9 +484,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           // RAGで回答生成
           const result = await QAService.answerQuestion(messageText)
 
-          if (result.confidence !== 'low' && result.sources.length > 0) {
-            // 信頼度が高い場合は回答を表示
-            const confidenceLabel = result.confidence === 'high' ? '✅' : '📝'
+          if (result.sources.length > 0) {
+            // ソースが見つかった場合は回答を表示（信頼度に関わらず）
+            const confidenceLabel = result.confidence === 'high' ? '✅' : result.confidence === 'medium' ? '📝' : '💡'
             const sourceInfo = result.sources.length > 0
               ? `\n\n📚 参照: ${result.sources[0].doc_title || 'ドキュメント'}`
               : ''

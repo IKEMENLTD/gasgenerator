@@ -102,32 +102,61 @@ export class KeywordSearchService {
     // 日本語の助詞・助動詞などを除去
     const stopWords = [
       'の', 'に', 'は', 'を', 'が', 'と', 'で', 'て', 'た', 'し', 'へ',
-      'から', 'まで', 'より', 'など', 'について', 'という', 'ため',
+      'から', 'まで', 'より', 'など', 'という', 'ため',
       'これ', 'それ', 'あれ', 'この', 'その', 'どの', 'どう', 'なに',
       'です', 'ます', 'ました', 'ください', 'ありますか', 'できますか',
-      'ですか', 'ますか', 'てください', 'について', '教えて',
+      'ですか', 'ますか', 'てください',
       'what', 'how', 'when', 'where', 'why', 'which', 'is', 'are', 'the', 'a', 'an'
     ]
 
-    // 記号を除去し、空白・句読点で分割
-    let words = query
+    // 日本語のクエリパターンを除去してコア部分を抽出
+    let cleanedQuery = query
+      .replace(/について教えて(ください)?$/g, '')
+      .replace(/について$/g, '')
+      .replace(/とは(何|なに)?(\?|？)?$/g, '')
+      .replace(/って何(\?|？)?$/g, '')
+      .replace(/の(使い方|機能|特徴|説明)を?教えて(ください)?$/g, '')
+      .replace(/の(使い方|機能|特徴|説明)$/g, '')
+      .replace(/を教えて(ください)?$/g, '')
       .replace(/[?？!！。、.,\n\r]/g, ' ')
+      .trim()
+
+    // 記号を除去し、空白・句読点で分割
+    let words = cleanedQuery
       .split(/\s+/)
       .filter(word => word.length >= 2)
       .filter(word => !stopWords.includes(word.toLowerCase()))
 
-    // 複合語も追加（例: "セットアップ手順" → ["セットアップ", "手順", "セットアップ手順"]）
+    // 日本語の長い単語を部分キーワードに分割（例: "スプレッドシート売上集計" → 複数のキーワード）
+    const additionalKeywords: string[] = []
+    for (const word of words) {
+      if (word.length > 6) {
+        // カタカナ部分を抽出
+        const katakanaMatches = word.match(/[ァ-ヴー]+/g)
+        if (katakanaMatches) {
+          additionalKeywords.push(...katakanaMatches.filter(k => k.length >= 3))
+        }
+        // 漢字部分を抽出
+        const kanjiMatches = word.match(/[一-龯]+/g)
+        if (kanjiMatches) {
+          additionalKeywords.push(...kanjiMatches.filter(k => k.length >= 2))
+        }
+      }
+    }
+
+    // 複合語も追加
     const compoundWords: string[] = []
     for (let i = 0; i < words.length - 1; i++) {
       compoundWords.push(words[i] + words[i + 1])
     }
 
     // 重複を除去して結合
-    const allWords = [...new Set([...words, ...compoundWords])]
+    const allWords = [...new Set([...words, ...additionalKeywords, ...compoundWords])]
 
     // キーワードがない場合は元のクエリから単語を抽出（最低限）
     if (allWords.length === 0) {
-      return query.split(/\s+/).filter(w => w.length >= 2).slice(0, 5)
+      // 元のクエリからパターンを除去した部分を使用
+      return [cleanedQuery].filter(w => w.length >= 2)
     }
 
     return allWords
