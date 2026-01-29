@@ -320,6 +320,23 @@ select.form-control {
 }
 
 /* =====================================================
+   Dashboard Grid
+   ===================================================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+@media (max-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+/* =====================================================
    Tables
    ===================================================== */
 .table-container {
@@ -700,23 +717,29 @@ select.form-control {
 
 @media (max-width: 992px) {
     .sidebar {
-        width: 80px;
-        padding: 20px 10px;
+        width: 200px;
+        padding: 20px 15px;
     }
 
-    .logo h1,
-    .logo span,
-    .nav-text {
-        display: none;
+    .logo h1 {
+        font-size: 1.1rem;
+    }
+
+    .logo span {
+        font-size: 0.7rem;
     }
 
     .nav-link {
-        justify-content: center;
-        padding: 15px;
+        padding: 12px 15px;
+        gap: 10px;
+    }
+
+    .nav-text {
+        font-size: 0.85rem;
     }
 
     .main-content {
-        margin-left: 80px;
+        margin-left: 200px;
     }
 
     .form-row,
