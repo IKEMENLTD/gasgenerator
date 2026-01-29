@@ -20,7 +20,7 @@ const systems = [
     description: '顧客の来店間隔を分析し、失客リスクのある顧客を自動検出して通知。顧客ランク別の閾値設定で、VIP顧客は早めにアラート。毎日9時に自動チェック。',
     tags: ['失客検知', '自動通知', '顧客管理', 'リスク分析'],
     previewUrl: 'https://jovial-starship-2e968e.netlify.app',
-    iframeAllowed: false,
+    iframeAllowed: true,
   },
   {
     id: '03',
@@ -29,7 +29,7 @@ const systems = [
     description: '届出期限を一元管理し、期限超過・今週期限・進行中・完了を可視化。顧客管理、届出マスタ管理、アラート通知機能を搭載。緊急度の高い案件を素早く確認できます。',
     tags: ['期限管理', 'アラート通知', '顧客管理', 'ダッシュボード'],
     previewUrl: 'https://kigenkannri.netlify.app/',
-    iframeAllowed: false,
+    iframeAllowed: true,
   },
   {
     id: '04',
@@ -56,7 +56,7 @@ const systems = [
     description: '購買データから同時購入パターンを分析し、アップセル・クロスセル提案を自動生成。商品別・カテゴリ別の売上分析、提案の効果測定機能を搭載。',
     tags: ['客単価分析', 'アップセル', 'クロスセル', '購買分析'],
     previewUrl: 'https://upsell-teiann.netlify.app/',
-    iframeAllowed: false,
+    iframeAllowed: true,
   },
   {
     id: '07',
@@ -83,7 +83,7 @@ const systems = [
     description: '顧客の累計購入額からLTVを自動計算し、S/A/B/Cランクに分類。ランク別の特典（毎回10%OFF、ポイント2倍など）を自動設定。上位顧客リスト、ランク分布をダッシュボードで確認できます。',
     tags: ['LTV計算', '顧客ランク', '特典管理', '売上分析'],
     previewUrl: 'https://ltv-kokyakukannri.netlify.app/',
-    iframeAllowed: false,
+    iframeAllowed: true,
   },
   {
     id: '10',
@@ -92,7 +92,7 @@ const systems = [
     description: '3ヶ月以上来店のない顧客を自動抽出し、セグメント別（3ヶ月/6ヶ月/1年）に分類。復帰キャンペーンメールをワンクリックで一括送信。クーポン発行・使用状況追跡機能も搭載。',
     tags: ['離脱顧客', 'メール配信', 'クーポン管理', '顧客復帰'],
     previewUrl: 'https://ridatukokyaku.netlify.app/',
-    iframeAllowed: false,
+    iframeAllowed: true,
   },
   {
     id: '11',
@@ -101,7 +101,7 @@ const systems = [
     description: '従業員の資格・免許の有効期限を一元管理。期限切れリスクを自動検出し、Slack・メールで通知。ダッシュボードで要対応リスト、リスクレポート、アラート履歴を確認。CSVエクスポート・印刷機能も搭載。',
     tags: ['資格管理', '免許管理', '期限通知', 'リスク管理'],
     previewUrl: 'https://yuukoukigennkannri.netlify.app/',
-    iframeAllowed: false,
+    iframeAllowed: true,
   },
   {
     id: '12',
@@ -119,7 +119,7 @@ const systems = [
     description: 'EC・小売業向けの価格テスト管理ツール。商品マスタ、価格変更履歴、A/Bテスト計画・分析、価格弾力性分析、競合価格トラッキング機能を搭載。週次レポートをSlack・メールで自動送信。',
     tags: ['A/Bテスト', '価格最適化', '売上分析', '競合分析'],
     previewUrl: 'https://prise-a-b.netlify.app/',
-    iframeAllowed: false,
+    iframeAllowed: true,
   },
   {
     id: '14',
@@ -155,7 +155,7 @@ const systems = [
     description: 'BtoB事業者向けの請求書管理システム。取引先・契約情報から請求書を自動生成、PDF化してメール送付。月額契約の自動請求、入金管理、督促送信機能を搭載。毎月1日に自動で請求書を生成します。',
     tags: ['請求書', '自動生成', 'PDF送付', '入金管理'],
     previewUrl: 'https://seikyusyokannri.netlify.app/',
-    iframeAllowed: false,
+    iframeAllowed: true,
   },
   {
     id: '18',
@@ -200,7 +200,7 @@ const systems = [
     description: '価格マスタを一元管理し、見積書を自動生成。商品・サービス別の価格設定、数量・顧客ランク別の値引きルールを適用。見積履歴の管理、PDF出力、承認ワークフロー機能を搭載。',
     tags: ['価格管理', '見積作成', '値引きルール', 'PDF出力'],
     previewUrl: 'https://priselistandquotation.netlify.app/',
-    iframeAllowed: false,
+    iframeAllowed: true,
   },
   {
     id: '23',
