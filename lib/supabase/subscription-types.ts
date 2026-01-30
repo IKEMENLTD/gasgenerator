@@ -252,6 +252,7 @@ export interface CanDownloadResult {
   current?: number
   limit?: number
   remaining?: number
+  next_period?: string  // 次回ダウンロード可能日（ISO 8601形式）
 }
 
 export interface ExecuteDownloadResult {
@@ -260,6 +261,7 @@ export interface ExecuteDownloadResult {
   download_id?: string
   reason?: string
   message: string
+  remaining?: number  // 残りダウンロード回数
 }
 
 // ===================================================================

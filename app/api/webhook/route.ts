@@ -18,6 +18,7 @@ import { isSpam } from '../../../lib/middleware/spam-detector'
 import { MemoryMonitor } from '../../../lib/monitoring/memory-monitor'
 import { RecoveryManager } from '../../../lib/error-recovery/recovery-manager'
 import { QAService } from '../../../lib/rag/qa-service'
+import { DownloadQueries } from '../../../lib/supabase/subscription-queries'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -499,6 +500,272 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
       logger.info('System catalog link sent', { userId, catalogUrl })
       return true
+    }
+
+    // ===================================================================
+    // ダウンロードコマンド処理
+    // パターン: 「○○をダウンロード」「○○ ダウンロード」「DL:システム名」
+    // ===================================================================
+    const downloadPatterns = [
+      /^(.+)をダウンロード$/,
+      /^(.+)\s*ダウンロード$/,
+      /^DL[:：]\s*(.+)$/i,
+      /^ダウンロード[:：]\s*(.+)$/
+    ]
+
+    let downloadSystemName: string | null = null
+    for (const pattern of downloadPatterns) {
+      const match = messageText.match(pattern)
+      if (match) {
+        downloadSystemName = match[1].trim()
+        break
+      }
+    }
+
+    if (downloadSystemName) {
+      try {
+        logger.info('Download request detected', { userId, systemName: downloadSystemName })
+
+        // ローディング表示
+        lineClient.showLoadingAnimation(userId, 30).catch(() => {})
+
+        // 1. システム名でDBから検索（名前の部分一致）
+        const { data: systems, error: searchError } = await (await import('../../../lib/supabase/client')).supabaseAdmin
+          .from('systems')
+          .select('*')
+          .ilike('name', `%${downloadSystemName}%`)
+          .eq('is_published', true)
+          .limit(1)
+
+        if (searchError || !systems || systems.length === 0) {
+          // システムが見つからない場合
+          await lineClient.replyMessage(replyToken, [{
+            type: 'text',
+            text: `❌ 「${downloadSystemName}」というシステムが見つかりませんでした。\n\nシステムカタログで正確な名前を確認してください。`,
+            quickReply: {
+              items: [
+                { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
+                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+              ]
+            }
+          }] as any)
+          return true
+        }
+
+        const system = systems[0]
+        logger.info('System found', { userId, systemId: system.id, systemName: system.name })
+
+        // 2. ダウンロード可否チェック
+        const canDownloadResult = await DownloadQueries.canDownload(userId, system.id)
+
+        if (!canDownloadResult.can_download) {
+          // ダウンロード不可の場合
+          let errorMessage = ''
+
+          if (canDownloadResult.reason === 'no_subscription') {
+            errorMessage = `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 2ヶ月に1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`
+          } else if (canDownloadResult.reason === 'download_limit_reached') {
+            const nextPeriod = canDownloadResult.next_period
+              ? new Date(canDownloadResult.next_period as string).toLocaleDateString('ja-JP')
+              : '次の期間'
+            errorMessage = `❌ ダウンロード上限に達しています。\n\n現在: ${canDownloadResult.current}/${canDownloadResult.limit}回\n次回ダウンロード可能日: ${nextPeriod}\n\n上位プランへのアップグレードをご検討ください。`
+          } else {
+            errorMessage = `❌ ${canDownloadResult.message}`
+          }
+
+          await lineClient.replyMessage(replyToken, [{
+            type: 'text',
+            text: errorMessage,
+            quickReply: {
+              items: [
+                { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' }},
+                { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
+                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+              ]
+            }
+          }] as any)
+          return true
+        }
+
+        // 3. ダウンロード実行
+        const downloadResult = await DownloadQueries.executeDownload(userId, system.id)
+
+        if (!downloadResult.success && downloadResult.reason !== 'already_downloaded') {
+          await lineClient.replyMessage(replyToken, [{
+            type: 'text',
+            text: `❌ ダウンロードに失敗しました。\n\n${downloadResult.message}\n\n時間をおいて再度お試しください。`,
+            quickReply: {
+              items: [
+                { type: 'action', action: { type: 'message', label: '🔄 再試行', text: `${system.name}をダウンロード` }},
+                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }}
+              ]
+            }
+          }] as any)
+          return true
+        }
+
+        // 4. GASコードを送信
+        const codeContent = system.code_content || '// このシステムのコードは準備中です。\n// 近日中に公開予定です。'
+        const setupInstructions = system.setup_instructions || 'セットアップ手順は準備中です。'
+
+        // コードが長い場合は分割して送信
+        const MAX_CODE_LENGTH = 4000
+        const isCodeLong = codeContent.length > MAX_CODE_LENGTH
+
+        // Flexメッセージでコードを送信
+        const flexMessage = {
+          type: 'flex',
+          altText: `${system.name} - GASコード`,
+          contents: {
+            type: 'bubble',
+            size: 'giga',
+            header: {
+              type: 'box',
+              layout: 'vertical',
+              contents: [
+                {
+                  type: 'text',
+                  text: '✅ ダウンロード完了',
+                  weight: 'bold',
+                  size: 'lg',
+                  color: '#ffffff'
+                },
+                {
+                  type: 'text',
+                  text: system.name,
+                  size: 'md',
+                  color: '#ffffff',
+                  margin: 'sm'
+                }
+              ],
+              backgroundColor: '#10b981',
+              paddingAll: '15px'
+            },
+            body: {
+              type: 'box',
+              layout: 'vertical',
+              contents: [
+                {
+                  type: 'text',
+                  text: '📋 GASコード',
+                  weight: 'bold',
+                  size: 'md',
+                  margin: 'none'
+                },
+                {
+                  type: 'box',
+                  layout: 'vertical',
+                  contents: [
+                    {
+                      type: 'text',
+                      text: isCodeLong
+                        ? codeContent.substring(0, MAX_CODE_LENGTH) + '\n\n... (続きは次のメッセージ)'
+                        : codeContent,
+                      size: 'xs',
+                      color: '#333333',
+                      wrap: true
+                    }
+                  ],
+                  backgroundColor: '#f3f4f6',
+                  cornerRadius: 'md',
+                  paddingAll: '12px',
+                  margin: 'md'
+                },
+                {
+                  type: 'separator',
+                  margin: 'lg'
+                },
+                {
+                  type: 'text',
+                  text: '📝 セットアップ手順',
+                  weight: 'bold',
+                  size: 'sm',
+                  margin: 'lg'
+                },
+                {
+                  type: 'text',
+                  text: setupInstructions.length > 500
+                    ? setupInstructions.substring(0, 500) + '...'
+                    : setupInstructions,
+                  size: 'xs',
+                  color: '#666666',
+                  wrap: true,
+                  margin: 'sm'
+                }
+              ],
+              paddingAll: '15px'
+            },
+            footer: {
+              type: 'box',
+              layout: 'vertical',
+              contents: [
+                {
+                  type: 'text',
+                  text: downloadResult.reason === 'already_downloaded'
+                    ? '※ 再ダウンロード（カウント消費なし）'
+                    : `残りダウンロード回数: ${downloadResult.remaining ?? '確認中'}`,
+                  size: 'xs',
+                  color: '#888888',
+                  align: 'center'
+                }
+              ],
+              paddingAll: '10px'
+            }
+          }
+        }
+
+        const messages: any[] = [flexMessage]
+
+        // コードが長い場合は続きを送信
+        if (isCodeLong) {
+          messages.push({
+            type: 'text',
+            text: `📋 続き:\n\n${codeContent.substring(MAX_CODE_LENGTH)}`,
+            quickReply: {
+              items: [
+                { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
+                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
+                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+              ]
+            }
+          })
+        } else {
+          // クイックリプライを最後のメッセージに追加
+          ;(flexMessage as any).quickReply = {
+            items: [
+              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
+              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            ]
+          }
+        }
+
+        await lineClient.replyMessage(replyToken, messages)
+
+        logger.info('Download completed', {
+          userId,
+          systemId: system.id,
+          systemName: system.name,
+          isRedownload: downloadResult.reason === 'already_downloaded'
+        })
+
+        return true
+
+      } catch (error) {
+        logger.error('Download handler error', { error, userId, systemName: downloadSystemName })
+
+        await lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: '❌ エラーが発生しました。時間をおいて再度お試しください。',
+          quickReply: {
+            items: [
+              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
+              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }}
+            ]
+          }
+        }] as any)
+        return true
+      }
     }
 
     // RAG: システムに関する質問検出
