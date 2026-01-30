@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 
 // LINE公式アカウントのBasic ID（環境変数から取得、未設定の場合はTaskMateのデフォルト値）
-const LINE_BOT_BASIC_ID = process.env.NEXT_PUBLIC_LINE_BOT_BASIC_ID || '906teleq'
+const LINE_BOT_BASIC_ID = process.env.NEXT_PUBLIC_LINE_BOT_BASIC_ID || '356uysad'
 
 // システムデータ
 const systems = [
