@@ -38,17 +38,19 @@ export async function GET(_request: NextRequest) {
 
   // Check database connection
   try {
-    const { error } = await supabase
-      .from('tracking_links')
-      .select('count')
+    // Use users table which always exists
+    const { data, error } = await supabase
+      .from('users')
+      .select('id')
       .limit(1)
-      .single()
 
-    if (!error) {
+    if (!error && data !== null) {
       checks.checks.database = true
-    } else {
+    } else if (error) {
       checks.details.databaseError = error.message
       checks.status = checks.status === 'healthy' ? 'degraded' : checks.status
+    } else {
+      checks.checks.database = true // Empty table is OK
     }
   } catch (error: any) {
     checks.checks.database = false
@@ -115,12 +117,11 @@ export async function GET(_request: NextRequest) {
 // Lightweight health check for monitoring
 export async function HEAD(_request: NextRequest) {
   try {
-    // Quick database check
+    // Quick database check using users table
     const { error } = await supabase
-      .from('tracking_links')
+      .from('users')
       .select('id')
       .limit(1)
-      .single()
 
     if (error) {
       return new NextResponse(null, { status: 503 })
