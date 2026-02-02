@@ -94,9 +94,17 @@ export class MessageTemplates {
       },
       {
         type: 'text',
-        text: '作りたいコードのカテゴリを選んでください：',
+        text: '📦 まずはシステム一覧から、すぐ使えるシステムをチェック！\n\nまたは作りたいコードのカテゴリを選んでください：',
         quickReply: {
           items: [
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '📦 システム一覧',
+                text: 'システム一覧'
+              }
+            },
             {
               type: 'action',
               action: {
@@ -119,22 +127,6 @@ export class MessageTemplates {
                 type: 'message',
                 label: '📅 カレンダー',
                 text: 'カレンダー連携'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '🔗 API',
-                text: 'API連携'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '✨ その他',
-                text: 'その他'
               }
             },
             {

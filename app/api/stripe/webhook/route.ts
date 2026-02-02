@@ -189,7 +189,25 @@ export async function POST(req: NextRequest) {
               subscriptionType,
               amountTotal
             })
-            
+
+            // 決済履歴を記録
+            try {
+              await (supabase as any)
+                .from('payment_history')
+                .insert({
+                  user_id: decodedLineUserId,
+                  stripe_session_id: session.id,
+                  stripe_customer_id: session.customer,
+                  amount: amountTotal,
+                  currency: 'jpy',
+                  plan_type: subscriptionType,
+                  status: 'completed',
+                  paid_at: new Date().toISOString()
+                })
+            } catch (historyError) {
+              logger.warn('Failed to record payment history', { historyError })
+            }
+
             // 決済完了メッセージをLINEで送信
             try {
               const LineApiClient = (await import('@/lib/line/client')).LineApiClient

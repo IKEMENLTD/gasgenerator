@@ -283,8 +283,22 @@ export class AutoFixer {
 
       // 関数の修正
       if (solution.includes('fix function') && errorAnalysis.errorLocation?.function) {
-        // 関数を探して修正（簡易版）
-        return code // TODO: 実装
+        const funcName = errorAnalysis.errorLocation.function
+        // 関数定義を探して修正（簡易版: try-catchで囲む）
+        const funcPattern = new RegExp(
+          `(function\\s+${funcName}\\s*\\([^)]*\\)\\s*\\{)([\\s\\S]*?)(\\})`,
+          'g'
+        )
+        const wrapped = code.replace(funcPattern, (_match, start, body, end) => {
+          // 既にtry-catchがある場合はスキップ
+          if (body.includes('try {')) {
+            return `${start}${body}${end}`
+          }
+          return `${start}\n  try {${body}  } catch (e) {\n    Logger.log('Error in ${funcName}: ' + e.message);\n    throw e;\n  }\n${end}`
+        })
+        if (wrapped !== code) {
+          return wrapped
+        }
       }
 
       // null チェックの追加

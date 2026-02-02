@@ -36,8 +36,7 @@ export async function POST(req: NextRequest) {
     // バリデーション
     const validatedData = createShareSchema.parse(body) as CreateCodeShareRequest
 
-    // ユーザーのプレミアムステータスを確認（仮実装）
-    // TODO: 実際のプレミアムチェックロジックを実装
+    // ユーザーのプレミアムステータスを確認（Premium/Professional判定）
     const isPremium = await checkUserPremiumStatus(validatedData.userId)
 
     // 有効期限を決定（無料: 7日、プレミアム: 30日）
@@ -117,12 +116,14 @@ export async function POST(req: NextRequest) {
 
 /**
  * ユーザーのプレミアムステータスを確認
+ * Premium または Professional プランの場合 true を返す
  */
 async function checkUserPremiumStatus(userId: string): Promise<boolean> {
   try {
     const { PremiumChecker } = await import('@/lib/premium/premium-checker')
     const status = await PremiumChecker.checkPremiumStatus(userId)
-    return status.isPremium || false
+    // Premium または Professional のどちらかであれば true
+    return status.isPremium || status.isProfessional || false
   } catch (error) {
     logger.warn('Failed to check premium status', { userId, error })
     return false
@@ -130,17 +131,23 @@ async function checkUserPremiumStatus(userId: string): Promise<boolean> {
 }
 
 /**
- * QRコードを生成（Base64）
+ * QRコードを生成（Base64 Data URL）
  */
 async function generateQRCode(url: string): Promise<string | undefined> {
   try {
-    // QRコード生成ライブラリを使用（別途インストール必要）
-    // const QRCode = require('qrcode')
-    // const qrDataUrl = await QRCode.toDataURL(url)
-    // return qrDataUrl
-
-    // 一時的に未実装
-    return undefined
+    // qrcodeパッケージを動的インポート（既にpackage.jsonにインストール済み）
+    const QRCode = await import('qrcode')
+    const qrDataUrl = await QRCode.toDataURL(url, {
+      errorCorrectionLevel: 'M',
+      type: 'image/png',
+      width: 256,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#ffffff'
+      }
+    })
+    return qrDataUrl
   } catch (error) {
     logger.warn('Failed to generate QR code', { url, error })
     return undefined

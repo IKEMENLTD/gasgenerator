@@ -19,6 +19,7 @@ import { MemoryMonitor } from '../../../lib/monitoring/memory-monitor'
 import { RecoveryManager } from '../../../lib/error-recovery/recovery-manager'
 import { QAService } from '../../../lib/rag/qa-service'
 import { DownloadQueries } from '../../../lib/supabase/subscription-queries'
+import { supabaseAdmin } from '../../../lib/supabase/client'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -396,7 +397,18 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         // 5回以上はブロック対象として記録
         if (spamCount >= 5) {
           logger.error('User blocked for spam', { userId, count: spamCount })
-          // TODO: Supabaseのusersテーブルにblocked_at列を追加して記録
+          // usersテーブルにブロック情報を記録
+          try {
+            await (supabaseAdmin as any)
+              .from('users')
+              .update({
+                blocked_at: new Date().toISOString(),
+                blocked_reason: `スパム行為（${spamCount}回の連続送信）`
+              })
+              .eq('line_user_id', userId)
+          } catch (blockError) {
+            logger.warn('Failed to record user block', { userId, blockError })
+          }
         }
       }
 
@@ -873,17 +885,17 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
         const responseText = finalResponse.content[0].text
 
-        // メインメニューquickReplyを使用（message-templates.tsの createMainMenuQuickReply と同じ）
+        // メインメニューquickReplyを使用（システム一覧を先頭に配置）
         await lineClient.replyMessage(replyToken, [{
           type: 'text',
           text: responseText,
           quickReply: {
             items: [
+              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
               { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
               { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
               { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
               { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-              { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
               { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
               { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
             ]
@@ -911,8 +923,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: '📋 メニュー',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' }},
             { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
+            { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' }},
             { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' }},
             { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' }},
             { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談' }},
@@ -1772,10 +1784,20 @@ async function handleFollowEvent(event: any): Promise<void> {
                      new Date((user as any).subscription_end_date) > new Date()
 
     if (isPremium) {
-      // プレミアムユーザーには通常のウェルカムメッセージ
+      // プレミアムユーザーにはシステム一覧を先頭に表示
       const success = await lineClient.pushMessage(userId, [{
         type: 'text',
-        text: '🎉 おかえりなさい！\n\nプレミアムプランご利用中です。\n無制限でGASコードを生成できます。\n\n「スプレッドシート操作」「Gmail自動化」など、作りたいコードのカテゴリを送信してください。'
+        text: '🎉 おかえりなさい！\n\nプレミアムプランご利用中です。\n無制限でGASコードを生成できます。\n\n📦 まずはシステム一覧から、すぐ使えるシステムをチェック！',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
+            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
+            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
+            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+          ]
+        }
       }])
 
       if (!success) {
@@ -1817,11 +1839,20 @@ async function handleFollowEvent(event: any): Promise<void> {
       }
     } else {
       // 既存無料ユーザー（ブロック解除/再追加）
+      // システム一覧を先頭に配置して、システムカタログへの誘導を強化
       const success = await lineClient.pushMessage(userId, [{
         type: 'text',
-        text: 'おかえりなさい！😊\n\nまたご利用いただきありがとうございます。\n\n作りたいコードのカテゴリを選んでください：',
+        text: 'おかえりなさい！😊\n\nまたご利用いただきありがとうございます。\n\n📦 まずはシステム一覧から、すぐ使えるシステムをチェック！',
         quickReply: {
           items: [
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '📦 システム一覧',
+                text: 'システム一覧'
+              }
+            },
             {
               type: 'action',
               action: {
@@ -1844,22 +1875,6 @@ async function handleFollowEvent(event: any): Promise<void> {
                 type: 'message',
                 label: '📅 カレンダー',
                 text: 'カレンダー連携'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '🔗 API',
-                text: 'API連携'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '✨ その他',
-                text: 'その他'
               }
             },
             {

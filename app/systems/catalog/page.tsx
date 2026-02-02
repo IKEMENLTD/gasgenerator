@@ -246,7 +246,8 @@ const systems = [
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('01')
   const [searchQuery, setSearchQuery] = useState('')
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  // モバイルでは最初からサイドバー（システム一覧）を開いた状態にする
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [copySuccess, setCopySuccess] = useState(false)
 
   // ダウンロードメッセージをクリップボードにコピー
