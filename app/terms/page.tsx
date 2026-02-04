@@ -481,7 +481,7 @@ function TermsContent() {
           <div className="terms-card">
             <div className="card-header">
               <h1 className="card-title">利用規約</h1>
-              <p className="card-subtitle">最終更新日: 2025年1月17日</p>
+              <p className="card-subtitle">最終更新日: 2026年2月4日</p>
             </div>
 
             <div className="terms-content">
@@ -503,6 +503,17 @@ function TermsContent() {
                   <div className="list-item">エラー解決支援</div>
                   <div className="list-item">画像解析によるコード生成</div>
                   <div className="list-item">エンジニアサポート（プラン別）</div>
+                  <div className="list-item">スプレッドシート連携機能（CSVデータの自動取込・可視化）</div>
+                </div>
+                <div className="highlight-box">
+                  <p style={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: 'clamp(0.875rem, 2vw, 1rem)' }}>スプレッドシート連携機能について:</p>
+                  <div style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: '#4b5563' }}>
+                    <div className="list-item">各種ツールから出力されたCSVデータを自動的にGoogle スプレッドシートに取り込み</div>
+                    <div className="list-item">対応データ形式: CSV, TSV</div>
+                    <div className="list-item">連携先: Google Spreadsheet</div>
+                    <div className="list-item">更新頻度: 自動（リアルタイム）</div>
+                    <div className="list-item">データ保持期間: 契約期間中</div>
+                  </div>
                 </div>
               </section>
 
@@ -510,11 +521,11 @@ function TermsContent() {
                 <h2 className="section-title">第3条（料金および支払い）</h2>
                 <div className="highlight-box important">
                   <p style={{ fontWeight: 'bold', marginBottom: '0.75rem', fontSize: 'clamp(0.875rem, 2vw, 1rem)' }}>
-                    最低契約期間: 3ヶ月（全有料プラン共通）
+                    最低契約期間: 6ヶ月（全有料プラン共通）
                   </p>
-                  <div className="list-item">最低3ヶ月間の継続が必要です</div>
+                  <div className="list-item">最低6ヶ月間の継続が必要です</div>
                   <div className="list-item">月額料金のみ（頭金・初期費用なし）</div>
-                  <div className="list-item">3ヶ月経過後はいつでも解約可能</div>
+                  <div className="list-item">6ヶ月経過後はいつでも解約可能</div>
                 </div>
                 <div className="highlight-box">
                   <div className="pricing-table">
@@ -523,20 +534,35 @@ function TermsContent() {
                       <span>月10回まで（0円）</span>
                     </div>
                     <div className="pricing-row">
-                      <strong>プレミアムプラン</strong>
+                      <strong>プレミアムプラン（1万円プラン）</strong>
                       <span>無制限利用（月額10,000円・税込）</span>
                     </div>
                     <div className="pricing-row">
-                      <strong>プロフェッショナルプラン</strong>
-                      <span>無制限利用＋優先サポート（月額50,000円・税込）</span>
+                      <strong>プロフェッショナルプラン（5万円プラン）</strong>
+                      <span>無制限利用＋月1回無料ミーティング（月額50,000円・税込）</span>
                     </div>
+                  </div>
+                </div>
+                <div className="highlight-box">
+                  <p style={{ fontWeight: 'bold', marginBottom: '0.5rem', fontSize: 'clamp(0.875rem, 2vw, 1rem)' }}>プラン詳細:</p>
+                  <div style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: '#4b5563' }}>
+                    <p style={{ marginBottom: '0.5rem' }}><strong>プレミアムプラン（1万円プラン）:</strong></p>
+                    <div className="list-item">契約期間: 6ヶ月</div>
+                    <div className="list-item">無制限コード生成</div>
+                    <div className="list-item">メール・チャットサポート</div>
+                    <div className="list-item">無料ミーティング: なし</div>
+                    <p style={{ marginBottom: '0.5rem', marginTop: '1rem' }}><strong>プロフェッショナルプラン（5万円プラン）:</strong></p>
+                    <div className="list-item">契約期間: 6ヶ月</div>
+                    <div className="list-item">無制限コード生成</div>
+                    <div className="list-item">優先メール・チャットサポート + 専任担当者</div>
+                    <div className="list-item">月1回無料ミーティング（60分、オンライン）</div>
                   </div>
                 </div>
                 <div className="section-content">
                   <div className="list-item">料金は前払い制とし、毎月自動更新されます</div>
                   <div className="list-item">決済はStripeを通じて安全に処理されます</div>
                   <div className="list-item">日割り計算は行いません</div>
-                  <div className="list-item">解約は次回更新日の5日前までに申請（最低契約期間3ヶ月経過後）</div>
+                  <div className="list-item">解約は次回更新日の5日前までに申請（最低契約期間6ヶ月経過後）</div>
                 </div>
               </section>
 
@@ -605,7 +631,7 @@ function TermsContent() {
                   </div>
 
                   <div className="list-item"><strong>クーリングオフ:</strong> 初回申込から7日間は理由を問わず全額返金可能</div>
-                  <div className="list-item"><strong>最低契約期間:</strong> 3ヶ月未満での解約でも、3ヶ月分の料金が発生します（30日以内返金制度適用時を除く）</div>
+                  <div className="list-item"><strong>最低契約期間:</strong> 6ヶ月未満での解約でも、6ヶ月分の料金が発生します（30日以内返金制度適用時を除く）</div>
                   <div className="list-item"><strong>サービス不具合:</strong> 当社起因の重大な不具合でサービスが3日以上利用できない場合、日割り返金</div>
 
                   <div className="list-item"><strong>返金をお受けできない場合:</strong></div>
