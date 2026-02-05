@@ -45,6 +45,17 @@ CREATE TABLE IF NOT EXISTS refunds (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 既存テーブルに user_id がない場合の補完
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'refunds' AND column_name = 'user_id'
+  ) THEN
+    ALTER TABLE refunds ADD COLUMN user_id TEXT;
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_refunds_charge ON refunds(charge_id);
 CREATE INDEX IF NOT EXISTS idx_refunds_customer ON refunds(customer_id);
 CREATE INDEX IF NOT EXISTS idx_refunds_user ON refunds(user_id);
@@ -52,11 +63,6 @@ CREATE INDEX IF NOT EXISTS idx_refunds_user ON refunds(user_id);
 -- ===================================================================
 -- 3. usersテーブルへの列追加（ブロック機能用）
 -- ===================================================================
--- 注意: 既存のusersテーブルに列を追加
--- ALTER TABLE users ADD COLUMN IF NOT EXISTS blocked_at TIMESTAMPTZ;
--- ALTER TABLE users ADD COLUMN IF NOT EXISTS blocked_reason TEXT;
--- ALTER TABLE users ADD COLUMN IF NOT EXISTS unblocked_at TIMESTAMPTZ;
-
 -- カラム追加（エラーを無視して実行）
 DO $$
 BEGIN
@@ -151,6 +157,17 @@ CREATE TABLE IF NOT EXISTS payment_history (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 既存テーブルに user_id がない場合の補完
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'payment_history' AND column_name = 'user_id'
+  ) THEN
+    ALTER TABLE payment_history ADD COLUMN user_id TEXT;
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_payment_history_user ON payment_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_payment_history_customer ON payment_history(stripe_customer_id);
 CREATE INDEX IF NOT EXISTS idx_payment_history_status ON payment_history(status);
@@ -163,13 +180,16 @@ ALTER TABLE refunds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_history ENABLE ROW LEVEL SECURITY;
 
 -- 管理者のみアクセス可能
+DROP POLICY IF EXISTS "Admin only for stripe_events" ON stripe_events;
 CREATE POLICY "Admin only for stripe_events" ON stripe_events
   FOR ALL USING (auth.jwt() ->> 'role' = 'admin' OR auth.jwt() ->> 'role' = 'service_role');
 
+DROP POLICY IF EXISTS "Admin only for refunds" ON refunds;
 CREATE POLICY "Admin only for refunds" ON refunds
   FOR ALL USING (auth.jwt() ->> 'role' = 'admin' OR auth.jwt() ->> 'role' = 'service_role');
 
 -- ユーザーは自分の決済履歴のみ閲覧可能
+DROP POLICY IF EXISTS "Users can view own payment history" ON payment_history;
 CREATE POLICY "Users can view own payment history" ON payment_history
   FOR SELECT USING (user_id = auth.uid()::text OR auth.jwt() ->> 'role' = 'admin');
 

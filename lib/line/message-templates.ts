@@ -77,7 +77,7 @@ export class MessageTemplates {
             {
               type: 'uri',
               label: '購入する（¥10,000/月）',
-              uri: process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/7sY3cv2So0v78ICbSz6oo09'
+              uri: process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'
             },
             {
               type: 'message',

@@ -5,7 +5,7 @@
 -- ===================================================================
 
 -- pgvector拡張を有効化（Supabaseで事前に有効化が必要）
--- CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS vector;
 
 -- ===================================================================
 -- 1. subscription_plans テーブル（サブスクリプションプラン定義）
@@ -154,8 +154,8 @@ CREATE TABLE IF NOT EXISTS system_embeddings (
   chunk_text TEXT NOT NULL,                  -- チャンクテキスト
 
   -- ベクトル埋め込み（1536次元、OpenAI text-embedding-ada-002互換）
-  -- Supabaseでpgvectorが有効な場合のみ使用可能
-  -- embedding vector(1536),
+  -- Create Table時はIF NOT EXISTSなので、後でALTERで追加確認を行う
+  embedding vector(1536),
 
   -- pgvectorが使えない場合の代替（JSON配列）
   embedding_json JSONB,
@@ -167,12 +167,32 @@ CREATE TABLE IF NOT EXISTS system_embeddings (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- ★重要: 既存テーブルでカラムが欠けている場合の補完処理★
+DO $$
+BEGIN
+  -- embedding column
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'system_embeddings' AND column_name = 'embedding'
+  ) THEN
+    ALTER TABLE system_embeddings ADD COLUMN embedding vector(1536);
+  END IF;
+
+  -- embedding_json column
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'system_embeddings' AND column_name = 'embedding_json'
+  ) THEN
+    ALTER TABLE system_embeddings ADD COLUMN embedding_json JSONB;
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_system_embeddings_system ON system_embeddings(system_id);
 CREATE INDEX IF NOT EXISTS idx_system_embeddings_document ON system_embeddings(document_id);
 
 -- pgvectorインデックス（pgvectorが有効な場合）
--- CREATE INDEX IF NOT EXISTS idx_system_embeddings_vector ON system_embeddings
---   USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+CREATE INDEX IF NOT EXISTS idx_system_embeddings_vector ON system_embeddings
+  USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
 
 -- ===================================================================
 -- 6. user_downloads テーブル（ダウンロード履歴・ロック機能用）
@@ -375,18 +395,22 @@ ALTER TABLE user_downloads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_system_access ENABLE ROW LEVEL SECURITY;
 
 -- subscription_plans: 誰でも閲覧可能
+DROP POLICY IF EXISTS "Anyone can view active plans" ON subscription_plans;
 CREATE POLICY "Anyone can view active plans" ON subscription_plans
   FOR SELECT USING (is_active = true);
 
 -- systems: 公開システムは誰でも閲覧可能
+DROP POLICY IF EXISTS "Anyone can view published systems" ON systems;
 CREATE POLICY "Anyone can view published systems" ON systems
   FOR SELECT USING (is_published = true);
 
 -- user_subscriptions: 自分のサブスク情報のみ閲覧可能
+DROP POLICY IF EXISTS "Users can view own subscriptions" ON user_subscriptions;
 CREATE POLICY "Users can view own subscriptions" ON user_subscriptions
   FOR SELECT USING (user_id = auth.uid()::text OR auth.jwt() ->> 'role' = 'admin');
 
 -- user_downloads: 自分のダウンロード履歴のみ閲覧可能
+DROP POLICY IF EXISTS "Users can view own downloads" ON user_downloads;
 CREATE POLICY "Users can view own downloads" ON user_downloads
   FOR SELECT USING (user_id = auth.uid()::text OR auth.jwt() ->> 'role' = 'admin');
 
@@ -394,21 +418,33 @@ CREATE POLICY "Users can view own downloads" ON user_downloads
 -- トリガー
 -- ===================================================================
 
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.updated_at = NOW();
+   RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+DROP TRIGGER IF EXISTS update_subscription_plans_updated_at ON subscription_plans;
 CREATE TRIGGER update_subscription_plans_updated_at
   BEFORE UPDATE ON subscription_plans
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_user_subscriptions_updated_at ON user_subscriptions;
 CREATE TRIGGER update_user_subscriptions_updated_at
   BEFORE UPDATE ON user_subscriptions
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_systems_updated_at ON systems;
 CREATE TRIGGER update_systems_updated_at
   BEFORE UPDATE ON systems
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_system_documents_updated_at ON system_documents;
 CREATE TRIGGER update_system_documents_updated_at
   BEFORE UPDATE ON system_documents
   FOR EACH ROW

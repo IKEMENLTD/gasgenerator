@@ -106,7 +106,7 @@ export class FlexTemplates {
               action: {
                 type: 'uri',
                 label: '🎯 今すぐ購入（¥10,000/月）',
-                uri: process.env.STRIPE_PAYMENT_LINK || 'https://example.com/upgrade'
+                uri: process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'
               },
               style: 'primary',
               color: '#4F46E5',
@@ -133,8 +133,8 @@ export class FlexTemplates {
    */
   static createLimitReachedFlexMessage(lineUserId: string): FlexMessage {
     const encoded = Buffer.from(lineUserId).toString('base64')
-    const paymentUrl = `${process.env.STRIPE_PAYMENT_LINK || 'https://example.com/upgrade'}?client_reference_id=${encoded}`
-    
+    const paymentUrl = `${process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'}?client_reference_id=${encoded}`
+
     return {
       type: 'flex',
       altText: '無料プランの利用制限に達しました',
