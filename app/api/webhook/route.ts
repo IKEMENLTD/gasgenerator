@@ -32,7 +32,7 @@ const imageHandler = new LineImageHandler()
 // メモリ監視を開始（アプリケーション起動時に一度だけ）
 if (typeof process !== 'undefined' && !(global as any).__memoryMonitorStarted) {
   MemoryMonitor.start()
-  ;(global as any).__memoryMonitorStarted = true
+    ; (global as any).__memoryMonitorStarted = true
   logger.info('Memory monitor initialized')
 }
 
@@ -42,7 +42,7 @@ if (typeof process !== 'undefined') {
     logger.info('SIGTERM received, cleaning up...')
     // SessionManagerが内部でクリーンアップを処理
   })
-  
+
   process.on('SIGINT', () => {
     logger.info('SIGINT received, cleaning up...')
     // SessionManagerが内部でクリーンアップを処理
@@ -62,16 +62,16 @@ const CACHE_TTL = 10000 // 10秒に短縮
 export async function POST(req: NextRequest) {
   const requestId = generateRequestId()
   const startTime = Date.now()
-  
+
   try {
     // レート制限チェック
     const rateLimitResult = await rateLimiters.webhook.check(req)
     if (rateLimitResult) return rateLimitResult
-    
+
     // 1. リクエスト取得と基本検証
     const body = await req.text()
     const signature = req.headers.get('x-line-signature')
-    
+
     if (!signature) {
       logger.warn('No signature provided', { requestId })
       // 署名がない場合は401を返す（セキュリティ上重要）
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       // 署名検証失敗は401を返す（セキュリティ上重要）
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
-    
+
     // リクエスト元検証は署名検証で十分なのでスキップ
     // LINEはOriginヘッダーを送らないし、IPも変動する
     logger.info('LINE signature validated, skipping origin/IP check', { requestId })
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
     // 4. イベント処理
     const events = parsedBody.events || []
     let processedCount = 0
-    
+
     for (const event of events) {
       try {
         // イベントタイプごとに処理
@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
           logger.debug('Skipping event', { type: event.type })
         }
       } catch (eventError) {
-        logger.error('Event processing error', { 
+        logger.error('Event processing error', {
           requestId,
           eventType: event.type,
           error: eventError instanceof Error ? eventError.message : String(eventError)
@@ -179,11 +179,11 @@ export async function POST(req: NextRequest) {
     }, { status: 200 })
 
   } catch (error) {
-    logger.error('Webhook error', { 
-      requestId, 
+    logger.error('Webhook error', {
+      requestId,
       error: error instanceof Error ? error.message : String(error)
     })
-    
+
     // LINEの再送を防ぐため必ず200を返す
     return NextResponse.json({ success: false }, { status: 200 })
   }
@@ -196,7 +196,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
   const userId = event.source?.userId
   const messageText = event.message?.text?.trim() || ''
   const replyToken = event.replyToken
-  
+
   // デバッグ情報をログに記録
   logger.debug('Event source info', {
     sourceType: event.source?.type,
@@ -205,7 +205,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     roomId: event.source?.roomId,
     message: messageText?.substring(0, 100) // メッセージは最初の100文字のみ
   })
-  
+
   // グループIDを含むメッセージを返信（グループ内でのみ）
   if (event.source?.type === 'group' && messageText === 'グループID確認') {
     await lineClient.replyMessage(replyToken, [{
@@ -214,7 +214,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     }])
     return true
   }
-  
+
   // ユーザーIDを返信（個人チャットでのみ）
   if (event.source?.type === 'user' && messageText === 'ユーザーID確認') {
     await lineClient.replyMessage(replyToken, [{
@@ -224,7 +224,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     return true
   }
   // 🔍 デバッグコード追加（ここまで）
-  
+
   if (!userId || !replyToken) {
     logger.warn('Missing required fields', { userId, hasReplyToken: !!replyToken })
     return false
@@ -254,10 +254,10 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     })
 
     // エラースクリーンショット待ち受けモード
-    if (messageText === 'エラーのスクリーンショットを送る' || 
-        messageText.includes('エラー') && messageText.includes('スクショ') ||
-        messageText === '📷 エラースクリーンショット') {
-      
+    if (messageText === 'エラーのスクリーンショットを送る' ||
+      messageText.includes('エラー') && messageText.includes('スクショ') ||
+      messageText === '📷 エラースクリーンショット') {
+
       // 既存のコンテキストを維持
       const existingContext = context || {
         messages: [],
@@ -267,22 +267,22 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         currentStep: 1,
         readyForCode: false
       }
-      
+
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
         text: '📸 エラーのスクリーンショットを送信してください。\n\n画像を確認後、エラーの原因と解決方法をお伝えします。\n\n※画像を送信するか、「キャンセル」と入力してください。'
       }])
-      
+
       // スクショ待ちモードをセット（SessionManager経由）
       await sessionManager.saveContext(userId, {
         ...existingContext,
         waitingForScreenshot: true,
         lastGeneratedCode: ('lastGeneratedCode' in existingContext ? existingContext.lastGeneratedCode : null)
       } as any)
-      
+
       return true
     }
-    
+
     // 画像解析関連のボタンハンドラ
     if (messageText === '画像を解析') {
       await lineClient.replyMessage(replyToken, [{
@@ -291,14 +291,14 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       }])
       return true
     }
-    
+
     // エンジニアに相談
     if (messageText === 'エンジニアに相談する' ||
-        messageText === 'エンジニアに相談' ||
-        messageText === 'エンジニアへの相談' ||
-        messageText === '👨‍💻 エンジニアに相談' ||
-        messageText.includes('エンジニア') && messageText.includes('相談') ||
-        messageText.includes('人間') && messageText.includes('相談')) {
+      messageText === 'エンジニアに相談' ||
+      messageText === 'エンジニアへの相談' ||
+      messageText === '👨‍💻 エンジニアに相談' ||
+      messageText.includes('エンジニア') && messageText.includes('相談') ||
+      messageText.includes('人間') && messageText.includes('相談')) {
 
       await engineerSupport.handleSupportRequest(userId, messageText, replyToken)
       return true
@@ -306,9 +306,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
     // エラー修復フィードバック処理
     if (messageText === '動作しました' ||
-        messageText === '動作確認OK' ||
-        messageText === '✅ 動作確認OK' ||
-        messageText.includes('動作') && messageText.includes('OK')) {
+      messageText === '動作確認OK' ||
+      messageText === '✅ 動作確認OK' ||
+      messageText.includes('動作') && messageText.includes('OK')) {
 
       // フィードバック成功を記録
       const recoveryLogId = context ? (context as any).lastRecoveryLogId : undefined
@@ -330,9 +330,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: '🎉 素晴らしいです！\n\nエラーが解決できて良かったです。\n\n引き続き、何かあればお気軽にご相談ください！',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '🔄 新しいコード', text: '新しいコードを作りたい' }},
-            { type: 'action', action: { type: 'message', label: '📊 統計を見る', text: 'マイステータス' }},
-            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            { type: 'action', action: { type: 'message', label: '🔄 新しいコード', text: '新しいコードを作りたい' } },
+            { type: 'action', action: { type: 'message', label: '📊 統計を見る', text: 'マイステータス' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ]
         }
       }] as any)
@@ -340,9 +340,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     }
 
     if (messageText === 'まだエラーが出ます' ||
-        messageText === 'まだエラー' ||
-        messageText === '❌ まだエラー' ||
-        messageText.includes('まだ') && messageText.includes('エラー')) {
+      messageText === 'まだエラー' ||
+      messageText === '❌ まだエラー' ||
+      messageText.includes('まだ') && messageText.includes('エラー')) {
 
       // フィードバック失敗を記録
       const recoveryLogId = context ? (context as any).lastRecoveryLogId : undefined
@@ -358,15 +358,15 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: '了解しました。もう一度エラーのスクリーンショットを送信してください。\n\n別のアプローチで修正を試みます。',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '📷 スクショ送信', text: 'エラーのスクリーンショットを送る' }},
-            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談する' }},
-            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            { type: 'action', action: { type: 'message', label: '📷 スクショ送信', text: 'エラーのスクリーンショットを送る' } },
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談する' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ]
         }
       }] as any)
       return true
     }
-    
+
     // スパム検出（Googleドメインのホワイトリスト対応）
     if (isSpam(messageText)) {
       logger.warn('Spam detected', { userId, messageText: messageText.substring(0, 100) })
@@ -374,7 +374,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       // スパムカウンターをインクリメント（メモリ内で管理）
       const spamCountKey = `spam_${userId}`
       const spamCount = (global as any)[spamCountKey] || 0
-      ;(global as any)[spamCountKey] = spamCount + 1
+        ; (global as any)[spamCountKey] = spamCount + 1
 
       if (spamCount >= 3) {
         // 3回以上スパムを送信したユーザーは警告
@@ -383,13 +383,13 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           text: '⚠️ 不適切なメッセージが検出されました。\n\n続けると利用を制限させていただく場合があります。\n\n正しい使い方は「使い方」と送信してご確認ください。',
           quickReply: {
             items: [
-              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-              { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-              { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
-              { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' }},
-              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+              { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
+              { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } },
+              { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' } },
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
             ]
           }
         }])
@@ -539,7 +539,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         logger.info('Download request detected', { userId, systemName: downloadSystemName })
 
         // ローディング表示
-        lineClient.showLoadingAnimation(userId, 30).catch(() => {})
+        lineClient.showLoadingAnimation(userId, 30).catch(() => { })
 
         // 1. システム名でDBから検索（名前の部分一致）
         const { data: systems, error: searchError } = await (await import('../../../lib/supabase/client')).supabaseAdmin
@@ -556,8 +556,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             text: `❌ 「${downloadSystemName}」というシステムが見つかりませんでした。\n\nシステムカタログで正確な名前を確認してください。`,
             quickReply: {
               items: [
-                { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
-                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+                { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
               ]
             }
           }] as any)
@@ -590,9 +590,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             text: errorMessage,
             quickReply: {
               items: [
-                { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' }},
-                { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
-                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+                { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+                { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
               ]
             }
           }] as any)
@@ -608,8 +608,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             text: `❌ ダウンロードに失敗しました。\n\n${downloadResult.message}\n\n時間をおいて再度お試しください。`,
             quickReply: {
               items: [
-                { type: 'action', action: { type: 'message', label: '🔄 再試行', text: `${system.name}をダウンロード` }},
-                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }}
+                { type: 'action', action: { type: 'message', label: '🔄 再試行', text: `${system.name}をダウンロード` } },
+                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } }
               ]
             }
           }] as any)
@@ -735,19 +735,19 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             text: `📋 続き:\n\n${codeContent.substring(MAX_CODE_LENGTH)}`,
             quickReply: {
               items: [
-                { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
-                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+                { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
               ]
             }
           })
         } else {
           // クイックリプライを最後のメッセージに追加
-          ;(flexMessage as any).quickReply = {
+          ; (flexMessage as any).quickReply = {
             items: [
-              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
-              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
             ]
           }
         }
@@ -771,8 +771,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           text: '❌ エラーが発生しました。時間をおいて再度お試しください。',
           quickReply: {
             items: [
-              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
-              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }}
+              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } }
             ]
           }
         }] as any)
@@ -815,9 +815,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
               text: `${confidenceLabel} ${result.answer}${sourceInfo}`,
               quickReply: {
                 items: [
-                  { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
-                  { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-                  { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+                  { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+                  { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+                  { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
                 ]
               }
             }] as any)
@@ -847,10 +847,10 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
     // 最初のターンで、既知のコマンドではない場合はLLMで自然な返答
     if (isFirstTurn &&
-        messageText.length >= 2 &&
-        messageText.length <= 200 &&
-        !getCategoryIdByName(messageText) &&
-        !['メニュー', 'menu', '使い方', 'ヘルプ', '料金プラン'].includes(messageText.toLowerCase())) {
+      messageText.length >= 2 &&
+      messageText.length <= 200 &&
+      !getCategoryIdByName(messageText) &&
+      !['メニュー', 'menu', '使い方', 'ヘルプ', '料金プラン'].includes(messageText.toLowerCase())) {
 
       try {
         // ローディングアニメーションを開始
@@ -891,13 +891,13 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           text: responseText,
           quickReply: {
             items: [
-              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
-              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-              { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+              { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
+              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
             ]
           }
         }])
@@ -923,12 +923,12 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: '📋 メニュー',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
-            { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' }},
-            { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' }},
-            { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' }},
-            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談' }},
-            { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }}
+            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+            { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' } },
+            { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+            { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' } },
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談' } },
+            { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' } }
           ] as any
         }
       }])
@@ -980,13 +980,13 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: 'TaskMateと他のLLMサービスの本質的な違い\n\n【TaskMateにしかない強み】\n\n1. 無制限の会話履歴と文脈保持\nTaskMateは全ての会話履歴を永続的に保存。1ヶ月前の続きから再開可能。他のLLMは会話が長くなると文脈を失い、最初から説明し直す必要があります。\n\n2. 現役PMエンジニアへの直接相談\n「エンジニアに相談」ボタンで、10年以上の実務経験を持つフルスタックエンジニアが直接対応。複雑な要件も一緒に設計から考えます。他のLLMではAIのみの対応です。\n\n3. 修正履歴の完全管理\n過去に生成した全てのコードを記憶し、修正要望も文脈を保持したまま対応。「先週作ったコードの〇〇を修正」といった依頼も可能。\n\n4. LINE完結の業務フロー\nスクショ送信→コード生成→動作確認→修正依頼まで全てLINE内で完結。ブラウザを開く必要なし。\n\n5. 実装サポートまで含む\n生成したコードの実装方法、エラー対処、カスタマイズまで一貫してサポート。孤独な試行錯誤は不要です。\n\n【使い分けの目安】\n・他のLLM：調査や学習向き\n・TaskMate：実務で今すぐ使えるコードと実装サポートが必要な方向き',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
-            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
+            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } },
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ] as any
         }
       }])
@@ -1000,39 +1000,39 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: '📖 Task mate 使い方ガイド\n\n【基本の使い方】\n1️⃣ 「コード生成を開始」を送信\n2️⃣ カテゴリを選択（スプレッドシート等）\n3️⃣ 詳しい要望を入力\n4️⃣ 数分でコードが生成されます\n\n【便利な機能】\n🔄 修正したい：生成後に修正可能\n📷 エラースクショ：エラー画面を送信で解決策提示\n📸 画像解析：Excel/PDFのスクショからコード生成\n\n【料金プラン】\n🆓 無料：月10回\n💎 プレミアム：月額10,000円\n🎆 プロフェッショナル：月額50,000円\n\n💡 コツ：具体的に要望を伝えるほど、良いコードが生成されます！',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
-            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
+            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } },
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ]
         }
       }])
       return true
     }
-    
+
     if (messageText === '画像解析の使い方') {
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
         text: '📸 画像解析の使い方\n\n1️⃣ エラー画面のスクショを送る\n→ エラーの原因と解決コードを生成\n\n2️⃣ ExcelやPDFのスクショを送る\n→ データ構造を理解してコード生成\n\n3️⃣ Webサイトのスクショを送る\n→ スクレイピングやAPI連携コード生成\n\n💡 コツ：画像は鮮明に、文字が読めるように撮影してください',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
-            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
+            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } },
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ]
         }
       }])
       return true
     }
-    
-    if (messageText === 'プレミアムプラン' || messageText === '料金プラン' || messageText === 'アップグレード') {
+
+    if (messageText === 'プレミアムプラン' || messageText === 'プレミアムプランを見る' || messageText === '料金プラン' || messageText === 'アップグレード') {
       // 現在のプレミアムステータスを確認
       const currentStatus = await PremiumChecker.checkPremiumStatus(userId)
 
@@ -1082,13 +1082,13 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           text: '下のボタンから操作を選んでください',
           quickReply: {
             items: [
-              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-              { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-              { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
-              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+              { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
+              { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } },
+              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
             ]
           }
         }
@@ -1111,8 +1111,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
                 uri: 'https://billing.stripe.com/p/login/aEU3cb2So0v78ICbSz6oo09'
               }
             },
-            { type: 'action', action: { type: 'message', label: '👨‍💻 サポートに相談', text: 'エンジニアに相談' }},
-            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            { type: 'action', action: { type: 'message', label: '👨‍💻 サポートに相談', text: 'エンジニアに相談' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ] as any
         }
       }] as any)
@@ -1147,8 +1147,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           text: '🔧 修正したい内容を教えてください。\n\n例：\n・「エラー処理を追加して」\n・「ログを詳細に出力」\n・「シート名を変更」',
           quickReply: {
             items: [
-              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }},
-              { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' }}
+              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' } },
+              { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' } }
             ]
           }
         }] as any)
@@ -1158,7 +1158,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         logger.info('No context for modification, treating as new message', { userId })
       }
     }
-    
+
     // プレミアムアクティベーションコードのチェック（64文字以上）
     if (messageText.length >= 64) {
       // プレミアムハンドラーをインポートして実行
@@ -1185,8 +1185,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           text: `📚 会話を続けます。\n\n現在のカテゴリ：${context.category || '未設定'}\n\n続きをどうぞ！`,
           quickReply: {
             items: [
-              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }},
-              { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }}
+              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' } },
+              { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' } }
             ]
           }
         }] as any)
@@ -1201,8 +1201,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           text: `📚 前回の会話から続きを再開します。\n\n前回の内容：\n${recentMessages[recentMessages.length - 1].content.substring(0, 100)}...\n\n続きをどうぞ！`,
           quickReply: {
             items: [
-              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }},
-              { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }}
+              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' } },
+              { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' } }
             ]
           }
         }] as any)
@@ -1220,9 +1220,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           text: '過去の会話履歴が見つかりません。新しく始めましょう！',
           quickReply: {
             items: [
-              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }}
+              { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+              { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } }
             ]
           }
         }] as any)
@@ -1255,15 +1255,15 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       messageText,
       { timestamp: Date.now() }
     )
-    
+
     return await continueConversation(userId, context, messageText, replyToken)
-    
+
   } catch (error) {
-    logger.error('Message processing error', { 
-      userId, 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error('Message processing error', {
+      userId,
+      error: error instanceof Error ? error.message : String(error)
     })
-    
+
     // エラー時の返信
     try {
       await lineClient.replyMessage(replyToken, [{
@@ -1271,17 +1271,17 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: '申し訳ございません。エラーが発生しました。\n下のボタンから操作を選んでください。',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }},
-            { type: 'action', action: { type: 'message', label: '📷 エラー画面', text: 'エラーのスクショを送る' }},
-            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' } },
+            { type: 'action', action: { type: 'message', label: '📷 エラー画面', text: 'エラーのスクショを送る' } },
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ]
         }
       }] as any)
     } catch (replyError) {
       logger.error('Failed to send error reply', { replyError })
     }
-    
+
     // エラー時はコンテキストを保持（データ損失防止）
     // sessionStore.delete(userId) // コメントアウト：セッションを保持
     logger.info('Preserving session after error', { userId })
@@ -1295,7 +1295,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 function isDuplicateEvent(userId: string, timestamp: number): boolean {
   const eventKey = `${userId}_${timestamp}`
   const now = Date.now()
-  
+
   // キャッシュクリーンアップ
   if (recentEventKeys.size > MAX_CACHE_SIZE) {
     // 古いエントリを削除
@@ -1305,18 +1305,18 @@ function isDuplicateEvent(userId: string, timestamp: number): boolean {
       }
     }
   }
-  
+
   // 重複チェック
   if (recentEventKeys.has(eventKey)) {
     return true
   }
-  
+
   // キャッシュに追加
   recentEventKeys.set(eventKey, now)
-  
+
   // TTL後に自動削除（シンプルなsetTimeoutを使用）
   setTimeout(() => recentEventKeys.delete(eventKey), CACHE_TTL)
-  
+
   return false
 }
 
@@ -1363,11 +1363,11 @@ async function startNewConversation(
       const hasHistory = (await sessionManager.getRecentMessages(userId, 1)).length > 0
 
       const quickReplyItems = [
-        { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-        { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-        { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-        { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-        { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }}
+        { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+        { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+        { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+        { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
+        { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } }
       ]
 
       // 履歴がある場合は「続きから」ボタンを追加
@@ -1412,23 +1412,23 @@ async function startNewConversation(
       content: messageText
     })
   }
-  
+
   // 最初の質問を送信
   const result = await ConversationalFlow.processConversation(context, messageText)
-  
+
   // 更新されたコンテキストをSessionManager経由で保存
   await sessionManager.saveContext(userId, result.updatedContext)
-  
+
   await lineClient.replyMessage(replyToken, [{
     type: 'text',
     text: result.reply,
     quickReply: {
       items: [
-        { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }}
+        { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' } }
       ]
     }
   }])
-  
+
   return true
 }
 
@@ -1453,13 +1453,13 @@ async function continueConversation(
       text: '❌ キャンセルしました。\n\n新しくコードを生成したい場合は、カテゴリを選んでください：',
       quickReply: {
         items: [
-          { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-          { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-          { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-          { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
-          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談' }},
-          { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+          { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+          { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+          { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+          { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
+          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } },
+          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談' } },
+          { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
         ]
       }
     }] as any)
@@ -1476,7 +1476,7 @@ async function continueConversation(
       // セッションを削除せず、コード生成後モードに変更
       context.lastGeneratedCode = true
       context.readyForCode = false
-      
+
       // SessionManager経由で更新を保存
       await sessionManager.saveContext(userId, context)
       return true
@@ -1485,16 +1485,16 @@ async function continueConversation(
     else if (messageText === '追加で説明します') {
       // 追加説明モードに切り替え
       context.isAddingDescription = true
-      
+
       // SessionManager経由で更新
       await sessionManager.saveContext(userId, context)
-      
+
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
         text: '📝 追加で説明したい内容を入力してください。\n\n例：\n・「A列の日付を自動で入力したい」\n・「重複データは削除してほしい」\n・「エラー時はログを出力して」',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' }}
+            { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' } }
           ]
         }
       }] as any)
@@ -1510,19 +1510,19 @@ async function continueConversation(
     }
     context.requirements.additionalDescription = messageText
     context.readyForCode = true
-    ;(context as any).isAddingDescription = false
-    
+      ; (context as any).isAddingDescription = false
+
     // SessionManager経由で更新
     await sessionManager.saveContext(userId, context)
-    
+
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
       text: `✅ 追加説明を受け付けました。\n\n【画像の内容】\n${context.requirements.imageContent}\n\n【追加説明】\n${messageText}\n\nこの内容でコードを生成します。よろしいですか？`,
       quickReply: {
         items: [
-          { type: 'action', action: { type: 'message', label: '✅ はい', text: 'はい' }},
-          { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }},
-          { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' }}
+          { type: 'action', action: { type: 'message', label: '✅ はい', text: 'はい' } },
+          { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' } },
+          { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' } }
         ]
       }
     }] as any)
@@ -1537,7 +1537,7 @@ async function continueConversation(
       // セッションを削除せず、コード生成後モードに変更
       context.lastGeneratedCode = true
       context.readyForCode = false
-      
+
       // SessionManager経由で更新を保存
       await sessionManager.saveContext(userId, context)
       return true
@@ -1546,14 +1546,14 @@ async function continueConversation(
       context.readyForCode = false
       context.isModifying = true  // 修正モードフラグ
       await sessionManager.saveContext(userId, context)
-      
+
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
         text: '修正したい内容を教えてください。\n\n例：\n・「もっと詳細なログを出力したい」\n・「エラー処理を追加して」\n・「シート名を変更したい」\n\n修正内容を入力してください：',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }},
-            { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' }}
+            { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' } },
+            { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' } }
           ]
         }
       }] as any)
@@ -1569,19 +1569,19 @@ async function continueConversation(
     }
     (context.requirements as any).modifications = messageText
     context.readyForCode = true
-    ;(context as any).isModifying = false
-    
+      ; (context as any).isModifying = false
+
     // SessionManager経由で更新
     await sessionManager.saveContext(userId, context)
-    
+
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
       text: `修正内容を確認しました：\n\n「${messageText}」\n\nこの修正を反映してコードを再生成します。よろしいですか？`,
       quickReply: {
         items: [
-          { type: 'action', action: { type: 'message', label: '✅ はい', text: 'はい' }},
-          { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }},
-          { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' }}
+          { type: 'action', action: { type: 'message', label: '✅ はい', text: 'はい' } },
+          { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' } },
+          { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' } }
         ]
       }
     }] as any)
@@ -1591,10 +1591,10 @@ async function continueConversation(
   // 会話継続
   try {
     const result = await ConversationalFlow.processConversation(context, messageText)
-    
+
     // SessionManager経由で更新
     await sessionManager.saveContext(userId, result.updatedContext)
-    
+
     // アシスタントの応答も保存
     if (result.reply) {
       await sessionManager.saveMessage(
@@ -1607,17 +1607,17 @@ async function continueConversation(
 
     // 応答送信 - isCompleteの時は確認ボタン、それ以外はメインメニュー
     const quickReplyItems = result.isComplete ? [
-      { type: 'action', action: { type: 'message', label: '✅ はい', text: 'はい' }},
-      { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' }},
-      { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }}
+      { type: 'action', action: { type: 'message', label: '✅ はい', text: 'はい' } },
+      { type: 'action', action: { type: 'message', label: '✏️ 修正', text: '修正' } },
+      { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' } }
     ] : [
-      { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-      { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-      { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-      { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-      { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
-      { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-      { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+      { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+      { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+      { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+      { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
+      { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } },
+      { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+      { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
     ]
 
     await lineClient.replyMessage(replyToken, [{
@@ -1625,9 +1625,9 @@ async function continueConversation(
       text: result.reply,
       quickReply: { items: quickReplyItems as any }
     }])
-    
+
     return true
-    
+
   } catch (error) {
     // AIエラー時のフォールバック
     logger.error('Conversation processing error', { error })
@@ -1637,13 +1637,13 @@ async function continueConversation(
       text: 'もう少し詳しく教えていただけますか？\n\nどのような処理を自動化したいですか？',
       quickReply: {
         items: [
-          { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-          { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-          { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-          { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' }},
-          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' }},
-          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-          { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+          { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+          { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+          { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+          { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
+          { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } },
+          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+          { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
         ]
       }
     }])
@@ -1663,7 +1663,7 @@ async function startCodeGeneration(
   try {
     // プレミアムステータスチェック
     const premiumStatus = await PremiumChecker.checkPremiumStatus(userId)
-    
+
     if (!premiumStatus.canGenerate) {
       // 制限に達した場合 - カルーセルで両プランを表示
       // 利用規約ページ経由でStripeに誘導
@@ -1699,19 +1699,19 @@ async function startCodeGeneration(
       }] as any)
       return
     }
-    
+
     // 使用回数を記録
     await PremiumChecker.incrementUsage(userId)
-    
+
     // ローディングアニメーションを開始（30秒）
     const loadingStarted = await lineClient.showLoadingAnimation(userId, 30)
     if (!loadingStarted) {
       logger.warn('Loading animation failed to start', { userId })
     }
-    
+
     // セッションIDを確保
     const sessionId = context.sessionId || generateSessionId()
-    
+
     // キューに追加（セッションIDを含める）
     const job = await QueueManager.addJob({
       userId: userId,  // LINE User IDを使用（外部キー制約を回避）
@@ -1727,10 +1727,10 @@ async function startCodeGeneration(
         conversation: true  // 会話型フラグ
       } as any
     })
-    
+
     // チェックポイントを作成（バックグラウンド）
     sessionManager.createCheckpoint(userId)
-    
+
     // 【重要】即座に処理を開始（キューを待たない）
     setTimeout(async () => {
       try {
@@ -1753,10 +1753,10 @@ async function startCodeGeneration(
     ])
 
     logger.info('Code generation started with waiting time carousel', { userId, jobId: job.id })
-    
+
   } catch (error) {
     logger.error('Queue error', { error })
-    
+
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
       text: '申し訳ございません。システムエラーが発生しました。\nもう一度お試しください。'
@@ -1770,9 +1770,9 @@ async function startCodeGeneration(
 async function handleFollowEvent(event: any): Promise<void> {
   const userId = event.source?.userId
   if (!userId) return
-  
+
   logger.info('New follower', { userId })
-  
+
   try {
     // ユーザー作成・更新
     const user = await UserQueries.createOrUpdate(userId)
@@ -1780,8 +1780,8 @@ async function handleFollowEvent(event: any): Promise<void> {
 
     // 既にプレミアムユーザーかチェック
     const isPremium = (user as any)?.subscription_status === 'premium' &&
-                     (user as any)?.subscription_end_date &&
-                     new Date((user as any).subscription_end_date) > new Date()
+      (user as any)?.subscription_end_date &&
+      new Date((user as any).subscription_end_date) > new Date()
 
     if (isPremium) {
       // プレミアムユーザーにはシステム一覧を先頭に表示
@@ -1790,12 +1790,12 @@ async function handleFollowEvent(event: any): Promise<void> {
         text: '🎉 おかえりなさい！\n\nプレミアムプランご利用中です。\n無制限でGASコードを生成できます。\n\n📦 まずはシステム一覧から、すぐ使えるシステムをチェック！',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }},
-            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' }},
-            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' }},
-            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' }},
-            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' }},
-            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
+            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
+            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ]
         }
       }])
@@ -1903,8 +1903,8 @@ async function handleFollowEvent(event: any): Promise<void> {
     }
 
   } catch (error) {
-    logger.error('Failed to send welcome message', { 
-      userId, 
+    logger.error('Failed to send welcome message', {
+      userId,
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined
     })
@@ -1917,9 +1917,9 @@ async function handleFollowEvent(event: any): Promise<void> {
 async function handleUnfollowEvent(event: any): Promise<void> {
   const userId = event.source?.userId
   if (!userId) return
-  
+
   logger.info('User unfollowed', { userId })
-  
+
   // セッションクリーンアップ
   await sessionManager.deleteSession(userId)
 }
@@ -1931,7 +1931,7 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
   const userId = event.source?.userId
   const messageId = event.message?.id
   const replyToken = event.replyToken
-  
+
   if (!userId || !messageId || !replyToken) {
     logger.warn('Missing required fields for image', { userId, messageId })
     return false
@@ -1983,13 +1983,13 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
         // コンテキストを更新
         if (result.success && result.fixedCode) {
           // 成功: 修正後のコードを保存
-          ;(context as any).lastGeneratedCode = result.fixedCode
-          ;(context as any).errorAttemptCount = 0
-          ;(context as any).lastRecoveryLogId = result.recoveryLogId
+          ; (context as any).lastGeneratedCode = result.fixedCode
+            ; (context as any).errorAttemptCount = 0
+            ; (context as any).lastRecoveryLogId = result.recoveryLogId
         } else if (!result.shouldEscalate) {
           // 失敗: 試行回数をインクリメント
-          ;(context as any).errorAttemptCount = attemptCount + 1
-          ;(context as any).lastRecoveryLogId = result.recoveryLogId
+          ; (context as any).errorAttemptCount = attemptCount + 1
+            ; (context as any).lastRecoveryLogId = result.recoveryLogId
         }
 
         // waitingForScreenshotフラグをクリア
@@ -2017,29 +2017,29 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
           text: '申し訳ございません。エラー分析中に問題が発生しました。\n\n「エンジニアに相談」ボタンから直接ご相談ください。',
           quickReply: {
             items: [
-              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談する' }},
-              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' }},
-              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }}
+              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに相談', text: 'エンジニアに相談する' } },
+              { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' } },
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
             ]
           }
         }] as any)
         return true
       }
     }
-    
+
     const result = await imageHandler.handleImageMessage(messageId, replyToken, userId)
-    
+
     if (result.success && result.description) {
       // コンテキストがない場合は新規作成
       if (!context) {
         context = await sessionManager.createSession(userId, 'spreadsheet', `[画像アップロード] ${result.description}`)
       }
-      
+
       // メッセージ内容を決定
       const messageContent = isWaitingForScreenshot
         ? `[エラースクリーンショット] ${result.description}\nこのエラーを解決するコードを生成してください。`
         : `[画像アップロード] ${result.description}`
-      
+
       // SessionManager経由でメッセージを保存
       await sessionManager.saveMessage(
         userId,
@@ -2048,29 +2048,29 @@ async function processImageMessage(event: any, requestId: string): Promise<boole
         messageContent,
         { type: 'image', messageId, analysisResult: result.description }
       )
-      
+
       // コンテキストを更新
       context.messages.push({
         role: 'user',
         content: messageContent
       })
-      
+
       if (isWaitingForScreenshot) {
         context.requirements.errorScreenshot = result.description
         context.requirements.isErrorFix = 'true'
       } else {
         context.requirements.imageContent = result.description
       }
-      
+
       context.requirements.hasScreenshot = 'true'
-      
+
       // SessionManager経由で更新を保存
       await sessionManager.saveContext(userId, context)
     }
-    
+
     return result.success
   } catch (error) {
-    logger.error('Image processing error', { 
+    logger.error('Image processing error', {
       userId,
       messageId,
       error: error instanceof Error ? error.message : String(error),
@@ -2088,7 +2088,7 @@ async function processFileMessage(event: any, requestId: string): Promise<boolea
   const messageId = event.message?.id
   const fileName = event.message?.fileName
   const replyToken = event.replyToken
-  
+
   if (!userId || !messageId || !replyToken) {
     logger.warn('Missing required fields for file', { userId, messageId })
     return false
@@ -2098,18 +2098,18 @@ async function processFileMessage(event: any, requestId: string): Promise<boolea
 
   try {
     await imageHandler.handleFileMessage(messageId, fileName || 'unknown', replyToken, userId)
-    
+
     // SessionManagerから完全なコンテキストを取得
     let context = await sessionManager.getContext(userId)
     if (!context) {
       // 新規セッション作成
       context = await sessionManager.createSession(
-        userId, 
-        'spreadsheet', 
+        userId,
+        'spreadsheet',
         `[ファイルアップロード] ${fileName}`
       )
     }
-    
+
     // SessionManager経由でメッセージを保存
     await sessionManager.saveMessage(
       userId,
@@ -2118,19 +2118,19 @@ async function processFileMessage(event: any, requestId: string): Promise<boolea
       `[ファイルアップロード] ${fileName}`,
       { type: 'file', messageId, fileName }
     )
-    
+
     // コンテキストを更新
     context.messages.push({
       role: 'user',
       content: `[ファイルアップロード] ${fileName}`
     })
-    
+
     // SessionManager経由で更新
     await sessionManager.saveContext(userId, context)
-    
+
     return true
   } catch (error) {
-    logger.error('File processing error', { 
+    logger.error('File processing error', {
       userId,
       fileName,
       error: error instanceof Error ? error.message : String(error)
