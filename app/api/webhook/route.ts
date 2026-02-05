@@ -850,7 +850,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       messageText.length >= 2 &&
       messageText.length <= 200 &&
       !getCategoryIdByName(messageText) &&
-      !['メニュー', 'menu', '使い方', 'ヘルプ', '料金プラン'].includes(messageText.toLowerCase())) {
+      !['メニュー', 'menu', '使い方', 'ヘルプ', '料金プラン', 'プレミアムプラン', 'プレミアムプランを見る', 'アップグレード'].includes(messageText.toLowerCase())) {
 
       try {
         // ローディングアニメーションを開始
