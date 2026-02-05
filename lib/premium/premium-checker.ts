@@ -26,7 +26,7 @@ export class PremiumChecker {
         .select('display_name, subscription_status, subscription_end_date, monthly_usage_count, last_reset_date')
         .eq('display_name', userId)
         .maybeSingle()
-      
+
       // ユーザーが存在しない場合、新規作成
       if (!user) {
         const { data: newUser, error: insertError } = await (supabaseAdmin as any)
@@ -44,11 +44,11 @@ export class PremiumChecker {
           })
           .select()
           .single()
-        
+
         if (insertError) {
           logger.error('Failed to create user', { insertError, userId })
         }
-        
+
         user = newUser
       }
 
@@ -86,7 +86,7 @@ export class PremiumChecker {
             })
             .eq('display_name', userId)
 
-          ;(user as any).monthly_usage_count = 0
+            ; (user as any).monthly_usage_count = 0
           logger.info('Premium monthly usage reset (payment cycle)', { userId, monthsSincePayment })
         }
       } else {
@@ -105,19 +105,19 @@ export class PremiumChecker {
             })
             .eq('display_name', userId)
 
-          ;(user as any).monthly_usage_count = 0
+            ; (user as any).monthly_usage_count = 0
           logger.info('Free user monthly usage reset', { userId })
         }
       }
 
       // プレミアム/プロフェッショナルステータスチェック
       const isPremium = (user as any).subscription_status === 'premium' &&
-                       (user as any).subscription_end_date &&
-                       new Date((user as any).subscription_end_date) > now
+        (user as any).subscription_end_date &&
+        new Date((user as any).subscription_end_date) > now
 
       const isProfessional = (user as any).subscription_status === 'professional' &&
-                            (user as any).subscription_end_date &&
-                            new Date((user as any).subscription_end_date) > now
+        (user as any).subscription_end_date &&
+        new Date((user as any).subscription_end_date) > now
 
       const usageCount = (user as any).monthly_usage_count || 0
       const limit = (isPremium || isProfessional) ? this.PREMIUM_MONTHLY_LIMIT : this.FREE_MONTHLY_LIMIT
@@ -184,13 +184,13 @@ export class PremiumChecker {
 
       const { error } = await (supabaseAdmin as any)
         .from('users')
-        .update({ 
+        .update({
           monthly_usage_count: currentCount + 1,
           total_requests: totalRequests + 1,
           last_active_at: new Date().toISOString()
         })
         .eq('display_name', userId)
-      
+
       if (error) {
         logger.error('Failed to update usage count', { error, userId })
         return false
@@ -210,6 +210,6 @@ export class PremiumChecker {
    */
   static getUpgradeUrl(userId: string): string {
     const encodedUserId = Buffer.from(userId).toString('base64')
-    return `${process.env.STRIPE_PAYMENT_LINK || 'https://example.com/upgrade'}?client_reference_id=${encodedUserId}`
+    return `${process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'}?client_reference_id=${encodedUserId}`
   }
 }
