@@ -12,7 +12,8 @@ function TermsContent() {
 
   // Stripe決済URLを構築（正しいURLを使用）
   const getPaymentUrl = () => {
-    const encodedUserId = Buffer.from(userId).toString('base64')
+    // ブラウザ互換のBase64エンコード（BufferはNode.jsのみで動作）
+    const encodedUserId = btoa(userId)
     if (plan === 'professional') {
       return `${process.env.NEXT_PUBLIC_STRIPE_PROFESSIONAL_PAYMENT_LINK || 'https://buy.stripe.com/fZu6oH78Ea5HcYS1dV6oo0a'}?client_reference_id=${encodedUserId}`
     }
