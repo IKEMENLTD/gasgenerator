@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMate デモ体験 | プログラミング不要のGAS自動生成</title>
+    <meta name="description" content="TaskMateのデモ体験ページ。LINEで日本語指示を送るだけでGoogle Apps Scriptを自動生成するAIサービスをお試しください。">
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fafafa;
+            --force: #00cc66;
+            --force-dim: #004422;
+            --accent: #ff0055;
+            --text-main: #333333;
+            --text-mute: #666666;
+            --font-display: 'Michroma', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --font-jp: 'Zen Kaku Gothic New', sans-serif;
+            --font-tech: 'Rajdhani', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-jp);
+            font-weight: 400;
+            line-height: 1.8;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(250, 250, 250, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-logo {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: #111;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-logo .logo-mark {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-logo .logo-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .nav-back {
+            color: var(--text-mute);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .nav-back:hover {
+            color: var(--force);
+        }
+
+        /* Main Layout */
+        .main-content {
+            padding-top: 80px;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            padding: 20px 40px;
+        }
+
+        .progress-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-mute);
+            margin-bottom: 10px;
+        }
+
+        .progress-track {
+            height: 4px;
+            background: #eee;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--force);
+            width: 20%;
+            transition: width 0.5s;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .progress-step {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #ddd;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #999;
+            transition: 0.3s;
+        }
+
+        .progress-step.active {
+            border-color: var(--force);
+            background: var(--force);
+            color: #fff;
+        }
+
+        .progress-step.completed {
+            border-color: var(--force);
+            background: var(--force);
+            color: #fff;
+        }
+
+        /* Demo Section */
+        .demo-section {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            min-height: calc(100vh - 160px);
+        }
+
+        @media (max-width: 1000px) {
+            .demo-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .demo-sidebar {
+            background: #fff;
+            border-right: 1px solid #eee;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--force);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .sidebar-title h3 {
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .sidebar-title span {
+            font-size: 0.75rem;
+            color: var(--force);
+        }
+
+        .scenario-title {
+            font-size: 0.85rem;
+            color: var(--text-mute);
+            margin-bottom: 15px;
+        }
+
+        .scenario-card {
+            background: #f8f8f8;
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .scenario-card:hover {
+            border-color: var(--force);
+            background: rgba(0, 204, 102, 0.05);
+        }
+
+        .scenario-card.active {
+            border-color: var(--force);
+            background: rgba(0, 204, 102, 0.1);
+        }
+
+        .scenario-card h4 {
+            font-size: 0.9rem;
+            margin: 0 0 5px;
+        }
+
+        .scenario-card p {
+            font-size: 0.8rem;
+            color: #888;
+            margin: 0;
+        }
+
+        /* Main Demo Area */
+        .demo-main {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .demo-header {
+            margin-bottom: 40px;
+        }
+
+        .demo-header h2 {
+            font-size: 1.5rem;
+            margin: 0 0 10px;
+        }
+
+        .demo-header p {
+            font-size: 0.95rem;
+            color: var(--text-mute);
+            margin: 0;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            flex: 1;
+            background: #fff;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            max-height: 500px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .chat-message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            background: var(--force);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .chat-message.user .message-avatar {
+            background: #666;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            background: #f5f5f5;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .chat-message.user .message-content {
+            background: var(--force);
+            color: #fff;
+        }
+
+        .message-content code {
+            display: block;
+            background: #222;
+            color: var(--force);
+            padding: 15px;
+            margin-top: 15px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .chat-input {
+            border-top: 1px solid #eee;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            font-family: var(--font-jp);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .chat-input input:focus {
+            border-color: var(--force);
+        }
+
+        .chat-input button {
+            background: var(--force);
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            cursor: pointer;
+            font-family: var(--font-jp);
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .chat-input button:hover {
+            background: #00aa55;
+        }
+
+        /* Info Section */
+        .info-section {
+            padding: 60px 40px;
+            background: #fff;
+            border-top: 1px solid #eee;
+        }
+
+        .info-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 60px;
+        }
+
+        @media (max-width: 800px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-card h3 {
+            font-size: 1.2rem;
+            margin: 0 0 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card h3 svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--force);
+        }
+
+        .info-card p {
+            font-size: 0.9rem;
+            color: var(--text-mute);
+            margin: 0 0 20px;
+        }
+
+        .info-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-card ul li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .info-card ul li svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--force);
+            flex-shrink: 0;
+        }
+
+        /* Steps Section */
+        .steps-section {
+            padding: 60px 40px;
+            background: rgba(0, 204, 102, 0.03);
+        }
+
+        .steps-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .steps-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .steps-header h2 {
+            font-size: 1.5rem;
+            margin: 0 0 10px;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 1000px) {
+            .steps-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .step-card {
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .step-card::after {
+            content: '';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 10px solid var(--force);
+        }
+
+        .step-card:last-child::after {
+            display: none;
+        }
+
+        @media (max-width: 1000px) {
+            .step-card::after {
+                display: none;
+            }
+        }
+
+        .step-num {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--force);
+            margin-bottom: 10px;
+        }
+
+        .step-card h4 {
+            font-size: 0.95rem;
+            margin: 0 0 10px;
+        }
+
+        .step-card p {
+            font-size: 0.8rem;
+            color: var(--text-mute);
+            margin: 0;
+        }
+
+        /* Stats */
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 50px;
+        }
+
+        @media (max-width: 600px) {
+            .stats-row {
+                flex-direction: column;
+                gap: 20px;
+                align-items: center;
+            }
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item .number {
+            font-family: var(--font-mono);
+            font-size: 2rem;
+            color: var(--force);
+            font-weight: 700;
+        }
+
+        .stat-item .label {
+            font-size: 0.85rem;
+            color: var(--text-mute);
+        }
+
+        /* Testimonials */
+        .testimonials-section {
+            padding: 60px 40px;
+            background: #fff;
+        }
+
+        .testimonials-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .testimonials-header h2 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .testimonials-grid {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        @media (max-width: 800px) {
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .testimonial-card {
+            background: #f8f8f8;
+            padding: 25px;
+        }
+
+        .testimonial-card .quote {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .testimonial-card .author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .testimonial-card .author-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--force), #00aa55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .testimonial-card .author-info .name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .testimonial-card .author-info .role {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        /* CTA */
+        .cta-section {
+            padding: 60px 40px;
+            background: linear-gradient(135deg, #111 0%, #222 100%);
+            text-align: center;
+        }
+
+        .cta-badges {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .cta-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .cta-badge svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--force);
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 35px;
+            font-family: var(--font-jp);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--force);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #00aa55;
+        }
+
+        .btn-line {
+            background: #06C755;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-line:hover {
+            background: #05B04C;
+        }
+
+        /* Footer */
+        footer {
+            background: #111;
+            color: #888;
+            padding: 40px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--force);
+            text-decoration: none;
+        }
+
+        /* Navigation Responsive */
+        @media (max-width: 600px) {
+            nav {
+                padding: 12px 20px;
+            }
+
+            .nav-logo {
+                font-size: 1rem;
+            }
+
+            .nav-back {
+                font-size: 0.8rem;
+            }
+
+            .progress-bar {
+                padding: 15px 20px;
+            }
+
+            footer {
+                padding: 30px 20px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .nav-logo {
+                font-size: 0.9rem;
+                gap: 5px;
+            }
+
+            .nav-logo .logo-mark {
+                width: 28px;
+                height: 28px;
+            }
+
+            .nav-back {
+                font-size: 0.7rem;
+                gap: 4px;
+            }
+
+            .progress-step {
+                width: 24px;
+                height: 24px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '849810494727959');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=849810494727959&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+</head>
+
+<body>
+
+    <nav>
+        <a href="index.html" class="nav-logo">
+            <div class="logo-mark"><img src="images/logo.png" alt="TaskMate"></div>
+            TaskMate
+        </a>
+        <a href="index.html" class="nav-back">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            トップページに戻る
+        </a>
+    </nav>
+
+    <div class="main-content">
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>デモ進捗</span>
+                    <span id="progress-percent">20%</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-steps">
+                    <div class="progress-step active">1</div>
+                    <div class="progress-step">2</div>
+                    <div class="progress-step">3</div>
+                    <div class="progress-step">4</div>
+                    <div class="progress-step">5</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Section -->
+        <div class="demo-section">
+            <div class="demo-sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-avatar">TM</div>
+                    <div class="sidebar-title">
+                        <h3>TaskMate AI</h3>
+                        <span>オンライン</span>
+                    </div>
+                </div>
+
+                <p class="scenario-title">シナリオを選択してください</p>
+
+                <div class="scenario-card active" data-scenario="sales">
+                    <h4>売上データの自動集計</h4>
+                    <p>Googleフォームから売上を自動集計</p>
+                </div>
+
+                <div class="scenario-card" data-scenario="inventory">
+                    <h4>在庫アラート通知</h4>
+                    <p>在庫不足をSlackで自動通知</p>
+                </div>
+
+                <div class="scenario-card" data-scenario="report">
+                    <h4>週次レポート自動送信</h4>
+                    <p>毎週金曜に週次レポートをメール送信</p>
+                </div>
+            </div>
+
+            <div class="demo-main">
+                <div class="demo-header">
+                    <h2>TaskMate デモ体験</h2>
+                    <p>LINEで日本語指示を送るだけでGoogle Apps Script（GAS）を自動生成するAIサービスです</p>
+                </div>
+
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-message">
+                            <div class="message-avatar">TM</div>
+                            <div class="message-content">
+                                こんにちは。TaskMate AIです。<br><br>
+                                「売上データの自動集計」のシナリオが選択されています。<br><br>
+                                「実行」と入力するか、下のボタンを押してデモを開始してください。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="chat-input" placeholder="メッセージを入力..." />
+                        <button id="chat-send">送信</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        TaskMateとは？
+                    </h3>
+                    <p>TaskMateは、LINEで日本語指示を送るだけでGoogle Apps Script（GAS）を自動生成するAIサービスです。</p>
+                    <ul>
+                        <li>
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                            プログラミング知識一切不要
+                        </li>
+                        <li>
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                            LINEで「〇〇したい」と送るだけ
+                        </li>
+                        <li>
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                            データ集計、在庫管理など幅広く対応
+                        </li>
+                        <li>
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                            月額1万円から利用可能
+                        </li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3>
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                        導入実績
+                    </h3>
+                    <p>多くの企業様にご導入いただき、平均月40時間の業務時間削減を実現しています。</p>
+                    <ul>
+                        <li>
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                            導入企業数：120社以上
+                        </li>
+                        <li>
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                            生成スクリプト数：500以上
+                        </li>
+                        <li>
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                            月間削減時間：10,000時間以上
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Steps Section -->
+        <div class="steps-section">
+            <div class="steps-container">
+                <div class="steps-header">
+                    <h2>簡単3ステップで自動化</h2>
+                </div>
+
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-num">STEP 1</div>
+                        <h4>LINEで相談</h4>
+                        <p>「〇〇を自動化したい」と日本語で送信</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">STEP 2</div>
+                        <h4>AIが理解</h4>
+                        <p>TaskMateが要件を分析・最適化</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">STEP 3</div>
+                        <h4>コード生成</h4>
+                        <p>GASコードを自動生成（数分）</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">STEP 4</div>
+                        <h4>コピペ</h4>
+                        <p>Apps Scriptエディタに貼り付け</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">STEP 5</div>
+                        <h4>完成</h4>
+                        <p>業務が自動化され時間を削減</p>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="number">5分</div>
+                        <div class="label">初回設定</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">0円</div>
+                        <div class="label">初期費用</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">無制限</div>
+                        <div class="label">修正回数</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Testimonials -->
+        <div class="testimonials-section">
+            <div class="testimonials-header">
+                <h2>お客様の声</h2>
+            </div>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <p class="quote">「月40時間かかっていた売上集計が、わずか5分に。営業活動に集中できるようになりました。」</p>
+                    <div class="author">
+                        <div class="author-avatar">田</div>
+                        <div class="author-info">
+                            <div class="name">田中 太郎</div>
+                            <div class="role">株式会社ABC商事 / 営業部長</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="quote">「プログラミング知識ゼロでしたが、LINEで指示するだけで在庫管理が自動化できました。」</p>
+                    <div class="author">
+                        <div class="author-avatar">佐</div>
+                        <div class="author-info">
+                            <div class="name">佐藤 花子</div>
+                            <div class="role">合同会社XYZ物流 / 経理担当</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="quote">「週次レポート作成が完全自動化。金曜の残業がなくなり、チーム全体の生産性が向上しました。」</p>
+                    <div class="author">
+                        <div class="author-avatar">鈴</div>
+                        <div class="author-info">
+                            <div class="name">鈴木 一郎</div>
+                            <div class="role">株式会社DEF製造 / IT担当</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <div class="cta-badges">
+                <span class="cta-badge">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    セキュア
+                </span>
+                <span class="cta-badge">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                    14日間返金保証
+                </span>
+                <span class="cta-badge">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    無料サポート
+                </span>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="index.html#contact" class="btn-cta btn-primary">無料で相談する</a>
+                <a href="#" class="btn-cta btn-line">
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.105.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+                    LINEで相談
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 株式会社イケメン All rights reserved. | <a href="index.html">TaskMate</a></p>
+    </footer>
+
+    <script>
+        // Demo Chat Interaction
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const chatSend = document.getElementById('chat-send');
+        const progressFill = document.getElementById('progress-fill');
+        const progressPercent = document.getElementById('progress-percent');
+        const progressSteps = document.querySelectorAll('.progress-step');
+        const scenarioCards = document.querySelectorAll('.scenario-card');
+
+        let currentStep = 1;
+        let currentScenario = 'sales';
+
+        const scenarios = {
+            sales: {
+                name: '売上データの自動集計',
+                messages: [
+                    { from: 'user', text: '売上データを自動で集計したいです' },
+                    { from: 'ai', text: '了解しました。売上データの自動集計ですね。\n\n以下の要件で進めてよろしいでしょうか？\n\n1. Googleフォームから売上データを取得\n2. スプレッドシートに自動集計\n3. 日次・週次・月次のレポート作成\n\n「OK」と入力して続行してください。' },
+                    { from: 'user', text: 'OK' },
+                    { from: 'ai', text: 'コードを生成中...\n\n完了しました。以下がGASコードです：\n<code>function collectSalesData() {\n  const form = FormApp.getActiveForm();\n  const responses = form.getResponses();\n  const sheet = SpreadsheetApp.getActiveSpreadsheet()\n    .getSheetByName("売上集計");\n  \n  responses.forEach(response => {\n    const items = response.getItemResponses();\n    const row = items.map(item => item.getResponse());\n    sheet.appendRow(row);\n  });\n  \n  Logger.log("集計完了: " + responses.length + "件");\n}</code>\n\nこのコードをApps Scriptエディタにコピペして、トリガーを設定すれば完了です。' }
+                ]
+            },
+            inventory: {
+                name: '在庫アラート通知',
+                messages: [
+                    { from: 'user', text: '在庫が少なくなったらSlackに通知を送りたいです' },
+                    { from: 'ai', text: '了解しました。在庫アラート通知ですね。\n\n以下の要件で進めてよろしいでしょうか？\n\n1. スプレッドシートの在庫数を監視\n2. 閾値以下になったらSlackに通知\n3. 毎日自動チェック\n\n「OK」と入力して続行してください。' },
+                    { from: 'user', text: 'OK' },
+                    { from: 'ai', text: 'コードを生成中...\n\n完了しました。以下がGASコードです：\n<code>function checkInventory() {\n  const sheet = SpreadsheetApp.getActiveSpreadsheet()\n    .getSheetByName("在庫");\n  const data = sheet.getDataRange().getValues();\n  const threshold = 10;\n  const alerts = [];\n  \n  data.forEach((row, i) => {\n    if (i > 0 && row[2] < threshold) {\n      alerts.push(row[0] + ": " + row[2] + "個");\n    }\n  });\n  \n  if (alerts.length > 0) {\n    sendSlackNotification(alerts);\n  }\n}</code>\n\nこのコードをApps Scriptエディタにコピペして、トリガーを設定すれば完了です。' }
+                ]
+            },
+            report: {
+                name: '週次レポート自動送信',
+                messages: [
+                    { from: 'user', text: '毎週金曜に週次レポートをメールで送信したいです' },
+                    { from: 'ai', text: '了解しました。週次レポートの自動送信ですね。\n\n以下の要件で進めてよろしいでしょうか？\n\n1. スプレッドシートからデータを集計\n2. レポート形式でメール作成\n3. 毎週金曜17時に自動送信\n\n「OK」と入力して続行してください。' },
+                    { from: 'user', text: 'OK' },
+                    { from: 'ai', text: 'コードを生成中...\n\n完了しました。以下がGASコードです：\n<code>function sendWeeklyReport() {\n  const sheet = SpreadsheetApp.getActiveSpreadsheet()\n    .getSheetByName("週次データ");\n  const data = sheet.getDataRange().getValues();\n  \n  let body = "【週次レポート】\\n\\n";\n  data.forEach((row, i) => {\n    if (i > 0) {\n      body += row[0] + ": " + row[1] + "\\n";\n    }\n  });\n  \n  MailApp.sendEmail({\n    to: "team@example.com",\n    subject: "週次レポート " + new Date().toLocaleDateString(),\n    body: body\n  });\n}</code>\n\nこのコードをApps Scriptエディタにコピペして、トリガーを設定すれば完了です。' }
+                ]
+            }
+        };
+
+        function addMessage(from, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${from === 'user' ? 'user' : ''}`;
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${from === 'user' ? 'You' : 'TM'}</div>
+                <div class="message-content">${text.replace(/\n/g, '<br>')}</div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function updateProgress(step) {
+            currentStep = step;
+            const percent = step * 20;
+            progressFill.style.width = percent + '%';
+            progressPercent.textContent = percent + '%';
+
+            progressSteps.forEach((el, i) => {
+                if (i < step) {
+                    el.classList.add('completed');
+                    el.classList.add('active');
+                } else if (i === step) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('completed', 'active');
+                }
+            });
+        }
+
+        function runDemo() {
+            const messages = scenarios[currentScenario].messages;
+            let delay = 500;
+
+            messages.forEach((msg, i) => {
+                setTimeout(() => {
+                    addMessage(msg.from, msg.text);
+                    updateProgress(i + 2);
+                }, delay);
+                delay += msg.from === 'ai' ? 2000 : 800;
+            });
+        }
+
+        scenarioCards.forEach(card => {
+            card.addEventListener('click', () => {
+                scenarioCards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                currentScenario = card.dataset.scenario;
+
+                chatMessages.innerHTML = `
+                    <div class="chat-message">
+                        <div class="message-avatar">TM</div>
+                        <div class="message-content">
+                            シナリオが「${scenarios[currentScenario].name}」に変更されました。<br><br>
+                            「実行」と入力するか、下のボタンを押してデモを開始してください。
+                        </div>
+                    </div>
+                `;
+                updateProgress(1);
+            });
+        });
+
+        chatSend.addEventListener('click', () => {
+            const text = chatInput.value.trim();
+            if (text) {
+                if (text === '実行' || text.toLowerCase() === 'start') {
+                    runDemo();
+                } else {
+                    addMessage('user', text);
+                    setTimeout(() => {
+                        addMessage('ai', '申し訳ございません。このデモでは「実行」と入力してデモを開始してください。\n\n実際のサービスではどんな質問にもお答えします。');
+                    }, 1000);
+                }
+                chatInput.value = '';
+            }
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                chatSend.click();
+            }
+        });
+    </script>
+
+    <!-- Meta Pixel Event Tracking -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // LINE系リンク・ボタンのクリックイベント
+        var allLinks = document.querySelectorAll('a, button');
+        allLinks.forEach(function(el) {
+            var text = el.textContent || '';
+            var href = el.getAttribute('href') || '';
+            if (text.match(/LINE.*(追加|相談|問い合わせ|試す|始める)/) ||
+                href.includes('line.me') ||
+                href.includes('lin.ee') ||
+                el.classList.contains('btn-line')) {
+                el.addEventListener('click', function() {
+                    if (typeof fbq !== 'undefined') {
+                        fbq('track', 'Lead', {
+                            content_name: 'LINE_Add',
+                            content_category: 'CTA'
+                        });
+                    }
+                });
+            }
+        });
+    });
+    </script>
+
+</body>
+
+</html>

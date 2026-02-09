@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特定商取引法に基づく表記 | TaskMate（タスクメイト）</title>
+    <meta name="description" content="TaskMate（タスクメイト）の特定商取引法に基づく表記。販売事業者情報、料金、支払い方法などを記載しています。">
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fafafa;
+            --force: #00cc66;
+            --text-main: #333333;
+            --text-mute: #666666;
+            --font-display: 'Michroma', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --font-jp: 'Zen Kaku Gothic New', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-jp);
+            font-weight: 400;
+            line-height: 1.8;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(250, 250, 250, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-logo {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: #111;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-logo .logo-mark {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-logo .logo-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .nav-back {
+            color: var(--text-mute);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .nav-back:hover {
+            color: var(--force);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 120px 40px 80px;
+        }
+
+        .page-header {
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            margin: 0 0 20px;
+            font-weight: 700;
+        }
+
+        .page-header .intro {
+            font-size: 0.95rem;
+            color: var(--text-mute);
+        }
+
+        /* Info Table */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+
+        .info-table th,
+        .info-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95rem;
+        }
+
+        .info-table th {
+            width: 200px;
+            background: rgba(0, 204, 102, 0.05);
+            color: #333;
+            font-weight: 600;
+        }
+
+        .info-table td {
+            color: var(--text-mute);
+        }
+
+        @media (max-width: 600px) {
+            .info-table th,
+            .info-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .info-table th {
+                padding-bottom: 5px;
+            }
+
+            .info-table td {
+                padding-top: 5px;
+                padding-bottom: 20px;
+            }
+        }
+
+        /* Article Styles */
+        .article-section {
+            margin-bottom: 50px;
+        }
+
+        .article-section h2 {
+            font-size: 1.2rem;
+            color: #111;
+            margin: 0 0 20px;
+            padding-left: 15px;
+            border-left: 3px solid var(--force);
+        }
+
+        .article-section p {
+            font-size: 0.95rem;
+            color: var(--text-mute);
+            margin: 0 0 15px;
+        }
+
+        .article-section ul {
+            margin: 15px 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .article-section ul li {
+            font-size: 0.9rem;
+            color: var(--text-mute);
+            padding: 8px 0 8px 20px;
+            position: relative;
+        }
+
+        .article-section ul li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15px;
+            width: 6px;
+            height: 6px;
+            background: var(--force);
+        }
+
+        .contact-box {
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .contact-box h4 {
+            font-size: 1rem;
+            margin: 0 0 15px;
+            color: #111;
+        }
+
+        .contact-box p {
+            font-size: 0.9rem;
+            color: var(--text-mute);
+            margin: 5px 0;
+        }
+
+        .revision-history {
+            background: rgba(0, 204, 102, 0.05);
+            padding: 20px 30px;
+            margin-top: 40px;
+        }
+
+        .revision-history h4 {
+            font-size: 0.9rem;
+            margin: 0 0 10px;
+            color: #666;
+        }
+
+        .revision-history p {
+            font-size: 0.85rem;
+            color: #888;
+            margin: 0;
+        }
+
+        /* Back to top */
+        .back-to-top {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--force);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 40px;
+            padding: 15px 30px;
+            border: 1px solid var(--force);
+            transition: 0.3s;
+        }
+
+        .back-to-top:hover {
+            background: var(--force);
+            color: #fff;
+        }
+
+        /* Footer */
+        footer {
+            background: #111;
+            color: #888;
+            padding: 40px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--force);
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            nav {
+                padding: 12px 20px;
+            }
+
+            .nav-logo {
+                font-size: 1rem;
+            }
+
+            .nav-back {
+                font-size: 0.8rem;
+            }
+
+            .main-content {
+                padding: 100px 20px 60px;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .article-section h2 {
+                font-size: 1.05rem;
+            }
+
+            .contact-box {
+                padding: 20px;
+            }
+
+            footer {
+                padding: 30px 20px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .nav-logo {
+                font-size: 0.9rem;
+                gap: 5px;
+            }
+
+            .nav-logo .logo-mark {
+                width: 28px;
+                height: 28px;
+            }
+
+            .nav-back {
+                font-size: 0.7rem;
+                gap: 4px;
+            }
+        }
+    </style>
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '849810494727959');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=849810494727959&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+</head>
+
+<body>
+
+    <nav>
+        <a href="index.html" class="nav-logo">
+            <div class="logo-mark"><img src="images/logo.png" alt="TaskMate"></div>
+            TaskMate
+        </a>
+        <a href="index.html" class="nav-back">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            トップページに戻る
+        </a>
+    </nav>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1>特定商取引法に基づく表記</h1>
+            <p class="intro">
+                「特定商取引に関する法律」第11条に基づき、以下のとおり表記いたします。
+            </p>
+        </div>
+
+        <div class="article-section">
+            <h2>基本情報</h2>
+            <table class="info-table">
+                <tr>
+                    <th>販売事業者名</th>
+                    <td>株式会社イケメン</td>
+                </tr>
+                <tr>
+                    <th>代表者名</th>
+                    <td>代表取締役 沼倉 隆平</td>
+                </tr>
+                <tr>
+                    <th>所在地</th>
+                    <td>〒141-0032 東京都品川区大崎4丁目4-24</td>
+                </tr>
+                <tr>
+                    <th>電話番号</th>
+                    <td>050-8890-8975<br><small style="color: #999;">※お問い合わせはメールにてお願いいたします</small></td>
+                </tr>
+                <tr>
+                    <th>メールアドレス</th>
+                    <td><a href="mailto:info@ikemen.ltd" style="color: var(--force);">info@ikemen.ltd</a></td>
+                </tr>
+                <tr>
+                    <th>ホームページURL</th>
+                    <td><a href="https://taskmate.jp/" style="color: var(--force);">https://taskmate.jp/</a></td>
+                </tr>
+                <tr>
+                    <th>サービス名称</th>
+                    <td>タスクメイト（Google Apps Script業務自動化サービス）</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="article-section">
+            <h2>販売価格</h2>
+            <table class="info-table">
+                <tr>
+                    <th>ビジネスプラン</th>
+                    <td>月額10,000円（税別）<br><small style="color: #888;">セルフ導入プラン・毎月1システムDL可能</small></td>
+                </tr>
+                <tr>
+                    <th>プロフェッショナルプラン</th>
+                    <td>月額50,000円（税別）<br><small style="color: #888;">フルサポートプラン・毎月3システムDL可能・コーディング代行付き</small></td>
+                </tr>
+                <tr>
+                    <th>最低契約期間</th>
+                    <td>6ヶ月<br><small style="color: #888;">6ヶ月経過後はいつでも解約可能</small></td>
+                </tr>
+            </table>
+            <p style="font-size: 0.85rem; color: #888;">※詳細は料金プランページをご確認ください</p>
+        </div>
+
+        <div class="article-section">
+            <h2>商品代金以外の必要料金</h2>
+            <ul>
+                <li>消費税</li>
+                <li>初期設定費用：無料</li>
+                <li>カスタマイズ費用：月額料金に含む（追加料金なし、ボリュームに応じて納期調整）</li>
+                <li>急ぎオプション（プロフェッショナルプランのみ）：+50,000円で納期半分に短縮</li>
+            </ul>
+        </div>
+
+        <div class="article-section">
+            <h2>お支払い方法</h2>
+            <ul>
+                <li>銀行振込（前払い）</li>
+                <li>クレジットカード決済（VISA、MasterCard、JCB、AMEX、Diners）</li>
+                <li>請求書払い（法人のみ、審査あり）</li>
+            </ul>
+        </div>
+
+        <div class="article-section">
+            <h2>お支払い期限</h2>
+            <table class="info-table">
+                <tr>
+                    <th>銀行振込</th>
+                    <td>ご請求書発行日より7営業日以内</td>
+                </tr>
+                <tr>
+                    <th>クレジットカード</th>
+                    <td>即時決済</td>
+                </tr>
+                <tr>
+                    <th>請求書払い</th>
+                    <td>月末締め翌月末払い</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="article-section">
+            <h2>サービス提供時期</h2>
+            <ul>
+                <li>お申し込み後、5営業日以内にヒアリング実施</li>
+                <li>ヒアリング後、10営業日以内に初期設定完了</li>
+                <li>サービス開始日は双方協議の上決定</li>
+            </ul>
+        </div>
+
+        <div class="article-section">
+            <h2>返品・キャンセル・返金について</h2>
+            <ul>
+                <li>サービスの性質上、お客様都合による返品・返金は承っておりません</li>
+                <li>初回ヒアリング前：キャンセル料無料</li>
+                <li>設計開始後：月額料金の50%</li>
+                <li>サービス開始後：当月分は返金不可</li>
+            </ul>
+            <p style="font-size: 0.85rem; color: #888;">※翌月以降の解約は、前月20日までにお申し出ください（6ヶ月経過後）</p>
+
+            <h3 style="margin-top: 25px; font-size: 1rem; color: #111;">動作不良時の返金保証</h3>
+            <p>
+                システムが正常に動作しない場合、サービス開始から30日以内であれば全額返金いたします。
+                不具合が解消できない場合は、LINEまたはメールで「返金希望」とご連絡ください。
+            </p>
+            <ul>
+                <li>返金対象：当社が提供したシステムの動作不良に起因する場合</li>
+                <li>返金対象外：お客様の操作ミス、環境起因、Google社のサービス変更による影響</li>
+                <li>返金方法：お支払い方法と同一の方法で返金</li>
+            </ul>
+        </div>
+
+        <div class="article-section">
+            <h2>動作環境</h2>
+            <ul>
+                <li>Google Workspace（旧G Suite）アカウントが必要</li>
+                <li>推奨ブラウザ：Google Chrome最新版</li>
+                <li>インターネット接続環境必須</li>
+            </ul>
+        </div>
+
+        <div class="article-section">
+            <h2>免責事項</h2>
+            <ul>
+                <li>Google社のサービス変更による影響は保証対象外</li>
+                <li>お客様の操作ミスによる損害は補償いたしません</li>
+                <li>効果には個人差があります</li>
+            </ul>
+        </div>
+
+        <div class="article-section">
+            <h2>個人情報の取り扱い</h2>
+            <p>
+                お客様の個人情報は、当社のプライバシーポリシーに基づき、適切に管理いたします。<br>
+                <a href="privacy.html" style="color: var(--force);">プライバシーポリシーはこちら</a>
+            </p>
+        </div>
+
+        <div class="article-section">
+            <h2>事業者の連絡先</h2>
+            <div class="contact-box">
+                <h4>株式会社イケメン カスタマーサポート</h4>
+                <p>メール：<a href="mailto:info@ikemen.ltd" style="color: var(--force);">info@ikemen.ltd</a></p>
+                <p>営業時間：平日10:00〜18:00（土日祝日を除く）</p>
+            </div>
+        </div>
+
+        <div class="revision-history">
+            <h4>改定履歴</h4>
+            <p>2024年8月2日：初版制定</p>
+            <p>2025年2月6日：料金プラン改定、最低契約期間・返金保証追加</p>
+        </div>
+
+        <a href="index.html" class="back-to-top">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            トップページに戻る
+        </a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 株式会社イケメン All rights reserved. | <a href="index.html">TaskMate</a></p>
+    </footer>
+
+</body>
+
+</html>
