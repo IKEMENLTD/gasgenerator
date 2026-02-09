@@ -7,13 +7,9 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 // Public client (for read-only operations with RLS)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Admin client with service role key (bypasses RLS)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false
-  }
-})
+// NOTE: supabaseAdmin has been moved to @/lib/supabase/admin.ts to prevent client-side crashes
+
+
 
 export async function getTrackingLinkByCode(code: string) {
   const { data, error } = await supabase

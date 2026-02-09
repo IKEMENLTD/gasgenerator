@@ -26,6 +26,7 @@ yarn-error.log*
 .env*.local
 .env
 .env.local.backup
+.env.production.clean
 VERCEL_ENV_VARIABLES.txt
 set-vercel-env.bat
 *.backup
