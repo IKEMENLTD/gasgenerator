@@ -198,7 +198,7 @@ export default function MyPage() {
     )
 }
 
-function DebugPanel({ testUserId, setTestUserId, setLoading }: any) {
+function DebugPanel({ testUserId, setTestUserId: _setTestUserId, setLoading }: any) {
     return (
         <div className="mt-12 bg-gray-100 rounded-xl p-6 border-2 border-dashed border-gray-300">
             <h3 className="font-bold text-gray-700 mb-4 flex items-center">
