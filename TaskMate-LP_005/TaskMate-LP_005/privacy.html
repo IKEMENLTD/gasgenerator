@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プライバシーポリシー | TaskMate（タスクメイト）</title>
+    <meta name="description" content="TaskMate（タスクメイト）のプライバシーポリシー。個人情報の取り扱いについて説明しています。">
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fafafa;
+            --force: #00cc66;
+            --text-main: #333333;
+            --text-mute: #666666;
+            --font-display: 'Michroma', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --font-jp: 'Zen Kaku Gothic New', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-jp);
+            font-weight: 400;
+            line-height: 1.8;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(250, 250, 250, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-logo {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            color: #111;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-logo .logo-mark {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-logo .logo-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .nav-back {
+            color: var(--text-mute);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .nav-back:hover {
+            color: var(--force);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 120px 40px 80px;
+        }
+
+        .page-header {
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            margin: 0 0 20px;
+            font-weight: 700;
+        }
+
+        .page-header .intro {
+            font-size: 0.95rem;
+            color: var(--text-mute);
+        }
+
+        /* Article Styles */
+        .article-section {
+            margin-bottom: 50px;
+        }
+
+        .article-section h2 {
+            font-size: 1.2rem;
+            color: #111;
+            margin: 0 0 20px;
+            padding-left: 15px;
+            border-left: 3px solid var(--force);
+        }
+
+        .article-section h3 {
+            font-size: 1rem;
+            color: #333;
+            margin: 25px 0 15px;
+        }
+
+        .article-section p {
+            font-size: 0.95rem;
+            color: var(--text-mute);
+            margin: 0 0 15px;
+        }
+
+        .article-section ul {
+            margin: 15px 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .article-section ul li {
+            font-size: 0.9rem;
+            color: var(--text-mute);
+            padding: 8px 0 8px 20px;
+            position: relative;
+        }
+
+        .article-section ul li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15px;
+            width: 6px;
+            height: 6px;
+            background: var(--force);
+        }
+
+        .contact-box {
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .contact-box h4 {
+            font-size: 1rem;
+            margin: 0 0 15px;
+            color: #111;
+        }
+
+        .contact-box p {
+            font-size: 0.9rem;
+            color: var(--text-mute);
+            margin: 5px 0;
+        }
+
+        .revision-history {
+            background: rgba(0, 204, 102, 0.05);
+            padding: 20px 30px;
+            margin-top: 40px;
+        }
+
+        .revision-history h4 {
+            font-size: 0.9rem;
+            margin: 0 0 10px;
+            color: #666;
+        }
+
+        .revision-history p {
+            font-size: 0.85rem;
+            color: #888;
+            margin: 0;
+        }
+
+        /* Back to top */
+        .back-to-top {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--force);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-top: 40px;
+            padding: 15px 30px;
+            border: 1px solid var(--force);
+            transition: 0.3s;
+        }
+
+        .back-to-top:hover {
+            background: var(--force);
+            color: #fff;
+        }
+
+        /* Footer */
+        footer {
+            background: #111;
+            color: #888;
+            padding: 40px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--force);
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            nav {
+                padding: 12px 20px;
+            }
+
+            .nav-logo {
+                font-size: 1rem;
+            }
+
+            .nav-back {
+                font-size: 0.8rem;
+            }
+
+            .main-content {
+                padding: 100px 20px 60px;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .article-section h2 {
+                font-size: 1.05rem;
+            }
+
+            .contact-box {
+                padding: 20px;
+            }
+
+            footer {
+                padding: 30px 20px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .nav-logo {
+                font-size: 0.9rem;
+                gap: 5px;
+            }
+
+            .nav-logo .logo-mark {
+                width: 28px;
+                height: 28px;
+            }
+
+            .nav-back {
+                font-size: 0.7rem;
+                gap: 4px;
+            }
+        }
+    </style>
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '849810494727959');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=849810494727959&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+</head>
+
+<body>
+
+    <nav>
+        <a href="index.html" class="nav-logo">
+            <div class="logo-mark"><img src="images/logo.png" alt="TaskMate"></div>
+            TaskMate
+        </a>
+        <a href="index.html" class="nav-back">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            トップページに戻る
+        </a>
+    </nav>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1>プライバシーポリシー</h1>
+            <p class="intro">
+                株式会社イケメン（以下、「当社」といいます。）は、タスクメイト（以下、「本サービス」といいます。）を提供するにあたり、お客様の個人情報の重要性を認識し、以下のプライバシーポリシー（以下、「本ポリシー」といいます。）を定め、個人情報の保護に努めます。
+            </p>
+        </div>
+
+        <div class="article-section">
+            <h2>第1条（個人情報の定義）</h2>
+            <p>
+                本ポリシーにおいて「個人情報」とは、個人情報保護法にいう「個人情報」を指すものとし、生存する個人に関する情報であって、当該情報に含まれる氏名、生年月日、住所、電話番号、連絡先その他の記述等により特定の個人を識別できる情報及び容貌、指紋、声紋にかかるデータ、及び健康保険証の保険者番号などの当該情報単体から特定の個人を識別できる情報（個人識別情報）を指します。
+            </p>
+        </div>
+
+        <div class="article-section">
+            <h2>第2条（個人情報の収集）</h2>
+            <p>当社は、本サービスの提供にあたり、以下の個人情報を収集することがあります。</p>
+
+            <h3>2.1 お客様から直接提供いただく情報</h3>
+            <ul>
+                <li>氏名</li>
+                <li>会社名・団体名</li>
+                <li>部署名・役職</li>
+                <li>メールアドレス</li>
+                <li>電話番号</li>
+                <li>住所</li>
+                <li>お問い合わせ内容</li>
+                <li>その他、フォームに入力いただいた情報</li>
+            </ul>
+
+            <h3>2.2 サービス利用時に自動的に収集される情報</h3>
+            <ul>
+                <li>IPアドレス</li>
+                <li>ブラウザの種類・バージョン</li>
+                <li>オペレーティングシステム</li>
+                <li>アクセス日時</li>
+                <li>参照元URL</li>
+                <li>Cookie情報</li>
+                <li>Google Apps Scriptの利用状況</li>
+            </ul>
+        </div>
+
+        <div class="article-section">
+            <h2>第3条（個人情報の利用目的）</h2>
+            <p>当社は、収集した個人情報を以下の目的で利用いたします。</p>
+            <ul>
+                <li>本サービスの提供・運営・改善</li>
+                <li>お客様からのお問い合わせへの対応</li>
+                <li>サービスの利用状況の分析</li>
+                <li>新機能、更新情報、キャンペーン等の案内</li>
+                <li>LINE公式アカウントでのGASコード生成サポート</li>
+                <li>利用規約違反の調査・対応</li>
+                <li>請求書の発行等の経理業務</li>
+                <li>その他、上記利用目的に付随する目的</li>
+            </ul>
+        </div>
+
+        <div class="article-section">
+            <h2>第4条（個人情報の第三者提供）</h2>
+            <p>当社は、次に掲げる場合を除いて、あらかじめお客様の同意を得ることなく、第三者に個人情報を提供することはありません。</p>
+            <ul>
+                <li>法令に基づく場合</li>
+                <li>人の生命、身体または財産の保護のために必要がある場合であって、本人の同意を得ることが困難であるとき</li>
+                <li>公衆衛生の向上または児童の健全な育成の推進のために特に必要がある場合であって、本人の同意を得ることが困難であるとき</li>
+                <li>国の機関もしくは地方公共団体またはその委託を受けた者が法令の定める事務を遂行することに対して協力する必要がある場合であって、本人の同意を得ることにより当該事務の遂行に支障を及ぼすおそれがあるとき</li>
+                <li>予め次の事項を告知あるいは公表し、かつ当社が個人情報保護委員会に届出をしたとき</li>
+            </ul>
+        </div>
+
+        <div class="article-section">
+            <h2>第5条（個人情報の安全管理）</h2>
+            <p>当社は、個人情報の漏洩、滅失またはき損の防止その他の個人情報の安全管理のために、以下の措置を講じています。</p>
+            <ul>
+                <li>個人情報の取扱いに関する内部規程の整備</li>
+                <li>従業員に対する個人情報保護に関する教育</li>
+                <li>個人情報を取り扱うシステムのセキュリティ対策</li>
+                <li>個人情報へのアクセス制限</li>
+            </ul>
+        </div>
+
+        <div class="article-section">
+            <h2>第6条（Cookieの使用について）</h2>
+            <p>当社は、本サービスの利便性向上、広告配信、統計データ取得のため、Cookie及び類似技術を使用することがあります。</p>
+
+            <h3>6.1 Cookieとは</h3>
+            <p>Cookieとは、ウェブサイトがお客様のコンピュータに送信する小さなデータファイルで、お客様のコンピュータのハードディスクに保存されます。</p>
+
+            <h3>6.2 Cookieの利用目的</h3>
+            <ul>
+                <li>お客様の利便性向上（ログイン状態の維持等）</li>
+                <li>アクセス解析による本サービスの改善</li>
+                <li>お客様に最適な広告の配信</li>
+            </ul>
+
+            <h3>6.3 Cookieの無効化</h3>
+            <p>お客様は、ブラウザの設定によりCookieを無効にすることができます。ただし、Cookieを無効にした場合、本サービスの一部機能が利用できなくなる可能性があります。</p>
+        </div>
+
+        <div class="article-section">
+            <h2>第7条（Google Analyticsの使用）</h2>
+            <p>当社は、本サービスの利用状況を把握するため、Google社のGoogle Analyticsを使用しています。Google Analyticsは、Cookieを使用してお客様の本サービスの利用状況を分析します。</p>
+            <p>
+                Google Analyticsの利用規約：<br>
+                <a href="https://marketingplatform.google.com/about/analytics/terms/jp/" target="_blank" rel="noopener" style="color: var(--force);">https://marketingplatform.google.com/about/analytics/terms/jp/</a>
+            </p>
+            <p>
+                Googleのプライバシーポリシー：<br>
+                <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" style="color: var(--force);">https://policies.google.com/privacy</a>
+            </p>
+        </div>
+
+        <div class="article-section">
+            <h2>第8条（個人情報の開示・訂正・削除）</h2>
+            <p>お客様は、当社に対して、個人情報保護法に基づき、ご自身の個人情報の開示、訂正、削除等を請求することができます。請求を行う場合は、本ポリシー末尾の問い合わせ窓口までご連絡ください。</p>
+            <ul>
+                <li>開示請求：保有個人データの開示を請求できます</li>
+                <li>訂正・追加・削除：保有個人データに誤りがある場合、訂正等を請求できます</li>
+                <li>利用停止・消去：保有個人データの利用停止または消去を請求できます</li>
+                <li>第三者提供の停止：保有個人データの第三者提供の停止を請求できます</li>
+            </ul>
+        </div>
+
+        <div class="article-section">
+            <h2>第9条（プライバシーポリシーの変更）</h2>
+            <p>本ポリシーの内容は、法令その他本ポリシーに別段の定めのある事項を除いて、お客様に通知することなく、変更することができるものとします。</p>
+            <p>当社が別途定める場合を除いて、変更後のプライバシーポリシーは、本ウェブサイトに掲載したときから効力を生じるものとします。</p>
+        </div>
+
+        <div class="article-section">
+            <h2>第10条（お問い合わせ窓口）</h2>
+            <p>本ポリシーに関するお問い合わせは、下記の窓口までお願いいたします。</p>
+
+            <div class="contact-box">
+                <h4>個人情報お問い合わせ窓口</h4>
+                <p>会社名：株式会社イケメン</p>
+                <p>代表取締役：沼倉 隆平</p>
+                <p>所在地：〒141-0032 東京都品川区大崎4丁目4-24</p>
+                <p>メールアドレス：<a href="mailto:info@ikemen.ltd" style="color: var(--force);">info@ikemen.ltd</a></p>
+                <p>電話番号：050-8890-8975</p>
+                <p>受付時間：平日 10:00〜18:00（土日祝日を除く）</p>
+            </div>
+        </div>
+
+        <div class="revision-history">
+            <h4>改定履歴</h4>
+            <p>2024年8月2日：初版制定</p>
+            <p>2025年2月6日：LINEでのサポート提供に関する記載を追加</p>
+        </div>
+
+        <a href="index.html" class="back-to-top">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            トップページに戻る
+        </a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 株式会社イケメン All rights reserved. | <a href="index.html">TaskMate</a></p>
+    </footer>
+
+</body>
+
+</html>
