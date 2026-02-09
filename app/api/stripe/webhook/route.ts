@@ -269,3 +269,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 400 })
   }
 }
+
+export async function GET(req: NextRequest) {
+  return NextResponse.json({ status: 'Stripe Webhook Endpoint is Running 🚀' })
+}
