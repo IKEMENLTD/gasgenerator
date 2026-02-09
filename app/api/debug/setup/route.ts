@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const { userId, action, planId, monthsAgo } = await req.json()
+        const { userId, action, planId: _planId, monthsAgo } = await req.json()
 
         if (!userId) {
             return NextResponse.json({ error: 'User ID required' }, { status: 400 })
