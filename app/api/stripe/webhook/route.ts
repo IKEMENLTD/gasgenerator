@@ -255,7 +255,6 @@ export async function POST(req: NextRequest) {
         break
 
       case 'customer.subscription.deleted':
-      case 'customer.subscription.canceled':
         const subDeleted = event.data.object as Stripe.Subscription
         logger.info(`[${reqId}] Processing subscription cancellation`, { id: subDeleted.id })
 
