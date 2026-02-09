@@ -2,12 +2,13 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 // Public client (for read-only operations with RLS)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// NOTE: supabaseAdmin has been moved to @/lib/supabase/admin.ts to prevent client-side crashes
+// Re-export supabaseAdmin from admin.ts for backward compatibility
+// NOTE: supabaseAdmin should only be used in server-side contexts
+export { supabaseAdmin } from './admin'
 
 
 

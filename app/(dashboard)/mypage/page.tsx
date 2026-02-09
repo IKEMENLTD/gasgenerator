@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { calculateMonthsElapsed, PLAN_CONFIG, formatDateJP } from '@/lib/subscription-utils'
 import { CancellationModal } from '@/components/subscription/CancellationModal'
 import { SubscriptionDetails } from '@/types/subscription'
-import { supabase } from '@/lib/supabase/client'
 
 // テスト用LINE ID
 const DUMMY_USER_ID = 'U1234567890abcdef1234567890abcdef'
