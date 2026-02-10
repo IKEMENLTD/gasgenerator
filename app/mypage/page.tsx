@@ -292,13 +292,15 @@ function MyPageContent() {
 
                     setSubscription({
                         ...subData,
+                        userId: subData.user_id, // Fix: Use DB userId
                         planName: planConfig.name,
+                        price: subData.current_plan_price || planConfig.price, // Fix: Use DB price or fallback
                         monthsElapsed: elapsed,
                         contractStartDate: formatDateJP(startDate),
-                        rawStartDate: subData.contract_start_date, // Modal計算用
+                        rawStartDate: subData.contract_start_date,
                         contractEndDate: formatDateJP(endDate),
                         isContractFulfilled: elapsed >= MINIMUM_MONTHS,
-                        nextBillingDate: formatDateJP(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)) // 簡易表示
+                        nextBillingDate: formatDateJP(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
                     })
                 }
 
@@ -445,7 +447,7 @@ function MyPageContent() {
                 isOpen={isChangePlanModalOpen}
                 onClose={() => setIsChangePlanModalOpen(false)}
                 currentPlanId={subscription.planId}
-                userId={testUserId} // 本番では実際のuserIdが必要だが、APIコール未実装なので一旦そのまま
+                userId={subscription.userId} // Fix: Use real user ID
             />
         </div>
     )
