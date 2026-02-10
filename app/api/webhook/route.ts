@@ -2011,69 +2011,42 @@ async function handleFollowEvent(event: any): Promise<void> {
       await startDrip(userId)
     } else {
       // 既存無料ユーザー（ブロック解除/再追加）
-      // システム一覧を先頭に配置して、システムカタログへの誘導を強化
-      const success = await lineClient.pushMessage(userId, [{
-        type: 'text',
-        text: 'おかえりなさい！😊\n\nまたご利用いただきありがとうございます。\n\n📦 まずはシステム一覧から、すぐ使えるシステムをチェック！',
-        quickReply: {
-          items: [
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '📦 システム一覧',
-                text: 'システム一覧'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '📊 スプレッドシート',
-                text: 'スプレッドシート操作'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '📧 Gmail',
-                text: 'Gmail自動化'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '📅 カレンダー',
-                text: 'カレンダー連携'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '👨‍💻 エンジニア相談',
-                text: 'エンジニアに相談する'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '📋 メニュー',
-                text: 'メニュー'
-              }
-            }
-          ]
-        }
-      }])
+      // ウェルカムメッセージをベースに、文言のみ「おかえりなさい」に変更して一貫性を保つ
+      const welcomeMessages = MessageTemplates.createWelcomeMessage()
 
-      if (!success) {
-        throw new Error('Failed to send returning user welcome message')
+      welcomeMessages[0] = {
+        type: 'text',
+        text: '🎉 おかえりなさい！\n\nまたご利用いただきありがとうございます。\n\n引き続き、GASコード生成やエンジニア相談をご利用いただけます！'
       }
 
-      // 再追加ユーザーにもドリップキャンペーン開始
+      // LINE User IDをBase64エンコードしてStripeリンクに追加
+      const encodedUserId = Buffer.from(userId).toString('base64')
+
+      // Stripeリンクにclient_reference_idを追加（新規ユーザー同様）
+      const updatedMessages = welcomeMessages.map(msg => {
+        if (msg.type === 'template' && 'template' in msg && msg.template.type === 'buttons') {
+          msg.template.actions = msg.template.actions.map((action: any) => {
+            if (action.type === 'uri' && action.uri.includes('stripe.com')) {
+              action.uri += `?client_reference_id=${encodedUserId}`
+            }
+            return action
+          })
+        }
+        return msg
+      })
+
+      // メッセージを送信
+      for (let i = 0; i < updatedMessages.length; i++) {
+        const success = await lineClient.pushMessage(userId, [updatedMessages[i]])
+        if (!success) {
+          logger.error(`Failed to send returning welcome message ${i + 1}`, { userId })
+        }
+        if (i < updatedMessages.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+      }
+
+      // 再追加ユーザーにもドリップキャンペーン開始（ステップ0から）
       await startDrip(userId)
     }
 
