@@ -418,23 +418,82 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       }
 
       await lineClient.replyMessage(replyToken, [{
-        type: 'template',
-        altText: 'プラン変更・解約のご案内',
-        template: {
-          type: 'buttons',
-          text: feeMessage + '\n\n以下のボタンからアクセスして詳細をご確認ください。',
-          actions: [
-            {
-              type: 'uri',
-              label: '🔑 マイページを開く',
-              uri: myPageUrl
-            },
-            {
-              type: 'message',
-              label: '📋 メニューに戻る',
-              text: 'メニュー'
-            }
-          ]
+        type: 'flex',
+        altText: 'マイページへのアクセス',
+        contents: {
+          type: 'bubble',
+          size: 'giga',
+          hero: {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'text',
+                text: '🔑 マイページ',
+                weight: 'bold',
+                size: 'xl',
+                color: '#ffffff'
+              },
+              {
+                type: 'text',
+                text: '契約状況の確認・変更',
+                size: 'sm',
+                color: '#ffffff',
+                margin: 'md'
+              }
+            ],
+            backgroundColor: '#06b6d4',
+            paddingAll: '20px'
+          },
+          body: {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'text',
+                text: feeMessage,
+                wrap: true,
+                size: 'md',
+                color: '#333333'
+              },
+              {
+                type: 'text',
+                text: '※セキュリティのため、以下のボタンから専用ページにアクセスしてください。',
+                wrap: true,
+                size: 'xs',
+                color: '#888888',
+                margin: 'lg'
+              }
+            ]
+          },
+          footer: {
+            type: 'box',
+            layout: 'vertical',
+            contents: [
+              {
+                type: 'button',
+                action: {
+                  type: 'uri',
+                  label: 'マイページを開く',
+                  uri: `https://gasgenerator.onrender.com/mypage?uid=${encodeURIComponent(userId)}&sig=${encodeURIComponent(signature)}`
+                },
+                style: 'primary',
+                color: '#06b6d4',
+                height: 'sm'
+              },
+              {
+                type: 'button',
+                action: {
+                  type: 'message',
+                  label: 'メニューに戻る',
+                  text: 'メニュー'
+                },
+                style: 'secondary',
+                margin: 'md',
+                height: 'sm'
+              }
+            ]
+          }
         }
       }] as any)
       return true
