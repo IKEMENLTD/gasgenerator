@@ -17,6 +17,7 @@ function MyPageContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isChangePlanModalOpen, setIsChangePlanModalOpen] = useState(false)
@@ -39,21 +40,14 @@ function MyPageContent() {
                     // しかし今回は本番安全化が優先なので、デバッグパネルの機能は制限される
                 }
 
-                if (!session && !IS_DEV) {
-                    // 本番で未ログインならリダイレクト
+                const uid = searchParams.get('uid')
+                const sig = searchParams.get('sig')
+
+                if (!session && !IS_DEV && (!uid || !sig)) {
+                    // 本番で未ログインかつ署名付きURLでもないならリダイレクト
                     router.push('/auth/login')
                     return
                 }
-
-                // 開発環境でセッションがない場合はダミーIDを使用（動作確認用）
-                if (!session && IS_DEV) {
-                    currentUserId = testUserId // デバッグパネルのIDを使用
-                }
-
-                setUserId(currentUserId || null)
-
-                const uid = searchParams.get('uid')
-                const sig = searchParams.get('sig')
 
                 // 2. データ取得
                 let res
@@ -77,6 +71,10 @@ function MyPageContent() {
 
                 if (!res.ok) {
                     if (res.status === 401) {
+                        // 署名付きURLでのアクセス失敗時はエラーを表示（リダイレクトしない）
+                        if (uid && sig) {
+                            throw new Error('リンクが無効か期限切れです。LINEから再度アクセスしてください。')
+                        }
                         router.push('/auth/login')
                         return
                     }
@@ -112,8 +110,9 @@ function MyPageContent() {
                         nextBillingDate: formatDateJP(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)) // 簡易表示
                     })
                 }
-            } catch (e) {
+            } catch (e: any) {
                 console.error('Failed to load subscription data', e)
+                setError(e.message || 'データの取得に失敗しました')
             } finally {
                 setLoading(false)
             }
@@ -121,6 +120,42 @@ function MyPageContent() {
 
         loadData()
     }, [testUserId, router, searchParams])
+
+    // エラー表示
+    if (!loading && error) {
+        return (
+            <div className="py-8 space-y-8">
+                <h2 className="text-2xl font-bold text-gray-900">エラーが発生しました</h2>
+                <div className="bg-red-50 rounded-xl p-8 text-center shadow-sm border border-red-200">
+                    <p className="text-red-600 mb-4">{error}</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg hover:bg-red-50"
+                    >
+                        再読み込み
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    // エラー表示
+    if (!loading && error) {
+        return (
+            <div className="py-8 space-y-8">
+                <h2 className="text-2xl font-bold text-gray-900">エラーが発生しました</h2>
+                <div className="bg-red-50 rounded-xl p-8 text-center shadow-sm border border-red-200">
+                    <p className="text-red-600 mb-4">{error}</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg hover:bg-red-50"
+                    >
+                        再読み込み
+                    </button>
+                </div>
+            </div>
+        )
+    }
 
     // 表示ロジック: データがない（無料）場合
     if (!loading && !subscription) {
