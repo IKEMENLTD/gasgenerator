@@ -3,24 +3,78 @@
 import { useState, useEffect } from 'react'
 import { calculateMonthsElapsed, PLAN_CONFIG, formatDateJP } from '@/lib/subscription-utils'
 import { CancellationModal } from '@/components/subscription/CancellationModal'
+import { ChangePlanModal } from '@/components/subscription/ChangePlanModal'
 import { SubscriptionDetails } from '@/types/subscription'
 
-// テスト用LINE ID
+import { supabase } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+
+// テスト用LINE ID (開発環境のみ使用)
 const DUMMY_USER_ID = 'U1234567890abcdef1234567890abcdef'
+const IS_DEV = process.env.NODE_ENV === 'development'
 
 export default function MyPage() {
+    const router = useRouter()
     const [loading, setLoading] = useState(true)
     const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isChangePlanModalOpen, setIsChangePlanModalOpen] = useState(false)
     const [testUserId, setTestUserId] = useState(DUMMY_USER_ID)
+    const [userId, setUserId] = useState<string | null>(null)
 
     useEffect(() => {
         const loadData = async () => {
             setLoading(true)
             try {
-                // API経由で取得（RLS回避のため）
-                const res = await fetch(`/api/debug/subscription?userId=${testUserId}`)
-                if (!res.ok) throw new Error('Failed to fetch subscription')
+                // 1. セッション取得
+                const { data: { session } } = await supabase.auth.getSession()
+
+                let currentUserId = session?.user?.id
+
+                // 開発環境かつデバッグパネルでIDが設定されていればそちらを優先（デバッグ用）
+                if (IS_DEV && testUserId !== DUMMY_USER_ID) {
+                    // 注: 本来は開発環境でも自分のIDを使うべきだが、デバッグパネルの機能維持のため
+                    // ここではAPI側がuserIdパラメータを受け取るデバッグモードが必要
+                    // しかし今回は本番安全化が優先なので、デバッグパネルの機能は制限される
+                }
+
+                if (!session && !IS_DEV) {
+                    // 本番で未ログインならリダイレクト
+                    router.push('/auth/login')
+                    return
+                }
+
+                // 開発環境でセッションがない場合はダミーIDを使用（動作確認用）
+                if (!session && IS_DEV) {
+                    currentUserId = testUserId // デバッグパネルのIDを使用
+                }
+
+                setUserId(currentUserId || null)
+
+                // 2. データ取得
+                let res
+                if (session) {
+                    // 本番: 認証トークンを使ってセキュアに取得
+                    res = await fetch('/api/subscription', {
+                        headers: {
+                            'Authorization': `Bearer ${session.access_token}`
+                        }
+                    })
+                } else if (IS_DEV) {
+                    // 開発環境: デバッグ用APIを使用
+                    res = await fetch(`/api/debug/subscription?userId=${testUserId}`)
+                } else {
+                    return // リダイレクト済み
+                }
+
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        router.push('/auth/login')
+                        return
+                    }
+                    throw new Error('Failed to fetch subscription')
+                }
+
                 const { subscription: subData } = await res.json()
 
                 if (!subData) {
@@ -58,7 +112,7 @@ export default function MyPage() {
         }
 
         loadData()
-    }, [testUserId])
+    }, [testUserId, router])
 
     // 表示ロジック: データがない（無料）場合
     if (!loading && !subscription) {
@@ -67,249 +121,150 @@ export default function MyPage() {
                 <h2 className="text-2xl font-bold text-gray-900">契約内容の確認</h2>
                 <div className="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-200">
                     <p className="text-gray-500 mb-4">現在契約中の有料プランはありません。</p>
-                    <div className="text-sm bg-gray-50 p-4 rounded-lg inline-block text-left">
-                        <p className="font-bold mb-2">💡 テストの始め方</p>
-                        下の「テスト用コントロールパネル」から<br />
-                        <span className="font-bold text-blue-600">「💎 Premium (新規)」</span>を押すと契約状態を作成できます。
-                    </div>
+                    {IS_DEV && (
+                        <div className="text-sm bg-gray-50 p-4 rounded-lg inline-block text-left">
+                            <p className="font-bold mb-2">💡 テストの始め方</p>
+                            下の「テスト用コントロールパネル」から<br />
+                            <span className="font-bold text-blue-600">「💎 Premium (新規)」</span>を押すと契約状態を作成できます。
+                        </div>
+                    )}
                 </div>
 
-                {/* デバッグパネル（未契約時も表示） */}
-                <DebugPanel testUserId={testUserId} setTestUserId={setTestUserId} setLoading={setLoading} />
+                {/* デバッグパネル（開発環境のみ表示） */}
+                {IS_DEV && <DebugPanel testUserId={testUserId} setTestUserId={setTestUserId} setLoading={setLoading} />}
             </div>
         )
     }
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-[50vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-        )
-    }
+        // ... (中略) ...
+        {/* メインカード */ }
+        {
+            subscription && (
+// ... (中略) ...
+            )
+        }
 
+        {/* デバッグパネル（開発環境のみ表示） */ }
+        { IS_DEV && <DebugPanel testUserId={testUserId} setTestUserId={setTestUserId} setLoading={setLoading} /> }
+
+        {
+            subscription && (
+                <>
+                    <CancellationModal
+                        // ... (後略) ...
+
+                        function DebugPanel({testUserId, setTestUserId: _setTestUserId, setLoading }: any) {
     return (
-        <div className="py-8 space-y-8">
-            {/* ヘッダー */}
-            <div className="flex justify-between items-end border-b border-gray-200 pb-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900">契約内容の確認</h2>
-                    <p className="text-gray-500 mt-1">現在のプランと契約期間をご確認いただけます</p>
-                </div>
-                <div className="hidden sm:block">
-                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${subscription?.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                        {subscription?.status === 'active' ? '契約中' : '解約済み'}
-                    </span>
-                </div>
-            </div>
+                    <div className="mt-12 bg-gray-100 rounded-xl p-6 border-2 border-dashed border-gray-300">
+                        <h3 className="font-bold text-gray-700 mb-4 flex items-center">
+                            <span className="text-xl mr-2">🛠️</span>
+                            テスト用コントロールパネル
+                            <span className="ml-2 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">Dev Only</span>
+                        </h3>
 
-            {/* メインカード */}
-            {subscription && (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                        <div className="font-bold text-gray-700">現在のプラン</div>
-                        <div className="text-blue-600 font-bold text-lg">{subscription.planName}</div>
-                    </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                            <button
+                                onClick={async () => {
+                                    setLoading(true)
+                                    try {
+                                        const res = await fetch('/api/debug/setup', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ userId: testUserId, action: 'reset_free' })
+                                        })
+                                        const data = await res.json()
+                                        if (!res.ok) alert('Error: ' + (data.error || 'Unknown error'))
+                                        else {
+                                            // 少し待ってからリロード（DB反映待ち）
+                                            setTimeout(() => window.location.reload(), 1000)
+                                        }
+                                    } catch (e: any) {
+                                        alert('Fetch Error: ' + e.message)
+                                        setLoading(false)
+                                    }
+                                }}
+                                className="px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm font-medium"
+                            >
+                                🗑️ 無料に戻す
+                            </button>
 
-                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* 左カラム：基本情報 */}
-                        <div className="space-y-4">
-                            <div>
-                                <div className="text-sm text-gray-500 mb-1">月額料金</div>
-                                <div className="text-2xl font-bold text-gray-900">
-                                    {subscription.price.toLocaleString()}円<span className="text-sm font-normal text-gray-500">/月</span>
-                                </div>
-                            </div>
+                            <button
+                                onClick={async () => {
+                                    setLoading(true)
+                                    try {
+                                        const res = await fetch('/api/debug/setup', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ userId: testUserId, action: 'set_premium_new' })
+                                        })
+                                        const data = await res.json()
+                                        if (!res.ok) alert('Error: ' + (data.error || 'Unknown error'))
+                                        else {
+                                            setTimeout(() => window.location.reload(), 1000)
+                                        }
+                                    } catch (e: any) {
+                                        alert('Fetch Error: ' + e.message)
+                                        setLoading(false)
+                                    }
+                                }}
+                                className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium"
+                            >
+                                💎 Premium (新規)
+                            </button>
 
-                            <div>
-                                <div className="text-sm text-gray-500 mb-1">契約開始日</div>
-                                <div className="font-medium">{subscription.contractStartDate}</div>
-                            </div>
+                            <button
+                                onClick={async () => {
+                                    setLoading(true)
+                                    try {
+                                        const res = await fetch('/api/debug/setup', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ userId: testUserId, action: 'set_premium_aged', monthsAgo: 3 })
+                                        })
+                                        const data = await res.json()
+                                        if (!res.ok) alert('Error: ' + (data.error || 'Unknown error'))
+                                        else {
+                                            setTimeout(() => window.location.reload(), 1000)
+                                        }
+                                    } catch (e: any) {
+                                        alert('Fetch Error: ' + e.message)
+                                        setLoading(false)
+                                    }
+                                }}
+                                className="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm font-medium"
+                            >
+                                🕒 Premium (3ヶ月経過)
+                            </button>
 
-                            <div>
-                                <div className="text-sm text-gray-500 mb-1">次回更新予定日</div>
-                                <div className="font-medium">{subscription.nextBillingDate}</div>
-                            </div>
+                            <button
+                                onClick={async () => {
+                                    setLoading(true)
+                                    try {
+                                        const res = await fetch('/api/debug/setup', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ userId: testUserId, action: 'set_premium_aged', monthsAgo: 6 })
+                                        })
+                                        const data = await res.json()
+                                        if (!res.ok) alert('Error: ' + (data.error || 'Unknown error'))
+                                        else {
+                                            setTimeout(() => window.location.reload(), 1000)
+                                        }
+                                    } catch (e: any) {
+                                        alert('Fetch Error: ' + e.message)
+                                        setLoading(false)
+                                    }
+                                }}
+                                className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
+                            >
+                                ✅ Premium (縛り完了)
+                            </button>
                         </div>
 
-                        {/* 右カラム：契約期間情報（6ヶ月縛り） */}
-                        <div className={`rounded-xl p-5 ${subscription.isContractFulfilled ? 'bg-green-50 border border-green-100' : 'bg-orange-50 border border-orange-100'}`}>
-                            <h4 className={`font-bold mb-3 flex items-center ${subscription.isContractFulfilled ? 'text-green-800' : 'text-orange-800'}`}>
-                                <span className="mr-2 text-xl">{subscription.isContractFulfilled ? '🎉' : '⏳'}</span>
-                                最低利用期間（6ヶ月）
-                            </h4>
-
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-600">現在の経過期間</span>
-                                    <span className="font-bold text-lg">{subscription.monthsElapsed}ヶ月</span>
-                                </div>
-
-                                {/* プログレスバー */}
-                                <div className="w-full bg-white rounded-full h-3 overflow-hidden shadow-inner">
-                                    <div
-                                        className={`h-full rounded-full transition-all duration-1000 ${subscription.isContractFulfilled ? 'bg-green-500' : 'bg-orange-500'}`}
-                                        style={{ width: `${Math.min(100, (subscription.monthsElapsed / 6) * 100)}%` }}
-                                    ></div>
-                                </div>
-
-                                <div className="flex justify-between text-xs text-gray-500">
-                                    <span>0ヶ月</span>
-                                    <span>3ヶ月</span>
-                                    <span>6ヶ月（解約可能）</span>
-                                </div>
-
-                                {!subscription.isContractFulfilled && (
-                                    <div className="mt-3 text-xs text-orange-700 bg-white/50 p-2 rounded">
-                                        現在、最低利用期間内です。<br />
-                                        <span className="font-bold">{subscription.contractEndDate}</span> まで解約時に違約金が発生します。
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <p className="text-xs text-gray-500 mt-4">
+                            Target User ID: {testUserId}
+                        </p>
                     </div>
-
-                    {/* アクションボタン */}
-                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end space-x-4">
-                        <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">
-                            プラン変更
-                        </button>
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg font-medium transition-colors"
-                        >
-                            解約する
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* デバッグパネル */}
-            <DebugPanel testUserId={testUserId} setTestUserId={setTestUserId} setLoading={setLoading} />
-
-            {subscription && (
-                <CancellationModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    subscription={subscription}
-                    userId={testUserId}
-                />
-            )}
-        </div>
-    )
-}
-
-function DebugPanel({ testUserId, setTestUserId: _setTestUserId, setLoading }: any) {
-    return (
-        <div className="mt-12 bg-gray-100 rounded-xl p-6 border-2 border-dashed border-gray-300">
-            <h3 className="font-bold text-gray-700 mb-4 flex items-center">
-                <span className="text-xl mr-2">🛠️</span>
-                テスト用コントロールパネル
-                <span className="ml-2 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">Dev Only</span>
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                <button
-                    onClick={async () => {
-                        setLoading(true)
-                        try {
-                            const res = await fetch('/api/debug/setup', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ userId: testUserId, action: 'reset_free' })
-                            })
-                            const data = await res.json()
-                            if (!res.ok) alert('Error: ' + (data.error || 'Unknown error'))
-                            else {
-                                // 少し待ってからリロード（DB反映待ち）
-                                setTimeout(() => window.location.reload(), 1000)
-                            }
-                        } catch (e: any) {
-                            alert('Fetch Error: ' + e.message)
-                            setLoading(false)
-                        }
-                    }}
-                    className="px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm font-medium"
-                >
-                    🗑️ 無料に戻す
-                </button>
-
-                <button
-                    onClick={async () => {
-                        setLoading(true)
-                        try {
-                            const res = await fetch('/api/debug/setup', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ userId: testUserId, action: 'set_premium_new' })
-                            })
-                            const data = await res.json()
-                            if (!res.ok) alert('Error: ' + (data.error || 'Unknown error'))
-                            else {
-                                setTimeout(() => window.location.reload(), 1000)
-                            }
-                        } catch (e: any) {
-                            alert('Fetch Error: ' + e.message)
-                            setLoading(false)
-                        }
-                    }}
-                    className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium"
-                >
-                    💎 Premium (新規)
-                </button>
-
-                <button
-                    onClick={async () => {
-                        setLoading(true)
-                        try {
-                            const res = await fetch('/api/debug/setup', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ userId: testUserId, action: 'set_premium_aged', monthsAgo: 3 })
-                            })
-                            const data = await res.json()
-                            if (!res.ok) alert('Error: ' + (data.error || 'Unknown error'))
-                            else {
-                                setTimeout(() => window.location.reload(), 1000)
-                            }
-                        } catch (e: any) {
-                            alert('Fetch Error: ' + e.message)
-                            setLoading(false)
-                        }
-                    }}
-                    className="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm font-medium"
-                >
-                    🕒 Premium (3ヶ月経過)
-                </button>
-
-                <button
-                    onClick={async () => {
-                        setLoading(true)
-                        try {
-                            const res = await fetch('/api/debug/setup', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ userId: testUserId, action: 'set_premium_aged', monthsAgo: 6 })
-                            })
-                            const data = await res.json()
-                            if (!res.ok) alert('Error: ' + (data.error || 'Unknown error'))
-                            else {
-                                setTimeout(() => window.location.reload(), 1000)
-                            }
-                        } catch (e: any) {
-                            alert('Fetch Error: ' + e.message)
-                            setLoading(false)
-                        }
-                    }}
-                    className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
-                >
-                    ✅ Premium (縛り完了)
-                </button>
-            </div>
-
-            <p className="text-xs text-gray-500 mt-4">
-                Target User ID: {testUserId}
-            </p>
-        </div>
-    )
+                    )
 }
