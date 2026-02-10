@@ -395,12 +395,32 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       messageText.includes('解約') ||
       messageText.includes('退会')) {
 
+      const { data: subscription } = await (await import('../../../lib/supabase/client')).supabaseAdmin
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .single()
+
+      let feeMessage = 'プラン変更や解約は、セキュリティのため「マイページ」からお手続きをお願いします。'
+
+      if (subscription) {
+        const { calculateCancellationFee, formatCurrencyJP } = await import('../../../lib/subscription-utils')
+        // 生の日付データがあればそれを使用、なければ文字列
+        const startDate = subscription.contract_start_date // DBから取得したままの形式(ISO文字列)
+        const feeInfo = calculateCancellationFee(startDate, subscription.current_plan_price)
+
+        if (feeInfo.cancellationFee > 0) {
+          feeMessage += `\n\n⚠️ 現在解約すると、最低利用期間の残金として【約${formatCurrencyJP(feeInfo.cancellationFee)}】の違約金が発生する可能性があります。`
+        }
+      }
+
       await lineClient.replyMessage(replyToken, [{
         type: 'template',
         altText: 'プラン変更・解約のご案内',
         template: {
           type: 'buttons',
-          text: 'プラン変更や解約は、セキュリティのため「マイページ」からお手続きをお願いします。\n\n以下のボタンからアクセスしてください。',
+          text: feeMessage + '\n\n以下のボタンからアクセスして詳細をご確認ください。',
           actions: [
             {
               type: 'uri',

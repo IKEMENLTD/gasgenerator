@@ -24,7 +24,7 @@ export function CancellationModal({ isOpen, onClose, subscription, userId }: Can
         // UI表示用としてクライアントサイドのユーティリティを使用
         await new Promise(resolve => setTimeout(resolve, 800)) // 計算中の演出
 
-        const info = calculateCancellationFee(subscription.contractStartDate, subscription.price)
+        const info = calculateCancellationFee(subscription.rawStartDate || subscription.contractStartDate, subscription.price)
         setFeeInfo(info)
         setStep('fee-check')
     }

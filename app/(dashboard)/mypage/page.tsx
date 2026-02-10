@@ -42,6 +42,7 @@ export default function MyPage() {
                         planName: planConfig.name,
                         status: subData.status,
                         contractStartDate: formatDateJP(startDate),
+                        rawStartDate: subData.contract_start_date, // 追加: 計算用の生データ
                         price: subData.current_plan_price,
                         monthsElapsed: elapsed,
                         contractEndDate: formatDateJP(endDate),
