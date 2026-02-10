@@ -97,7 +97,8 @@ export const PLAN_CONFIG = {
         name: 'ベーシックプラン',
         price: 10000,
         // 環境変数が未設定の場合は空文字（実装時は.env.localを確認すること）
-        stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PREMIUM || '',
+        // 環境変数が未設定の場合は空文字（実装時は.env.localを確認すること）
+        stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_BASIC || 'price_1S2NQ5GRAknvvgNGhYaGgo1k',
         features: [
             'システムダウンロード権限',
             '初期セットアップマニュアル',
@@ -112,7 +113,7 @@ export const PLAN_CONFIG = {
         id: 'professional',
         name: 'プロフェッショナルプラン',
         price: 50000,
-        stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PROFESSIONAL || '',
+        stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PROFESSIONAL || 'price_1S8GtIGRAknvvgNGVd4bXIbF',
         features: [
             'システムダウンロード権限',
             '月3システムまで設置代行',

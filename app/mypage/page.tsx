@@ -172,12 +172,34 @@ function ChangePlanModal({ isOpen, onClose, currentPlanId, subscription }: any) 
         if (!selectedPlanId) return
         setLoading(true)
         try {
-            await new Promise(r => setTimeout(r, 1000))
-            alert('プラン変更リクエストを受け付けました。（デモ）')
+            const res = await fetch('/api/subscription/change-plan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: subscription?.user_id, // LINE User ID
+                    newPlanId: selectedPlanId
+                })
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                throw new Error(data.error || 'プラン変更に失敗しました')
+            }
+
+            if (data.requiresPayment && data.checkoutUrl) {
+                // 違約金支払いが必要な場合
+                window.location.href = data.checkoutUrl
+                return
+            }
+
+            alert('プラン変更が完了しました！\n新しい契約期間が開始されます。')
             onClose()
             window.location.reload()
-        } catch (e) {
-            alert('Error')
+
+        } catch (e: any) {
+            console.error(e)
+            alert(e.message || 'エラーが発生しました')
         } finally {
             setLoading(false)
         }
