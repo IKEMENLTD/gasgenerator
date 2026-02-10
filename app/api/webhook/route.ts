@@ -1981,14 +1981,30 @@ async function handleFollowEvent(event: any): Promise<void> {
 
       // Stripeリンクにclient_reference_idを追加
       const updatedMessages = welcomeMessages.map(msg => {
-        if (msg.type === 'template' && 'template' in msg && msg.template.type === 'buttons') {
-          msg.template.actions = msg.template.actions.map((action: any) => {
-            if (action.type === 'uri' && action.uri.includes('stripe.com')) {
-              // URLにclient_reference_idパラメータを追加
-              action.uri += `?client_reference_id=${encodedUserId}`
-            }
-            return action
-          })
+        if (msg.type === 'template' && 'template' in msg) {
+          // カルーセルテンプレートの場合
+          if (msg.template.type === 'carousel' && msg.template.columns) {
+            msg.template.columns = msg.template.columns.map((col: any) => {
+              col.actions = col.actions.map((action: any) => {
+                if (action.type === 'uri' && action.uri.includes('stripe.com')) {
+                  const separator = action.uri.includes('?') ? '&' : '?'
+                  action.uri += `${separator}client_reference_id=${encodedUserId}`
+                }
+                return action
+              })
+              return col
+            })
+          }
+          // ボタンテンプレートの場合（レガシー互換）
+          if (msg.template.type === 'buttons') {
+            msg.template.actions = msg.template.actions.map((action: any) => {
+              if (action.type === 'uri' && action.uri.includes('stripe.com')) {
+                const separator = action.uri.includes('?') ? '&' : '?'
+                action.uri += `${separator}client_reference_id=${encodedUserId}`
+              }
+              return action
+            })
+          }
         }
         return msg
       })
@@ -2024,13 +2040,30 @@ async function handleFollowEvent(event: any): Promise<void> {
 
       // Stripeリンクにclient_reference_idを追加（新規ユーザー同様）
       const updatedMessages = welcomeMessages.map(msg => {
-        if (msg.type === 'template' && 'template' in msg && msg.template.type === 'buttons') {
-          msg.template.actions = msg.template.actions.map((action: any) => {
-            if (action.type === 'uri' && action.uri.includes('stripe.com')) {
-              action.uri += `?client_reference_id=${encodedUserId}`
-            }
-            return action
-          })
+        if (msg.type === 'template' && 'template' in msg) {
+          // カルーセルテンプレートの場合
+          if (msg.template.type === 'carousel' && msg.template.columns) {
+            msg.template.columns = msg.template.columns.map((col: any) => {
+              col.actions = col.actions.map((action: any) => {
+                if (action.type === 'uri' && action.uri.includes('stripe.com')) {
+                  const separator = action.uri.includes('?') ? '&' : '?'
+                  action.uri += `${separator}client_reference_id=${encodedUserId}`
+                }
+                return action
+              })
+              return col
+            })
+          }
+          // ボタンテンプレートの場合（レガシー互換）
+          if (msg.template.type === 'buttons') {
+            msg.template.actions = msg.template.actions.map((action: any) => {
+              if (action.type === 'uri' && action.uri.includes('stripe.com')) {
+                const separator = action.uri.includes('?') ? '&' : '?'
+                action.uri += `${separator}client_reference_id=${encodedUserId}`
+              }
+              return action
+            })
+          }
         }
         return msg
       })

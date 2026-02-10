@@ -69,37 +69,51 @@ export class MessageTemplates {
       },
       {
         type: 'template',
-        altText: 'まずはお気軽にお試しください！不明な点は無料相談をご利用ください。',
+        altText: 'プランを選んで始めましょう！',
         template: {
-          type: 'buttons',
-          text: 'まずはお気軽にお試しください！\n不明な点は無料相談をご利用ください',
-          actions: [
+          type: 'carousel',
+          columns: [
             {
-              type: 'message',
-              label: '✨ 無料で試す',
-              text: 'コード生成を開始'
+              title: '💎 プラン一覧',
+              text: 'お好みのプランをお選びください',
+              actions: [
+                {
+                  type: 'message',
+                  label: '✨ 無料で試す',
+                  text: 'コード生成を開始'
+                },
+                {
+                  type: 'uri',
+                  label: '💰 ベーシック（¥10,000/月）',
+                  uri: process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'
+                },
+                {
+                  type: 'uri',
+                  label: '🏆 プロ（¥50,000/月）',
+                  uri: process.env.STRIPE_PAYMENT_LINK_PRO || process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'
+                }
+              ]
             },
             {
-              type: 'uri',
-              label: '💎 購入する（¥10,000/月）',
-              uri: process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'
-            },
-            ...(process.env.CONSULTATION_BOOKING_URL
-              ? [{
-                type: 'uri' as const,
-                label: '📅 まずは無料相談',
-                uri: process.env.CONSULTATION_BOOKING_URL
-              }]
-              : [{
-                type: 'uri' as const, // message -> uri に変更
-                label: '📅 まずは無料相談',
-                uri: 'https://timerex.net/s/cz1917903_47c5/7caf7949' // TimeRexのURLをハードコード
-              }]
-            ),
-            {
-              type: 'message',
-              label: '👨‍💻 エンジニアに相談',
-              text: 'エンジニアに相談する'
+              title: '📋 サポート・マイページ',
+              text: '各種サポートをご利用ください',
+              actions: [
+                {
+                  type: 'uri',
+                  label: '📅 まずは無料相談',
+                  uri: process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
+                },
+                {
+                  type: 'message',
+                  label: '📋 マイページ',
+                  text: 'マイページ'
+                },
+                {
+                  type: 'message',
+                  label: '👨‍💻 エンジニアに相談',
+                  text: 'エンジニアに相談する'
+                }
+              ]
             }
           ]
         }
@@ -147,6 +161,14 @@ export class MessageTemplates {
                 type: 'message',
                 label: '👨‍💻 エンジニア相談',
                 text: 'エンジニアに相談する'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
+                label: '📋 マイページ',
+                text: 'マイページ'
               }
             },
             {
