@@ -113,13 +113,24 @@ export async function POST(req: NextRequest) {
             }).eq('line_user_id', userId)
 
           } else if (metadata.type === 'downgrade_fee') {
+            const newPlanId = metadata.newPlanId
+            const newPlanPrice = newPlanId === 'professional' ? 50000 : 10000
+
             await supabase
               .from('subscriptions')
               .update({
                 cancellation_fee_paid: true,
-                cancellation_fee_amount: amountTotal
+                cancellation_fee_amount: amountTotal,
+                current_plan_id: newPlanId,
+                current_plan_price: newPlanPrice,
+                // プラン変更時は契約開始日をリセット（新たな6ヶ月縛り開始）
+                contract_start_date: new Date().toISOString(),
               })
               .eq('user_id', userId)
+
+            await supabase.from('users').update({
+              subscription_status: newPlanId === 'professional' ? 'professional' : 'premium'
+            }).eq('line_user_id', userId)
           }
 
           break

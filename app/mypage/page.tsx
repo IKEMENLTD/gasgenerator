@@ -282,6 +282,10 @@ function ChangePlanModal({ isOpen, onClose, currentPlanId, subscription }: any) 
                             </div>
                         )}
 
+                        <div className="bg-blue-50 text-blue-700 p-3 rounded-lg text-sm">
+                            📋 プラン変更後、新たに6ヶ月の最低利用期間が開始されます
+                        </div>
+
                         <div className="flex justify-center gap-4">
                             <button onClick={() => setStep(feeInfo && !feeInfo.isFree ? 'fee-warning' : 'select')} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">戻る</button>
                             <button onClick={handleSubmit} disabled={loading} className={`px-6 py-2 text-white rounded-lg font-bold ${feeInfo && !feeInfo.isFree ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}>

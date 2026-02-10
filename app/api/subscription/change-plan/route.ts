@@ -144,8 +144,8 @@ export async function POST(req: NextRequest) {
                 current_plan_id: newPlanId,
                 current_plan_price: targetPlan.price,
                 plan_history: history,
-                // アップグレード時は契約期間リセットしない仕様（spec_6month...md参照）
-                // contract_start_date: isUpgrade ? subscription.contract_start_date : new Date() // 仕様による
+                // プラン変更時は契約開始日をリセット（新たな6ヶ月縛り開始）
+                contract_start_date: new Date().toISOString(),
             }).eq('id', subscription.id)
         }
 
