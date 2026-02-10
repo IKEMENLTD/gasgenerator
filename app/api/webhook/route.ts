@@ -5,7 +5,7 @@ import { QueueManager } from '../../../lib/queue/manager'
 import { UserQueries } from '../../../lib/supabase/queries'
 import { PremiumChecker } from '../../../lib/premium/premium-checker'
 import { logger } from '../../../lib/utils/logger'
-import { generateRequestId, generateSessionId, validateLineSignature } from '../../../lib/utils/crypto'
+import { generateRequestId, generateSessionId, validateLineSignature, generateUrlSignature } from '../../../lib/utils/crypto'
 import { getCategoryIdByName } from '../../../lib/conversation/category-definitions'
 import { ConversationalFlow, ConversationContext } from '../../../lib/conversation/conversational-flow'
 import { CategoryDetector } from '../../../lib/conversation/category-detector'
@@ -386,9 +386,11 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       return true
     }
 
-    const myPageUrl = 'https://gasgenerator.onrender.com/mypage'
+    const signature = await generateUrlSignature(userId)
+    const myPageUrl = `https://gasgenerator.onrender.com/mypage?uid=${userId}&sig=${signature}`
 
-    if (messageText === 'プラン変更' ||
+    if (messageText === 'マイページ' ||
+      messageText === 'プラン変更' ||
       messageText === 'プランをダウングレードしたい' || // ユーザーの入力例
       messageText.includes('ダウングレード') ||
       messageText.includes('プラン変更') ||

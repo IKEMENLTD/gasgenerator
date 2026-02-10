@@ -1,30 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { generateUrlSignature } from '@/lib/utils/crypto'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
     try {
-        // 1. Authorizationヘッダーからトークンを取得
-        const authHeader = req.headers.get('Authorization')
-        if (!authHeader) {
-            return NextResponse.json({ error: 'Authorization header missing' }, { status: 401 })
+        const { searchParams } = new URL(req.url)
+        const queryUserId = searchParams.get('userId')
+        const signature = searchParams.get('signature')
+
+        let targetUserId: string | null = null
+
+        // 1. URL署名認証 (LINEユーザー向け)
+        if (queryUserId && signature) {
+            const expectedSignature = await generateUrlSignature(queryUserId)
+            if (signature !== expectedSignature) {
+                return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+            }
+            targetUserId = queryUserId
         }
 
-        const token = authHeader.replace('Bearer ', '')
+        // 2. Authorizationヘッダー認証 (Standard / Dev)
+        if (!targetUserId) {
+            const authHeader = req.headers.get('Authorization')
+            if (authHeader) {
+                const token = authHeader.replace('Bearer ', '')
+                const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+                if (!authError && user) {
+                    targetUserId = user.id
+                }
+            }
+        }
 
-        // 2. トークンを検証してユーザー情報を取得
-        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
-
-        if (authError || !user) {
-            return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+        if (!targetUserId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
         // 3. 認証されたユーザーIDでサブスクリプション情報を取得
         const { data: subscription, error: dbError } = await supabaseAdmin
             .from('subscriptions')
             .select('*')
-            .eq('user_id', user.id)
+            .eq('user_id', targetUserId)
             .eq('status', 'active')
             .maybeSingle()
 

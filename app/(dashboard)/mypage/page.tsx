@@ -7,7 +7,7 @@ import { ChangePlanModal } from '@/components/subscription/ChangePlanModal'
 import { SubscriptionDetails } from '@/types/subscription'
 
 import { supabase } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 // テスト用LINE ID (開発環境のみ使用)
 const DUMMY_USER_ID = 'U1234567890abcdef1234567890abcdef'
@@ -15,6 +15,7 @@ const IS_DEV = process.env.NODE_ENV === 'development'
 
 export default function MyPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [loading, setLoading] = useState(true)
     const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -51,6 +52,9 @@ export default function MyPage() {
 
                 setUserId(currentUserId || null)
 
+                const uid = searchParams.get('uid')
+                const sig = searchParams.get('sig')
+
                 // 2. データ取得
                 let res
                 if (session) {
@@ -60,6 +64,10 @@ export default function MyPage() {
                             'Authorization': `Bearer ${session.access_token}`
                         }
                     })
+                } else if (uid && sig) {
+                    // LINE署名付きURLからのアクセス
+                    setUserId(uid)
+                    res = await fetch(`/api/subscription?userId=${uid}&signature=${sig}`)
                 } else if (IS_DEV) {
                     // 開発環境: デバッグ用APIを使用
                     res = await fetch(`/api/debug/subscription?userId=${testUserId}`)
