@@ -387,7 +387,10 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     }
 
     const signature = await generateUrlSignature(userId)
-    const myPageUrl = `https://gasgenerator.onrender.com/mypage?uid=${userId}&sig=${signature}`
+    // URLエンコードを確実に行う
+    const encodedUserId = encodeURIComponent(userId)
+    const encodedSignature = encodeURIComponent(signature)
+    const myPageUrl = `https://gasgenerator.onrender.com/mypage?uid=${encodedUserId}&sig=${encodedSignature}`
 
     if (messageText === 'マイページ' ||
       messageText === 'プラン変更' ||
@@ -475,7 +478,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
                 action: {
                   type: 'uri',
                   label: 'マイページを開く',
-                  uri: `https://gasgenerator.onrender.com/mypage?uid=${encodeURIComponent(userId)}&sig=${encodeURIComponent(signature)}`
+                  uri: myPageUrl
                 },
                 style: 'primary',
                 color: '#06b6d4',
@@ -496,6 +499,12 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           }
         }
       }] as any)
+
+      // フォールバック用のテキストメッセージ（Flex Messageが動作しない場合用）
+      await lineClient.pushMessage(userId, [{
+        type: 'text',
+        text: `もし「マイページ」ボタンが反応しない場合は、以下のリンクを直接開いてください。\n\n${myPageUrl}`
+      }])
       return true
     }
 
