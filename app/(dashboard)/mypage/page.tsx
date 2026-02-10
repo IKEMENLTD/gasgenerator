@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { calculateMonthsElapsed, PLAN_CONFIG, formatDateJP } from '@/lib/subscription-utils'
 import { CancellationModal } from '@/components/subscription/CancellationModal'
 import { ChangePlanModal } from '@/components/subscription/ChangePlanModal'
@@ -13,7 +13,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 const DUMMY_USER_ID = 'U1234567890abcdef1234567890abcdef'
 const IS_DEV = process.env.NODE_ENV === 'development'
 
-export default function MyPage() {
+function MyPageContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [loading, setLoading] = useState(true)
@@ -120,7 +120,7 @@ export default function MyPage() {
         }
 
         loadData()
-    }, [testUserId, router])
+    }, [testUserId, router, searchParams])
 
     // 表示ロジック: データがない（無料）場合
     if (!loading && !subscription) {
@@ -385,6 +385,20 @@ function DebugPanel({ testUserId, setTestUserId: _setTestUserId, setLoading }: a
             <p className="text-xs text-gray-500 mt-4">
                 Target User ID: {testUserId}
             </p>
+        </div>
+    )
+}
+
+export default function MyPage() {
+    return (
+        <div className="container mx-auto px-4 max-w-3xl">
+            <Suspense fallback={
+                <div className="flex justify-center items-center min-h-[50vh]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+            }>
+                <MyPageContent />
+            </Suspense>
         </div>
     )
 }
