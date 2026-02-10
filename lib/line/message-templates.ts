@@ -32,7 +32,7 @@ export class MessageTemplates {
     let text = '📝 具体的な要件を教えてください。\n\n'
     if (category) text += `📦 カテゴリ: ${category}\n`
     if (subcategory) text += `🎯 種類: ${subcategory}\n\n`
-    
+
     // カテゴリに応じた例を表示
     if (category?.includes('スプレッドシート')) {
       text += '例：\n・「A列とB列を比較してC列に結果を出力」\n・「毎月の売上を集計してグラフ作成」'
@@ -43,7 +43,7 @@ export class MessageTemplates {
     } else {
       text += '例：\n・「毎日のデータを自動バックアップ」\n・「APIからデータを取得して保存」'
     }
-    
+
     return {
       type: 'text',
       text,
@@ -86,15 +86,15 @@ export class MessageTemplates {
             },
             ...(process.env.CONSULTATION_BOOKING_URL
               ? [{
-                  type: 'uri' as const,
-                  label: '📅 まずは無料相談',
-                  uri: process.env.CONSULTATION_BOOKING_URL
-                }]
+                type: 'uri' as const,
+                label: '📅 まずは無料相談',
+                uri: process.env.CONSULTATION_BOOKING_URL
+              }]
               : [{
-                  type: 'message' as const,
-                  label: '📅 まずは無料相談',
-                  text: '無料相談を予約'
-                }]
+                type: 'uri' as const, // message -> uri に変更
+                label: '📅 まずは無料相談',
+                uri: 'https://timerex.net/s/cz1917903_47c5/7caf7949' // TimeRexのURLをハードコード
+              }]
             ),
             {
               type: 'message',
@@ -259,7 +259,7 @@ export class MessageTemplates {
     }
 
     const category = categories[categoryId as keyof typeof categories]
-    
+
     if (!category) {
       return {
         type: 'text',
@@ -294,10 +294,10 @@ export class MessageTemplates {
   static createCodeResult(summary: string, explanation: string, code: string): Message[] {
     // 構造化レスポンスフォーマッターを使用
     const structuredResponse = new StructuredResponse()
-    
+
     // レスポンステキストを構築
     const fullResponse = `${summary}\n\n${explanation}\n\nコード:\n\`\`\`javascript\n${code}\n\`\`\``
-    
+
     // 構造化されたメッセージを返す
     return structuredResponse.formatResponse(fullResponse)
   }

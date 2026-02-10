@@ -305,7 +305,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       messageText === '無料相談で試算する' ||
       messageText.includes('無料相談') && messageText.includes('予約')) {
 
-      const bookingUrl = process.env.CONSULTATION_BOOKING_URL
+      const bookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
       if (bookingUrl) {
         await lineClient.replyMessage(replyToken, [{
           type: 'template',
