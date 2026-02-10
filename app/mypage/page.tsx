@@ -16,24 +16,38 @@ const IS_DEV = process.env.NODE_ENV === 'development'
 function MyPageContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
+
+    // デバッグログ用State
+    const [debugLogs, setDebugLogs] = useState<string[]>(['Init MyPageContent'])
+    const addLog = (msg: string) => setDebugLogs(prev => [...prev, `${new Date().toLocaleTimeString()} ${msg}`].slice(-20))
+
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isChangePlanModalOpen, setIsChangePlanModalOpen] = useState(false)
     const [testUserId, setTestUserId] = useState(DUMMY_USER_ID)
-    const [userId, setUserId] = useState<string | null>(null)
+    // const [userId, setUserId] = useState<string | null>(null) // 未使用のためコメントアウト
 
     useEffect(() => {
         const loadData = async () => {
+            addLog('Start loadData')
             setLoading(true)
             try {
                 // URLパラメータを取得（LINEからのアクセス用）
                 const uid = searchParams.get('uid')
                 const sig = searchParams.get('sig')
+                addLog(`Params: uid=${uid?.slice(0, 5)}..., sig=${sig?.slice(0, 5)}...`)
 
                 // 1. セッション取得
-                const { data: { session } } = await supabase.auth.getSession()
+                addLog('Fetching session...')
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+                if (sessionError) {
+                    addLog(`Session Error: ${sessionError.message}`)
+                } else {
+                    addLog(`Session: ${session ? 'Active' : 'None'}`)
+                }
 
                 let currentUserId = session?.user?.id
 
@@ -43,6 +57,7 @@ function MyPageContent() {
 
                 // セッションがなく、かつ署名付きURLでもない場合はログイン画面へ
                 if (!session && !IS_DEV && (!uid || !sig)) {
+                    addLog('Redirecting to login (No session/No params)')
                     router.push('/auth/login')
                     return
                 }
@@ -50,18 +65,22 @@ function MyPageContent() {
                 // 開発環境でセッションがない場合はダミーIDを使用（動作確認用）
                 if (!session && IS_DEV) {
                     currentUserId = testUserId // デバッグパネルのIDを使用
+                    addLog('Using DEV dummy user')
                 }
 
-                setUserId(uid || currentUserId || null)
+                // setUserId(uid || currentUserId || null)
 
                 // 2. データ取得
                 let res
                 if (uid && sig) {
                     // LINE署名付きURLからのアクセス（最優先）
-                    setUserId(uid)
-                    res = await fetch(`/api/subscription?userId=${uid}&signature=${sig}`)
+                    // setUserId(uid)
+                    const fetchUrl = `/api/subscription?userId=${encodeURIComponent(uid)}&signature=${encodeURIComponent(sig)}` // エンコードを追加
+                    addLog(`Fetching with Signed URL: ${fetchUrl}`)
+                    res = await fetch(fetchUrl)
                 } else if (session) {
                     // 本番: 認証トークンを使ってセキュアに取得
+                    addLog('Fetching with Session Token')
                     res = await fetch('/api/subscription', {
                         headers: {
                             'Authorization': `Bearer ${session.access_token}`
@@ -69,29 +88,41 @@ function MyPageContent() {
                     })
                 } else if (IS_DEV) {
                     // 開発環境: デバッグ用APIを使用
+                    addLog('Fetching with DEV API')
                     res = await fetch(`/api/debug/subscription?userId=${testUserId}`)
                 } else {
+                    addLog('No valid auth method found')
                     return // 上記のチェックでリダイレクト済みのはず
                 }
+
+                addLog(`Fetch Result: status=${res.status}, ok=${res.ok}`)
 
                 if (!res.ok) {
                     if (res.status === 401) {
                         // 署名付きURLでのアクセス失敗時はエラーを表示（リダイレクトしない）
                         if (uid && sig) {
+                            addLog('401 Unauthorized for Signed URL')
                             throw new Error('リンクが無効か期限切れです。LINEから再度アクセスしてください。')
                         }
+                        addLog('401 Unauthorized, redirecting...')
                         router.push('/auth/login')
                         return
                     }
-                    throw new Error('Failed to fetch subscription')
+                    const errorText = await res.text()
+                    addLog(`API Error Body: ${errorText}`)
+                    throw new Error(`Failed to fetch subscription: ${res.status}`)
                 }
 
-                const { subscription: subData } = await res.json()
+                const data = await res.json()
+                addLog('Data parsed successfully')
 
-                if (!subData) {
+                if (!data || !data.subscription) {
                     // データがない場合は無料/未契約として表示
+                    addLog('No subscription data found')
                     setSubscription(null)
                 } else {
+                    const subData = data.subscription
+                    addLog(`Subscription data found: status=${subData.status}`)
                     const startDate = new Date(subData.contract_start_date)
                     const elapsed = calculateMonthsElapsed(startDate)
                     const minimumMonths = 6
@@ -117,22 +148,38 @@ function MyPageContent() {
                 }
             } catch (e: any) {
                 console.error('Failed to load subscription data', e)
+                addLog(`Catch Error: ${e.message}`)
                 setError(e.message || 'データの取得に失敗しました')
             } finally {
                 setLoading(false)
+                addLog('Loading finished')
             }
         }
 
         loadData()
-    }, [testUserId, router, searchParams])
+    }, [testUserId, router, searchParams]) // addLogは依存配列に入れない（無限ループ防止）
+
+    // デバッグ表示用コンポーネント
+    const debugConsole = (
+        <div className="fixed top-0 left-0 right-0 bg-black/80 text-green-400 p-2 text-xs font-mono max-h-48 overflow-y-auto z-50 opacity-90 pointer-events-none">
+            {debugLogs.map((log, i) => (
+                <div key={i}>{log}</div>
+            ))}
+        </div>
+    )
 
     // エラー表示
     if (!loading && error) {
         return (
             <div className="py-8 space-y-8">
-                <h2 className="text-2xl font-bold text-gray-900">エラーが発生しました</h2>
-                <div className="bg-red-50 rounded-xl p-8 text-center shadow-sm border border-red-200">
-                    <p className="text-red-600 mb-4">{error}</p>
+                {debugConsole}
+                <div className="bg-red-50 rounded-xl p-8 text-center shadow-sm border border-red-200 mx-4 mt-12">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">エラーが発生しました</h2>
+                    <p className="text-red-600 mb-4 font-bold">{error}</p>
+                    <p className="text-xs text-gray-500 mb-4 whitespace-pre-wrap text-left bg-white p-2 border rounded">
+                        Debug Info:<br />
+                        {debugLogs.slice(-5).join('\n')}
+                    </p>
                     <button
                         onClick={() => window.location.reload()}
                         className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg hover:bg-red-50"
@@ -148,8 +195,9 @@ function MyPageContent() {
     if (!loading && !subscription) {
         return (
             <div className="py-8 space-y-8">
-                <h2 className="text-2xl font-bold text-gray-900">契約内容の確認</h2>
-                <div className="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-200">
+                {debugConsole}
+                <div className="mt-12 bg-white rounded-xl p-8 text-center shadow-sm border border-gray-200 mx-4">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">契約内容の確認</h2>
                     <p className="text-gray-500 mb-4">現在契約中の有料プランはありません。</p>
                     {IS_DEV && (
                         <div className="text-sm bg-gray-50 p-4 rounded-lg inline-block text-left">
@@ -168,16 +216,21 @@ function MyPageContent() {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-[50vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div>
+                {debugConsole}
+                <div className="flex justify-center items-center min-h-[50vh]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <div className="ml-4 text-gray-600">読み込み中...</div>
+                </div>
             </div>
         )
     }
 
     return (
-        <div className="py-8 space-y-8">
+        <div className="py-8 space-y-8 mx-4">
+            {debugConsole}
             {/* ヘッダー */}
-            <div className="flex justify-between items-end border-b border-gray-200 pb-4">
+            <div className="flex justify-between items-end border-b border-gray-200 pb-4 mt-12">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900">契約内容の確認</h2>
                     <p className="text-gray-500 mt-1">現在のプランと契約期間をご確認いただけます</p>
@@ -418,6 +471,7 @@ export default function MyPage() {
                 <Suspense fallback={
                     <div className="flex justify-center items-center min-h-[50vh]">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                        <div className="ml-4 text-gray-600">Loading Suspense...</div>
                     </div>
                 }>
                     <MyPageContent />
