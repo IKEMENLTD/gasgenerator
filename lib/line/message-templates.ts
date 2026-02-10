@@ -69,21 +69,33 @@ export class MessageTemplates {
       },
       {
         type: 'template',
-        altText: '有料プランのご案内\n\n月額¥10,000で無制限利用が可能です！',
+        altText: 'まずはお気軽にお試しください！不明な点は無料相談をご利用ください。',
         template: {
           type: 'buttons',
-          text: '月額¥10,000で無制限コード生成！\n今なら初月割引あり',
+          text: 'まずはお気軽にお試しください！\n不明な点は無料相談をご利用ください',
           actions: [
             {
-              type: 'uri',
-              label: '購入する（¥10,000/月）',
-              uri: process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'
-            },
-            {
               type: 'message',
-              label: '無料で試す',
+              label: '✨ 無料で試す',
               text: 'コード生成を開始'
             },
+            {
+              type: 'uri',
+              label: '💎 購入する（¥10,000/月）',
+              uri: process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'
+            },
+            ...(process.env.CONSULTATION_BOOKING_URL
+              ? [{
+                  type: 'uri' as const,
+                  label: '📅 まずは無料相談',
+                  uri: process.env.CONSULTATION_BOOKING_URL
+                }]
+              : [{
+                  type: 'message' as const,
+                  label: '📅 まずは無料相談',
+                  text: '無料相談を予約'
+                }]
+            ),
             {
               type: 'message',
               label: '👨‍💻 エンジニアに相談',

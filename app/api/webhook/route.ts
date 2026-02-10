@@ -20,6 +20,7 @@ import { RecoveryManager } from '../../../lib/error-recovery/recovery-manager'
 import { QAService } from '../../../lib/rag/qa-service'
 import { DownloadQueries } from '../../../lib/supabase/subscription-queries'
 import { supabaseAdmin } from '../../../lib/supabase/client'
+import { startDrip, stopDrip, checkAndStopDripOnUserAction } from '../../../lib/drip/drip-service'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -197,6 +198,11 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
   const messageText = event.message?.text?.trim() || ''
   const replyToken = event.replyToken
 
+  // ドリップ配信停止チェック（ユーザーがメッセージを送った = アクティブなので停止）
+  if (userId) {
+    checkAndStopDripOnUserAction(userId).catch(() => { })
+  }
+
   // デバッグ情報をログに記録
   logger.debug('Event source info', {
     sourceType: event.source?.type,
@@ -292,6 +298,47 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       return true
     }
 
+    // 無料相談予約
+    if (messageText === '無料相談を予約' ||
+      messageText === '無料相談を予約する' ||
+      messageText === '無料で相談する' ||
+      messageText === '無料相談で試算する' ||
+      messageText.includes('無料相談') && messageText.includes('予約')) {
+
+      const bookingUrl = process.env.CONSULTATION_BOOKING_URL
+      if (bookingUrl) {
+        await lineClient.replyMessage(replyToken, [{
+          type: 'template',
+          altText: '無料相談のご予約',
+          template: {
+            type: 'buttons',
+            text: '15分の無料面談をご予約いただけます。\n\n御社の業務に合った自動化をご提案します。',
+            actions: [
+              {
+                type: 'uri',
+                label: '📅 予約ページを開く',
+                uri: bookingUrl
+              }
+            ]
+          }
+        }] as any)
+      } else {
+        await lineClient.replyMessage(replyToken, [{
+          type: 'text',
+          text: '📅 無料相談のご予約ありがとうございます！\n\nエンジニアチームに通知しました。\n営業時間内（平日10:00-19:00）に、面談の日程調整のご連絡をさせていただきます。\n\nしばらくお待ちください。',
+          quickReply: {
+            items: [
+              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
+            ]
+          }
+        }] as any)
+        // エンジニアに面談リクエストを通知
+        await engineerSupport.handleSupportRequest(userId, '【面談予約リクエスト】' + messageText, replyToken).catch(() => { })
+      }
+      return true
+    }
+
     // エンジニアに相談
     if (messageText === 'エンジニアに相談する' ||
       messageText === 'エンジニアに相談' ||
@@ -333,6 +380,38 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             { type: 'action', action: { type: 'message', label: '🔄 新しいコード', text: '新しいコードを作りたい' } },
             { type: 'action', action: { type: 'message', label: '📊 統計を見る', text: 'マイステータス' } },
             { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
+          ]
+        }
+      }] as any)
+      return true
+    }
+
+    const myPageUrl = 'https://gasgenerator.onrender.com/mypage'
+
+    if (messageText === 'プラン変更' ||
+      messageText === 'プランをダウングレードしたい' || // ユーザーの入力例
+      messageText.includes('ダウングレード') ||
+      messageText.includes('プラン変更') ||
+      messageText.includes('解約') ||
+      messageText.includes('退会')) {
+
+      await lineClient.replyMessage(replyToken, [{
+        type: 'template',
+        altText: 'プラン変更・解約のご案内',
+        template: {
+          type: 'buttons',
+          text: 'プラン変更や解約は、セキュリティのため「マイページ」からお手続きをお願いします。\n\n以下のボタンからアクセスしてください。',
+          actions: [
+            {
+              type: 'uri',
+              label: '🔑 マイページを開く',
+              uri: myPageUrl
+            },
+            {
+              type: 'message',
+              label: '📋 メニューに戻る',
+              text: 'メニュー'
+            }
           ]
         }
       }] as any)
@@ -1837,6 +1916,9 @@ async function handleFollowEvent(event: any): Promise<void> {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
       }
+
+      // ドリップキャンペーン開始（7日間の面談CTA配信）
+      await startDrip(userId)
     } else {
       // 既存無料ユーザー（ブロック解除/再追加）
       // システム一覧を先頭に配置して、システムカタログへの誘導を強化
@@ -1900,6 +1982,9 @@ async function handleFollowEvent(event: any): Promise<void> {
       if (!success) {
         throw new Error('Failed to send returning user welcome message')
       }
+
+      // 再追加ユーザーにもドリップキャンペーン開始
+      await startDrip(userId)
     }
 
   } catch (error) {
@@ -1919,6 +2004,9 @@ async function handleUnfollowEvent(event: any): Promise<void> {
   if (!userId) return
 
   logger.info('User unfollowed', { userId })
+
+  // ドリップ配信停止
+  await stopDrip(userId, 'unfollowed').catch(() => { })
 
   // セッションクリーンアップ
   await sessionManager.deleteSession(userId)
