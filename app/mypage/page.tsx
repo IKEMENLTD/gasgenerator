@@ -137,15 +137,36 @@ function CancellationModal({ isOpen, onClose, subscription }: any) {
     )
 }
 
-function ChangePlanModal({ isOpen, onClose, currentPlanId, userId }: any) {
+function ChangePlanModal({ isOpen, onClose, currentPlanId, subscription }: any) {
     const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
     const [step, setStep] = useState('select')
     const [loading, setLoading] = useState(false)
+    const [feeInfo, setFeeInfo] = useState<any>(null)
 
     if (!isOpen) return null
 
     // Configを配列化して現在のプラン以外を抽出
     const availablePlans = Object.values(PLAN_CONFIG).filter((p: any) => p.id !== currentPlanId)
+    const currentPlanConfig = Object.values(PLAN_CONFIG).find((p: any) => p.id === currentPlanId)
+    const selectedPlanConfig = Object.values(PLAN_CONFIG).find((p: any) => p.id === selectedPlanId)
+
+    // ダウングレード判定: 現在のプランより安いプランへの変更
+    const isDowngrade = currentPlanConfig && selectedPlanConfig && selectedPlanConfig.price < currentPlanConfig.price
+
+    const handleNext = async () => {
+        if (!selectedPlanId) return
+
+        // ダウングレードの場合、違約金チェックを挟む
+        if (isDowngrade && subscription?.rawStartDate) {
+            const info = calculateCancellationFee(subscription.rawStartDate, subscription.price || currentPlanConfig!.price)
+            setFeeInfo(info)
+            if (!info.isFree) {
+                setStep('fee-warning')
+                return
+            }
+        }
+        setStep('confirm')
+    }
 
     const handleSubmit = async () => {
         if (!selectedPlanId) return
@@ -186,11 +207,60 @@ function ChangePlanModal({ isOpen, onClose, currentPlanId, userId }: any) {
                         <div className="flex justify-end gap-3 mt-6">
                             <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">キャンセル</button>
                             <button
-                                onClick={() => setStep('confirm')}
+                                onClick={handleNext}
                                 disabled={!selectedPlanId}
                                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-bold"
                             >
                                 次へ
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* ダウングレード時の違約金警告ステップ */}
+                {step === 'fee-warning' && feeInfo && (
+                    <div className="space-y-6">
+                        <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="text-2xl">⚠️</span>
+                                <h4 className="font-bold text-red-800 text-lg">ダウングレードに伴う違約金</h4>
+                            </div>
+                            <p className="text-red-700 text-sm mb-4">
+                                最低利用期間（6ヶ月）を満たしていないため、以下の違約金が発生します。
+                            </p>
+
+                            <div className="bg-white rounded-lg p-4 space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">現在のプラン月額</span>
+                                    <span className="font-bold">{formatCurrencyJP(subscription?.price || currentPlanConfig?.price || 0)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">残り契約期間</span>
+                                    <span className="font-bold text-red-600">{feeInfo.remainingMonths}ヶ月</span>
+                                </div>
+                                <hr className="my-2" />
+                                <div className="flex justify-between text-lg">
+                                    <span className="font-bold text-gray-800">違約金合計</span>
+                                    <span className="font-bold text-red-600">{formatCurrencyJP(feeInfo.fee)}</span>
+                                </div>
+                            </div>
+
+                            <p className="text-xs text-red-600 mt-3">
+                                ※ 計算式: {formatCurrencyJP(subscription?.price || currentPlanConfig?.price || 0)} × {feeInfo.remainingMonths}ヶ月 = {formatCurrencyJP(feeInfo.fee)}
+                            </p>
+                        </div>
+
+                        <div className="text-center">
+                            <p className="text-sm text-gray-600 mb-1">変更先プラン</p>
+                            <p className="text-xl font-bold text-blue-600">{selectedPlanConfig?.name}</p>
+                        </div>
+
+                        <div className="flex justify-center gap-4">
+                            <button onClick={() => { setStep('select'); setFeeInfo(null); }} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                                戻る
+                            </button>
+                            <button onClick={() => setStep('confirm')} className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold">
+                                違約金を了承して進む
                             </button>
                         </div>
                     </div>
@@ -202,12 +272,19 @@ function ChangePlanModal({ isOpen, onClose, currentPlanId, userId }: any) {
                         <div className="py-4">
                             以下のプランに変更しますか？
                             <div className="text-2xl font-bold text-blue-600 mt-2">
-                                {Object.values(PLAN_CONFIG).find((p: any) => p.id === selectedPlanId)?.name}
+                                {selectedPlanConfig?.name}
                             </div>
                         </div>
+
+                        {feeInfo && !feeInfo.isFree && (
+                            <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">
+                                ⚠️ 違約金 {formatCurrencyJP(feeInfo.fee)} が発生します
+                            </div>
+                        )}
+
                         <div className="flex justify-center gap-4">
-                            <button onClick={() => setStep('select')} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">戻る</button>
-                            <button onClick={handleSubmit} disabled={loading} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold">
+                            <button onClick={() => setStep(feeInfo && !feeInfo.isFree ? 'fee-warning' : 'select')} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">戻る</button>
+                            <button onClick={handleSubmit} disabled={loading} className={`px-6 py-2 text-white rounded-lg font-bold ${feeInfo && !feeInfo.isFree ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}>
                                 {loading ? '処理中...' : '変更を確定する'}
                             </button>
                         </div>
@@ -292,9 +369,10 @@ function MyPageContent() {
 
                     setSubscription({
                         ...subData,
-                        userId: subData.user_id, // Fix: Use DB userId
+                        userId: subData.user_id,
+                        planId: subData.current_plan_id, // Fix: explicit planId for ChangePlanModal
                         planName: planConfig.name,
-                        price: subData.current_plan_price || planConfig.price, // Fix: Use DB price or fallback
+                        price: subData.current_plan_price || planConfig.price,
                         monthsElapsed: elapsed,
                         contractStartDate: formatDateJP(startDate),
                         rawStartDate: subData.contract_start_date,
@@ -447,7 +525,7 @@ function MyPageContent() {
                 isOpen={isChangePlanModalOpen}
                 onClose={() => setIsChangePlanModalOpen(false)}
                 currentPlanId={subscription.planId}
-                userId={subscription.userId} // Fix: Use real user ID
+                subscription={subscription}
             />
         </div>
     )
