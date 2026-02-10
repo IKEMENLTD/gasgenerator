@@ -499,12 +499,6 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           }
         }
       }] as any)
-
-      // フォールバック用のテキストメッセージ（Flex Messageが動作しない場合用）
-      await lineClient.pushMessage(userId, [{
-        type: 'text',
-        text: `もし「マイページ」ボタンが反応しない場合は、以下のリンクを直接開いてください。\n\n${myPageUrl}`
-      }])
       return true
     }
 
