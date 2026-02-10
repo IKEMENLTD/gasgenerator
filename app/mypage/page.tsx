@@ -5,21 +5,34 @@ import { createClient } from '@supabase/supabase-js'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 // ==========================================
-// 🚨 ZERO-BASE SAFE IMPLEMENTATION 🚨
-// 外部ファイルのインポートを排除し、クラッシュ要因を完全に除去しています。
+// 🛡️ UTILS & CONSTANTS (Locally Defined)
 // ==========================================
 
-// --- Types & Config (Copied from utils to avoid imports) ---
+const MINIMUM_MONTHS = 6
+
 const PLAN_CONFIG = {
     basic: {
         id: 'basic',
         name: 'ベーシックプラン',
         price: 10000,
+        features: [
+            'システムダウンロード権限',
+            '初期セットアップマニュアル',
+            'AIチャットサポート',
+            '自己設置（セルフサポート）'
+        ]
     },
     professional: {
         id: 'professional',
         name: 'プロフェッショナルプラン',
         price: 50000,
+        features: [
+            'システムダウンロード権限',
+            '月3システムまで設置代行',
+            'コーディング代行サービス',
+            '月1回無料ミーティング',
+            '優先技術サポート'
+        ]
     }
 }
 
@@ -39,7 +52,175 @@ function formatDateJP(date: string | Date) {
     return new Date(date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-// ---------------------------------------------------------
+function formatCurrencyJP(amount: number) {
+    return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(amount)
+}
+
+function calculateCancellationFee(contractStartDate: string | Date, currentPrice: number) {
+    const elapsed = calculateMonthsElapsed(contractStartDate)
+    const remaining = Math.max(0, MINIMUM_MONTHS - elapsed)
+    if (remaining === 0) {
+        return { fee: 0, remainingMonths: 0, isFree: true }
+    }
+    return { fee: currentPrice * remaining, remainingMonths: remaining, isFree: false }
+}
+
+// ==========================================
+// 🧩 SUB-COMPONENTS (Inline Modals)
+// ==========================================
+
+function CancellationModal({ isOpen, onClose, subscription }: any) {
+    const [step, setStep] = useState('confirm')
+    const [feeInfo, setFeeInfo] = useState<any>(null)
+
+    if (!isOpen) return null
+
+    const handleCheckFee = async () => {
+        setStep('calculating')
+        await new Promise(r => setTimeout(r, 800))
+        const info = calculateCancellationFee(subscription.rawStartDate, subscription.price)
+        setFeeInfo(info)
+        setStep('fee-check')
+    }
+
+    const handleProceed = async () => {
+        setStep('processing')
+        await new Promise(r => setTimeout(r, 1500))
+        alert('解約リクエストを受け付けました。（デモ）')
+        setStep('completed')
+        onClose()
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
+                <h3 className="font-bold text-lg mb-4">プラン解約の手続き</h3>
+
+                {step === 'confirm' && (
+                    <div className="space-y-4">
+                        <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl text-sm">
+                            <span className="font-bold">⚠️ 最低利用期間の確認</span><br />
+                            本プランには6ヶ月の最低利用期間があります。期間内の解約には違約金が発生する場合があります。
+                        </div>
+                        <div className="flex justify-end gap-3 mt-4">
+                            <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">キャンセル</button>
+                            <button onClick={handleCheckFee} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">手続きを進める</button>
+                        </div>
+                    </div>
+                )}
+
+                {step === 'calculating' && (
+                    <div className="text-center py-8">
+                        <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">契約状況を確認中...</p>
+                    </div>
+                )}
+
+                {step === 'fee-check' && feeInfo && (
+                    <div className="space-y-4">
+                        <div className="text-center bg-gray-50 p-4 rounded-xl">
+                            <p className="text-sm text-gray-500 mb-1">違約金（残 {feeInfo.remainingMonths}ヶ月分）</p>
+                            <p className={`text-2xl font-bold ${feeInfo.fee > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                {formatCurrencyJP(feeInfo.fee)}
+                            </p>
+                        </div>
+                        <div className="flex justify-end gap-3 mt-4">
+                            <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">キャンセル</button>
+                            <button onClick={handleProceed} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold">
+                                {feeInfo.fee > 0 ? '違約金を了承して解約' : '解約を確定する'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
+
+function ChangePlanModal({ isOpen, onClose, currentPlanId, userId }: any) {
+    const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
+    const [step, setStep] = useState('select')
+    const [loading, setLoading] = useState(false)
+
+    if (!isOpen) return null
+
+    // Configを配列化して現在のプラン以外を抽出
+    const availablePlans = Object.values(PLAN_CONFIG).filter((p: any) => p.id !== currentPlanId)
+
+    const handleSubmit = async () => {
+        if (!selectedPlanId) return
+        setLoading(true)
+        try {
+            await new Promise(r => setTimeout(r, 1000))
+            alert('プラン変更リクエストを受け付けました。（デモ）')
+            onClose()
+            window.location.reload()
+        } catch (e) {
+            alert('Error')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 h-[80vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
+                <h3 className="font-bold text-lg mb-4">プラン変更</h3>
+
+                {step === 'select' && (
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {availablePlans.map((plan: any) => (
+                                <div key={plan.id}
+                                    onClick={() => setSelectedPlanId(plan.id)}
+                                    className={`border-2 rounded-xl p-4 cursor-pointer hover:bg-blue-50 transition-colors ${selectedPlanId === plan.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
+                                >
+                                    <div className="font-bold text-lg mb-1">{plan.name}</div>
+                                    <div className="text-blue-600 font-bold text-xl mb-2">{formatCurrencyJP(plan.price)}<span className="text-sm text-gray-400">/月</span></div>
+                                    <ul className="text-xs text-gray-600 space-y-1 list-disc pl-4">
+                                        {plan.features.slice(0, 3).map((f: string, i: number) => <li key={i}>{f}</li>)}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">キャンセル</button>
+                            <button
+                                onClick={() => setStep('confirm')}
+                                disabled={!selectedPlanId}
+                                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-bold"
+                            >
+                                次へ
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {step === 'confirm' && (
+                    <div className="space-y-6 text-center">
+                        <p className="text-lg font-bold">変更内容の確認</p>
+                        <div className="py-4">
+                            以下のプランに変更しますか？
+                            <div className="text-2xl font-bold text-blue-600 mt-2">
+                                {Object.values(PLAN_CONFIG).find((p: any) => p.id === selectedPlanId)?.name}
+                            </div>
+                        </div>
+                        <div className="flex justify-center gap-4">
+                            <button onClick={() => setStep('select')} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">戻る</button>
+                            <button onClick={handleSubmit} disabled={loading} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold">
+                                {loading ? '処理中...' : '変更を確定する'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
+
+// ==========================================
+// 🚀 MAIN PAGE COMPONENT
+// ==========================================
 
 // テスト用LINE ID (開発環境のみ使用)
 const DUMMY_USER_ID = 'U1234567890abcdef1234567890abcdef'
@@ -49,165 +230,256 @@ function MyPageContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
 
-    // デバッグログ用State
-    const [debugLogs, setDebugLogs] = useState<string[]>(['Init MyPageContent (Self-Contained)'])
-    const addLog = (msg: string) => setDebugLogs(prev => [...prev, `${new Date().toLocaleTimeString()} ${msg}`].slice(-20))
-
+    // State
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [subscription, setSubscription] = useState<any | null>(null)
-
-    // Modals temporarily disabled for stability check
-    // const [isModalOpen, setIsModalOpen] = useState(false)
-    // const [isChangePlanModalOpen, setIsChangePlanModalOpen] = useState(false)
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+    const [isChangePlanModalOpen, setIsChangePlanModalOpen] = useState(false)
+    const [testUserId, setTestUserId] = useState(DUMMY_USER_ID) // Dev用
 
     useEffect(() => {
         const loadData = async () => {
-            addLog('Start loadData')
             setLoading(true)
-
             try {
                 // Local Supabase Client Construction
                 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
                 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-                if (!supabaseUrl || !supabaseAnonKey) {
-                    throw new Error('Missing Env Vars')
-                }
-
+                if (!supabaseUrl || !supabaseAnonKey) throw new Error('System Config Error')
                 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-                // URLパラメータを取得
+                // Params & Session
                 const uid = searchParams.get('uid')
                 const sig = searchParams.get('sig')
-                addLog(`Params: uid=${uid?.slice(0, 5)}..., sig=${sig?.slice(0, 5)}...`)
+                const { data: { session } } = await supabase.auth.getSession()
 
-                // セッション取得
-                addLog('Fetching session...')
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-
-                if (sessionError) addLog(`Session Error: ${sessionError.message}`)
-                else addLog(`Session: ${session ? 'Active' : 'None'}`)
-
-                // Redirect Check
+                // Auth Check
                 if (!session && !IS_DEV && (!uid || !sig)) {
-                    addLog('Redirecting to login...')
                     router.push('/auth/login')
                     return
                 }
 
-                // API Fetch
+                // Fetch Strategy
                 let res
                 if (uid && sig) {
-                    const fetchUrl = `/api/subscription?userId=${encodeURIComponent(uid)}&signature=${encodeURIComponent(sig)}`
-                    addLog(`Fetching: ${fetchUrl}`)
-                    res = await fetch(fetchUrl)
+                    res = await fetch(`/api/subscription?userId=${encodeURIComponent(uid)}&signature=${encodeURIComponent(sig)}`)
                 } else if (session) {
-                    addLog('Fetching with Session')
-                    res = await fetch('/api/subscription', {
-                        headers: { 'Authorization': `Bearer ${session.access_token}` }
-                    })
+                    res = await fetch('/api/subscription', { headers: { 'Authorization': `Bearer ${session.access_token}` } })
                 } else if (IS_DEV) {
-                    addLog('Fetching DEV')
-                    res = await fetch(`/api/debug/subscription?userId=${DUMMY_USER_ID}`)
+                    res = await fetch(`/api/debug/subscription?userId=${testUserId}`)
                 } else {
                     return
                 }
 
-                addLog(`Fetch Status: ${res.status}`)
-
                 if (!res.ok) {
-                    const text = await res.text()
-                    addLog(`Error Body: ${text.slice(0, 50)}`)
-                    if (res.status === 401 && uid && sig) {
-                        throw new Error('リンク期限切れ/無効')
-                    }
-                    throw new Error(`Fetch failed: ${res.status}`)
+                    if (res.status === 401 && uid && sig) throw new Error('リンクの有効期限が切れています。LINEから再度アクセスしてください。')
+                    throw new Error('データの取得に失敗しました')
                 }
 
                 const data = await res.json()
-                addLog('Data parsed')
 
                 if (!data || !data.subscription) {
-                    addLog('No subscription')
                     setSubscription(null)
                 } else {
                     const subData = data.subscription
-                    addLog(`Sub Found: ${subData.status}`)
-
                     const startDate = new Date(subData.contract_start_date)
                     const elapsed = calculateMonthsElapsed(startDate)
                     const planConfig = Object.values(PLAN_CONFIG).find((p: any) => p.id === subData.current_plan_id) || PLAN_CONFIG.basic
+
+                    // 6ヶ月後の日付計算
+                    const endDate = new Date(startDate)
+                    endDate.setMonth(endDate.getMonth() + MINIMUM_MONTHS)
 
                     setSubscription({
                         ...subData,
                         planName: planConfig.name,
                         monthsElapsed: elapsed,
-                        contractStartDate: formatDateJP(startDate)
+                        contractStartDate: formatDateJP(startDate),
+                        rawStartDate: subData.contract_start_date, // Modal計算用
+                        contractEndDate: formatDateJP(endDate),
+                        isContractFulfilled: elapsed >= MINIMUM_MONTHS,
+                        nextBillingDate: formatDateJP(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)) // 簡易表示
                     })
                 }
 
             } catch (e: any) {
                 console.error(e)
-                addLog(`Error: ${e.message}`)
                 setError(e.message)
             } finally {
                 setLoading(false)
-                addLog('Done')
             }
         }
-
         loadData()
-    }, [searchParams, router])
+    }, [searchParams, router, testUserId])
 
-    const debugConsole = (
-        <div className="fixed top-0 left-0 right-0 bg-black/90 text-green-400 p-2 text-xs font-mono max-h-48 overflow-y-auto z-50 opacity-90 pointer-events-none">
-            {debugLogs.map((log, i) => <div key={i}>{log}</div>)}
+    // Loading State
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-[60vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        )
+    }
+
+    // Error State
+    if (error) {
+        return (
+            <div className="py-12 text-center px-4">
+                <div className="bg-red-50 text-red-600 p-6 rounded-xl border border-red-200 inline-block max-w-md">
+                    <h2 className="text-xl font-bold mb-2">エラーが発生しました</h2>
+                    <p>{error}</p>
+                    <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-white border border-red-300 rounded hover:bg-red-50">再読み込み</button>
+                </div>
+            </div>
+        )
+    }
+
+    // No Subscription (Free) State
+    if (!subscription) {
+        return (
+            <div className="py-12 space-y-6 max-w-2xl mx-auto px-4">
+                <h2 className="text-2xl font-bold text-gray-900">契約内容の確認</h2>
+                <div className="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-200">
+                    <p className="text-gray-500">現在契約中の有料プランはありません。</p>
+                </div>
+                {IS_DEV && <DevTools testUserId={testUserId} setTestUserId={setTestUserId} />}
+            </div>
+        )
+    }
+
+    // Active Subscription State
+    return (
+        <div className="py-8 space-y-8 max-w-4xl mx-auto px-4">
+            {/* Header */}
+            <div className="flex justify-between items-end border-b border-gray-200 pb-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-900">契約内容の確認</h2>
+                    <p className="text-gray-500 mt-1 text-sm">現在のプランと契約期間をご確認いただけます</p>
+                </div>
+                <div className="hidden sm:block">
+                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${subscription.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                        {subscription.status === 'active' ? '契約中' : '解約済み'}
+                    </span>
+                </div>
+            </div>
+
+            {/* Main Card */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <div className="font-bold text-gray-700">現在のプラン</div>
+                    <div className="text-blue-600 font-bold text-lg hidden sm:block">{subscription.planName}</div>
+                </div>
+                {/* Mobile Plan Name */}
+                <div className="sm:hidden px-6 pt-4 font-bold text-xl text-blue-600">{subscription.planName}</div>
+
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Left Col */}
+                    <div className="space-y-4">
+                        <div>
+                            <div className="text-sm text-gray-500 mb-1">月額料金</div>
+                            <div className="text-3xl font-bold text-gray-900">
+                                {formatCurrencyJP(subscription.price)}<span className="text-sm font-normal text-gray-500">/月</span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <div className="text-sm text-gray-500 mb-1">契約開始日</div>
+                                <div className="font-medium">{subscription.contractStartDate}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500 mb-1">次回更新予定</div>
+                                <div className="font-medium">{subscription.nextBillingDate}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Col: Contract Period */}
+                    <div className={`rounded-xl p-5 border ${subscription.isContractFulfilled ? 'bg-green-50 border-green-100' : 'bg-orange-50 border-orange-100'}`}>
+                        <h4 className={`font-bold mb-3 flex items-center ${subscription.isContractFulfilled ? 'text-green-800' : 'text-orange-800'}`}>
+                            {subscription.isContractFulfilled ? '🎉 最低利用期間クリア' : '⏳ 最低利用期間（6ヶ月）'}
+                        </h4>
+
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-gray-600">現在の経過期間</span>
+                                <span className="font-bold text-lg">{subscription.monthsElapsed}ヶ月</span>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="w-full bg-white rounded-full h-3 overflow-hidden shadow-inner">
+                                <div
+                                    className={`h-full rounded-full transition-all duration-1000 ${subscription.isContractFulfilled ? 'bg-green-500' : 'bg-orange-500'}`}
+                                    style={{ width: `${Math.min(100, (subscription.monthsElapsed / MINIMUM_MONTHS) * 100)}%` }}
+                                ></div>
+                            </div>
+
+                            {!subscription.isContractFulfilled && (
+                                <p className="text-xs text-orange-800 mt-2">
+                                    <span className="font-bold">{subscription.contractEndDate}</span> まで解約時に違約金が発生する可能性があります。
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Actions */}
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end space-x-4">
+                    <button onClick={() => setIsChangePlanModalOpen(true)} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 font-medium shadow-sm transition-all">
+                        プラン変更
+                    </button>
+                    <button onClick={() => setIsCancelModalOpen(true)} className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg font-medium transition-colors">
+                        解約する
+                    </button>
+                </div>
+            </div>
+
+            {IS_DEV && <DevTools testUserId={testUserId} setTestUserId={setTestUserId} />}
+
+            {/* Modals */}
+            <CancellationModal
+                isOpen={isCancelModalOpen}
+                onClose={() => setIsCancelModalOpen(false)}
+                subscription={subscription}
+            />
+            <ChangePlanModal
+                isOpen={isChangePlanModalOpen}
+                onClose={() => setIsChangePlanModalOpen(false)}
+                currentPlanId={subscription.planId}
+                userId={testUserId} // 本番では実際のuserIdが必要だが、APIコール未実装なので一旦そのまま
+            />
         </div>
     )
+}
 
-    if (error) {
-        return <div className="p-8 space-y-4">
-            {debugConsole}
-            <h1 className="text-xl font-bold text-red-600">Error</h1>
-            <p>{error}</p>
-        </div>
-    }
-
-    if (loading) {
-        return <div className="p-8">
-            {debugConsole}
-            <p>Loading...</p>
-        </div>
-    }
-
-    if (!subscription) {
-        return <div className="p-8">
-            {debugConsole}
-            <h1 className="text-xl font-bold">No Subscription</h1>
-        </div>
+function DevTools({ testUserId, setTestUserId }: any) {
+    const handleAction = async (action: string, monthsAgo?: number) => {
+        try {
+            await fetch('/api/debug/setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: testUserId, action, monthsAgo })
+            })
+            window.location.reload()
+        } catch (e) { alert('Error') }
     }
 
     return (
-        <div className="p-8 max-w-2xl mx-auto space-y-6">
-            {debugConsole}
-            <h1 className="text-2xl font-bold">契約内容</h1>
-            <div className="bg-white p-6 rounded shadow border">
-                <p className="text-lg font-bold text-blue-600">{subscription.planName}</p>
-                <p>月額: {subscription.current_plan_price?.toLocaleString()}円</p>
-                <p>開始日: {subscription.contractStartDate}</p>
-                <p>経過月数: {subscription.monthsElapsed}ヶ月</p>
+        <div className="mt-8 p-4 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300">
+            <h3 className="font-bold text-gray-600 mb-2 text-sm">🛠️ Developer Tools</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <button onClick={() => handleAction('reset_free')} className="text-xs bg-gray-600 text-white p-2 rounded">Reset Free</button>
+                <button onClick={() => handleAction('set_premium_new')} className="text-xs bg-blue-600 text-white p-2 rounded">New Premium</button>
+                <button onClick={() => handleAction('set_premium_aged', 3)} className="text-xs bg-indigo-600 text-white p-2 rounded">3 Months Ago</button>
+                <button onClick={() => handleAction('set_premium_aged', 6)} className="text-xs bg-green-600 text-white p-2 rounded">Fulfilled</button>
             </div>
-            {/* Warning: Modals are disabled for debugging */}
-            <p className="text-xs text-gray-500">※現在メンテナンスモードです（解約・変更ボタン一時停止中）</p>
         </div>
     )
 }
 
 export default function MyPage() {
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Suspense fallback={<div>Loading Page...</div>}>
+        <div className="min-h-screen bg-gray-50 pb-20 pt-8">
+            <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
                 <MyPageContent />
             </Suspense>
         </div>
