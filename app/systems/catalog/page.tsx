@@ -1,9 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
-
-// LINE公式アカウントのBasic ID（環境変数から取得、未設定の場合はTaskMateのデフォルト値）
-const LINE_BOT_BASIC_ID = process.env.NEXT_PUBLIC_LINE_BOT_BASIC_ID || '356uysad'
+import { useState, useMemo } from 'react'
 
 // システムデータ
 const systems = [
@@ -15,6 +12,7 @@ const systems = [
     tags: ['日報管理', '自動集計', 'GAS連携', 'Soft UI'],
     previewUrl: 'https://eigyonippou.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '02',
@@ -24,6 +22,7 @@ const systems = [
     tags: ['失客検知', '自動通知', '顧客管理', 'リスク分析'],
     previewUrl: 'https://jovial-starship-2e968e.netlify.app',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '03',
@@ -33,6 +32,7 @@ const systems = [
     tags: ['期限管理', 'アラート通知', '顧客管理', 'ダッシュボード'],
     previewUrl: 'https://kigenkannri.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '04',
@@ -42,6 +42,7 @@ const systems = [
     tags: ['リピート促進', '自動メール', '顧客フォロー', 'テンプレート管理'],
     previewUrl: 'https://ripi-tosokushinzidoumail.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '05',
@@ -51,6 +52,7 @@ const systems = [
     tags: ['口コミ依頼', '自動送信', '顧客管理', 'レビュー促進'],
     previewUrl: 'https://kutikomizidouka.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '06',
@@ -60,6 +62,7 @@ const systems = [
     tags: ['客単価分析', 'アップセル', 'クロスセル', '購買分析'],
     previewUrl: 'https://upsell-teiann.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '07',
@@ -69,6 +72,7 @@ const systems = [
     tags: ['納期管理', 'アラート通知', '案件管理', 'ダッシュボード'],
     previewUrl: '/demos/nouki-alert/index.html',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '08',
@@ -78,6 +82,7 @@ const systems = [
     tags: ['タスク管理', 'チェックリスト', 'テンプレート', '進捗管理'],
     previewUrl: '/demos/task-checklist/index.html',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '09',
@@ -87,6 +92,7 @@ const systems = [
     tags: ['LTV計算', '顧客ランク', '特典管理', '売上分析'],
     previewUrl: 'https://ltv-kokyakukannri.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '10',
@@ -96,6 +102,7 @@ const systems = [
     tags: ['離脱顧客', 'メール配信', 'クーポン管理', '顧客復帰'],
     previewUrl: 'https://ridatukokyaku.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '11',
@@ -105,6 +112,7 @@ const systems = [
     tags: ['資格管理', '免許管理', '期限通知', 'リスク管理'],
     previewUrl: 'https://yuukoukigennkannri.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '12',
@@ -114,6 +122,7 @@ const systems = [
     tags: ['紹介管理', 'キャンペーン', '特典管理', '効果測定'],
     previewUrl: 'https://syoukaipuroguramu.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '13',
@@ -123,6 +132,7 @@ const systems = [
     tags: ['A/Bテスト', '価格最適化', '売上分析', '競合分析'],
     previewUrl: 'https://prise-a-b.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '14',
@@ -132,6 +142,7 @@ const systems = [
     tags: ['効果測定', 'ROAS', 'ROI', 'マーケティング'],
     previewUrl: 'https://tubular-cucurucho-861ee7.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '15',
@@ -141,6 +152,7 @@ const systems = [
     tags: ['開発マニュアル', 'GAS学習', 'チュートリアル', 'ドキュメント'],
     previewUrl: 'https://gasdevelop.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '16',
@@ -150,6 +162,7 @@ const systems = [
     tags: ['経費精算', 'ワークフロー', '承認管理', '集計レポート'],
     previewUrl: '/demos/expense-workflow/index.html',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '17',
@@ -159,6 +172,7 @@ const systems = [
     tags: ['請求書', '自動生成', 'PDF送付', '入金管理'],
     previewUrl: 'https://seikyusyokannri.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '18',
@@ -168,6 +182,7 @@ const systems = [
     tags: ['売上集計', '日報管理', 'レポート自動化', 'ダッシュボード'],
     previewUrl: 'https://nippoukannri.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '19',
@@ -177,6 +192,7 @@ const systems = [
     tags: ['契約管理', '更新通知', 'リマインド', '期限管理'],
     previewUrl: 'https://keiyakukousin.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '20',
@@ -186,6 +202,7 @@ const systems = [
     tags: ['MTG管理', 'アジェンダ', '議題収集', '自動配信'],
     previewUrl: '/demos/mtg-agenda/index.html',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '21',
@@ -195,6 +212,7 @@ const systems = [
     tags: ['予約管理', 'ダブルブッキング防止', '空き状況確認', 'キャンセル待ち'],
     previewUrl: 'https://doublebooking.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '22',
@@ -204,6 +222,7 @@ const systems = [
     tags: ['価格管理', '見積作成', '値引きルール', 'PDF出力'],
     previewUrl: 'https://priselistandquotation.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '23',
@@ -213,6 +232,7 @@ const systems = [
     tags: ['議事録管理', 'タスク抽出', 'リマインド', '進捗管理'],
     previewUrl: 'https://giziroku-taskauto.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '24',
@@ -222,6 +242,7 @@ const systems = [
     tags: ['勤怠管理', '給与計算', '残業管理', '36協定'],
     previewUrl: 'https://kintgaisyuukei-kyuuyo.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '25',
@@ -231,6 +252,7 @@ const systems = [
     tags: ['承認フロー', 'ワークフロー', '監査ログ', 'コンプライアンス'],
     previewUrl: 'https://syouninn.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
   {
     id: '26',
@@ -240,6 +262,7 @@ const systems = [
     tags: ['入金消込', '請求管理', '自動マッチング', '督促管理'],
     previewUrl: 'https://nyukincheck.netlify.app/',
     iframeAllowed: true,
+    spreadsheetUrl: '',
   },
 ]
 
@@ -248,27 +271,6 @@ export default function SystemCatalogPage() {
   const [searchQuery, setSearchQuery] = useState('')
   // モバイルでは最初からサイドバー（システム一覧）を開いた状態にする
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [copySuccess, setCopySuccess] = useState(false)
-
-  // ダウンロードメッセージをクリップボードにコピー
-  const handleCopyDownloadMessage = useCallback(async (systemName: string) => {
-    const message = `${systemName}をダウンロード`
-    try {
-      await navigator.clipboard.writeText(message)
-      setCopySuccess(true)
-      setTimeout(() => setCopySuccess(false), 2000)
-    } catch {
-      // フォールバック: 古いブラウザ用
-      const textArea = document.createElement('textarea')
-      textArea.value = message
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-      setCopySuccess(true)
-      setTimeout(() => setCopySuccess(false), 2000)
-    }
-  }, [])
 
   // 検索フィルタ
   const filteredSystems = useMemo(() => {
@@ -391,10 +393,9 @@ export default function SystemCatalogPage() {
                     onClick={() => handleSelectSystem(system.id)}
                     className={`
                       w-full text-left p-3 rounded-xl transition-all duration-200
-                      ${
-                        selectedSystemId === system.id
-                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30'
-                          : 'hover:bg-gray-100 text-gray-700'
+                      ${selectedSystemId === system.id
+                        ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30'
+                        : 'hover:bg-gray-100 text-gray-700'
                       }
                     `}
                   >
@@ -524,44 +525,34 @@ export default function SystemCatalogPage() {
                     <p className="text-gray-600 text-sm line-clamp-2 hidden sm:block">{selectedSystem.description}</p>
                   </div>
                   <div className="flex flex-col gap-3 sm:flex-shrink-0">
-                    {/* LINEでダウンロードボタン */}
-                    <div className="flex flex-col gap-2">
+                    {/* ダウンロードボタンエリア */}
+                    <div className="flex flex-col gap-2 w-full sm:w-auto">
                       <a
-                        href={`https://line.me/R/oaMessage/@${LINE_BOT_BASIC_ID}/?${encodeURIComponent(selectedSystem.name + 'をダウンロード')}`}
+                        href={selectedSystem.spreadsheetUrl || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#06C755] hover:bg-[#05b04c] text-white font-medium text-sm rounded-xl transition-colors shadow-lg shadow-green-500/30"
+                        onClick={(e) => {
+                          if (!selectedSystem.spreadsheetUrl) {
+                            e.preventDefault()
+                            alert('現在準備中です。システムの設定が完了次第、ダウンロード可能になります。')
+                          }
+                        }}
+                        className={`inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl transition-all shadow-lg ${selectedSystem.spreadsheetUrl
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-green-500/30'
+                            : 'bg-gray-400 cursor-not-allowed shadow-none'
+                          }`}
                       >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                          <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
                         </svg>
-                        LINEでダウンロード
+                        {selectedSystem.spreadsheetUrl ? 'システムをダウンロード' : '準備中'}
                       </a>
-                      <button
-                        onClick={() => handleCopyDownloadMessage(selectedSystem.name)}
-                        className={`inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-colors ${
-                          copySuccess
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                        }`}
-                      >
-                        {copySuccess ? (
-                          <>
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            コピーしました
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                            メッセージをコピー
-                          </>
-                        )}
-                      </button>
+                      <p className="text-xs text-center text-gray-500">
+                        {selectedSystem.spreadsheetUrl ? 'スプレッドシートのコピーが作成されます' : '近日公開予定'}
+                      </p>
                     </div>
+
                     {/* タグ */}
                     <div className="flex flex-wrap gap-1.5 sm:max-w-xs">
                       {selectedSystem.tags.map((tag) => (

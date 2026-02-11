@@ -491,6 +491,7 @@ function TermsContent() {
                 <div className="section-content">
                   <p>
                     本利用規約（以下「本規約」）は、株式会社イケメン（以下「当社」）が提供するTask mate（以下「本サービス」）の利用条件を定めるものです。
+                    本サービスは法人又は個人事業主を対象とした事業者向けサービスです。
                     利用者は、本規約に同意の上、本サービスを利用するものとします。
                   </p>
                 </div>
@@ -612,6 +613,7 @@ function TermsContent() {
                   </p>
                   <div className="list-item">初回申込から30日以内、サービスがご期待に沿わない場合は返金申請可能</div>
                   <div className="list-item">お客様に最適な解決策をご提供するため、返金申請前のサポート相談を推奨しています</div>
+                  <div className="list-item" style={{ marginTop: '0.5rem', fontWeight: 'bold', color: '#dc2626' }}>※クーリング・オフ制度は適用されませんが、代わりに同等の全額返金保証を提供しています</div>
                 </div>
                 <div className="section-content">
                   <div className="list-item"><strong>30日以内返金制度:</strong> 以下の条件に該当する場合に適用されます</div>
@@ -619,19 +621,17 @@ function TermsContent() {
                     <div className="list-item">初回申込から30日以内の申請</div>
                     <div className="list-item">サポートチームへの相談を推奨（問題解決の可能性が高いため）</div>
                     <div className="list-item">サポート相談後も問題が解決しない場合</div>
-                    <div className="list-item">生成回数が100回未満（サービスを十分にお試しいただいていない場合）</div>
                   </div>
 
                   <div className="highlight-box">
-                    <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>返金条件の合理的理由：</p>
+                    <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>返金条件の理由：</p>
                     <div style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: '#6b7280' }}>
                       <div className="list-item">サポート相談の推奨：多くの問題は設定や使い方の調整で解決可能です</div>
-                      <div className="list-item">100回の利用制限：サービスの価値を十分に体験していただくための目安です</div>
                       <div className="list-item">これらは返金を制限するものではなく、お客様により良いサービスを提供するための仕組みです</div>
                     </div>
                   </div>
 
-                  <div className="list-item"><strong>クーリングオフ:</strong> 初回申込から7日間は理由を問わず全額返金可能</div>
+                  <div className="list-item"><strong>7日間全額返金保証:</strong> 初回申込から7日間は理由を問わず全額返金可能（クーリング・オフの代替措置）</div>
                   <div className="list-item"><strong>最低契約期間:</strong> 6ヶ月未満での解約でも、6ヶ月分の料金が発生します（30日以内返金制度適用時を除く）</div>
                   <div className="list-item"><strong>サービス不具合:</strong> 当社起因の重大な不具合でサービスが3日以上利用できない場合、日割り返金</div>
 
@@ -641,7 +641,6 @@ function TermsContent() {
                     <div className="list-item">Google Apps Scriptの仕様変更による影響（当社の制御範囲外のため）</div>
                     <div className="list-item">お客様による生成コードの改変後の不具合（改変内容を把握できないため）</div>
                     <div className="list-item">2回目以降の申込（初回利用時に十分な判断機会があったため）</div>
-                    <div className="list-item">100回以上利用後の申請（サービスの価値を十分に活用されたため）</div>
                   </div>
 
                   <div className="list-item"><strong>返金申請の流れ:</strong></div>
@@ -675,16 +674,16 @@ function TermsContent() {
                 <h2 className="section-title">第9条（アカウントの停止・削除）</h2>
                 <div className="section-content">
                   <div className="list-item">禁止事項違反の場合、事前通知なくアカウント停止可能</div>
-                  <div className="list-item">90日以上利用のないアカウントは削除される場合があります</div>
-                  <div className="list-item">退会希望の場合、info@ikemen.ltd まで連絡</div>
-                  <div className="list-item">退会後もデータは法定保存期間保持されます</div>
+                  <div className="list-item">90日以上利用のない無料会員アカウントは削除される場合があります（データ保持期間：1年）</div>
+                  <div className="list-item">有料契約期間中のデータは削除されません</div>
+                  <div className="list-item">契約終了後、データは1年間保持された後に削除されます</div>
                 </div>
               </section>
 
               <section className="section">
                 <h2 className="section-title">第10条（利用者の責任）</h2>
                 <div className="section-content">
-                  <div className="list-item">18歳未満の方は保護者の同意が必要です</div>
+                  <div className="list-item">本サービスの利用者は法人又は個人事業主に限ります</div>
                   <div className="list-item">アカウント情報の管理は利用者の責任です</div>
                   <div className="list-item">第三者による不正利用も利用者の責任となります</div>
                   <div className="list-item">生成コードの利用は自己責任で行ってください</div>
