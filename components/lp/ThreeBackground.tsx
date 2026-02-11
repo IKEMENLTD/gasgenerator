@@ -342,7 +342,9 @@ export default function ThreeBackground() {
             const cf = getCameraAndFog(scrollCurrent)
             camera.position.set(cf.cx, cf.cy, cf.cz)
             camera.rotation.set(cf.rx, cf.ry, cf.rz + Math.sin(t * 0.3) * 0.02)
-            scene.fog.density = cf.fog
+            if (scene.fog) {
+                (scene.fog as THREE.FogExp2).density = cf.fog
+            }
 
             points.rotation.y = t * 0.05
             renderer.render(scene, camera)
