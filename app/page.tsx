@@ -20,7 +20,7 @@ import Contact from '@/components/lp/Contact'
 import Footer from '@/components/lp/Footer'
 import '@/app/styles/lp.css'
 
-// Force update for deployment
+// Force update for deployment 2026-02-12 14:15
 export default function Home() {
   return (
     <div className="lp-wrapper">
