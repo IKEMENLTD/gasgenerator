@@ -1,3 +1,5 @@
+/* --- 600px: Mobile --- */
+@media (max-width: 600px) {
             .p-04-panel {
                 padding: 20px;
             }
@@ -88,11 +90,11 @@
 
             /* --- 480px: Small Mobile --- */
             @media (max-width: 480px) {
-                section {
+                .lp-wrapper section {
                     padding: 55px 4%;
                 }
 
-                .section-compact {
+                .lp-wrapper .section-compact {
                     padding: 40px 4%;
                 }
 
@@ -630,7 +632,7 @@
                 }
 
                 /* footer */
-                footer {
+                .lp-wrapper footer {
                     padding: 35px 4% 25px;
                 }
 
@@ -774,11 +776,11 @@
 
             /* --- 360px: Extra Small Mobile --- */
             @media (max-width: 360px) {
-                section {
+                .lp-wrapper section {
                     padding: 45px 3.5%;
                 }
 
-                .section-compact {
+                .lp-wrapper .section-compact {
                     padding: 30px 3.5%;
                 }
 
@@ -1215,7 +1217,7 @@
                     font-size: 0.35em;
                 }
 
-                footer {
+                .lp-wrapper footer {
                     padding: 28px 3.5% 18px;
                 }
 
@@ -1389,13 +1391,13 @@
 
             /* --- Landscape phone orientation --- */
             @media (max-height: 500px) and (orientation: landscape) {
-                section {
+                .lp-wrapper section {
                     min-height: auto;
                     padding-top: 60px;
                     padding-bottom: 60px;
                 }
 
-                .section-compact {
+                .lp-wrapper .section-compact {
                     padding-top: 40px;
                     padding-bottom: 40px;
                 }

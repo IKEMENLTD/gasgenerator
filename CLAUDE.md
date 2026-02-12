@@ -1,6 +1,74 @@
 # TaskMate Development Log
 
 ---
+## 🚨 2026-02-12: LP表示崩れ修正 + Stripe Webhook完成 + 代理店ダッシュボード修正
+
+### 1. LP表示崩れの修正（タスク1）
+
+#### 根本原因と修正内容
+| 問題 | 修正 |
+|------|------|
+| `app/styles/part3.css` が未インポート（モバイル600px以下の調整が無効） | `app/page.tsx` に `import '@/app/styles/part3.css'` 追加 |
+| `part3.css` 先頭87行に `@media (max-width: 600px)` の開きブラケットが欠落 | ファイル先頭に `@media (max-width: 600px) {` を追加 |
+| `lp.css` のグローバルセレクター（`*`, `body`, `html`, `h1-h4`）がLP以外のページに漏れ | `.lp-wrapper` スコープを追加 |
+| インラインスタイルオーバーライド（`[style*="color: #xxx"]`）がグローバル適用 | `.lp-wrapper` スコープを追加 |
+
+#### 修正ファイル
+| ファイル | 修正内容 |
+|---------|---------|
+| `app/page.tsx` | `import '@/app/styles/part3.css'` 追加（行22） |
+| `app/styles/part3.css` | 先頭に `@media (max-width: 600px) {` 追加 |
+| `app/styles/lp.css` | `*`, `body`, `html` → `.lp-wrapper` スコープ化 |
+| `app/styles/lp.css` | `h1,h2,h3,h4` → `.lp-wrapper h1,...` スコープ化 |
+| `app/styles/lp.css` | インラインスタイルオーバーライド（color, background, border）→ `.lp-wrapper` スコープ化 |
+| `app/styles/lp.css` | 裸の `nav`, `section`, `footer`, `input[style*=]`, `textarea[style*=]` セレクタ（11箇所）→ `.lp-wrapper` スコープ化 |
+| `app/styles/lp.css` | `footer::before`, `footer::after` → `.lp-wrapper footer::before/::after` スコープ化 |
+| `app/styles/part3.css` | メディアクエリ内の裸の `section`(3箇所), `footer`(2箇所), `.section-compact`(3箇所) → `.lp-wrapper` スコープ化 |
+
+### 2. Stripe Webhook 未実装ハンドラー完成（タスク2）
+
+#### 実装内容
+`app/api/stripe/webhook/route.ts` の2つの未実装イベントハンドラーを完成。
+
+**`customer.subscription.updated`（行260-368）**:
+- `stripe_customer_id` でユーザーを特定
+- キャンセル予約（`cancel_at_period_end`）: 終了日記録、期間終了まで利用可能
+- アクティブ復帰: プラン金額でステータス判定、キャンセル予約クリア
+- 支払い失敗（`past_due`）: LINE通知で支払い方法確認を促す
+
+**`customer.subscription.deleted`（行370-430）**:
+- `subscription_status` を `'free'` にリセット
+- `subscriptions.status` を `'expired'` に更新
+- `monthly_usage_count` リセット
+- LINE通知でサブスク終了＋再契約案内
+
+#### 実装パターン
+- 既存の `checkout.session.completed` ハンドラーと同一パターン
+- Supabase `users` + `subscriptions` テーブル更新
+- LINE通知はノンブロッキング（失敗してもwebhookは200返却）
+- 全DB更新にエラーログ出力（`cancelUserErr`, `cancelSubErr`, `activeUserErr` 等）
+- switch/case内でのconst宣言衝突防止のためブロックスコープ `{ }` 使用
+
+### 3. 代理店ダッシュボード LINE名前・デバイス情報修正（タスク3）
+
+#### 根本原因
+1. `agency_conversions` テーブルに `line_display_name`, `device_type`, `browser`, `os` カラムが未定義
+2. `line-webhook.js` の `createAgencyLineConversion()` がLINE名前・デバイス情報を保存していない
+3. `agency-billing-stats.js` がこれらのカラムを返していない
+
+#### 修正ファイル
+| ファイル | 修正内容 |
+|---------|---------|
+| `migrations/006_agency_conversions_extend.sql` | **新規作成** - カラム追加 + `DO $$`ブロックで既存テーブル存在チェック付きbackfill + `::text`キャストでsession_id型不一致対応 |
+| `netlify-tracking/netlify/functions/line-webhook.js` | `createAgencyLineConversion()` でLINEプロフィール取得 + visitデバイス情報保存 |
+| `netlify-tracking/netlify/functions/line-webhook.js` | `.single()` → `.maybeSingle()` 修正（4箇所: 重複チェック、代理店検索、プロフィール検索、visit検索） |
+| `netlify-tracking/netlify/functions/agency-billing-stats.js` | SELECT句にデバイスカラム追加 + billingUsersマッピングにデバイス情報追加 |
+
+#### デプロイ後の作業
+1. Supabaseで `migrations/006_agency_conversions_extend.sql` を実行
+2. Netlify Functionsを再デプロイ
+
+---
 ## 🚨 2026-02-09: ドリップキャンペーン（面談CTA付き7日間ステップ配信）実装
 
 ### 実装内容

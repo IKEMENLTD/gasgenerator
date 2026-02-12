@@ -173,7 +173,7 @@ async function handleFollowEvent(event, headers) {
             .from('agencies')
             .select('id, code, name, status, contact_email')
             .eq('line_user_id', userId)
-            .single();
+            .maybeSingle();
 
         if (!agencyError && agency) {
             console.log('✅ 代理店登録の友達追加を検知:', agency.name);
@@ -232,7 +232,7 @@ async function handleFollowEvent(event, headers) {
             .from('line_profiles')
             .select('*')
             .eq('user_id', userId)
-            .single();
+            .maybeSingle();
 
         if (existingProfile) {
             // Update existing profile
@@ -647,7 +647,7 @@ async function createAgencyLineConversion(session, lineUserId, userId) {
             .select('id')
             .eq('session_id', session.id)
             .eq('conversion_type', 'line_friend')
-            .single();
+            .maybeSingle();
 
         if (existingConversion) {
             return; // Already recorded
@@ -660,13 +660,47 @@ async function createAgencyLineConversion(session, lineUserId, userId) {
             .eq('id', session.agency_id)
             .single();
 
+        // LINE プロフィール取得（表示名をコンバージョンに保存）
+        let lineDisplayName = null;
+        try {
+            const profile = await getLineUserProfile(lineUserId);
+            lineDisplayName = profile?.displayName || null;
+        } catch (e) {
+            console.error('Failed to get LINE profile for conversion:', e);
+        }
+
+        // Visit のデバイス情報を取得
+        let deviceInfo = {};
+        if (session.visit_id || session.id) {
+            try {
+                const visitQuery = session.visit_id
+                    ? supabase.from('agency_tracking_visits').select('id, device_type, browser, os').eq('id', session.visit_id).maybeSingle()
+                    : supabase.from('agency_tracking_visits').select('id, device_type, browser, os').eq('session_id', session.id).order('created_at', { ascending: false }).limit(1).maybeSingle();
+                const { data: visitData } = await visitQuery;
+                if (visitData) {
+                    deviceInfo = {
+                        visit_id: visitData.id,
+                        device_type: visitData.device_type,
+                        browser: visitData.browser,
+                        os: visitData.os
+                    };
+                }
+            } catch (e) {
+                console.error('Failed to fetch visit device info:', e);
+            }
+        }
+
         const conversionData = {
             agency_id: session.agency_id,
             tracking_link_id: session.tracking_link_id,
-            visit_id: session.visit_id,
+            visit_id: deviceInfo.visit_id || session.visit_id || null,
             session_id: session.id,
             user_id: userId,
             line_user_id: lineUserId,
+            line_display_name: lineDisplayName,
+            device_type: deviceInfo.device_type || null,
+            browser: deviceInfo.browser || null,
+            os: deviceInfo.os || null,
             conversion_type: 'line_friend',
             conversion_value: 0, // LINE friend has no direct monetary value
             metadata: {

@@ -19,6 +19,7 @@ import Founder from '@/components/lp/Founder'
 import Contact from '@/components/lp/Contact'
 import Footer from '@/components/lp/Footer'
 import '@/app/styles/lp.css'
+import '@/app/styles/part3.css'
 
 // Force update for deployment 2026-02-12 14:15
 export default function Home() {

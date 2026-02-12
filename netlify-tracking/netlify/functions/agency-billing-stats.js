@@ -82,7 +82,10 @@ exports.handler = async (event) => {
                 conversion_value,
                 created_at,
                 line_user_id,
-                line_display_name
+                line_display_name,
+                device_type,
+                browser,
+                os
             `)
             .eq('agency_id', agencyId)
             .order('created_at', { ascending: false });
@@ -157,16 +160,24 @@ exports.handler = async (event) => {
                         activeSubscriberCount++;
                     }
 
+                    // コンバージョンからLINE名前・デバイス情報を取得
+                    const userConversions = conversions?.filter(c => c.user_id === user.id) || [];
+                    const latestConversion = userConversions[0];
+
                     return {
                         userId: user.id,
-                        displayName: user.display_name || user.line_display_name || '名前未設定',
+                        displayName: user.display_name || user.line_display_name || latestConversion?.line_display_name || '名前未設定',
                         subscriptionStatus: user.subscription_status || 'free',
                         subscriptionStartedAt: user.subscription_started_at,
                         subscriptionEndDate: user.subscription_end_date,
                         isPremium,
                         isActive,
                         commission: Math.round(userCommission),
-                        stripeCustomerId: user.stripe_customer_id
+                        stripeCustomerId: user.stripe_customer_id,
+                        deviceType: latestConversion?.device_type || null,
+                        browser: latestConversion?.browser || null,
+                        os: latestConversion?.os || null,
+                        lineDisplayName: latestConversion?.line_display_name || null
                     };
                 }).sort((a, b) => {
                     // Active subscribers first
