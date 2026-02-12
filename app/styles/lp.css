@@ -1066,36 +1066,32 @@ section:not(#hero):not(.no-panel)>* {
 }
 
 @media (max-width: 600px) {
+
+  /* founder - さらに小さい画面 */
+  .founder-grid [style*="width: 180px"] {
+    width: 140px !important;
+    height: 140px !important;
+  }
+
   .founder-message-card {
     padding: 30px 25px;
+    border-radius: 14px;
   }
-}
 
-/* founder - さらに小さい画面 */
-.founder-grid [style*="width: 180px"] {
-  width: 140px !important;
-  height: 140px !important;
-}
+  .founder-message-card::before {
+    width: 50px;
+    height: 3px;
+  }
 
-.founder-message-card {
-  padding: 30px 25px;
-  border-radius: 14px;
-}
+  .founder-message-card .section-header {
+    font-size: 1.3rem;
+  }
 
-.founder-message-card::before {
-  width: 50px;
-  height: 3px;
-}
-
-.founder-message-card .section-header {
-  font-size: 1.3rem;
-}
-
-.founder-message-card p {
-  font-size: 0.9rem;
-  line-height: 1.85;
-  margin-top: 20px;
-}
+  .founder-message-card p {
+    font-size: 0.9rem;
+    line-height: 1.85;
+    margin-top: 20px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1390,8 +1386,6 @@ section:not(#hero):not(.no-panel)>* {
   background: linear-gradient(165deg,
       rgba(255, 255, 255, 0.95) 0%,
       rgba(248, 252, 250, 0.9) 100%);
-  rgba(255, 255, 255, 0.95) 0%,
-  rgba(248, 252, 250, 0.9) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(45, 143, 94, 0.1);
