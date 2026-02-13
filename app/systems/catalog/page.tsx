@@ -145,16 +145,6 @@ const systems = [
     spreadsheetUrl: '',
   },
   {
-    id: '15',
-    name: 'Webアプリ開発マニュアル',
-    tagline: 'GAS開発の学習リソース・ドキュメント',
-    description: 'プログラミング初心者向けのGAS（Google Apps Script）Webシステム開発マニュアル。スプレッドシート連携、API構築、Netlifyデプロイの手順を体系的に解説。インターン生の学習用リソース。',
-    tags: ['開発マニュアル', 'GAS学習', 'チュートリアル', 'ドキュメント'],
-    previewUrl: 'https://gasdevelop.netlify.app/',
-    iframeAllowed: true,
-    spreadsheetUrl: '',
-  },
-  {
     id: '16',
     name: '経費精算ワークフロー',
     tagline: '経費申請・承認・精算の一元管理',
@@ -371,7 +361,7 @@ const systems = [
     description: '顧問契約の契約期間、報酬額、更新スケジュールを一元管理。更新リマインダー、契約書管理、報酬支払い履歴の可視化で契約管理業務を効率化。',
     tags: ['顧問契約', '契約管理', '更新リマインド', '報酬管理'],
     previewUrl: 'https://komonkannri.netlify.app/',
-    iframeAllowed: true,
+    iframeAllowed: false,
     spreadsheetUrl: '',
   },
   {
@@ -381,7 +371,7 @@ const systems = [
     description: '業務書類テンプレートの一元管理システム。カテゴリ別整理、バージョン管理、プレビュー機能で書類作成を効率化。社内共有・ダウンロード管理機能付き。',
     tags: ['テンプレート', '書類管理', 'バージョン管理', '社内共有'],
     previewUrl: 'https://syoruitemplate.netlify.app/',
-    iframeAllowed: true,
+    iframeAllowed: false,
     spreadsheetUrl: '',
   },
   {
