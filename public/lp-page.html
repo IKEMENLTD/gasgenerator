@@ -3760,6 +3760,166 @@
             .hero-title { font-size: clamp(1.8rem, 5vw, 3rem); }
         }
 
+        /* ============================================================
+           SCROLL-REVEAL ANIMATION SYSTEM
+           Uses IntersectionObserver + CSS transitions (GPU-accelerated).
+           Only transform + opacity + filter are animated.
+           ============================================================ */
+
+        /* --- Base hidden state (before intersection) --- */
+        .sr-hidden {
+            opacity: 0;
+            will-change: transform, opacity;
+        }
+
+        /* --- Revealed state (after intersection) --- */
+        .sr-visible {
+            opacity: 1;
+        }
+
+        /* =========================
+           REVEAL VARIANTS
+           ========================= */
+
+        /* fade-up: Standard content reveal */
+        .sr-fade-up {
+            transform: translateY(30px);
+            transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1),
+                        opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .sr-fade-up.sr-visible { transform: translateY(0); }
+
+        /* fade-up-hero: Larger movement for section titles */
+        .sr-fade-up-hero {
+            transform: translateY(50px);
+            transition: transform 0.9s cubic-bezier(0.23, 1, 0.32, 1),
+                        opacity 0.9s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .sr-fade-up-hero.sr-visible { transform: translateY(0); }
+
+        /* fade-in: Subtle fade for badges, meta text */
+        .sr-fade-in {
+            transition: opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* scale-in: For CTAs, dark sections, heavy elements */
+        .sr-scale-in {
+            transform: scale(0.95);
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1),
+                        opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .sr-scale-in.sr-visible { transform: scale(1); }
+
+        /* blur-in: For glass panels */
+        .sr-blur-in {
+            transform: translateY(20px);
+            filter: blur(4px);
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1),
+                        opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1),
+                        filter 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .sr-blur-in.sr-visible { transform: translateY(0); filter: blur(0); }
+
+        /* slide-left: Elements entering from right */
+        .sr-slide-left {
+            transform: translateX(40px);
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1),
+                        opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .sr-slide-left.sr-visible { transform: translateX(0); }
+
+        /* slide-right: Elements entering from left */
+        .sr-slide-right {
+            transform: translateX(-40px);
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1),
+                        opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .sr-slide-right.sr-visible { transform: translateX(0); }
+
+        /* =========================
+           STAGGER DELAYS
+           ========================= */
+        .sr-delay-1 { transition-delay: 0.1s; }
+        .sr-delay-2 { transition-delay: 0.2s; }
+        .sr-delay-3 { transition-delay: 0.3s; }
+        .sr-delay-4 { transition-delay: 0.4s; }
+        .sr-delay-5 { transition-delay: 0.5s; }
+
+        /* Stagger groups (auto-delay children) */
+        .sr-stagger > .sr-hidden:nth-child(1) { transition-delay: 0.05s; }
+        .sr-stagger > .sr-hidden:nth-child(2) { transition-delay: 0.12s; }
+        .sr-stagger > .sr-hidden:nth-child(3) { transition-delay: 0.19s; }
+        .sr-stagger > .sr-hidden:nth-child(4) { transition-delay: 0.26s; }
+        .sr-stagger > .sr-hidden:nth-child(5) { transition-delay: 0.33s; }
+        .sr-stagger > .sr-hidden:nth-child(6) { transition-delay: 0.40s; }
+        .sr-stagger > .sr-hidden:nth-child(7) { transition-delay: 0.47s; }
+        .sr-stagger > .sr-hidden:nth-child(8) { transition-delay: 0.54s; }
+        .sr-stagger > .sr-hidden:nth-child(n+9) { transition-delay: 0.6s; }
+
+        /* =========================
+           HERO ENTRANCE (CSS-only, above the fold)
+           ========================= */
+        @keyframes heroEntrance {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #hero .badge {
+            animation: heroEntrance 0.7s cubic-bezier(0.23, 1, 0.32, 1) 0.1s both;
+        }
+        #hero .hero-title {
+            animation: heroEntrance 0.9s cubic-bezier(0.23, 1, 0.32, 1) 0.4s both;
+        }
+        #hero .lead-text {
+            animation: heroEntrance 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.6s both;
+        }
+        #hero .hero-badges {
+            animation: heroEntrance 0.7s cubic-bezier(0.23, 1, 0.32, 1) 0.8s both;
+        }
+
+        /* =========================
+           MOBILE ADJUSTMENTS
+           ========================= */
+        @media (max-width: 600px) {
+            .sr-fade-up { transform: translateY(20px); transition-duration: 0.6s; }
+            .sr-fade-up-hero { transform: translateY(30px); transition-duration: 0.7s; }
+            .sr-scale-in { transform: scale(0.97); transition-duration: 0.6s; }
+            .sr-blur-in { filter: blur(2px); transform: translateY(15px); transition-duration: 0.6s; }
+            .sr-slide-left { transform: translateX(25px); transition-duration: 0.6s; }
+            .sr-slide-right { transform: translateX(-25px); transition-duration: 0.6s; }
+            .sr-stagger > .sr-hidden:nth-child(n+1) { transition-delay: 0s; }
+            .sr-stagger > .sr-hidden:nth-child(2) { transition-delay: 0.08s; }
+            .sr-stagger > .sr-hidden:nth-child(3) { transition-delay: 0.16s; }
+            .sr-stagger > .sr-hidden:nth-child(4) { transition-delay: 0.24s; }
+            .sr-stagger > .sr-hidden:nth-child(n+5) { transition-delay: 0.3s; }
+        }
+
+        /* =========================
+           ACCESSIBILITY
+           ========================= */
+        @media (prefers-reduced-motion: reduce) {
+            .sr-hidden {
+                opacity: 1 !important;
+                transform: none !important;
+                filter: none !important;
+                transition: none !important;
+                will-change: auto !important;
+            }
+            .sr-fade-up, .sr-fade-up-hero, .sr-fade-in,
+            .sr-scale-in, .sr-blur-in, .sr-slide-left, .sr-slide-right {
+                transform: none !important;
+                filter: none !important;
+                transition: none !important;
+            }
+            .sr-delay-1, .sr-delay-2, .sr-delay-3, .sr-delay-4, .sr-delay-5 {
+                transition-delay: 0s !important;
+            }
+            .sr-stagger > .sr-hidden { transition-delay: 0s !important; }
+            .testimonial-track { animation-play-state: paused !important; }
+            #hero .badge, #hero .hero-title, #hero .lead-text, #hero .hero-badges {
+                animation: none !important;
+            }
+        }
+
     </style>
     <!-- Meta Pixel Code -->
     <script>
@@ -3851,10 +4011,10 @@
         <section id="problem" class="section-compact section-layer section-layer-white">
             <div class="marker tr">SEC.02 // PROBLEM</div>
             <div style="max-width: 900px; margin: 0 auto;">
-                <div class="jp-sub">CHECK YOUR DAILY TASKS</div>
-                <h2 class="h-04"><small>SYS.02</small>まだこんな作業、手でやってますか？</h2>
+                <div class="jp-sub sr-hidden sr-fade-in">CHECK YOUR DAILY TASKS</div>
+                <h2 class="h-04 sr-hidden sr-fade-up-hero"><small>SYS.02</small>まだこんな作業、手でやってますか？</h2>
 
-                <ul class="problem-list" style="margin-top: 40px;">
+                <ul class="problem-list sr-hidden sr-fade-up sr-delay-2" style="margin-top: 40px;">
                     <li>毎朝、各店舗の売上をスプレッドシートにコピペ</li>
                     <li>月末、請求書を1枚ずつ手作業で作成</li>
                     <li>「あの人、今月来てないな」を頭で覚えてる</li>
@@ -3865,7 +4025,7 @@
                     <li>経費精算の承認を、メールでやり取りしてる</li>
                 </ul>
 
-                <div class="p-03-panel" style="margin-top: 40px; text-align: center;">
+                <div class="p-03-panel sr-hidden sr-scale-in sr-delay-3" style="margin-top: 40px; text-align: center;">
                     <div class="scan"></div>
                     <p style="font-size: 1.1rem; color: #333; line-height: 2; margin: 0;">
                         <strong>1つでも当てはまるなら、</strong><br>
@@ -3875,7 +4035,7 @@
                     </p>
                 </div>
 
-                <div class="time-loss-box">
+                <div class="time-loss-box sr-hidden sr-blur-in sr-delay-4">
                     <h4>// あなたが失っている時間</h4>
                     <div class="calc-row">毎日の手作業：<span class="result">2時間</span></div>
                     <div class="calc-row">月間：2時間 × 20営業日 = <span class="result">40時間</span></div>
@@ -3896,16 +4056,16 @@
         <section id="enemy" class="section-compact section-layer section-layer-accent">
             <div class="marker tl">SEC.03 // ENEMY</div>
             <div style="max-width: 900px; margin: 0 auto;">
-                <div class="jp-sub">WHY CAN'T YOU AUTOMATE?</div>
-                <h2 class="h-04"><small>SYS.03</small>なぜ、自動化できてないのか？</h2>
-                <p class="lead-text" style="margin-top: 25px;">
+                <div class="jp-sub sr-hidden sr-fade-in">WHY CAN'T YOU AUTOMATE?</div>
+                <h2 class="h-04 sr-hidden sr-fade-up-hero"><small>SYS.03</small>なぜ、自動化できてないのか？</h2>
+                <p class="lead-text sr-hidden sr-fade-up sr-delay-1" style="margin-top: 25px;">
                     自動化したい気持ちはある。<br>
                     でも、動けない理由も分かってる。
                 </p>
             </div>
 
-            <div class="grid-2 mt-6" style="max-width: 1100px; margin: 50px auto 0; gap: 30px;">
-                <div class="enemy-card">
+            <div class="grid-2 mt-6 sr-stagger" style="max-width: 1100px; margin: 50px auto 0; gap: 30px;">
+                <div class="enemy-card sr-hidden sr-blur-in">
                     <div class="enemy-num">ENEMY_01</div>
                     <h4>外注は高すぎる</h4>
                     <p>
@@ -3922,7 +4082,7 @@
                         「ちょっと変えたい」だけで<span class="trap-highlight">10万円</span>。
                     </p>
                 </div>
-                <div class="enemy-card">
+                <div class="enemy-card sr-hidden sr-blur-in">
                     <div class="enemy-num">ENEMY_02</div>
                     <h4>自分でやるのは無理</h4>
                     <p>
@@ -3937,7 +4097,7 @@
                     </ul>
                     <p class="enemy-conclusion">結局、本業が忙しくて続かない。</p>
                 </div>
-                <div class="enemy-card">
+                <div class="enemy-card sr-hidden sr-blur-in">
                     <div class="enemy-num">ENEMY_03</div>
                     <h4>AIツールは結局難しい</h4>
                     <p>ChatGPTにコード書かせてみた。</p>
@@ -3949,7 +4109,7 @@
                     </ul>
                     <p class="enemy-conclusion">AIは万能じゃない。「コードを書く」と「実務で使える」は<span class="strong-text">別物</span>。</p>
                 </div>
-                <div class="enemy-card">
+                <div class="enemy-card sr-hidden sr-blur-in">
                     <div class="enemy-num">ENEMY_04</div>
                     <h4>時間がない</h4>
                     <p>
@@ -3973,14 +4133,14 @@
         <!-- Bridge Panel - Diagonal Banner -->
         <div class="bridge-panel-wrapper">
             <div class="bridge-panel">
-                <div class="bridge-left">
+                <div class="bridge-left sr-hidden sr-slide-right">
                     <div class="glitch-text">> ANALYSIS_COMPLETE</div>
                     <h3 class="bridge-title">
                         全部、分かります。<br>
                         <span style="color: var(--force);">だから、全部解決しました。</span>
                     </h3>
                 </div>
-                <div class="bridge-right">
+                <div class="bridge-right sr-hidden sr-slide-left sr-delay-2">
                     <p class="main-message">
                         「作る」必要はありません。<br>
                         「学ぶ」必要もありません。<br>
@@ -3994,9 +4154,9 @@
         <section id="solution" class="section-compact section-layer section-layer-subtle">
             <div class="marker tr">SEC.04 // SOLUTION</div>
             <div style="max-width: 900px; margin: 0 auto;">
-                <div class="jp-sub">FROM BUILD TO SELECT</div>
-                <h2 class="h-04"><small>SYS.04</small>「作る」から「選ぶ」へ。</h2>
-                <p class="lead-text" style="margin-top: 25px;">
+                <div class="jp-sub sr-hidden sr-fade-in">FROM BUILD TO SELECT</div>
+                <h2 class="h-04 sr-hidden sr-fade-up-hero"><small>SYS.04</small>「作る」から「選ぶ」へ。</h2>
+                <p class="lead-text sr-hidden sr-fade-up sr-delay-1" style="margin-top: 25px;">
                     TaskMateは、プロのエンジニアが作った業務システムを<br>
                     <strong style="color: var(--force);">300本以上</strong>ストックしています。<br><br>
                     あなたがやることは、たった1つ。<br>
@@ -4004,8 +4164,8 @@
                 </p>
             </div>
 
-            <div class="grid-3 mt-6" style="max-width: 1100px; margin: 50px auto 0;">
-                <div class="glass-panel">
+            <div class="grid-3 mt-6 sr-stagger" style="max-width: 1100px; margin: 50px auto 0;">
+                <div class="glass-panel sr-hidden sr-blur-in">
                     <div class="font-mono text-force" style="margin-bottom: 15px;">// FEATURE_01</div>
                     <h4 style="margin-bottom: 15px;">プロが作った「即戦力」システム</h4>
                     <p style="font-size: 0.9rem; color: #6e8274; line-height: 1.8;">
@@ -4014,7 +4174,7 @@
                         現役エンジニアが設計し、実際の企業で稼働しているシステムをテンプレート化。
                     </p>
                 </div>
-                <div class="glass-panel">
+                <div class="glass-panel sr-hidden sr-blur-in">
                     <div class="font-mono text-force" style="margin-bottom: 15px;">// FEATURE_02</div>
                     <h4 style="margin-bottom: 15px;">カタログから選ぶだけ</h4>
                     <p style="font-size: 0.9rem; color: #6e8274; line-height: 1.8;">
@@ -4024,7 +4184,7 @@
                         <span style="color: var(--force);">たったこれだけ。</span>
                     </p>
                 </div>
-                <div class="glass-panel">
+                <div class="glass-panel sr-hidden sr-blur-in">
                     <div class="font-mono text-force" style="margin-bottom: 15px;">// FEATURE_03</div>
                     <h4 style="margin-bottom: 15px;">カスタマイズもLINEで完結</h4>
                     <p style="font-size: 0.9rem; color: #6e8274; line-height: 1.8;">
@@ -4037,7 +4197,7 @@
             </div>
 
             <div class="compare-table" style="max-width: 900px; margin: 60px auto 40px;">
-                <div class="compare-card old">
+                <div class="compare-card old sr-hidden sr-slide-right">
                     <div class="compare-label">// TRADITIONAL</div>
                     <h4 style="margin-bottom: 20px; color: #6e8274;">従来の自動化</h4>
                     <ul class="step-list">
@@ -4050,7 +4210,7 @@
                     </ul>
                     <div class="total-row">合計：2〜4ヶ月 / 50〜100万円</div>
                 </div>
-                <div class="compare-card new">
+                <div class="compare-card new sr-hidden sr-slide-left sr-delay-2">
                     <div class="compare-label">// TASKMATE</div>
                     <h4 style="margin-bottom: 20px; color: var(--force);">TaskMateの自動化</h4>
                     <ul class="step-list">
@@ -4067,23 +4227,23 @@
         <!-- 05. SYSTEM CATALOG -->
         <section id="catalog" class="section-compact section-layer section-layer-white">
             <div class="marker tl">SEC.05 // SYSTEM_CATALOG</div>
-            <h2 class="h-04" style="display: inline-block; text-align: left;">
+            <h2 class="h-04 sr-hidden sr-fade-up-hero" style="display: inline-block; text-align: left;">
                 <small>// READY_TO_USE_SYSTEMS</small>
                 300以上のシステムから、<br>欲しいものを選ぶだけ
             </h2>
             <div style="text-align: center; max-width: 900px; margin: 0 auto;">
-                <p class="lead-text" style="margin: 30px auto; text-align: center;">
-                    現在<span class="text-force" style="font-weight: 700; font-size: 1.2em;">40</span>システム公開中。毎月追加で、300システム以上に拡大予定。<br>
+                <p class="lead-text sr-hidden sr-fade-up sr-delay-1" style="margin: 30px auto; text-align: center;">
+                    現在<span class="text-force" style="font-weight: 700; font-size: 1.2em;">42</span>システム公開中。毎月追加で、300システム以上に拡大予定。<br>
                     「こんなシステムが欲しかった」が、きっと見つかります。
                 </p>
             </div>
 
             <!-- カテゴリ①：営業・顧客管理系 -->
-            <div class="catalog-category">
+            <div class="catalog-category sr-hidden sr-fade-up">
                 <div class="catalog-category-header">
                     <span class="catalog-category-num">01</span>
                     <h3>営業・顧客管理系</h3>
-                    <span class="catalog-category-count">7 Systems</span>
+                    <span class="catalog-category-count">8 Systems</span>
                 </div>
                 <div class="catalog-grid">
                     <div class="catalog-item">
@@ -4121,15 +4281,20 @@
                         <h4>離脱顧客掘り起こし</h4>
                         <p>休眠顧客を自動抽出。復帰キャンペーン自動送信。眠っていた売上を回復。</p>
                     </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">29</div>
+                        <h4>解約理由分析</h4>
+                        <p>解約理由の集計・分析ダッシュボード。理由ランキング・トレンド分析で改善施策を明確化。</p>
+                    </div>
                 </div>
             </div>
 
             <!-- カテゴリ②：管理・バックオフィス系 -->
-            <div class="catalog-category">
+            <div class="catalog-category sr-hidden sr-fade-up">
                 <div class="catalog-category-header">
                     <span class="catalog-category-num">02</span>
                     <h3>管理・バックオフィス系</h3>
-                    <span class="catalog-category-count">6 Systems</span>
+                    <span class="catalog-category-count">10 Systems</span>
                 </div>
                 <div class="catalog-grid">
                     <div class="catalog-item">
@@ -4162,15 +4327,35 @@
                         <h4>入金消込チェッカー</h4>
                         <p>請求と入金の自動マッチング。消込作業の自動化。未入金の見える化。</p>
                     </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">30</div>
+                        <h4>引継ぎチェックリスト</h4>
+                        <p>引継ぎ項目の漏れを防止。チェックリスト形式で進捗を可視化し、スムーズな業務引継ぎを実現。</p>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">31</div>
+                        <h4>顧問契約管理</h4>
+                        <p>顧問契約の契約期間・報酬・更新を一元管理。契約内容の見える化で漏れを防止。</p>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">32</div>
+                        <h4>書類テンプレート管理</h4>
+                        <p>業務書類テンプレートの一元管理。バージョン管理・共有・検索で書類作成を効率化。</p>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">33</div>
+                        <h4>業務マニュアル管理</h4>
+                        <p>業務マニュアルの作成・管理・共有を一元化。検索・バージョン管理で最新情報を常に参照可能。</p>
+                    </div>
                 </div>
             </div>
 
             <!-- カテゴリ③：在庫・発注系 -->
-            <div class="catalog-category">
+            <div class="catalog-category sr-hidden sr-fade-up">
                 <div class="catalog-category-header">
                     <span class="catalog-category-num">03</span>
                     <h3>在庫・発注系</h3>
-                    <span class="catalog-category-count">3 Systems</span>
+                    <span class="catalog-category-count">5 Systems</span>
                 </div>
                 <div class="catalog-grid">
                     <div class="catalog-item">
@@ -4188,15 +4373,25 @@
                         <h4>有効期限管理（資格・免許）</h4>
                         <p>資格・免許の期限を一元管理。自動通知でうっかり失効を防止。従業員全員分を一括管理。</p>
                     </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">34</div>
+                        <h4>在庫回転率管理</h4>
+                        <p>商品別の在庫回転率を自動計算。滞留在庫の検出・発注最適化で在庫コストを削減。</p>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">35</div>
+                        <h4>材料・消耗品管理</h4>
+                        <p>材料・消耗品の在庫管理・発注管理を自動化。使用量追跡と発注点管理でムダを削減。</p>
+                    </div>
                 </div>
             </div>
 
             <!-- カテゴリ④：分析・レポート系 -->
-            <div class="catalog-category">
+            <div class="catalog-category sr-hidden sr-fade-up">
                 <div class="catalog-category-header">
                     <span class="catalog-category-num">04</span>
                     <h3>分析・レポート系</h3>
-                    <span class="catalog-category-count">5 Systems</span>
+                    <span class="catalog-category-count">7 Systems</span>
                 </div>
                 <div class="catalog-grid">
                     <div class="catalog-item">
@@ -4224,15 +4419,25 @@
                         <h4>紹介プログラム完全管理</h4>
                         <p>紹介キャンペーンの一元管理。効果測定まで自動化。紹介の連鎖を可視化。</p>
                     </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">36</div>
+                        <h4>時間帯別売上分析</h4>
+                        <p>時間帯・曜日別の売上データを自動集計。ピーク時間の把握でシフトや施策を最適化。</p>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">37</div>
+                        <h4>季節変動予測</h4>
+                        <p>過去データから季節トレンドを分析・予測。需要予測に基づく仕入れ・人員配置の最適化。</p>
+                    </div>
                 </div>
             </div>
 
             <!-- カテゴリ⑤：コミュニケーション・会議系 -->
-            <div class="catalog-category">
+            <div class="catalog-category sr-hidden sr-fade-up">
                 <div class="catalog-category-header">
                     <span class="catalog-category-num">05</span>
                     <h3>コミュニケーション・会議系</h3>
-                    <span class="catalog-category-count">3 Systems</span>
+                    <span class="catalog-category-count">4 Systems</span>
                 </div>
                 <div class="catalog-grid">
                     <div class="catalog-item">
@@ -4250,15 +4455,20 @@
                         <h4>ダブルブッキング防止（予約）</h4>
                         <p>Web予約＋重複防止の自動チェック。予約ミスをシステムで防止。顧客への謝罪をゼロに。</p>
                     </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">38</div>
+                        <h4>定型連絡の自動送信</h4>
+                        <p>メール・LINE定型メッセージの自動送信。テンプレート管理・スケジュール配信で連絡業務を自動化。</p>
+                    </div>
                 </div>
             </div>
 
             <!-- カテゴリ⑥：その他ツール -->
-            <div class="catalog-category">
+            <div class="catalog-category sr-hidden sr-fade-up">
                 <div class="catalog-category-header">
                     <span class="catalog-category-num">06</span>
                     <h3>その他ツール</h3>
-                    <span class="catalog-category-count">4 Systems</span>
+                    <span class="catalog-category-count">5 Systems</span>
                 </div>
                 <div class="catalog-grid">
                     <div class="catalog-item">
@@ -4281,23 +4491,54 @@
                         <h4>Webアプリ開発マニュアル</h4>
                         <p>GAS開発の学習リソース・ドキュメント。自分でも学びたい人向け。</p>
                     </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">39</div>
+                        <h4>案件別工数管理</h4>
+                        <p>案件ごとの工数記録・集計を自動化。プロジェクト別コスト管理で収益性を可視化。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- カテゴリ⑦：人事・組織管理系 -->
+            <div class="catalog-category sr-hidden sr-fade-up">
+                <div class="catalog-category-header">
+                    <span class="catalog-category-num">07</span>
+                    <h3>人事・組織管理系</h3>
+                    <span class="catalog-category-count">3 Systems</span>
+                </div>
+                <div class="catalog-grid">
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">40</div>
+                        <h4>シフト希望収集→自動調整</h4>
+                        <p>スタッフのシフト希望をWeb収集。自動調整でシフト作成を効率化。公平な配置を実現。</p>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">41</div>
+                        <h4>オンボーディング進捗管理</h4>
+                        <p>新入社員のオンボーディング進捗を可視化。タスク管理・評価レポートで受入れ体制を強化。</p>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-num">42</div>
+                        <h4>試用期間管理</h4>
+                        <p>試用期間の評価・面談スケジュールを一元管理。期間満了アラートで手続き漏れを防止。</p>
+                    </div>
                 </div>
             </div>
 
             <!-- 拡張予定 -->
-            <div class="p-04-panel" data-status="EXPANDING" style="max-width: 800px; margin: 60px auto 0;">
+            <div class="p-04-panel sr-hidden sr-scale-in" data-status="EXPANDING" style="max-width: 800px; margin: 60px auto 0;">
                 <div class="p-04-header">
                     <span class="p-04-label">// COMING_SOON</span>
                     <span class="p-04-status"></span>
                 </div>
                 <h4 style="margin-bottom: 15px; color: var(--text-main);">今後の追加予定</h4>
                 <p style="font-size: 0.9rem; color: #6e8274; line-height: 1.8; margin-bottom: 20px;">
-                    採用管理システム / タスク管理ボード / シフト管理システム / 問い合わせ対応管理 / 社内Wiki自動更新 / データバックアップ自動化 / レビュー分析ダッシュボード / SNS投稿スケジューラー ...他多数
+                    採用管理システム / タスク管理ボード / 問い合わせ対応管理 / 社内Wiki自動更新 / データバックアップ自動化 / レビュー分析ダッシュボード / SNS投稿スケジューラー ...他多数
                 </p>
                 <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
                     <div style="font-family: var(--font-mono); font-size: 0.85rem;">
                         <span style="color: #6e8274;">現在</span>
-                        <span style="color: var(--force); font-size: 1.5rem; font-weight: 700; margin: 0 5px;">40</span>
+                        <span style="color: var(--force); font-size: 1.5rem; font-weight: 700; margin: 0 5px;">42</span>
                         <span style="color: #6e8274;">→</span>
                         <span style="color: var(--force); font-size: 1.5rem; font-weight: 700; margin: 0 5px;">300+</span>
                         <span style="color: #6e8274;">システムに拡大予定</span>
@@ -4314,7 +4555,7 @@
         <section id="ai-gen" class="section-compact" style="background: linear-gradient(135deg, #0d0d0d 0%, #0a1a10 100%); position: relative;">
             <div class="marker tl" style="color: #6e8274;">SEC.06 // AI_GENERATION</div>
             <div class="split-layout" style="padding-top: 30px;">
-                <div>
+                <div class="sr-hidden sr-slide-right">
                     <span class="badge" style="background: var(--force); margin-bottom: 20px;">NEW</span>
                     <div class="jp-sub" style="margin-top: 10px;">AIがGASコード生成をサポート</div>
                     <h2 class="section-header">
@@ -4340,7 +4581,7 @@
                         </div>
                     </div>
                 </div>
-                <div>
+                <div class="sr-hidden sr-slide-left sr-delay-2">
                     <div style="background: #0f1f15; border: 1px solid #1a2a20; padding: 30px; border-radius: 8px;">
                         <div class="font-mono" style="color: var(--force); font-size: 0.8rem; margin-bottom: 20px;">// こんなGASコードが作れます</div>
                         <ul style="list-style: none; padding: 0; margin: 0;">
@@ -4364,17 +4605,17 @@
         <section id="demo" class="section-compact section-layer section-layer-off">
             <div class="marker tr">SEC.07 // DEMO</div>
             <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-                <div class="jp-sub">LIVE DEMO</div>
-                <h2 class="section-header" style="display: block; text-align: center;">
+                <div class="jp-sub sr-hidden sr-fade-in">LIVE DEMO</div>
+                <h2 class="section-header sr-hidden sr-fade-up-hero" style="display: block; text-align: center;">
                     実際のGASアプリを体験
                 </h2>
-                <p class="lead-text" style="margin: 20px auto; text-align: center;">
+                <p class="lead-text sr-hidden sr-fade-up sr-delay-1" style="margin: 20px auto; text-align: center;">
                     TaskMateで開発した実際のアプリケーションをお試しください<br>
                     下のデモ画面で直接操作できます
                 </p>
             </div>
 
-            <div class="demo-container mt-6">
+            <div class="demo-container mt-6 sr-hidden sr-scale-in sr-delay-2">
                 <div class="demo-tabs">
                     <div class="demo-tab active" data-tab="app">アプリケーション画面</div>
                     <div class="demo-tab" data-tab="database">データベース（スプレッドシート）</div>
@@ -4435,32 +4676,32 @@
         <section id="process" class="section-compact section-layer section-layer-muted">
             <div class="marker tl">SEC.08 // PROCESS</div>
             <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-                <div class="jp-sub">導入の流れ</div>
-                <h2 class="section-header" style="display: block; text-align: center;">
+                <div class="jp-sub sr-hidden sr-fade-in">導入の流れ</div>
+                <h2 class="section-header sr-hidden sr-fade-up-hero" style="display: block; text-align: center;">
                     最短5分で業務自動化を実現
                 </h2>
-                <p class="lead-text" style="margin: 20px auto; text-align: center;">
+                <p class="lead-text sr-hidden sr-fade-up sr-delay-1" style="margin: 20px auto; text-align: center;">
                     お申込みから導入まで、経験豊富な専門チームが徹底サポート
                 </p>
             </div>
 
-            <div class="process-steps mt-6">
-                <div class="process-step">
+            <div class="process-steps mt-6 sr-stagger">
+                <div class="process-step sr-hidden sr-fade-up">
                     <div class="step-num">1</div>
                     <h4>専用LINE追加</h4>
                     <p>まずは専用のLINEアカウントを友だち追加。</p>
                 </div>
-                <div class="process-step">
+                <div class="process-step sr-hidden sr-fade-up">
                     <div class="step-num">2</div>
                     <h4>決済リンクから登録</h4>
                     <p>LINEで送られてくる決済リンクから、お好みのプランを選択してサブスクリプション登録を完了。</p>
                 </div>
-                <div class="process-step">
+                <div class="process-step sr-hidden sr-fade-up">
                     <div class="step-num">3</div>
                     <h4>利用開始</h4>
                     <p>決済完了後、すぐにサービス利用開始。AIによるGASコード生成やサポートを受けられます。</p>
                 </div>
-                <div class="process-step">
+                <div class="process-step sr-hidden sr-fade-up">
                     <div class="step-num">4</div>
                     <h4>面談・サポート</h4>
                     <p>プロフェッショナルプラン（5万円）の方は運営との面談を実施。全プランでLINEサポートを継続提供。</p>
@@ -4472,17 +4713,17 @@
         <section id="pricing" class="section-compact section-layer section-layer-white">
             <div class="marker tr">SEC.09 // PRICING</div>
             <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-                <div class="jp-sub">料金プラン</div>
-                <h2 class="section-header" style="display: block; text-align: center;">
+                <div class="jp-sub sr-hidden sr-fade-in">料金プラン</div>
+                <h2 class="section-header sr-hidden sr-fade-up-hero" style="display: block; text-align: center;">
                     シンプルで透明な料金体系
                 </h2>
-                <p class="lead-text" style="margin: 20px auto; text-align: center;">
+                <p class="lead-text sr-hidden sr-fade-up sr-delay-1" style="margin: 20px auto; text-align: center;">
                     初期費用0円・解約金0円・追加料金なし。動作不良時は返金保証付き
                 </p>
             </div>
 
-            <div class="grid-4 mt-6">
-                <div class="pricing-card">
+            <div class="grid-4 mt-6 sr-stagger">
+                <div class="pricing-card sr-hidden sr-blur-in">
                     <div class="plan-name">お試し</div>
                     <div class="price">無料</div>
                     <ul class="features">
@@ -4493,7 +4734,7 @@
                     </ul>
                     <a href="#" class="btn-core">無料利用開始</a>
                 </div>
-                <div class="pricing-card featured">
+                <div class="pricing-card featured sr-hidden sr-blur-in">
                     <div class="recommend-ribbon"></div>
                     <div class="plan-badge">人気No.1</div>
                     <div class="plan-name">ビジネスプラン</div>
@@ -4508,7 +4749,7 @@
                     </ul>
                     <a href="#" class="btn-core btn-primary">このプランで始める</a>
                 </div>
-                <div class="pricing-card">
+                <div class="pricing-card sr-hidden sr-blur-in">
                     <div class="plan-name">プロフェッショナル</div>
                     <div class="price">¥50,000<span>/月</span></div>
                     <p style="font-size: 0.8rem; color: #6e8274; margin-top: 5px;">毎月3システムDL + 代行付き</p>
@@ -4524,7 +4765,7 @@
                     </p>
                     <a href="#" class="btn-core">詳細を確認</a>
                 </div>
-                <div class="pricing-card">
+                <div class="pricing-card sr-hidden sr-blur-in">
                     <div class="plan-name">エンタープライズ</div>
                     <div class="price">個別見積</div>
                     <ul class="features">
@@ -4544,18 +4785,18 @@
         <section id="comparison" class="section-compact section-layer section-layer-subtle">
             <div class="marker tl">SEC.10 // COMPARISON</div>
             <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-                <div class="jp-sub">プラン詳細比較</div>
-                <h2 class="section-header" style="display: block; text-align: center;">
+                <div class="jp-sub sr-hidden sr-fade-in">プラン詳細比較</div>
+                <h2 class="section-header sr-hidden sr-fade-up-hero" style="display: block; text-align: center;">
                     あなたに最適なプランを選択
                 </h2>
-                <p class="lead-text" style="margin: 20px auto; text-align: center;">
+                <p class="lead-text sr-hidden sr-fade-up sr-delay-1" style="margin: 20px auto; text-align: center;">
                     自分で設置するなら1万円、代行も欲しいなら5万円。<br>
                     どちらも現役エンジニアによる徹底サポート付き
                 </p>
             </div>
 
             <div class="comparison-grid mt-6">
-                <div class="comparison-card">
+                <div class="comparison-card sr-hidden sr-slide-right">
                     <div class="card-header">
                         <div class="plan-type">セルフ導入プラン</div>
                         <div class="plan-name">ビジネスプラン</div>
@@ -4578,7 +4819,7 @@
                     </ul>
                     <p style="font-size: 0.8rem; color: #6e8274; margin-top: 20px;">※6ヶ月契約（最低利用期間）</p>
                 </div>
-                <div class="comparison-card highlight">
+                <div class="comparison-card highlight sr-hidden sr-slide-left sr-delay-2">
                     <div class="card-header">
                         <div class="plan-type">フルサポートプラン</div>
                         <div class="plan-name">プロフェッショナルプラン</div>
@@ -4613,14 +4854,14 @@
         <section id="risk-reversal" class="section-compact section-layer section-layer-off">
             <div class="marker tl">SEC.11 // RISK_REVERSAL</div>
             <div style="text-align: center; max-width: 900px; margin: 0 auto;">
-                <h2 class="h-04" style="display: inline-block; text-align: left;">
+                <h2 class="h-04 sr-hidden sr-fade-up-hero" style="display: inline-block; text-align: left;">
                     <small>// ZERO_RISK_GUARANTEE</small>
                     「失敗したらどうしよう」を、<br>ゼロにします
                 </h2>
             </div>
 
-            <div class="guarantee-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; max-width: 1200px; margin: 50px auto 0;">
-                <div class="guarantee-card">
+            <div class="guarantee-grid sr-stagger" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; max-width: 1200px; margin: 50px auto 0;">
+                <div class="guarantee-card sr-hidden sr-fade-up">
                     <div class="guarantee-num">01</div>
                     <h4>動作不良時 返金保証</h4>
                     <p>
@@ -4629,7 +4870,7 @@
                     </p>
                     <div class="guarantee-tag">品質に自信があります</div>
                 </div>
-                <div class="guarantee-card">
+                <div class="guarantee-card sr-hidden sr-fade-up">
                     <div class="guarantee-num">02</div>
                     <h4>まずは無料プランで試せる</h4>
                     <p>
@@ -4638,7 +4879,7 @@
                     </p>
                     <div class="guarantee-tag">聞くだけでOK</div>
                 </div>
-                <div class="guarantee-card">
+                <div class="guarantee-card sr-hidden sr-fade-up">
                     <div class="guarantee-num">03</div>
                     <h4>営業電話は一切しません</h4>
                     <p>
@@ -4647,7 +4888,7 @@
                     </p>
                     <div class="guarantee-tag">気軽に始められる</div>
                 </div>
-                <div class="guarantee-card">
+                <div class="guarantee-card sr-hidden sr-fade-up">
                     <div class="guarantee-num">04</div>
                     <h4>カスタマイズで追加料金なし</h4>
                     <p>
@@ -4656,7 +4897,7 @@
                     </p>
                     <div class="guarantee-tag">追加料金なし・納期で調整</div>
                 </div>
-                <div class="guarantee-card">
+                <div class="guarantee-card sr-hidden sr-fade-up">
                     <div class="guarantee-num">05</div>
                     <h4>LINEサポート平均5分以内返信</h4>
                     <p>
@@ -4673,14 +4914,14 @@
         <section id="urgency" class="section-compact" style="background: transparent;">
             <div class="marker tr" style="color: rgba(0, 255, 119, 0.4);">SEC.12 // URGENCY</div>
             <div style="text-align: center; max-width: 900px; margin: 0 auto;">
-                <h2 class="h-04" style="display: inline-block; text-align: left; color: #ffffff;">
+                <h2 class="h-04 sr-hidden sr-fade-up-hero" style="display: inline-block; text-align: left; color: #ffffff;">
                     <small style="color: #00ff77; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em;">// WHY_NOW</small>
                     なぜ「今」始めるべきなのか
                 </h2>
             </div>
 
-            <div class="urgency-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; max-width: 1100px; margin: 50px auto 0;">
-                <div class="urgency-item">
+            <div class="urgency-grid sr-stagger" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; max-width: 1100px; margin: 50px auto 0;">
+                <div class="urgency-item sr-hidden sr-fade-up">
                     <div class="urgency-icon">
                         <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" width="28" height="28"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
@@ -4692,7 +4933,7 @@
                     </div>
                     <p style="color: #00ff77; font-size: 0.88rem; margin-top: 12px; font-weight: 500;">時間は、取り戻せません。</p>
                 </div>
-                <div class="urgency-item">
+                <div class="urgency-item sr-hidden sr-fade-up">
                     <div class="urgency-icon">
                         <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" width="28" height="28"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
@@ -4705,7 +4946,7 @@
                     </ul>
                     <p style="color: #00ff77; font-size: 0.88rem; font-weight: 500;">手作業をやめないと、売上は上がりません。</p>
                 </div>
-                <div class="urgency-item">
+                <div class="urgency-item sr-hidden sr-fade-up">
                     <div class="urgency-icon">
                         <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" width="28" height="28"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                     </div>
@@ -4717,7 +4958,7 @@
                     </div>
                     <p style="color: #c0d0c5; font-size: 0.88rem; margin-top: 12px; font-weight: 500;">この差が、業績の差になります。</p>
                 </div>
-                <div class="urgency-item">
+                <div class="urgency-item sr-hidden sr-fade-up">
                     <div class="urgency-icon">
                         <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" width="28" height="28"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                     </div>
@@ -4734,7 +4975,7 @@
                 </div>
             </div>
 
-            <div class="p-03-panel" style="max-width: 700px; margin: 5px auto 0; text-align: center;">
+            <div class="p-03-panel sr-hidden sr-scale-in sr-delay-5" style="max-width: 700px; margin: 5px auto 0; text-align: center;">
                 <p style="font-size: 1.1rem; color: #e8f0eb; margin-bottom: 20px;">
                     「来月から始めよう」<br>
                     その1ヶ月で、<span style="color: #00ff77; font-weight: 700;">40時間</span>失います。
@@ -4751,16 +4992,16 @@
         <section id="testimonials" class="section-compact section-layer section-layer-off">
             <div class="marker tr">SEC.11 // TESTIMONIALS</div>
             <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-                <div class="jp-sub">導入事例</div>
-                <h2 class="section-header" style="display: block; text-align: center;">
+                <div class="jp-sub sr-hidden sr-fade-in">導入事例</div>
+                <h2 class="section-header sr-hidden sr-fade-up-hero" style="display: block; text-align: center;">
                     導入企業様からの声
                 </h2>
-                <p class="lead-text" style="margin: 20px auto; text-align: center;">
+                <p class="lead-text sr-hidden sr-fade-up sr-delay-1" style="margin: 20px auto; text-align: center;">
                     150社以上の企業様にご利用いただき、高い評価をいただいています
                 </p>
             </div>
 
-            <div class="testimonial-marquee">
+            <div class="testimonial-marquee sr-hidden sr-fade-up sr-delay-2">
                 <div class="testimonial-track">
                     <!-- Original cards -->
                     <div class="testimonial-card">
@@ -4868,68 +5109,68 @@
         <section id="faq" class="section-compact section-layer section-layer-muted">
             <div class="marker tl">SEC.12 // FAQ</div>
             <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-                <div class="jp-sub">よくあるご質問</div>
-                <h2 class="section-header" style="display: block; text-align: center;">
+                <div class="jp-sub sr-hidden sr-fade-in">よくあるご質問</div>
+                <h2 class="section-header sr-hidden sr-fade-up-hero" style="display: block; text-align: center;">
                     FAQ
                 </h2>
             </div>
 
-            <div style="max-width: 900px; margin: 60px auto 0;">
-                <details class="faq-item">
+            <div class="sr-stagger" style="max-width: 900px; margin: 60px auto 0;">
+                <details class="faq-item sr-hidden sr-fade-up">
                     <summary>契約期間の縛りはありますか？</summary>
                     <div class="answer">
                         6ヶ月の最低契約期間があります。月額料金でのお支払いとなり、6ヶ月経過後はいつでも解約可能です。また、動作不良時の返金保証もありますので、安心してお試しいただけます。
                     </div>
                 </details>
-                <details class="faq-item">
+                <details class="faq-item sr-hidden sr-fade-up">
                     <summary>支払い方法は何がありますか？</summary>
                     <div class="answer">
                         銀行振込、クレジットカード（VISA/Master/JCB/AMEX）、請求書払い（法人のみ）に対応しています。お支払いは月払い・年払いから選択可能で、年払いの場合は10%割引となります。
                     </div>
                 </details>
-                <details class="faq-item">
+                <details class="faq-item sr-hidden sr-fade-up">
                     <summary>セキュリティは大丈夫ですか？</summary>
                     <div class="answer">
                         はい、安心してご利用いただけます。データは全てGoogle Workspace内で処理され、外部サーバーには保存されません。全ての通信はSSL暗号化され、定期的なセキュリティ監査を実施しています。
                     </div>
                 </details>
-                <details class="faq-item">
+                <details class="faq-item sr-hidden sr-fade-up">
                     <summary>既存のシステムと連携できますか？</summary>
                     <div class="answer">
                         はい、可能です。API連携により、会計ソフト、CRM、在庫管理システムなど、様々な既存システムとの連携実績があります。詳細は無料診断時にご相談ください。
                     </div>
                 </details>
-                <details class="faq-item">
+                <details class="faq-item sr-hidden sr-fade-up">
                     <summary>プログラミングの知識がなくても本当に使えますか？</summary>
                     <div class="answer">
                         はい、全く問題ありません。LINEで日本語で「〇〇を自動化したい」と伝えるだけで、AIが最適なGASコードを生成します。コードの設置や実行方法も、わかりやすい動画マニュアルと個別サポートでご案内しますので、どなたでも簡単にご利用いただけます。
                     </div>
                 </details>
-                <details class="faq-item">
+                <details class="faq-item sr-hidden sr-fade-up">
                     <summary>どのような業務を自動化できますか？</summary>
                     <div class="answer">
                         スプレッドシートを使った業務であれば、ほぼすべて自動化可能です。売上集計、在庫管理、勤怠管理、請求書作成、データ分析、レポート作成など、定期的に行う作業や、ルールに基づいた処理は特に効果的です。無料診断で貴社の業務に合わせた具体的な提案をさせていただきます。
                     </div>
                 </details>
-                <details class="faq-item">
+                <details class="faq-item sr-hidden sr-fade-up">
                     <summary>導入後のサポート体制はどうなっていますか？</summary>
                     <div class="answer">
                         LINEによる即時サポート（平均返信時間5分以内）をご提供しています。操作方法の質問、エラーの解決、新しい自動化の相談など、どんなことでもお気軽にご相談ください。また、月1回の定期レビューで、より効果的な活用方法もご提案します。
                     </div>
                 </details>
-                <details class="faq-item">
+                <details class="faq-item sr-hidden sr-fade-up">
                     <summary>初期費用はかかりますか？</summary>
                     <div class="answer">
                         いいえ、初期費用は一切かかりません。月額料金のみで、すべてのサービスをご利用いただけます。また、動作不良時は返金保証がありますので、安心してお試しいただけます。
                     </div>
                 </details>
-                <details class="faq-item">
+                <details class="faq-item sr-hidden sr-fade-up">
                     <summary>自社のデータは安全に管理されますか？</summary>
                     <div class="answer">
                         はい、お客様のデータは厳重に保護されています。すべての処理はGoogle Workspace内で完結し、外部サーバーにデータを保存することはありません。また、アクセス権限の管理も細かく設定できるため、必要な人だけがデータにアクセスできるようコントロール可能です。
                     </div>
                 </details>
-                <details class="faq-item">
+                <details class="faq-item sr-hidden sr-fade-up">
                     <summary>他社の自動化ツールとの違いは何ですか？</summary>
                     <div class="answer">
                         最大の違いは、AIによるコード生成機能です。他社ツールでは決められた機能しか使えませんが、TaskMateではAIが貴社の業務に合わせて最適なコードを生成するため、完全なカスタマイズが可能です。また、LINEで簡単に操作できる点も大きな特徴です。
@@ -4943,7 +5184,7 @@
             <div class="marker tr">SEC.12.5 // MESSAGE</div>
             <div style="max-width: 900px; margin: 0 auto;">
                 <div class="founder-grid" style="display: grid; grid-template-columns: 200px 1fr; gap: 50px; align-items: center;">
-                    <div style="text-align: center;">
+                    <div style="text-align: center;" class="sr-hidden sr-slide-right">
                         <div style="width: 180px; height: 180px; border-radius: 50%; overflow: hidden; margin: 0 auto; border: 3px solid var(--force); box-shadow: 0 10px 40px rgba(0, 204, 102, 0.2);">
                             <img src="images/founder.jpg" alt="代表取締役 沼倉隆平" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
@@ -4952,7 +5193,7 @@
                             <div style="font-size: 0.85rem; color: var(--text-mute); margin-top: 5px;">株式会社イケメン<br>代表取締役</div>
                         </div>
                     </div>
-                    <div class="founder-message-card">
+                    <div class="founder-message-card sr-hidden sr-blur-in sr-delay-2">
                         <div class="jp-sub">代表メッセージ</div>
                         <h2 class="section-header">あなたの「面倒」を<br>私たちが解決します</h2>
                         <p>
@@ -4971,14 +5212,14 @@
         <section id="contact" class="section-compact cta-section">
             <div class="marker bl" style="color: #6e8274;">SEC.13 // CONTACT</div>
             <div style="max-width: 600px; margin: 0 auto;">
-                <h2 class="section-header" style="display: block; text-align: center;">
+                <h2 class="section-header sr-hidden sr-fade-up-hero" style="display: block; text-align: center;">
                     今すぐ業務効率化を始めよう
                 </h2>
-                <p style="margin: 20px 0 40px; text-align: center; color: var(--text-mute);">
+                <p class="sr-hidden sr-fade-up sr-delay-1" style="margin: 20px 0 40px; text-align: center; color: var(--text-mute);">
                     動作不良時は返金保証付き。安心して始められます
                 </p>
 
-                <div style="text-align: center;">
+                <div style="text-align: center;" class="sr-hidden sr-scale-in sr-delay-2">
                     <a href="https://agency.ikemen.ltd/t/ky0zmcgdoqja" class="btn-core btn-line" style="padding: 18px 50px; font-size: 1rem;">
                         <svg viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px;"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.105.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
                         LINEで無料相談する
@@ -4994,7 +5235,7 @@
 
     <!-- Footer -->
     <footer>
-        <div class="footer-grid">
+        <div class="footer-grid sr-hidden sr-fade-up">
             <div class="footer-brand">
                 <div class="logo">
                     <div class="mark"><img src="images/logo.png" alt="TaskMate"></div>
@@ -5031,7 +5272,7 @@
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom">
+        <div class="footer-bottom sr-hidden sr-fade-in sr-delay-2">
             <p>&copy; 2025 株式会社イケメン All rights reserved.</p>
             <a href="https://agency.ikemen.ltd/t/ky0zmcgdoqja" class="btn-core btn-line" style="padding: 10px 20px; font-size: 0.8rem;">
                 <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px;"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.105.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
@@ -5500,6 +5741,32 @@
                 });
             });
         })();
+    </script>
+
+    <!-- Scroll-Reveal Observer -->
+    <script>
+    (function() {
+        'use strict';
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.querySelectorAll('.sr-hidden').forEach(function(el) {
+                el.classList.remove('sr-hidden');
+                el.classList.add('sr-visible');
+            });
+            return;
+        }
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('sr-visible');
+                    entry.target.classList.remove('sr-hidden');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { root: null, rootMargin: '0px 0px -60px 0px', threshold: 0.08 });
+        document.querySelectorAll('.sr-hidden').forEach(function(el) {
+            observer.observe(el);
+        });
+    })();
     </script>
 
     <!-- Meta Pixel Event Tracking -->
