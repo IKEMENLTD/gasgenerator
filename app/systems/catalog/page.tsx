@@ -12,7 +12,8 @@ const systems = [
     tags: ['日報管理', '自動集計', 'GAS連携', 'Soft UI'],
     previewUrl: 'https://eigyonippou.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1yeys-GTCkYXvpWHSaBSvCjknsFcY5TmSx6-r-q_Aaxw/edit?gid=616392511#gid=616392511',
+    manualUrl: 'https://drive.google.com/file/d/1QaIyutvZOSkJzMdxCGug2Abz5OCB0ZnQ/view?usp=drive_link',
   },
   {
     id: '02',
@@ -22,7 +23,8 @@ const systems = [
     tags: ['失客検知', '自動通知', '顧客管理', 'リスク分析'],
     previewUrl: 'https://jovial-starship-2e968e.netlify.app',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1AEcS-LktDotRlM4uDflSfHatPn_jqJHBB7blSq5tKYk/edit?gid=584518683#gid=584518683',
+    manualUrl: 'https://drive.google.com/file/d/193WS8ZjqtX8Vm_uTNWYYMtW3Pp8iRdvh/view?usp=drive_link',
   },
   {
     id: '03',
@@ -32,7 +34,8 @@ const systems = [
     tags: ['期限管理', 'アラート通知', '顧客管理', 'ダッシュボード'],
     previewUrl: 'https://kigenkannri.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ZhTAYfu1jdceDk4Qozvxbff4XRS0EbkQ53276SSaexw/edit?gid=1843148959#gid=1843148959',
+    manualUrl: 'https://drive.google.com/file/d/1SwBfPNHP9bsOnqGZBc9C03-UbmlTyvhh/view?usp=drive_link',
   },
   {
     id: '04',
@@ -42,7 +45,8 @@ const systems = [
     tags: ['リピート促進', '自動メール', '顧客フォロー', 'テンプレート管理'],
     previewUrl: 'https://ripi-tosokushinzidoumail.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1RZCDCFeXin0AXievOao8DBbO9xNaezFNIJJdtEKB13c/edit?gid=0#gid=0',
+    manualUrl: 'https://drive.google.com/file/d/10ZnJP2MmQqskY4ccxouz71Iy51AuHvtj/view?usp=drive_link',
   },
   {
     id: '05',
@@ -52,7 +56,8 @@ const systems = [
     tags: ['口コミ依頼', '自動送信', '顧客管理', 'レビュー促進'],
     previewUrl: 'https://kutikomizidouka.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1uZ0NpxkU9G9GWWfhzSXnaWU5VZNxXX03-IyVxBSFgnY/edit?gid=1614302519#gid=1614302519',
+    manualUrl: 'https://drive.google.com/file/d/1rOLvKTfTAPXB2cVIzDB36t8crALRQXpu/view?usp=drive_link',
   },
   {
     id: '06',
@@ -62,7 +67,8 @@ const systems = [
     tags: ['客単価分析', 'アップセル', 'クロスセル', '購買分析'],
     previewUrl: 'https://upsell-teiann.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1B1FDsuPEM0-zZsO0K1HjpromAHMzW465b83z-AlW5p4/edit?gid=659006860#gid=659006860',
+    manualUrl: 'https://drive.google.com/file/d/155J8_0QUBt2dAMWJN9eTEu8NtJdvOThF/view?usp=drive_link',
   },
   {
     id: '07',
@@ -73,6 +79,7 @@ const systems = [
     previewUrl: '/demos/nouki-alert/index.html',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '08',
@@ -83,6 +90,7 @@ const systems = [
     previewUrl: '/demos/task-checklist/index.html',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '09',
@@ -92,7 +100,8 @@ const systems = [
     tags: ['LTV計算', '顧客ランク', '特典管理', '売上分析'],
     previewUrl: 'https://ltv-kokyakukannri.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/14J-OHb12HJf8MIHdQE2CeSlZaKt0oiinGTWYiG9Yzc8/edit?usp=sharing',
+    manualUrl: 'https://drive.google.com/file/d/1HlfV2JYetYzV9oi7IYCBpfM6y85hdMnG/view?usp=drive_link',
   },
   {
     id: '10',
@@ -102,7 +111,8 @@ const systems = [
     tags: ['離脱顧客', 'メール配信', 'クーポン管理', '顧客復帰'],
     previewUrl: 'https://ridatukokyaku.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1_a3-zSwU2FK_fWysFQMd_edDQeLYeFgAD4WogOx0jo4/edit?usp=sharing',
+    manualUrl: 'https://drive.google.com/file/d/1KikZaxndyWqY6sfrarqLvO_L6mL8N2A-/view?usp=drive_link',
   },
   {
     id: '11',
@@ -113,6 +123,7 @@ const systems = [
     previewUrl: 'https://yuukoukigennkannri.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '12',
@@ -123,6 +134,7 @@ const systems = [
     previewUrl: 'https://syoukaipuroguramu.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '13',
@@ -132,7 +144,8 @@ const systems = [
     tags: ['A/Bテスト', '価格最適化', '売上分析', '競合分析'],
     previewUrl: 'https://prise-a-b.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/14pec2Z0N6UGeseKrvIHGnEKiP4V_jT3oVjzncHsY_Hs/edit?gid=1443018878#gid=1443018878',
+    manualUrl: 'https://drive.google.com/file/d/1yqCw10CkZTREx45SHs6Bt5WSQvZzLyzg/view?usp=drive_link',
   },
   {
     id: '14',
@@ -142,7 +155,8 @@ const systems = [
     tags: ['効果測定', 'ROAS', 'ROI', 'マーケティング'],
     previewUrl: 'https://tubular-cucurucho-861ee7.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1LRLv1gslo1G34-DnnCGu4Q_ZFfyvz3Ly15Awl09xla0/edit?gid=1943435552#gid=1943435552',
+    manualUrl: 'https://drive.google.com/file/d/1BfbmlJJMFXaftoHLTB-n_etsppINxeIH/view?usp=drive_link',
   },
   {
     id: '16',
@@ -152,7 +166,8 @@ const systems = [
     tags: ['経費精算', 'ワークフロー', '承認管理', '集計レポート'],
     previewUrl: '/demos/expense-workflow/index.html',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1IwI2JkYpO6K1ggAT_iG1UOkAkzjRiFb_xy8W0nJt5c0/edit?gid=0#gid=0',
+    manualUrl: 'https://drive.google.com/file/d/1dyGqvWO0iD4ho9-WWLkK8gz9uL1mvqnI/view?usp=drive_link',
   },
   {
     id: '17',
@@ -163,6 +178,7 @@ const systems = [
     previewUrl: 'https://seikyusyokannri.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '18',
@@ -173,6 +189,7 @@ const systems = [
     previewUrl: 'https://nippoukannri.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '19',
@@ -183,6 +200,7 @@ const systems = [
     previewUrl: 'https://keiyakukousin.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '20',
@@ -193,6 +211,7 @@ const systems = [
     previewUrl: '/demos/mtg-agenda/index.html',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '21',
@@ -202,7 +221,8 @@ const systems = [
     tags: ['予約管理', 'ダブルブッキング防止', '空き状況確認', 'キャンセル待ち'],
     previewUrl: 'https://doublebooking.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1jQJha2HUFYOugEVkOdmD_wi4-QwOm365xRC0F8vRrT0/edit',
+    manualUrl: 'https://drive.google.com/file/d/1fMfbwa535SQul-fHaUeA85VzCz21yeX1/view?usp=drive_link',
   },
   {
     id: '22',
@@ -213,6 +233,7 @@ const systems = [
     previewUrl: 'https://priselistandquotation.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '23',
@@ -222,7 +243,8 @@ const systems = [
     tags: ['議事録管理', 'タスク抽出', 'リマインド', '進捗管理'],
     previewUrl: 'https://giziroku-taskauto.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1r3Y11a_vpj-LtEhGi6EBdVhTp3IyDxojB8rR4ENc7wA/edit?gid=102749190#gid=102749190',
+    manualUrl: 'https://drive.google.com/file/d/12ZPq5ZpvExiILJf3Jk-blJM20oixdXTS/view?usp=drive_link',
   },
   {
     id: '24',
@@ -232,7 +254,8 @@ const systems = [
     tags: ['勤怠管理', '給与計算', '残業管理', '36協定'],
     previewUrl: 'https://kintgaisyuukei-kyuuyo.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1coC6dpyGBjvsOM3ZmAr1BbSnsYjmtm57YBbMhmK3J6Y/edit?gid=0#gid=0',
+    manualUrl: 'https://drive.google.com/file/d/1OQHUz-58bqYj93zgZBDKNFOGrl6JmXqE/view?usp=drive_link',
   },
   {
     id: '25',
@@ -243,6 +266,7 @@ const systems = [
     previewUrl: 'https://syouninn.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '26',
@@ -253,6 +277,7 @@ const systems = [
     previewUrl: 'https://nyukincheck.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '27',
@@ -262,7 +287,8 @@ const systems = [
     tags: ['引継ぎ', 'チェックリスト', '進捗管理', '業務移行'],
     previewUrl: 'https://hikitugicheck.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1BNxcpNN32JtZaQAfA7iFrQX6T9GPe6h8AZH6yFisEaA/edit?gid=1828495788#gid=1828495788',
+    manualUrl: 'https://drive.google.com/file/d/1gDj_qKlDb3HdUjed4g2RnRzKvIGDVONZ/view?usp=drive_link',
   },
   {
     id: '28',
@@ -273,6 +299,7 @@ const systems = [
     previewUrl: 'https://teikei-renraku.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '29',
@@ -282,7 +309,8 @@ const systems = [
     tags: ['解約分析', 'ダッシュボード', 'トレンド', '顧客管理'],
     previewUrl: 'https://kaiyaku-bunseki.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1YUWj5ORyHUuJdwu0EdcB5xYjTEOJuJ-YkPU3WeneKxM/edit?gid=0#gid=0',
+    manualUrl: 'https://drive.google.com/file/d/1RifqVL4-WtDpLU-H4pnXY18ysi6Pwrnl/view?usp=drive_link',
   },
   {
     id: '30',
@@ -292,7 +320,8 @@ const systems = [
     tags: ['シフト管理', '希望収集', '自動調整', 'スタッフ管理'],
     previewUrl: 'https://shift-kibou-shushu.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1WUGlDqDxiLktEfcP0KIjLXlqMOiTtDAWH3ZWhpZyeFw/edit?gid=499873547#gid=499873547',
+    manualUrl: 'https://drive.google.com/file/d/1BfbmlJJMFXaftoHLTB-n_etsppINxeIH/view?usp=drive_link',
   },
   {
     id: '31',
@@ -303,6 +332,7 @@ const systems = [
     previewUrl: 'https://zaiko-kaitenritsu.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '32',
@@ -313,6 +343,7 @@ const systems = [
     previewUrl: 'https://jikantai-uriage.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '33',
@@ -322,7 +353,8 @@ const systems = [
     tags: ['マニュアル管理', 'ナレッジ共有', 'バージョン管理', '新人教育'],
     previewUrl: 'https://gyoumumanyuarukannri.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1qXL-Ap7MedpsJ4XlBmKupMdN-iqNMVWVlOk1C9nIZHc/edit?gid=85528303#gid=85528303',
+    manualUrl: 'https://drive.google.com/file/d/1gbZ_828sKWEPeWZJt5BMJGZB9np3XjHh/view?usp=drive_link',
   },
   {
     id: '34',
@@ -333,6 +365,7 @@ const systems = [
     previewUrl: 'https://onboarding-shintyoku.netlify.app/reports.html',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '35',
@@ -343,6 +376,7 @@ const systems = [
     previewUrl: 'https://shikenkikannkannri.netlify.app/evaluation',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '36',
@@ -352,7 +386,8 @@ const systems = [
     tags: ['季節変動', '需要予測', 'トレンド分析', '仕入れ最適化'],
     previewUrl: 'https://kisetsuhendou.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1uLlnYIGg1-Y5MnVX-BiGf5r93nBgiRR_ZJNaEIqsMo4/edit?gid=0#gid=0',
+    manualUrl: 'https://drive.google.com/file/d/1Oqm2F9dgUO-PlzGWmCoPq-u1SUOafRkM/view?usp=drive_linkk',
   },
   {
     id: '37',
@@ -362,7 +397,8 @@ const systems = [
     tags: ['顧問契約', '契約管理', '更新リマインド', '報酬管理'],
     previewUrl: 'https://komonkannri.netlify.app/',
     iframeAllowed: false,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ldLrsxvKCXkyqUSb1tK6mLYHBLdSabZwg-SUsACHudU/edit?gid=1182986624#gid=1182986624',
+    manualUrl: 'https://drive.google.com/file/d/1ksA8vByglR2wLNpf1BJS3J_f1U4himEa/view?usp=drive_link',
   },
   {
     id: '38',
@@ -373,6 +409,7 @@ const systems = [
     previewUrl: 'https://syoruitemplate.netlify.app/',
     iframeAllowed: false,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
   {
     id: '39',
@@ -382,7 +419,8 @@ const systems = [
     tags: ['工数管理', 'プロジェクト管理', 'コスト分析', '収益管理'],
     previewUrl: 'https://ankenbetu-kousu.netlify.app/#dashboard',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1fqzkWdTr_6iz--3zVB9IR1lAjDtirIYsEAXti0nucio/edit?gid=2063281868#gid=2063281868',
+    manualUrl: 'https://drive.google.com/file/d/1gId2o2AasnbUEv4J5P57pPbXHX5lI96q/view?usp=drive_link',
   },
   {
     id: '40',
@@ -393,6 +431,7 @@ const systems = [
     previewUrl: 'https://zairyo-shoumouhin.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: '',
+    manualUrl: '',
   },
 ]
 
@@ -682,6 +721,26 @@ export default function SystemCatalogPage() {
                         {selectedSystem.spreadsheetUrl ? 'スプレッドシートのコピーが作成されます' : '近日公開予定'}
                       </p>
                     </div>
+
+                    {/* 使い方説明書ボタン */}
+                    {selectedSystem.manualUrl && (
+                      <div className="flex flex-col gap-2 w-full sm:w-auto">
+                        <a
+                          href={selectedSystem.manualUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl transition-all shadow-lg shadow-blue-500/30"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                          使い方説明書を見る
+                        </a>
+                        <p className="text-xs text-center text-gray-500">
+                          セットアップ手順を確認できます
+                        </p>
+                      </div>
+                    )}
 
                     {/* タグ */}
                     <div className="flex flex-wrap gap-1.5 sm:max-w-xs">
