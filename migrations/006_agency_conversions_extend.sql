@@ -41,7 +41,7 @@ BEGIN
     UPDATE agency_conversions ac
     SET line_display_name = lp.display_name
     FROM line_profiles lp
-    WHERE ac.line_user_id = lp.line_user_id
+    WHERE ac.line_user_id = lp.user_id
       AND ac.line_display_name IS NULL
       AND lp.display_name IS NOT NULL;
 

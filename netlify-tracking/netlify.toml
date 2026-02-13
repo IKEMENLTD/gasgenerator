@@ -1,10 +1,11 @@
 [build]
-  publish = "."
+  publish = "frontend"
   functions = "netlify/functions"
   command = "echo 'Build complete'"
 
 [build.environment]
   NODE_VERSION = "18"
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
 
 # ===== ブログへのリダイレクト（サブドメイン） =====
 [[redirects]]
@@ -122,7 +123,7 @@
   external_node_modules = ["canvas", "sharp"]
 
 # 個別Function設定: webhook用
-[[functions.webhook]]
+[functions.webhook]
   # Node.jsにガベージコレクションフラグを追加
   node_args = ["--expose-gc", "--max-old-space-size=1024"]
 
