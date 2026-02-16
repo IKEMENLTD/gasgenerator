@@ -193,20 +193,14 @@ export async function POST(request: NextRequest) {
 
     // レスポンスからテキストを取得
     let responseText: string
-    if (response.text) {
-      responseText = response.text
-    } else if (response.content) {
+    if (Array.isArray(response.content)) {
       // content が配列の場合（Anthropic形式）
-      if (Array.isArray(response.content)) {
-        responseText = response.content
-          .filter((block: any) => block.type === 'text')
-          .map((block: any) => block.text)
-          .join('\n')
-      } else if (typeof response.content === 'string') {
-        responseText = response.content
-      } else {
-        responseText = JSON.stringify(response.content)
-      }
+      responseText = response.content
+        .filter((block: any) => block.type === 'text')
+        .map((block: any) => block.text)
+        .join('\n')
+    } else if (typeof response.content === 'string') {
+      responseText = response.content
     } else {
       responseText = JSON.stringify(response)
     }
@@ -229,7 +223,7 @@ export async function POST(request: NextRequest) {
     if (!recommendation) {
       logger.error('Failed to parse recommendation response', {
         sessionId,
-        responseText: response.text,
+        responseText,
       })
       return NextResponse.json(
         { success: false, error: 'Failed to generate recommendations' },
