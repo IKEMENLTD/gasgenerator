@@ -77,10 +77,15 @@ function buildResultCarousel(recommendations: Array<{
   priority: number
   reason: string
   estimatedTimeSaving: string
-}>) {
+}>, systemsData: Array<{ id: string; name: string }>) {
   const headerColors = ['#059669', '#0ea5e9', '#8b5cf6']
 
-  const bubbles = recommendations.map((rec, i) => ({
+  const bubbles = recommendations.map((rec, i) => {
+    // Claude APIの返答名ではなく、正式なシステム名をダウンロードボタンに使用
+    const exactSystem = systemsData.find((s) => s.id === rec.systemId || s.id === String(rec.systemId).padStart(2, '0'))
+    const exactName = exactSystem ? exactSystem.name : rec.systemName
+
+    return ({
     type: 'bubble',
     size: 'kilo',
     header: {
@@ -128,7 +133,7 @@ function buildResultCarousel(recommendations: Array<{
           action: {
             type: 'message',
             label: 'ダウンロード',
-            text: `${rec.systemName}をダウンロード`,
+            text: `${exactName}をダウンロード`,
           },
           style: 'secondary',
           margin: 'sm',
@@ -137,7 +142,8 @@ function buildResultCarousel(recommendations: Array<{
       ],
       paddingAll: '12px',
     },
-  }))
+  })
+  })
 
   return {
     type: 'flex',
@@ -283,7 +289,7 @@ export async function handleDiagnosis(
     })
 
     // 結果をFlexカルーセルで送信
-    const carouselMessage = buildResultCarousel(recommendation.recommendations)
+    const carouselMessage = buildResultCarousel(recommendation.recommendations, systems)
     const analysisMessage = {
       type: 'text',
       text: `📊 診断結果\n\n${recommendation.analysisText || '上記3つのシステムがあなたの業務に最適です。'}`,

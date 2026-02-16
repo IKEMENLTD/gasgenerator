@@ -6353,7 +6353,7 @@
             state.isLoading = true;
             renderLoading();
 
-            fetch('/api/system-recommendation')
+            fetch('https://gasgenerator.onrender.com/api/system-recommendation')
                 .then(function(response) {
                     return response.json();
                 })
@@ -6384,7 +6384,7 @@
                 answers: state.answers
             });
 
-            fetch('/api/system-recommendation', {
+            fetch('https://gasgenerator.onrender.com/api/system-recommendation', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
