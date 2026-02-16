@@ -19,6 +19,21 @@ import {
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+// CORSヘッダー設定
+const corsHeaders = {
+  'Access-Control-Allow-Origin': 'https://taskmateai.net',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
+// OPTIONSリクエスト（プリフライト）対応
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders,
+  })
+}
+
 // 5つの質問定義
 interface Question {
   id: number
@@ -85,16 +100,19 @@ export async function GET(request: NextRequest) {
 
     logger.info('System recommendation questions fetched', { sessionId })
 
-    return NextResponse.json({
-      success: true,
-      sessionId,
-      questions: QUESTIONS,
-    })
+    return NextResponse.json(
+      {
+        success: true,
+        sessionId,
+        questions: QUESTIONS,
+      },
+      { headers: corsHeaders }
+    )
   } catch (error) {
     logger.error('Failed to fetch recommendation questions', { error })
     return NextResponse.json(
       { success: false, error: 'Failed to fetch questions' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     )
   }
 }
@@ -112,14 +130,14 @@ export async function POST(request: NextRequest) {
     if (!sessionId || typeof sessionId !== 'string') {
       return NextResponse.json(
         { success: false, error: 'sessionId is required' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       )
     }
 
     if (!Array.isArray(answers) || answers.length !== 5) {
       return NextResponse.json(
         { success: false, error: 'answers must be an array of 5 items' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       )
     }
 
@@ -215,7 +233,7 @@ export async function POST(request: NextRequest) {
       })
       return NextResponse.json(
         { success: false, error: 'Failed to generate recommendations' },
-        { status: 500 }
+        { status: 500, headers: corsHeaders }
       )
     }
 
@@ -225,11 +243,14 @@ export async function POST(request: NextRequest) {
     })
 
     // 成功レスポンス
-    return NextResponse.json({
-      success: true,
-      sessionId,
-      ...recommendation,
-    })
+    return NextResponse.json(
+      {
+        success: true,
+        sessionId,
+        ...recommendation,
+      },
+      { headers: corsHeaders }
+    )
   } catch (error) {
     logger.error('System recommendation error', {
       error,
@@ -238,7 +259,7 @@ export async function POST(request: NextRequest) {
     })
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     )
   }
 }
