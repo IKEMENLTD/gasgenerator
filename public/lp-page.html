@@ -3920,6 +3920,451 @@
             }
         }
 
+        /* ============================================================
+           AI CONSULTATION BUTTON & MODAL
+           ============================================================ */
+
+        /* AI Consultation Button */
+        .ai-consultation-btn {
+            position: fixed;
+            bottom: 120px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #2d8f5e 0%, #1d5f3d 100%);
+            color: white;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 10px 40px rgba(45, 143, 94, 0.3);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .ai-consultation-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 50px rgba(45, 143, 94, 0.4);
+        }
+        .ai-consultation-btn svg {
+            width: 20px;
+            height: 20px;
+            animation: ai-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .ai-btn-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 16px;
+            height: 16px;
+            background: #c17a3a;
+            border-radius: 50%;
+            animation: ai-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        .ai-btn-badge::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #c17a3a;
+            border-radius: 50%;
+        }
+        @keyframes ai-ping {
+            75%, 100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        @keyframes ai-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* AI Consultation Modal */
+        .ai-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .ai-modal.active {
+            display: flex;
+        }
+        .ai-modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        .ai-modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            animation: ai-modal-slide 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        @keyframes ai-modal-slide {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .ai-modal-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: linear-gradient(135deg, #2d8f5e 0%, #1d5f3d 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 20px 20px 0 0;
+        }
+        .ai-modal-header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ai-modal-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .ai-modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 24px;
+            line-height: 1;
+        }
+        .ai-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .ai-progress {
+            margin-top: 16px;
+        }
+        .ai-progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+        }
+        .ai-progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .ai-progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .ai-modal-body {
+            padding: 32px 24px;
+        }
+
+        /* Loading State */
+        .ai-loading {
+            text-align: center;
+            padding: 64px 0;
+        }
+        .ai-spinner {
+            display: inline-block;
+            width: 64px;
+            height: 64px;
+            border: 4px solid #e8f5ee;
+            border-top-color: #2d8f5e;
+            border-radius: 50%;
+            animation: ai-spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes ai-spin {
+            to { transform: rotate(360deg); }
+        }
+        .ai-loading-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a2b22;
+            margin-bottom: 8px;
+        }
+        .ai-loading-subtitle {
+            color: #5a6b62;
+        }
+
+        /* Question Step */
+        .ai-question-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a2b22;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .ai-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .ai-option {
+            padding: 24px;
+            background: white;
+            border: 2px solid rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ai-option:hover {
+            border-color: #2d8f5e;
+            background: #e8f5ee;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 143, 94, 0.15);
+        }
+        .ai-option-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ai-option-text {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #1a2b22;
+        }
+        .ai-option:hover .ai-option-text {
+            color: #2d8f5e;
+        }
+        .ai-option-arrow {
+            width: 20px;
+            height: 20px;
+            color: #7a8b82;
+        }
+        .ai-option:hover .ai-option-arrow {
+            color: #2d8f5e;
+        }
+        .ai-back-btn {
+            display: block;
+            margin: 32px auto 0;
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            color: #5a6b62;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .ai-back-btn:hover {
+            color: #1a2b22;
+        }
+
+        /* Result Display */
+        .ai-analysis {
+            background: linear-gradient(135deg, #e8f5ee 0%, #fdf4eb 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+        .ai-analysis-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1a2b22;
+            margin-bottom: 12px;
+        }
+        .ai-analysis-text {
+            color: #1a2b22;
+            line-height: 1.7;
+            white-space: pre-line;
+        }
+        .ai-results-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a2b22;
+            margin-bottom: 24px;
+        }
+        .ai-system-card {
+            background: white;
+            border: 2px solid rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ai-system-card:hover {
+            border-color: #2d8f5e;
+            box-shadow: 0 8px 24px rgba(45, 143, 94, 0.15);
+            transform: translateY(-2px);
+        }
+        .ai-system-header {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .ai-system-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .ai-priority-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #2d8f5e;
+            color: white;
+            font-weight: 700;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .ai-system-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1a2b22;
+            margin: 0;
+        }
+        .ai-system-card:hover .ai-system-name {
+            color: #2d8f5e;
+        }
+        .ai-system-arrow {
+            width: 24px;
+            height: 24px;
+            color: #7a8b82;
+            flex-shrink: 0;
+        }
+        .ai-system-card:hover .ai-system-arrow {
+            color: #2d8f5e;
+        }
+        .ai-system-reason {
+            color: #5a6b62;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .ai-system-time {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #2d8f5e;
+        }
+        .ai-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 32px;
+        }
+        .ai-action-btn {
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ai-action-primary {
+            background: #2d8f5e;
+            color: white;
+        }
+        .ai-action-primary:hover {
+            background: #1d5f3d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 143, 94, 0.3);
+        }
+        .ai-action-secondary {
+            background: white;
+            color: #2d8f5e;
+            border: 2px solid #2d8f5e;
+        }
+        .ai-action-secondary:hover {
+            background: #e8f5ee;
+        }
+
+        /* Error State */
+        .ai-error {
+            text-align: center;
+            padding: 64px 24px;
+        }
+        .ai-error-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+        .ai-error-message {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a2b22;
+            margin-bottom: 24px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .ai-consultation-btn {
+                bottom: 100px;
+                right: 16px;
+                padding: 12px 20px;
+            }
+            .ai-btn-text {
+                font-size: 0.875rem;
+            }
+            .ai-modal-content {
+                width: 95%;
+                max-height: 95vh;
+                border-radius: 16px;
+            }
+            .ai-modal-header {
+                padding: 20px;
+            }
+            .ai-modal-title {
+                font-size: 1.25rem;
+            }
+            .ai-modal-body {
+                padding: 24px 16px;
+            }
+            .ai-question-title {
+                font-size: 1.25rem;
+            }
+            .ai-options {
+                grid-template-columns: 1fr;
+            }
+            .ai-actions {
+                flex-direction: column;
+            }
+            .ai-action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
     </style>
     <!-- Meta Pixel Code -->
     <script>
@@ -5664,6 +6109,16 @@
         </a>
     </div>
 
+    <!-- AI Consultation Button -->
+    <button id="aiConsultationBtn" class="ai-consultation-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
+            <path d="M20 2v4M22 4h-4M4 20a2 2 0 1 0 0 0"/>
+        </svg>
+        <span class="ai-btn-text">AIシステム診断</span>
+        <span class="ai-btn-badge"></span>
+    </button>
+
     <!-- Floating CTA Control + Catalog Toggle -->
     <script>
         (function() {
@@ -5808,6 +6263,321 @@
             observer.observe(pricingSection);
         }
     });
+    </script>
+
+    <!-- AI Consultation Modal -->
+    <div class="ai-modal" id="aiModal">
+        <div class="ai-modal-overlay" id="aiModalOverlay"></div>
+        <div class="ai-modal-content">
+            <div class="ai-modal-header">
+                <div class="ai-modal-header-content">
+                    <h2 class="ai-modal-title">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
+                        </svg>
+                        AIシステム診断
+                    </h2>
+                    <button class="ai-modal-close" id="aiModalClose">×</button>
+                </div>
+                <div class="ai-progress" id="aiProgress" style="display: none;">
+                    <div class="ai-progress-text">
+                        <span id="aiProgressLabel">質問 1 / 5</span>
+                        <span id="aiProgressPercent">20%</span>
+                    </div>
+                    <div class="ai-progress-bar">
+                        <div class="ai-progress-fill" id="aiProgressFill" style="width: 20%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ai-modal-body" id="aiModalBody">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Consultation Script -->
+    <script>
+    (function() {
+        'use strict';
+
+        // State
+        var state = {
+            step: 0,
+            answers: [],
+            questions: [],
+            sessionId: '',
+            recommendations: null,
+            isLoading: false,
+            error: null
+        };
+
+        // DOM Elements
+        var btn = document.getElementById('aiConsultationBtn');
+        var modal = document.getElementById('aiModal');
+        var modalOverlay = document.getElementById('aiModalOverlay');
+        var modalClose = document.getElementById('aiModalClose');
+        var modalBody = document.getElementById('aiModalBody');
+        var progress = document.getElementById('aiProgress');
+        var progressLabel = document.getElementById('aiProgressLabel');
+        var progressPercent = document.getElementById('aiProgressPercent');
+        var progressFill = document.getElementById('aiProgressFill');
+
+        // Open Modal
+        function openModal() {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            if (state.questions.length === 0) {
+                fetchQuestions();
+            } else {
+                renderStep();
+            }
+        }
+
+        // Close Modal
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Reset State
+        function resetState() {
+            state.step = 0;
+            state.answers = [];
+            state.recommendations = null;
+            state.error = null;
+            renderStep();
+        }
+
+        // Fetch Questions from API
+        function fetchQuestions() {
+            state.isLoading = true;
+            renderLoading();
+
+            fetch('/api/system-recommendation')
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.success) {
+                        state.questions = data.questions;
+                        state.sessionId = data.sessionId;
+                        state.isLoading = false;
+                        renderStep();
+                    } else {
+                        throw new Error('質問の取得に失敗しました');
+                    }
+                })
+                .catch(function(error) {
+                    state.isLoading = false;
+                    state.error = error.message || 'ネットワークエラーが発生しました';
+                    renderError();
+                });
+        }
+
+        // Submit Answers to AI
+        function submitAnswers() {
+            state.isLoading = true;
+            renderLoading();
+
+            var body = JSON.stringify({
+                sessionId: state.sessionId,
+                answers: state.answers
+            });
+
+            fetch('/api/system-recommendation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: body
+            })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.success) {
+                        state.recommendations = data;
+                        state.isLoading = false;
+                        state.step = state.questions.length;
+                        renderResult();
+                    } else {
+                        throw new Error('推薦の取得に失敗しました');
+                    }
+                })
+                .catch(function(error) {
+                    state.isLoading = false;
+                    state.error = error.message || 'AIとの通信に失敗しました';
+                    renderError();
+                });
+        }
+
+        // Handle Answer Selection
+        function handleAnswer(answer) {
+            var question = state.questions[state.step];
+            state.answers.push({
+                questionId: question.id,
+                answer: answer
+            });
+
+            if (state.step === state.questions.length - 1) {
+                submitAnswers();
+            } else {
+                state.step++;
+                renderStep();
+            }
+        }
+
+        // Handle Back Button
+        function handleBack() {
+            if (state.step > 0) {
+                state.step--;
+                state.answers.pop();
+                renderStep();
+            }
+        }
+
+        // Render Current Step
+        function renderStep() {
+            if (state.step >= state.questions.length) {
+                return;
+            }
+
+            progress.style.display = 'block';
+            var question = state.questions[state.step];
+            var progressValue = ((state.step + 1) / state.questions.length) * 100;
+
+            progressLabel.textContent = '質問 ' + (state.step + 1) + ' / ' + state.questions.length;
+            progressPercent.textContent = Math.round(progressValue) + '%';
+            progressFill.style.width = progressValue + '%';
+
+            var html = '<div class="ai-question-title">' + question.text + '</div>';
+            html += '<div class="ai-options">';
+            question.options.forEach(function(option) {
+                html += '<button class="ai-option" data-answer="' + option + '">';
+                html += '<div class="ai-option-content">';
+                html += '<span class="ai-option-text">' + option + '</span>';
+                html += '<svg class="ai-option-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>';
+                html += '</div></button>';
+            });
+            html += '</div>';
+
+            if (state.step > 0) {
+                html += '<button class="ai-back-btn">← 前の質問に戻る</button>';
+            }
+
+            modalBody.innerHTML = html;
+
+            // Add event listeners
+            var options = modalBody.querySelectorAll('.ai-option');
+            options.forEach(function(option) {
+                option.addEventListener('click', function() {
+                    var answer = this.getAttribute('data-answer');
+                    handleAnswer(answer);
+                });
+            });
+
+            var backBtn = modalBody.querySelector('.ai-back-btn');
+            if (backBtn) {
+                backBtn.addEventListener('click', handleBack);
+            }
+        }
+
+        // Render Loading State
+        function renderLoading() {
+            progress.style.display = 'none';
+            modalBody.innerHTML = '<div class="ai-loading">' +
+                '<div class="ai-spinner"></div>' +
+                '<p class="ai-loading-title">AIが最適なシステムを分析中...</p>' +
+                '<p class="ai-loading-subtitle">30〜45秒ほどお待ちください</p>' +
+                '</div>';
+        }
+
+        // Render Result
+        function renderResult() {
+            progress.style.display = 'none';
+            var rec = state.recommendations;
+
+            var html = '<div class="ai-analysis">';
+            html += '<h3 class="ai-analysis-title">';
+            html += '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/></svg>';
+            html += 'AI分析結果</h3>';
+            html += '<p class="ai-analysis-text">' + rec.analysisText + '</p>';
+            html += '</div>';
+
+            html += '<h3 class="ai-results-title">おすすめのシステム（優先度順）</h3>';
+
+            rec.recommendations.forEach(function(sys) {
+                html += '<div class="ai-system-card" data-system-id="' + sys.systemId + '">';
+                html += '<div class="ai-system-header">';
+                html += '<div class="ai-system-title-group">';
+                html += '<span class="ai-priority-badge">' + sys.priority + '</span>';
+                html += '<h4 class="ai-system-name">' + sys.systemName + '</h4>';
+                html += '</div>';
+                html += '<svg class="ai-system-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>';
+                html += '</div>';
+                html += '<p class="ai-system-reason">' + sys.reason + '</p>';
+                html += '<div class="ai-system-time">';
+                html += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
+                html += '<span>推定削減時間: ' + sys.estimatedTimeSaving + '</span>';
+                html += '</div></div>';
+            });
+
+            html += '<div class="ai-actions">';
+            html += '<button class="ai-action-btn ai-action-primary" data-system-id="' + rec.recommendations[0].systemId + '">';
+            html += '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
+            html += '1位のシステムを詳しく見る</button>';
+            html += '<button class="ai-action-btn ai-action-secondary" id="aiRestartBtn">もう一度診断する</button>';
+            html += '</div>';
+
+            modalBody.innerHTML = html;
+
+            // Add event listeners
+            var cards = modalBody.querySelectorAll('.ai-system-card');
+            cards.forEach(function(card) {
+                card.addEventListener('click', function() {
+                    var systemId = this.getAttribute('data-system-id');
+                    window.location.href = '/systems/catalog?id=' + systemId;
+                });
+            });
+
+            var primaryBtn = modalBody.querySelector('.ai-action-primary');
+            if (primaryBtn) {
+                primaryBtn.addEventListener('click', function() {
+                    var systemId = this.getAttribute('data-system-id');
+                    window.location.href = '/systems/catalog?id=' + systemId;
+                });
+            }
+
+            var restartBtn = document.getElementById('aiRestartBtn');
+            if (restartBtn) {
+                restartBtn.addEventListener('click', resetState);
+            }
+        }
+
+        // Render Error State
+        function renderError() {
+            progress.style.display = 'none';
+            modalBody.innerHTML = '<div class="ai-error">' +
+                '<div class="ai-error-icon">⚠️</div>' +
+                '<p class="ai-error-message">' + (state.error || 'エラーが発生しました') + '</p>' +
+                '<button class="ai-action-btn ai-action-primary" id="aiRetryBtn">もう一度試す</button>' +
+                '</div>';
+
+            var retryBtn = document.getElementById('aiRetryBtn');
+            if (retryBtn) {
+                retryBtn.addEventListener('click', function() {
+                    state.error = null;
+                    fetchQuestions();
+                });
+            }
+        }
+
+        // Event Listeners
+        btn.addEventListener('click', openModal);
+        modalClose.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', closeModal);
+
+    })();
     </script>
 </body>
 
