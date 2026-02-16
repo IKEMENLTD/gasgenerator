@@ -711,16 +711,60 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         // ローディング表示
         lineClient.showLoadingAnimation(userId, 30).catch(() => { })
 
+        // 全角⇔半角を正規化して検索精度を向上
+        const normalizeWidth = (s: string) => s
+          .replace(/（/g, '(').replace(/）/g, ')').replace(/＋/g, '+')
+          .replace(/：/g, ':').replace(/／/g, '/').replace(/　/g, ' ')
+        const normalizedName = normalizeWidth(downloadSystemName)
+
         // 1. システム名でDBから検索（名前の部分一致）
-        const { data: systems, error: searchError } = await (await import('../../../lib/supabase/client')).supabaseAdmin
+        let { data: systems, error: searchError } = await (await import('../../../lib/supabase/client')).supabaseAdmin
           .from('systems')
           .select('*')
           .ilike('name', `%${downloadSystemName}%`)
           .eq('is_published', true)
           .limit(1)
 
+        // 1b. 見つからない場合、正規化した名前で再検索
+        if ((!systems || systems.length === 0) && normalizedName !== downloadSystemName) {
+          const retry = await (await import('../../../lib/supabase/client')).supabaseAdmin
+            .from('systems')
+            .select('*')
+            .ilike('name', `%${normalizedName}%`)
+            .eq('is_published', true)
+            .limit(1)
+          if (retry.data && retry.data.length > 0) {
+            systems = retry.data
+            searchError = retry.error
+          }
+        }
+
         if (searchError || !systems || systems.length === 0) {
-          // システムが見つからない場合
+          // 1c. DBに無い場合、カタログデータ(systems-data.ts)で確認
+          const { getSystemsData } = await import('../../../lib/data/systems-data')
+          const catalogSystems = getSystemsData()
+          const catalogMatch = catalogSystems.find(s =>
+            s.name === downloadSystemName ||
+            normalizeWidth(s.name) === normalizedName
+          )
+
+          if (catalogMatch) {
+            // カタログには存在 → AIコード生成へ誘導
+            await lineClient.replyMessage(replyToken, [{
+              type: 'text',
+              text: `📦 「${catalogMatch.name}」のGASコードをAIが生成します！\n\n下のボタンをタップしてください。`,
+              quickReply: {
+                items: [
+                  { type: 'action', action: { type: 'message', label: '🚀 コード生成', text: `${catalogMatch.name}のGASコードを作成して` } },
+                  { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+                  { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
+                ]
+              }
+            }] as any)
+            return true
+          }
+
+          // どこにも見つからない
           await lineClient.replyMessage(replyToken, [{
             type: 'text',
             text: `❌ 「${downloadSystemName}」というシステムが見つかりませんでした。\n\nシステムカタログで正確な名前を確認してください。`,
