@@ -694,31 +694,22 @@ export default function SystemCatalogPage() {
                     <p className="text-gray-600 text-sm line-clamp-2 hidden sm:block">{selectedSystem.description}</p>
                   </div>
                   <div className="flex flex-col gap-3 sm:flex-shrink-0">
-                    {/* ダウンロードボタンエリア */}
+                    {/* ダウンロードボタンエリア（有料プラン限定・LINE Bot経由） */}
                     <div className="flex flex-col gap-2 w-full sm:w-auto">
-                      <a
-                        href={selectedSystem.spreadsheetUrl || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => {
-                          if (!selectedSystem.spreadsheetUrl) {
-                            e.preventDefault()
-                            alert('現在準備中です。システムの設定が完了次第、ダウンロード可能になります。')
-                          }
-                        }}
-                        className={`inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl transition-all shadow-lg ${selectedSystem.spreadsheetUrl
-                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-green-500/30'
-                            : 'bg-gray-400 cursor-not-allowed shadow-none'
-                          }`}
+                      <div
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg shadow-green-500/30 cursor-default"
                       >
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
                           <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
                         </svg>
-                        {selectedSystem.spreadsheetUrl ? 'システムをダウンロード' : '準備中'}
-                      </a>
+                        システムをダウンロード
+                      </div>
                       <p className="text-xs text-center text-gray-500">
-                        {selectedSystem.spreadsheetUrl ? 'スプレッドシートのコピーが作成されます' : '近日公開予定'}
+                        有料プラン限定
+                      </p>
+                      <p className="text-xs text-center text-emerald-600 font-medium">
+                        LINE Botで「{selectedSystem.name}をダウンロード」と送信
                       </p>
                     </div>
 

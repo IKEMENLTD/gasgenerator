@@ -24,7 +24,7 @@ export class PremiumChecker {
       let { data: user, error: userError } = await (supabaseAdmin as any)
         .from('users')
         .select('display_name, subscription_status, subscription_end_date, monthly_usage_count, last_reset_date')
-        .eq('display_name', userId)
+        .eq('line_user_id', userId)
         .maybeSingle()
 
       // ユーザーが存在しない場合、新規作成
@@ -84,7 +84,7 @@ export class PremiumChecker {
               last_reset_date: now.toISOString().split('T')[0],
               last_reset_month: monthsSincePayment
             })
-            .eq('display_name', userId)
+            .eq('line_user_id', userId)
 
             ; (user as any).monthly_usage_count = 0
           logger.info('Premium monthly usage reset (payment cycle)', { userId, monthsSincePayment })
@@ -103,7 +103,7 @@ export class PremiumChecker {
               monthly_usage_count: 0,
               last_reset_date: now.toISOString().split('T')[0]
             })
-            .eq('display_name', userId)
+            .eq('line_user_id', userId)
 
             ; (user as any).monthly_usage_count = 0
           logger.info('Free user monthly usage reset', { userId })
@@ -176,7 +176,7 @@ export class PremiumChecker {
       const { data: user } = await (supabaseAdmin as any)
         .from('users')
         .select('monthly_usage_count, total_requests')
-        .eq('display_name', userId)
+        .eq('line_user_id', userId)
         .single()
 
       const currentCount = (user as any)?.monthly_usage_count || 0
@@ -189,7 +189,7 @@ export class PremiumChecker {
           total_requests: totalRequests + 1,
           last_active_at: new Date().toISOString()
         })
-        .eq('display_name', userId)
+        .eq('line_user_id', userId)
 
       if (error) {
         logger.error('Failed to update usage count', { error, userId })

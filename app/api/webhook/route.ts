@@ -752,17 +752,19 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             const sheetUrl = getSpreadsheetUrl(catalogMatch.id)
             const catalogUrl = `https://gasgenerator.onrender.com/systems/catalog?id=${catalogMatch.id}`
 
-            // サブスクリプション判定（有料プラン必須）
-            const { data: subscription } = await supabaseAdmin
-              .from('user_subscriptions')
-              .select('id, status, expires_at')
-              .eq('user_id', userId)
-              .eq('status', 'active')
-              .gt('expires_at', new Date().toISOString())
-              .limit(1)
+            // サブスクリプション判定（usersテーブルで統一）
+            const { data: catUser } = await supabaseAdmin
+              .from('users')
+              .select('subscription_status, subscription_end_date')
+              .eq('line_user_id', userId)
               .maybeSingle()
 
-            if (!subscription) {
+            const catUserIsPaid = catUser &&
+              (catUser.subscription_status === 'premium' || catUser.subscription_status === 'professional') &&
+              catUser.subscription_end_date &&
+              new Date(catUser.subscription_end_date) > new Date()
+
+            if (!catUserIsPaid) {
               // 無料ユーザー → 有料プラン案内
               await lineClient.replyMessage(replyToken, [{
                 type: 'text',
@@ -838,49 +840,27 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         const system = systems[0]
         logger.info('System found', { userId, systemId: system.id, systemName: system.name })
 
-        // 2. ダウンロード可否チェック
-        const canDownloadResult = await DownloadQueries.canDownload(userId, system.id)
+        // 2. usersテーブルでサブスクリプション判定（単一の真実のソース）
+        const { data: dlUser } = await supabaseAdmin
+          .from('users')
+          .select('subscription_status, subscription_end_date')
+          .eq('line_user_id', userId)
+          .maybeSingle()
 
-        if (!canDownloadResult.can_download) {
-          // ダウンロード不可の場合
-          let errorMessage = ''
+        const isPaidUser = dlUser &&
+          (dlUser.subscription_status === 'premium' || dlUser.subscription_status === 'professional') &&
+          dlUser.subscription_end_date &&
+          new Date(dlUser.subscription_end_date) > new Date()
 
-          if (canDownloadResult.reason === 'no_subscription') {
-            errorMessage = `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 2ヶ月に1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`
-          } else if (canDownloadResult.reason === 'download_limit_reached') {
-            const nextPeriod = canDownloadResult.next_period
-              ? new Date(canDownloadResult.next_period as string).toLocaleDateString('ja-JP')
-              : '次の期間'
-            errorMessage = `❌ ダウンロード上限に達しています。\n\n現在: ${canDownloadResult.current}/${canDownloadResult.limit}回\n次回ダウンロード可能日: ${nextPeriod}\n\n上位プランへのアップグレードをご検討ください。`
-          } else {
-            errorMessage = `❌ ${canDownloadResult.message}`
-          }
-
+        if (!isPaidUser) {
           await lineClient.replyMessage(replyToken, [{
             type: 'text',
-            text: errorMessage,
+            text: `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 2ヶ月に1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
             quickReply: {
               items: [
                 { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
                 { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
                 { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
-              ]
-            }
-          }] as any)
-          return true
-        }
-
-        // 3. ダウンロード実行
-        const downloadResult = await DownloadQueries.executeDownload(userId, system.id)
-
-        if (!downloadResult.success && downloadResult.reason !== 'already_downloaded') {
-          await lineClient.replyMessage(replyToken, [{
-            type: 'text',
-            text: `❌ ダウンロードに失敗しました。\n\n${downloadResult.message}\n\n時間をおいて再度お試しください。`,
-            quickReply: {
-              items: [
-                { type: 'action', action: { type: 'message', label: '🔄 再試行', text: `${system.name}をダウンロード` } },
-                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } }
               ]
             }
           }] as any)
@@ -984,9 +964,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
               contents: [
                 {
                   type: 'text',
-                  text: downloadResult.reason === 'already_downloaded'
-                    ? '※ 再ダウンロード（カウント消費なし）'
-                    : `残りダウンロード回数: ${downloadResult.remaining ?? '確認中'}`,
+                  text: `プラン: ${dlUser?.subscription_status === 'professional' ? 'プロフェッショナル' : 'プレミアム'}`,
                   size: 'xs',
                   color: '#888888',
                   align: 'center'
@@ -1029,7 +1007,6 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           userId,
           systemId: system.id,
           systemName: system.name,
-          isRedownload: downloadResult.reason === 'already_downloaded'
         })
 
         return true
