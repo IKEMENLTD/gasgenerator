@@ -585,9 +585,13 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       return true // スパムは処理終了
     }
 
-    // RAG: システム一覧コマンド → カタログページへ誘導
+    // RAG: システム一覧コマンド → カタログページへ誘導（署名付きURL）
     if (messageText === 'システム一覧' || messageText === 'システムカタログ' || messageText === 'システムを見る') {
-      const catalogUrl = 'https://gasgenerator.onrender.com/systems/catalog'
+      // 署名付きURLでカタログページにユーザー情報を渡す
+      const encodedUserId = btoa(userId)
+      const timestamp = Date.now().toString()
+      const sig = await generateUrlSignature(`${encodedUserId}:${timestamp}`)
+      const catalogUrl = `https://gasgenerator.onrender.com/systems/catalog?u=${encodeURIComponent(encodedUserId)}&t=${timestamp}&s=${sig}`
 
       // Flex Messageでカタログページへのリンクを表示
       await lineClient.replyMessage(replyToken, [{

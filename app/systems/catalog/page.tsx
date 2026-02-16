@@ -1,6 +1,16 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+
+// 認証状態の型
+interface AuthState {
+  loading: boolean
+  authenticated: boolean
+  isPaid: boolean
+  planName: string
+  // URL認証パラメータ保持（ダウンロードURLに使用）
+  authParams: string
+}
 
 // システムデータ
 const systems = [
@@ -441,6 +451,45 @@ export default function SystemCatalogPage() {
   // モバイルでは最初からサイドバー（システム一覧）を開いた状態にする
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
+  // 認証状態（LINE Bot経由の署名付きURLで有料/無料を判定）
+  const [auth, setAuth] = useState<AuthState>({
+    loading: true,
+    authenticated: false,
+    isPaid: false,
+    planName: '',
+    authParams: '',
+  })
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const u = params.get('u')
+    const t = params.get('t')
+    const s = params.get('s')
+
+    if (!u || !t || !s) {
+      // 署名パラメータなし → 未認証（直接アクセス）
+      setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '' })
+      return
+    }
+
+    const authParams = `u=${encodeURIComponent(u)}&t=${t}&s=${s}`
+
+    fetch(`/api/systems/catalog-auth?${authParams}`)
+      .then(res => res.json())
+      .then(data => {
+        setAuth({
+          loading: false,
+          authenticated: data.authenticated || false,
+          isPaid: data.isPaid || false,
+          planName: data.planName || '',
+          authParams,
+        })
+      })
+      .catch(() => {
+        setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '' })
+      })
+  }, [])
+
   // 検索フィルタ
   const filteredSystems = useMemo(() => {
     if (!searchQuery.trim()) return systems
@@ -694,23 +743,63 @@ export default function SystemCatalogPage() {
                     <p className="text-gray-600 text-sm line-clamp-2 hidden sm:block">{selectedSystem.description}</p>
                   </div>
                   <div className="flex flex-col gap-3 sm:flex-shrink-0">
-                    {/* ダウンロードボタンエリア（有料プラン限定・LINE Bot経由） */}
+                    {/* ダウンロードボタンエリア */}
                     <div className="flex flex-col gap-2 w-full sm:w-auto">
-                      <div
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg shadow-green-500/30 cursor-default"
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
-                          <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
-                        </svg>
-                        システムをダウンロード
-                      </div>
-                      <p className="text-xs text-center text-gray-500">
-                        有料プラン限定
-                      </p>
-                      <p className="text-xs text-center text-emerald-600 font-medium">
-                        LINE Botで「{selectedSystem.name}をダウンロード」と送信
-                      </p>
+                      {auth.loading ? (
+                        /* ローディング中 */
+                        <div className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gray-400 cursor-default">
+                          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          読み込み中...
+                        </div>
+                      ) : auth.isPaid && selectedSystem.spreadsheetUrl ? (
+                        /* 有料ユーザー + スプレッドシートあり → ダウンロード可能 */
+                        <a
+                          href={`/api/systems/download?id=${selectedSystem.id}&${auth.authParams}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg shadow-green-500/30"
+                        >
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                            <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
+                          </svg>
+                          システムをダウンロード
+                        </a>
+                      ) : auth.isPaid && !selectedSystem.spreadsheetUrl ? (
+                        /* 有料ユーザー + スプレッドシートなし → 準備中 */
+                        <div className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gray-400 cursor-default">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                            <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
+                          </svg>
+                          準備中
+                        </div>
+                      ) : (
+                        /* 無料ユーザー or 未認証 → 有料プラン限定表示 */
+                        <>
+                          <div className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg shadow-green-500/30 cursor-default opacity-60">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                              <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
+                            </svg>
+                            システムをダウンロード
+                          </div>
+                          <p className="text-xs text-center text-gray-500">
+                            有料プラン限定
+                          </p>
+                          <p className="text-xs text-center text-emerald-600 font-medium">
+                            LINE Botで「{selectedSystem.name}をダウンロード」と送信
+                          </p>
+                        </>
+                      )}
+                      {auth.isPaid && (
+                        <p className="text-xs text-center text-emerald-600 font-medium">
+                          {auth.planName}
+                        </p>
+                      )}
                     </div>
 
                     {/* 使い方説明書ボタン */}
