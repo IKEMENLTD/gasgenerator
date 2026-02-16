@@ -135,6 +135,14 @@ export class MessageTemplates {
               type: 'action',
               action: {
                 type: 'message',
+                label: '🔍 AI診断',
+                text: 'AI診断'
+              }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'message',
                 label: '📊 スプレッドシート',
                 text: 'スプレッドシート操作'
               }

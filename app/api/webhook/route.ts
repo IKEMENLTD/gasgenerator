@@ -21,6 +21,7 @@ import { QAService } from '../../../lib/rag/qa-service'
 import { DownloadQueries } from '../../../lib/supabase/subscription-queries'
 import { supabaseAdmin } from '../../../lib/supabase/client'
 import { startDrip, stopDrip, checkAndStopDripOnUserAction } from '../../../lib/drip/drip-service'
+import { handleDiagnosis, isDiagnosisTrigger } from '../../../lib/line/diagnosis-handler'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -296,6 +297,12 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: '📸 解析したい画像を送信してください。\n\nスクリーンショット、エラー画面、Excel・PDFのスクショなど、どんな画像でも解析します。'
       }])
       return true
+    }
+
+    // AI診断ハンドラー（diagnosisMode中の回答 or トリガーテキスト）
+    if ((context as any)?.diagnosisMode || isDiagnosisTrigger(messageText)) {
+      const handled = await handleDiagnosis(userId, messageText, replyToken, context, sessionManager, lineClient)
+      if (handled) return true
     }
 
     // 無料相談予約
@@ -1055,6 +1062,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           quickReply: {
             items: [
               { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+              { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
               { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
               { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
               { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
@@ -1087,6 +1095,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         quickReply: {
           items: [
             { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+            { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
             { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' } },
             { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
             { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' } },

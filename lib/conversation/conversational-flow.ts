@@ -46,6 +46,10 @@ export interface ConversationContext {
   imageContent?: string
   errorScreenshot?: string
   currentStep?: number
+  // AI診断モード
+  diagnosisMode?: boolean
+  diagnosisStep?: number
+  diagnosisAnswers?: Array<{ questionId: number; answer: string }>
 }
 
 // カテゴリ別の質問テンプレート
