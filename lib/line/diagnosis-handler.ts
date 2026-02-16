@@ -10,7 +10,7 @@ import {
   generateRecommendationPrompt,
   parseRecommendationResponse,
 } from '@/lib/ai/recommendation-prompt'
-import { getSystemsData } from '@/lib/data/systems-data'
+import { getSystemsData, getSpreadsheetUrl } from '@/lib/data/systems-data'
 import { logger } from '@/lib/utils/logger'
 
 // 5つの質問定義
@@ -131,9 +131,9 @@ function buildResultCarousel(recommendations: Array<{
         {
           type: 'button',
           action: {
-            type: 'message',
+            type: 'uri',
             label: 'ダウンロード',
-            text: `${exactName}をダウンロード`,
+            uri: getSpreadsheetUrl(rec.systemId) || `https://gasgenerator.onrender.com/systems/catalog?id=${rec.systemId}`,
           },
           style: 'secondary',
           margin: 'sm',

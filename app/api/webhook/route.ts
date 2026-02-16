@@ -741,7 +741,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
         if (searchError || !systems || systems.length === 0) {
           // 1c. DBに無い場合、カタログデータ(systems-data.ts)で確認
-          const { getSystemsData } = await import('../../../lib/data/systems-data')
+          const { getSystemsData, getSpreadsheetUrl } = await import('../../../lib/data/systems-data')
           const catalogSystems = getSystemsData()
           const catalogMatch = catalogSystems.find(s =>
             s.name === downloadSystemName ||
@@ -749,18 +749,51 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           )
 
           if (catalogMatch) {
-            // カタログには存在 → AIコード生成へ誘導
-            await lineClient.replyMessage(replyToken, [{
-              type: 'text',
-              text: `📦 「${catalogMatch.name}」のGASコードをAIが生成します！\n\n下のボタンをタップしてください。`,
-              quickReply: {
-                items: [
-                  { type: 'action', action: { type: 'message', label: '🚀 コード生成', text: `${catalogMatch.name}のGASコードを作成して` } },
-                  { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
-                  { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
-                ]
-              }
-            }] as any)
+            // カタログには存在 → スプレッドシートURL or カタログページへ誘導
+            const sheetUrl = getSpreadsheetUrl(catalogMatch.id)
+            const catalogUrl = `https://gasgenerator.onrender.com/systems/catalog?id=${catalogMatch.id}`
+
+            if (sheetUrl) {
+              // スプレッドシートURLあり → 直接リンク案内
+              await lineClient.replyMessage(replyToken, [{
+                type: 'flex',
+                altText: `${catalogMatch.name} ダウンロード`,
+                contents: {
+                  type: 'bubble',
+                  size: 'kilo',
+                  body: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                      { type: 'text', text: `📦 ${catalogMatch.name}`, weight: 'bold', size: 'md', wrap: true },
+                      { type: 'text', text: '下のボタンからスプレッドシートを開けます。「コピーを作成」でご自身のGoogleドライブに保存してください。', size: 'xs', color: '#666666', wrap: true, margin: 'md' },
+                    ],
+                    paddingAll: '15px',
+                  },
+                  footer: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                      { type: 'button', action: { type: 'uri', label: 'スプレッドシートを開く', uri: sheetUrl }, style: 'primary', color: '#10b981', height: 'sm' },
+                      { type: 'button', action: { type: 'uri', label: 'カタログで見る', uri: catalogUrl }, style: 'secondary', margin: 'sm', height: 'sm' },
+                    ],
+                    paddingAll: '12px',
+                  },
+                },
+              }] as any)
+            } else {
+              // スプレッドシート未準備 → カタログページへ誘導
+              await lineClient.replyMessage(replyToken, [{
+                type: 'text',
+                text: `📦 「${catalogMatch.name}」は現在準備中です。\n\nカタログページで詳細をご確認ください。`,
+                quickReply: {
+                  items: [
+                    { type: 'action', action: { type: 'uri', label: '📦 カタログで見る', uri: catalogUrl } },
+                    { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
+                  ]
+                }
+              }] as any)
+            }
             return true
           }
 
