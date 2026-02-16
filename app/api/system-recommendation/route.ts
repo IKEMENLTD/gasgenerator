@@ -158,11 +158,9 @@ export async function POST(request: NextRequest) {
           content: prompt,
         },
       ],
-      {
-        maxTokens: 2000,
-        temperature: 0.7,
-        timeout: 45000, // 45秒
-      }
+      undefined, // userId
+      3, // maxRetries
+      2000 // customMaxTokens
     )
 
     // DEBUG: レスポンスオブジェクトの構造を確認
