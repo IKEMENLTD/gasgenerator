@@ -749,12 +749,37 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           )
 
           if (catalogMatch) {
-            // カタログには存在 → スプレッドシートURL or カタログページへ誘導
             const sheetUrl = getSpreadsheetUrl(catalogMatch.id)
             const catalogUrl = `https://gasgenerator.onrender.com/systems/catalog?id=${catalogMatch.id}`
 
+            // サブスクリプション判定（有料プラン必須）
+            const { data: subscription } = await supabaseAdmin
+              .from('user_subscriptions')
+              .select('id, status, expires_at')
+              .eq('user_id', userId)
+              .eq('status', 'active')
+              .gt('expires_at', new Date().toISOString())
+              .limit(1)
+              .maybeSingle()
+
+            if (!subscription) {
+              // 無料ユーザー → 有料プラン案内
+              await lineClient.replyMessage(replyToken, [{
+                type: 'text',
+                text: `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 2ヶ月に1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
+                quickReply: {
+                  items: [
+                    { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+                    { type: 'action', action: { type: 'uri', label: '📦 カタログで見る', uri: catalogUrl } },
+                    { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
+                  ]
+                }
+              }] as any)
+              return true
+            }
+
+            // 有料ユーザー → スプレッドシートURL提供
             if (sheetUrl) {
-              // スプレッドシートURLあり → 直接リンク案内
               await lineClient.replyMessage(replyToken, [{
                 type: 'flex',
                 altText: `${catalogMatch.name} ダウンロード`,
@@ -765,8 +790,9 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
                     type: 'box',
                     layout: 'vertical',
                     contents: [
-                      { type: 'text', text: `📦 ${catalogMatch.name}`, weight: 'bold', size: 'md', wrap: true },
-                      { type: 'text', text: '下のボタンからスプレッドシートを開けます。「コピーを作成」でご自身のGoogleドライブに保存してください。', size: 'xs', color: '#666666', wrap: true, margin: 'md' },
+                      { type: 'text', text: '✅ ダウンロード', weight: 'bold', size: 'md', color: '#10b981' },
+                      { type: 'text', text: catalogMatch.name, weight: 'bold', size: 'sm', margin: 'sm', wrap: true },
+                      { type: 'text', text: '「コピーを作成」でご自身のGoogleドライブに保存してください。', size: 'xs', color: '#666666', wrap: true, margin: 'md' },
                     ],
                     paddingAll: '15px',
                   },
@@ -775,17 +801,15 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
                     layout: 'vertical',
                     contents: [
                       { type: 'button', action: { type: 'uri', label: 'スプレッドシートを開く', uri: sheetUrl }, style: 'primary', color: '#10b981', height: 'sm' },
-                      { type: 'button', action: { type: 'uri', label: 'カタログで見る', uri: catalogUrl }, style: 'secondary', margin: 'sm', height: 'sm' },
                     ],
                     paddingAll: '12px',
                   },
                 },
               }] as any)
             } else {
-              // スプレッドシート未準備 → カタログページへ誘導
               await lineClient.replyMessage(replyToken, [{
                 type: 'text',
-                text: `📦 「${catalogMatch.name}」は現在準備中です。\n\nカタログページで詳細をご確認ください。`,
+                text: `📦 「${catalogMatch.name}」は現在準備中です。\n\n完成次第ダウンロード可能になります。`,
                 quickReply: {
                   items: [
                     { type: 'action', action: { type: 'uri', label: '📦 カタログで見る', uri: catalogUrl } },
