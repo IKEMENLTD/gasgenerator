@@ -11,6 +11,7 @@ import {
   parseRecommendationResponse,
 } from '@/lib/ai/recommendation-prompt'
 import { getSystemsData } from '@/lib/data/systems-data'
+import { generateUrlSignature } from '@/lib/utils/crypto'
 import { logger } from '@/lib/utils/logger'
 
 // 5つの質問定義
@@ -77,7 +78,7 @@ function buildResultCarousel(recommendations: Array<{
   priority: number
   reason: string
   estimatedTimeSaving: string
-}>, systemsData: Array<{ id: string; name: string }>) {
+}>, systemsData: Array<{ id: string; name: string }>, catalogAuthParams: string) {
   const headerColors = ['#059669', '#0ea5e9', '#8b5cf6']
 
   const bubbles = recommendations.map((rec, i) => {
@@ -122,7 +123,7 @@ function buildResultCarousel(recommendations: Array<{
           action: {
             type: 'uri',
             label: 'カタログで見る',
-            uri: `https://gasgenerator.onrender.com/systems/catalog?id=${rec.systemId}`,
+            uri: `https://gasgenerator.onrender.com/systems/catalog?id=${rec.systemId}&${catalogAuthParams}`,
           },
           style: 'primary',
           color: headerColors[i] || '#06b6d4',
@@ -288,8 +289,14 @@ export async function handleDiagnosis(
       systemIds: recommendation.recommendations.map((r) => r.systemId),
     })
 
+    // 署名付きカタログURLパラメータ生成
+    const encodedUserId = btoa(userId)
+    const timestamp = Date.now().toString()
+    const sig = await generateUrlSignature(`${encodedUserId}:${timestamp}`)
+    const catalogAuthParams = `u=${encodeURIComponent(encodedUserId)}&t=${timestamp}&s=${sig}`
+
     // 結果をFlexカルーセルで送信
-    const carouselMessage = buildResultCarousel(recommendation.recommendations, systems)
+    const carouselMessage = buildResultCarousel(recommendation.recommendations, systems, catalogAuthParams)
     const analysisMessage = {
       type: 'text',
       text: `📊 診断結果\n\n${recommendation.analysisText || '上記3つのシステムがあなたの業務に最適です。'}`,

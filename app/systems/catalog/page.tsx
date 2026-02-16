@@ -462,6 +462,18 @@ export default function SystemCatalogPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+
+    // URLの id パラメータでシステム初期選択
+    const idParam = params.get('id')
+    if (idParam) {
+      const padded = idParam.padStart(2, '0')
+      if (systems.find(s => s.id === padded)) {
+        setSelectedSystemId(padded)
+        setIsSidebarOpen(false)
+      }
+    }
+
+    // 署名付きURL認証
     const u = params.get('u')
     const t = params.get('t')
     const s = params.get('s')
