@@ -172,6 +172,17 @@ const systems = [
     manualUrl: 'https://drive.google.com/file/d/1BfbmlJJMFXaftoHLTB-n_etsppINxeIH/view?usp=drive_link',
   },
   {
+    id: '15',
+    name: 'Casual Button',
+    tagline: 'スカウトへの返答を1タップで完結',
+    description: 'スカウトメッセージに1タップで返事できるURLを自動生成。候補者はリンクをタップするだけで回答でき、結果は管理画面とスプレッドシートに自動記録されます。スマホ・PC両対応。',
+    tags: ['スカウト管理', 'URL生成', '候補者対応', '1タップ返信'],
+    previewUrl: 'https://celadon-otter-c8de78.netlify.app/admin/',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1UIo1RuvXOg8T425Jr_LiTBZHI0XI8k7q/edit?gid=1965445011#gid=1965445011',
+    manualUrl: 'https://drive.google.com/file/d/1AriJmVBUthKeQOUCLTzCnkmO9K8UJp_KPCubCOVZCxc/view?usp=drive_link',
+  },
+  {
     id: '16',
     name: '経費精算ワークフロー',
     tagline: '経費申請・承認・精算の一元管理',
