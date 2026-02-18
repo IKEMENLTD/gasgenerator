@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
+import { getDownloadInfo } from '@/lib/download/download-limiter'
 
 export const runtime = 'edge'
 
@@ -84,12 +85,23 @@ export async function GET(request: NextRequest) {
       user.subscription_end_date &&
       new Date(user.subscription_end_date) > now
 
+    // 有料ユーザーの場合、ダウンロード残回数を取得
+    let downloadsRemaining = 0
+    let downloadsLimit = 0
+    if (isPaid) {
+      const dlInfo = await getDownloadInfo(userId, user.subscription_status)
+      downloadsRemaining = dlInfo.remaining
+      downloadsLimit = dlInfo.limit
+    }
+
     return NextResponse.json({
       authenticated: true,
       isPaid,
       planName: isPaid
         ? (user.subscription_status === 'professional' ? 'プロフェッショナルプラン' : 'プレミアムプラン')
         : '無料プラン',
+      downloadsRemaining,
+      downloadsLimit,
     })
 
   } catch (error) {

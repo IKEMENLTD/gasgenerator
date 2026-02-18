@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/client'
 import { getSpreadsheetUrl } from '@/lib/data/systems-data'
 import { logger } from '@/lib/utils/logger'
+import { checkAndRecordDownload } from '@/lib/download/download-limiter'
 
 export const runtime = 'edge'
 
@@ -87,8 +88,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL(`/systems/catalog?error=not_ready&id=${systemId}`, request.url))
     }
 
-    // ダウンロード記録
-    logger.info('Catalog download', { userId, systemId })
+    // ダウンロード回数チェック & 記録
+    const downloadCheck = await checkAndRecordDownload(userId, user.subscription_status, systemId, '')
+    if (!downloadCheck.allowed) {
+      const limitParam = `download_limit&plan=${user.subscription_status}&limit=${downloadCheck.limit}`
+      return NextResponse.redirect(new URL(`/systems/catalog?error=${limitParam}`, request.url))
+    }
+
+    logger.info('Catalog download', { userId, systemId, remaining: downloadCheck.remaining })
 
     // スプレッドシートにリダイレクト
     return NextResponse.redirect(spreadsheetUrl)

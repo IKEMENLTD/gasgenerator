@@ -10,6 +10,9 @@ interface AuthState {
   planName: string
   // URL認証パラメータ保持（ダウンロードURLに使用）
   authParams: string
+  // ダウンロード回数制限
+  downloadsRemaining: number
+  downloadsLimit: number
 }
 
 // システムデータ
@@ -458,6 +461,8 @@ export default function SystemCatalogPage() {
     isPaid: false,
     planName: '',
     authParams: '',
+    downloadsRemaining: 0,
+    downloadsLimit: 0,
   })
 
   useEffect(() => {
@@ -480,7 +485,7 @@ export default function SystemCatalogPage() {
 
     if (!u || !t || !s) {
       // 署名パラメータなし → 未認証（直接アクセス）
-      setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '' })
+      setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '', downloadsRemaining: 0, downloadsLimit: 0 })
       return
     }
 
@@ -495,10 +500,12 @@ export default function SystemCatalogPage() {
           isPaid: data.isPaid || false,
           planName: data.planName || '',
           authParams,
+          downloadsRemaining: data.downloadsRemaining || 0,
+          downloadsLimit: data.downloadsLimit || 0,
         })
       })
       .catch(() => {
-        setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '' })
+        setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '', downloadsRemaining: 0, downloadsLimit: 0 })
       })
   }, [])
 
@@ -766,20 +773,39 @@ export default function SystemCatalogPage() {
                           </svg>
                           読み込み中...
                         </div>
-                      ) : auth.isPaid && selectedSystem.spreadsheetUrl ? (
-                        /* 有料ユーザー + スプレッドシートあり → ダウンロード可能 */
-                        <a
-                          href={`/api/systems/download?id=${selectedSystem.id}&${auth.authParams}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg shadow-green-500/30"
-                        >
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
-                            <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
-                          </svg>
-                          システムをダウンロード
-                        </a>
+                      ) : auth.isPaid && selectedSystem.spreadsheetUrl && auth.downloadsRemaining > 0 ? (
+                        /* 有料ユーザー + スプレッドシートあり + 残回数あり → ダウンロード可能 */
+                        <>
+                          <a
+                            href={`/api/systems/download?id=${selectedSystem.id}&${auth.authParams}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg shadow-green-500/30"
+                          >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                              <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
+                            </svg>
+                            システムをダウンロード
+                          </a>
+                          <p className="text-xs text-center text-emerald-600">
+                            今月の残り: {auth.downloadsRemaining}/{auth.downloadsLimit}回
+                          </p>
+                        </>
+                      ) : auth.isPaid && selectedSystem.spreadsheetUrl && auth.downloadsRemaining <= 0 ? (
+                        /* 有料ユーザー + スプレッドシートあり + 上限到達 → ダウンロード不可 */
+                        <>
+                          <div className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gray-400 cursor-default">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                              <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
+                            </svg>
+                            今月の上限に達しました
+                          </div>
+                          <p className="text-xs text-center text-orange-600 font-medium">
+                            月{auth.downloadsLimit}回まで（来月リセットされます）
+                          </p>
+                        </>
                       ) : auth.isPaid && !selectedSystem.spreadsheetUrl ? (
                         /* 有料ユーザー + スプレッドシートなし → 準備中 + 面談誘導 */
                         <>

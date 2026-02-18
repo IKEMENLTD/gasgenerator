@@ -772,7 +772,26 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
               // 無料ユーザー → 有料プラン案内
               await lineClient.replyMessage(replyToken, [{
                 type: 'text',
-                text: `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 2ヶ月に1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
+                text: `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 毎月1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
+                quickReply: {
+                  items: [
+                    { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+                    { type: 'action', action: { type: 'uri', label: '📦 カタログで見る', uri: catalogUrl } },
+                    { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
+                  ]
+                }
+              }] as any)
+              return true
+            }
+
+            // ダウンロード回数チェック
+            const { checkAndRecordDownload: catCheckDL } = await import('../../../lib/download/download-limiter')
+            const catDlResult = await catCheckDL(userId, catUser.subscription_status, catalogMatch.id, catalogMatch.name)
+            if (!catDlResult.allowed) {
+              const planLabel = catUser.subscription_status === 'professional' ? '5万円プラン' : '1万円プラン'
+              await lineClient.replyMessage(replyToken, [{
+                type: 'text',
+                text: `⚠️ 今月のダウンロード上限（${catDlResult.limit}回）に達しています。\n\n📋 ${planLabel}: 月${catDlResult.limit}回まで\n\n来月になるとリセットされます。\nより多くダウンロードしたい場合は、プランのアップグレードをご検討ください。`,
                 quickReply: {
                   items: [
                     { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
@@ -859,7 +878,26 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         if (!isPaidUser) {
           await lineClient.replyMessage(replyToken, [{
             type: 'text',
-            text: `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 2ヶ月に1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
+            text: `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 毎月1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
+            quickReply: {
+              items: [
+                { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+                { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
+              ]
+            }
+          }] as any)
+          return true
+        }
+
+        // ダウンロード回数チェック
+        const { checkAndRecordDownload: dbCheckDL } = await import('../../../lib/download/download-limiter')
+        const dbDlResult = await dbCheckDL(userId, dlUser.subscription_status, system.id, system.name)
+        if (!dbDlResult.allowed) {
+          const dbPlanLabel = dlUser.subscription_status === 'professional' ? '5万円プラン' : '1万円プラン'
+          await lineClient.replyMessage(replyToken, [{
+            type: 'text',
+            text: `⚠️ 今月のダウンロード上限（${dbDlResult.limit}回）に達しています。\n\n📋 ${dbPlanLabel}: 月${dbDlResult.limit}回まで\n\n来月になるとリセットされます。\nより多くダウンロードしたい場合は、プランのアップグレードをご検討ください。`,
             quickReply: {
               items: [
                 { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
