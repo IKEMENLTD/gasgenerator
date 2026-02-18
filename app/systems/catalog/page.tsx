@@ -781,16 +781,32 @@ export default function SystemCatalogPage() {
                           システムをダウンロード
                         </a>
                       ) : auth.isPaid && !selectedSystem.spreadsheetUrl ? (
-                        /* 有料ユーザー + スプレッドシートなし → 準備中 */
-                        <div className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gray-400 cursor-default">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
-                            <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
-                          </svg>
-                          準備中
-                        </div>
+                        /* 有料ユーザー + スプレッドシートなし → 準備中 + 面談誘導 */
+                        <>
+                          <div className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gray-400 cursor-default">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                              <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
+                            </svg>
+                            準備中
+                          </div>
+                          <a
+                            href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg shadow-orange-500/30"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            このシステムについて無料相談
+                          </a>
+                          <p className="text-xs text-center text-gray-500">
+                            導入・カスタマイズのご相談を承ります
+                          </p>
+                        </>
                       ) : (
-                        /* 無料ユーザー or 未認証 → 有料プラン限定表示 */
+                        /* 無料ユーザー or 未認証 → 面談誘導 */
                         <>
                           <div className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg shadow-green-500/30 cursor-default opacity-60">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -802,8 +818,19 @@ export default function SystemCatalogPage() {
                           <p className="text-xs text-center text-gray-500">
                             有料プラン限定
                           </p>
-                          <p className="text-xs text-center text-emerald-600 font-medium">
-                            LINE Botで「{selectedSystem.name}をダウンロード」と送信
+                          <a
+                            href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg shadow-orange-500/30"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            無料相談を予約する
+                          </a>
+                          <p className="text-xs text-center text-orange-600 font-medium">
+                            導入のご質問・お見積り・カスタマイズ相談
                           </p>
                         </>
                       )}
