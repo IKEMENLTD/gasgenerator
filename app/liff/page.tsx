@@ -25,7 +25,7 @@ export default function LiffBridgePage() {
         const params = new URLSearchParams(window.location.search)
         const visitId = params.get('visit_id')
         const encodedLineUrl = params.get('line_url')
-        const liffId = process.env.NEXT_PUBLIC_LIFF_ID
+        const liffId = process.env.NEXT_PUBLIC_LIFF_ID || '2009173525-SZzAqCLG'
 
         if (encodedLineUrl) {
           setLineUrl(decodeURIComponent(encodedLineUrl))
