@@ -192,8 +192,21 @@ function TermsContent() {
                   </div>
                 </section>
 
-                {/* Other sections 8-16 omitted for brevity but should be included in full implementation. 
-                            I'll include the Contact section (Article 17) */}
+                <section className="mb-10">
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">第8条（解約および再契約）</h3>
+                  <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded mb-4">
+                    <p className="text-sm text-amber-800">
+                      <strong>重要:</strong> 一度解約されたアカウントの再契約（復活）には、データ突合作業が必要となるため、別途手数料が発生します。
+                    </p>
+                  </div>
+                  <ul className="text-sm text-gray-600 space-y-1 pl-4 list-disc">
+                    <li>解約後の再契約（アカウント復活）には、データ突合・復旧手数料として<strong>50,000円（税別）</strong>が別途発生します</li>
+                    <li>解約後のデータ保持期間は30日間とし、30日を超過した場合はデータが完全に削除されます</li>
+                    <li>データ削除後の復旧は技術的に不可能です</li>
+                    <li>再契約時は通常の月額料金に加え、上記手数料をお支払いいただきます</li>
+                    <li>解約前に十分ご検討のうえ、お手続きください</li>
+                  </ul>
+                </section>
 
                 <section className="mb-10">
                   <h3 className="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">第17条（お問い合わせ）</h3>
