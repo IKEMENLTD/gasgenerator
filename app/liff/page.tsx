@@ -16,6 +16,11 @@ export default function LiffBridgePage() {
   const [message, setMessage] = useState('読み込み中...')
   const [lineUrl, setLineUrl] = useState<string | null>(null)
   const [sdkLoaded, setSdkLoaded] = useState(false)
+  const [debugLog, setDebugLog] = useState<string[]>([])
+
+  const addLog = (msg: string) => {
+    setDebugLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`])
+  }
 
   useEffect(() => {
     if (!sdkLoaded) return
@@ -27,6 +32,11 @@ export default function LiffBridgePage() {
         const encodedLineUrl = params.get('line_url')
         const liffId = process.env.NEXT_PUBLIC_LIFF_ID || '2009173525-SZzAqCLG'
 
+        addLog(`visit_id: ${visitId || 'MISSING'}`)
+        addLog(`liffId: ${liffId}`)
+        addLog(`line_url: ${encodedLineUrl ? 'SET' : 'MISSING'}`)
+        addLog(`userAgent: ${navigator.userAgent.substring(0, 50)}...`)
+
         if (encodedLineUrl) {
           setLineUrl(decodeURIComponent(encodedLineUrl))
         }
@@ -34,23 +44,20 @@ export default function LiffBridgePage() {
         if (!visitId) {
           setStatus('error')
           setMessage('訪問情報が見つかりません')
-          return
-        }
-
-        if (!liffId) {
-          // LIFF未設定 → 直接LINEリンクへフォールバック
-          if (encodedLineUrl) {
-            window.location.href = decodeURIComponent(encodedLineUrl)
-          }
+          addLog('ERROR: visit_id missing')
           return
         }
 
         // LIFF 初期化
+        addLog('LIFF init starting...')
         setMessage('LINE連携中...')
         await window.liff.init({ liffId })
+        addLog(`LIFF init OK. isInClient: ${window.liff.isInClient()}, isLoggedIn: ${window.liff.isLoggedIn()}`)
+        addLog(`LIFF OS: ${window.liff.getOS()}, Language: ${window.liff.getLanguage()}`)
 
         // ログインチェック
         if (!window.liff.isLoggedIn()) {
+          addLog('Not logged in, redirecting to LINE login...')
           window.liff.login({ redirectUri: window.location.href })
           return
         }
@@ -58,9 +65,12 @@ export default function LiffBridgePage() {
         // プロフィール取得
         setStatus('linking')
         setMessage('アカウント連携中...')
+        addLog('Getting profile...')
         const profile = await window.liff.getProfile()
+        addLog(`Profile OK: ${profile.displayName} (${profile.userId.substring(0, 8)}...)`)
 
         // サーバーに紐付けリクエスト
+        addLog(`POST /api/link-visit (visitId: ${visitId})`)
         const response = await fetch('/api/link-visit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -72,42 +82,43 @@ export default function LiffBridgePage() {
           })
         })
 
+        const responseData = await response.json()
+        addLog(`API response: ${response.status} ${JSON.stringify(responseData)}`)
+
         if (!response.ok) {
-          throw new Error('紐付けに失敗しました')
+          throw new Error(`API error: ${response.status} ${JSON.stringify(responseData)}`)
         }
 
         // 友だち追加状態チェック
-        const friendship = await window.liff.getFriendship()
+        addLog('Checking friendship...')
+        try {
+          const friendship = await window.liff.getFriendship()
+          addLog(`Friendship: ${friendship.friendFlag}`)
 
-        if (friendship.friendFlag) {
-          // 既に友だち → 完了
+          if (friendship.friendFlag) {
+            setStatus('success')
+            setMessage(`${profile.displayName}さん、連携が完了しました！`)
+            setTimeout(() => {
+              if (window.liff.isInClient()) {
+                window.liff.closeWindow()
+              }
+            }, 5000)
+          } else {
+            setStatus('friend-prompt')
+            setMessage('友だち追加して利用開始！')
+          }
+        } catch (friendError) {
+          // getFriendship は LINE Login チャネルでは動かない場合がある
+          addLog(`getFriendship error (non-critical): ${friendError}`)
           setStatus('success')
           setMessage(`${profile.displayName}さん、連携が完了しました！`)
-          setTimeout(() => {
-            if (window.liff.isInClient()) {
-              window.liff.closeWindow()
-            } else if (encodedLineUrl) {
-              window.location.href = decodeURIComponent(encodedLineUrl)
-            }
-          }, 2000)
-        } else {
-          // 友だち追加が必要
-          setStatus('friend-prompt')
-          setMessage('友だち追加して利用開始！')
         }
       } catch (error) {
+        const errMsg = error instanceof Error ? error.message : String(error)
         console.error('LIFF error:', error)
+        addLog(`FATAL ERROR: ${errMsg}`)
         setStatus('error')
-        setMessage('エラーが発生しました')
-
-        // エラー時はLINE友だちURLへフォールバック
-        const params = new URLSearchParams(window.location.search)
-        const encodedLineUrl = params.get('line_url')
-        if (encodedLineUrl) {
-          setTimeout(() => {
-            window.location.href = decodeURIComponent(encodedLineUrl)
-          }, 2000)
-        }
+        setMessage(errMsg)
       }
     }
 
@@ -203,21 +214,50 @@ export default function LiffBridgePage() {
             </div>
           )}
 
-          {status === 'error' && lineUrl && (
+          {status === 'error' && (
             <div>
-              <p style={{ color: '#888', fontSize: '14px', margin: '0 0 16px' }}>
-                自動リダイレクト中...
+              <p style={{ color: '#e74c3c', fontSize: '13px', margin: '0 0 16px', wordBreak: 'break-all' }}>
+                {message}
               </p>
-              <a
-                href={lineUrl}
-                style={{
-                  color: '#06C755',
-                  textDecoration: 'underline',
-                  fontSize: '14px'
-                }}
-              >
-                こちらをタップ
-              </a>
+              {lineUrl && (
+                <a
+                  href={lineUrl}
+                  style={{
+                    display: 'inline-block',
+                    background: '#06C755',
+                    color: '#fff',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    padding: '10px 24px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  LINE友だち追加へ進む
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* デバッグログ */}
+          {debugLog.length > 0 && (
+            <div style={{
+              marginTop: '16px',
+              padding: '12px',
+              background: '#f0f0f0',
+              borderRadius: '8px',
+              textAlign: 'left',
+              maxHeight: '200px',
+              overflowY: 'auto'
+            }}>
+              <p style={{ color: '#666', fontSize: '11px', fontWeight: 'bold', margin: '0 0 6px' }}>
+                Debug Log:
+              </p>
+              {debugLog.map((log, i) => (
+                <p key={i} style={{ color: '#333', fontSize: '10px', margin: '2px 0', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                  {log}
+                </p>
+              ))}
             </div>
           )}
         </div>
