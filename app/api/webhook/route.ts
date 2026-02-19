@@ -138,6 +138,12 @@ export async function POST(req: NextRequest) {
               processedCount++
             }
           }
+
+          // Agency tracking: 既存友達の訪問記録紐付け（非同期、失敗してもメッセージ処理に影響なし）
+          const msgUserId = event.source?.userId
+          if (msgUserId) {
+            linkVisitToLineUser(msgUserId, 'existing_friend').catch(() => { })
+          }
         } else if (event.type === 'follow') {
           // フォローイベント処理
           await handleFollowEvent(event)
@@ -2206,6 +2212,10 @@ async function handleFollowEvent(event: any): Promise<void> {
       await startDrip(userId)
     }
 
+    // Agency tracking: LINE profile保存 + 訪問記録紐付け（非同期、失敗しても影響なし）
+    upsertLineProfile(userId).catch(() => { })
+    linkVisitToLineUser(userId, 'new_friend').catch(() => { })
+
   } catch (error) {
     logger.error('Failed to send welcome message', {
       userId,
@@ -2229,6 +2239,174 @@ async function handleUnfollowEvent(event: any): Promise<void> {
 
   // セッションクリーンアップ
   await sessionManager.deleteSession(userId)
+}
+
+// ============================================
+// Agency Tracking Visit Linking
+// (Render側で直接処理 - Netlify転送に依存しない)
+// ============================================
+
+/**
+ * LINE プロフィールを取得して line_profiles テーブルに upsert
+ */
+async function upsertLineProfile(lineUserId: string): Promise<string | null> {
+  try {
+    const accessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN
+    if (!accessToken) return null
+
+    const response = await fetch(`https://api.line.me/v2/bot/profile/${lineUserId}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    })
+
+    if (!response.ok) {
+      logger.error('LINE profile fetch failed for tracking', { status: response.status, lineUserId })
+      return null
+    }
+
+    const profile = await response.json()
+
+    const { error } = await supabaseAdmin
+      .from('line_profiles')
+      .upsert({
+        user_id: lineUserId,
+        display_name: profile.displayName,
+        picture_url: profile.pictureUrl,
+        status_message: profile.statusMessage,
+        language: profile.language,
+        fetched_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' })
+
+    if (error) {
+      logger.error('line_profiles upsert error', { error: error.message })
+    }
+
+    return profile.displayName || null
+  } catch (error) {
+    logger.error('upsertLineProfile error', { error: error instanceof Error ? error.message : String(error) })
+    return null
+  }
+}
+
+/**
+ * 未紐付けの訪問記録をLINEユーザーに紐付け
+ * - new_friend: フォロー時（過去24時間の訪問を検索）
+ * - existing_friend: メッセージ時（過去1時間の訪問を検索）
+ */
+async function linkVisitToLineUser(
+  lineUserId: string,
+  friendType: 'new_friend' | 'existing_friend'
+): Promise<void> {
+  try {
+    const timeWindow = friendType === 'new_friend'
+      ? 24 * 60 * 60 * 1000
+      : 60 * 60 * 1000
+    const sinceTime = new Date(Date.now() - timeWindow).toISOString()
+
+    logger.info('Agency visit linking started', { lineUserId, friendType })
+
+    const { data: visits, error } = await supabaseAdmin
+      .from('agency_tracking_visits')
+      .select('id, tracking_link_id, agency_id, device_type, browser, os, created_at, metadata')
+      .is('line_user_id', null)
+      .gte('created_at', sinceTime)
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    if (error) {
+      logger.error('Agency visit search error', { error: error.message })
+      return
+    }
+
+    if (!visits || visits.length === 0) {
+      logger.info('No unlinked agency visits found', { friendType, since: sinceTime })
+      return
+    }
+
+    logger.info(`Found ${visits.length} unlinked agency visit candidates`)
+
+    // 最新の訪問記録を紐付け（時間近接性ベースのマッチング）
+    const targetVisit = visits[0]
+    const currentMetadata = targetVisit.metadata || {}
+
+    const { error: updateError } = await supabaseAdmin
+      .from('agency_tracking_visits')
+      .update({
+        line_user_id: lineUserId,
+        metadata: {
+          ...currentMetadata,
+          friend_type: friendType,
+          linked_at: new Date().toISOString(),
+          match_method: friendType === 'new_friend' ? 'follow_event_render' : 'message_event_render'
+        }
+      })
+      .eq('id', targetVisit.id)
+      .is('line_user_id', null)
+
+    if (updateError) {
+      logger.error('Agency visit update error', { visitId: targetVisit.id, error: updateError.message })
+    } else {
+      logger.info(`Agency visit linked: ${targetVisit.id} ← ${lineUserId} (${friendType})`)
+      await createAgencyConversion(targetVisit, lineUserId).catch(err => {
+        logger.error('Agency conversion creation failed', { error: err instanceof Error ? err.message : String(err) })
+      })
+    }
+  } catch (error) {
+    logger.error('linkVisitToLineUser error', { error: error instanceof Error ? error.message : String(error) })
+  }
+}
+
+/**
+ * 代理店コンバージョン記録を作成
+ */
+async function createAgencyConversion(visit: any, lineUserId: string): Promise<void> {
+  try {
+    // 重複チェック
+    const { data: existing } = await supabaseAdmin
+      .from('agency_conversions')
+      .select('id')
+      .eq('visit_id', visit.id)
+      .eq('conversion_type', 'line_friend')
+      .maybeSingle()
+
+    if (existing) return
+
+    // line_profilesからLINE表示名を取得（LINE API呼び出しを避ける）
+    let displayName: string | null = null
+    const { data: profile } = await supabaseAdmin
+      .from('line_profiles')
+      .select('display_name')
+      .eq('user_id', lineUserId)
+      .maybeSingle()
+
+    if (profile) {
+      displayName = profile.display_name
+    }
+
+    const { error } = await supabaseAdmin
+      .from('agency_conversions')
+      .insert([{
+        agency_id: visit.agency_id,
+        tracking_link_id: visit.tracking_link_id,
+        visit_id: visit.id,
+        line_user_id: lineUserId,
+        line_display_name: displayName,
+        device_type: visit.device_type || null,
+        browser: visit.browser || null,
+        os: visit.os || null,
+        conversion_type: 'line_friend',
+        conversion_value: 0,
+        metadata: { linked_at: new Date().toISOString() }
+      }])
+
+    if (error) {
+      logger.error('agency_conversions insert error', { error: error.message })
+    } else {
+      logger.info(`Agency conversion recorded: agency=${visit.agency_id}, visit=${visit.id}`)
+    }
+  } catch (error) {
+    logger.error('createAgencyConversion error', { error: error instanceof Error ? error.message : String(error) })
+  }
 }
 
 /**

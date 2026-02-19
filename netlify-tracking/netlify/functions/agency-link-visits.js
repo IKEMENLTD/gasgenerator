@@ -103,29 +103,55 @@ exports.handler = async (event) => {
                 .filter(id => id != null)
         )];
 
-        // Fetch LINE user information if there are any LINE user IDs
+        console.log(`[agency-link-visits] link_id=${linkId}, visits=${(visits||[]).length}, linked_users=${lineUserIds.length}`);
+
+        // Fetch LINE user information from line_profiles
         let lineProfilesMap = {};
         if (lineUserIds.length > 0) {
             const { data: lineProfiles, error: lineProfilesError } = await supabase
                 .from('line_profiles')
-                .select('user_id, display_name, picture_url')
+                .select('user_id, display_name')
                 .in('user_id', lineUserIds);
 
-            if (!lineProfilesError && lineProfiles) {
-                // Create a map for quick lookup
+            if (lineProfilesError) {
+                console.error('[agency-link-visits] line_profiles query error:', lineProfilesError);
+            }
+
+            if (!lineProfilesError && lineProfiles && lineProfiles.length > 0) {
                 lineProfilesMap = Object.fromEntries(
                     lineProfiles.map(profile => [profile.user_id, profile])
                 );
+                console.log(`[agency-link-visits] line_profiles matched: ${lineProfiles.length}/${lineUserIds.length}`);
+            }
+
+            // Fallback: if line_profiles returned nothing, try agency_conversions
+            if (Object.keys(lineProfilesMap).length === 0) {
+                console.log('[agency-link-visits] Fallback: checking agency_conversions for display names');
+                const { data: conversions, error: convError } = await supabase
+                    .from('agency_conversions')
+                    .select('line_user_id, line_display_name')
+                    .in('line_user_id', lineUserIds)
+                    .not('line_display_name', 'is', null);
+
+                if (convError) {
+                    console.error('[agency-link-visits] agency_conversions fallback error:', convError);
+                } else if (conversions && conversions.length > 0) {
+                    lineProfilesMap = Object.fromEntries(
+                        conversions.map(c => [c.line_user_id, { display_name: c.line_display_name }])
+                    );
+                    console.log(`[agency-link-visits] Fallback matched: ${conversions.length}`);
+                }
             }
         }
 
         // Format visits to include LINE display name
         const formattedVisits = (visits || []).map(visit => {
             const lineProfile = visit.line_user_id ? lineProfilesMap[visit.line_user_id] : null;
+            const friendType = visit.metadata?.friend_type || null;
             return {
                 ...visit,
                 line_display_name: lineProfile?.display_name || null,
-                line_picture_url: lineProfile?.picture_url || null
+                friend_status: friendType === 'new_friend' ? '新規' : friendType === 'existing_friend' ? '既存' : null
             };
         });
 

@@ -1,9 +1,9 @@
 const { createClient } = require('@supabase/supabase-js');
 
-// Initialize Supabase client
+// Initialize Supabase client (SERVICE_ROLE_KEY to bypass RLS for visit recording)
 const supabase = createClient(
     process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
+    process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 exports.handler = async (event, context) => {
@@ -135,7 +135,13 @@ exports.handler = async (event, context) => {
                 .single();
 
             if (visitError) {
-                console.error('Error creating visit:', visitError);
+                console.error('Error creating visit:', JSON.stringify(visitError));
+                console.error('Visit insert payload:', JSON.stringify({
+                    tracking_link_id: trackingLink.id,
+                    agency_id: trackingLink.agency_id,
+                    session_id: visitData.session_id,
+                    device_type: visitData.device_type
+                }));
                 // Don't fail the request if visit tracking fails
             } else {
                 visitId = visit.id;
@@ -306,6 +312,6 @@ function getUserOS(userAgent) {
 }
 
 // Validate environment variables on cold start
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    console.error('Missing required environment variables: SUPABASE_URL, SUPABASE_ANON_KEY');
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('Missing required environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY');
 }
