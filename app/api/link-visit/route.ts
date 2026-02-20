@@ -84,16 +84,20 @@ export async function POST(req: NextRequest) {
         .single()
 
       if (linkedVisit?.visitor_ip && linkedVisit.visitor_ip !== 'unknown') {
+        // IP正規化: カンマ区切りの最初のIPを抽出
+        const firstIP = linkedVisit.visitor_ip.split(',')[0].trim()
+
+        // 完全一致 + カンマ区切り旧形式(LIKE)の両方でバックフィル
         const { data: backfilled } = await supabaseAdmin
           .from('agency_tracking_visits')
           .update({ line_user_id: lineUserId })
           .eq('tracking_link_id', linkedVisit.tracking_link_id)
-          .eq('visitor_ip', linkedVisit.visitor_ip)
+          .or(`visitor_ip.eq.${firstIP},visitor_ip.like.${firstIP},%`)
           .is('line_user_id', null)
           .select('id')
 
         if (backfilled && backfilled.length > 0) {
-          logger.info(`Backfilled ${backfilled.length} visits for IP ${linkedVisit.visitor_ip}`)
+          logger.info(`Backfilled ${backfilled.length} visits for IP ${firstIP}`)
         }
       }
     } catch (backfillErr) {
