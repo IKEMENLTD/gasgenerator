@@ -2289,67 +2289,126 @@ async function upsertLineProfile(lineUserId: string): Promise<string | null> {
 }
 
 /**
- * 未紐付けの訪問記録をLINEユーザーに紐付け
- * - new_friend: フォロー時（過去24時間の訪問を検索）
- * - existing_friend: メッセージ時（過去1時間の訪問を検索）
+ * 未紐付けの訪問記録をLINEユーザーに紐付け（知能型IP逆引き）
+ *
+ * 戦略:
+ * 1. まずこのユーザーの既知IP（過去にリンク済みの訪問から）を取得
+ * 2. 既知IPがあれば、同じIPの全未紐付け訪問をバックフィル（全tracking_link横断）
+ * 3. 既知IPがなければ、時間ベースで直近の未紐付け訪問1件をリンク → そのIPでバックフィル
  */
 async function linkVisitToLineUser(
   lineUserId: string,
   friendType: 'new_friend' | 'existing_friend'
 ): Promise<void> {
   try {
-    const timeWindow = friendType === 'new_friend'
-      ? 24 * 60 * 60 * 1000
-      : 60 * 60 * 1000
-    const sinceTime = new Date(Date.now() - timeWindow).toISOString()
+    logger.info('Agency visit linking started (IP reverse lookup)', { lineUserId, friendType })
 
-    logger.info('Agency visit linking started', { lineUserId, friendType })
-
-    const { data: visits, error } = await supabaseAdmin
+    // Step 1: このユーザーの既知IPを取得
+    const { data: knownVisits } = await supabaseAdmin
       .from('agency_tracking_visits')
-      .select('id, tracking_link_id, agency_id, device_type, browser, os, created_at, metadata')
-      .is('line_user_id', null)
-      .gte('created_at', sinceTime)
-      .order('created_at', { ascending: false })
-      .limit(5)
+      .select('visitor_ip')
+      .eq('line_user_id', lineUserId)
+      .not('visitor_ip', 'is', null)
 
-    if (error) {
-      logger.error('Agency visit search error', { error: error.message })
-      return
-    }
+    const knownIPs = [...new Set(
+      (knownVisits || [])
+        .map(v => (v.visitor_ip || '').split(',')[0].trim())
+        .filter(ip => ip && ip !== 'unknown' && ip !== '127.0.0.1')
+    )]
 
-    if (!visits || visits.length === 0) {
-      logger.info('No unlinked agency visits found', { friendType, since: sinceTime })
-      return
-    }
+    if (knownIPs.length > 0) {
+      // Step 2a: 既知IPで全未紐付け訪問をバックフィル
+      logger.info(`Known IPs for user: ${knownIPs.join(', ')}`)
+      let totalBackfilled = 0
 
-    logger.info(`Found ${visits.length} unlinked agency visit candidates`)
+      for (const ip of knownIPs) {
+        const { data: backfilled } = await supabaseAdmin
+          .from('agency_tracking_visits')
+          .update({
+            line_user_id: lineUserId,
+            metadata: {
+              friend_type: friendType,
+              linked_at: new Date().toISOString(),
+              match_method: 'ip_reverse_lookup'
+            }
+          })
+          .or(`visitor_ip.eq.${ip},visitor_ip.like.${ip},%`)
+          .is('line_user_id', null)
+          .select('id')
 
-    // 最新の訪問記録を紐付け（時間近接性ベースのマッチング）
-    const targetVisit = visits[0]
-    const currentMetadata = targetVisit.metadata || {}
-
-    const { error: updateError } = await supabaseAdmin
-      .from('agency_tracking_visits')
-      .update({
-        line_user_id: lineUserId,
-        metadata: {
-          ...currentMetadata,
-          friend_type: friendType,
-          linked_at: new Date().toISOString(),
-          match_method: friendType === 'new_friend' ? 'follow_event_render' : 'message_event_render'
+        if (backfilled && backfilled.length > 0) {
+          totalBackfilled += backfilled.length
+          for (const v of backfilled) {
+            await createAgencyConversion(v, lineUserId).catch(() => { })
+          }
         }
-      })
-      .eq('id', targetVisit.id)
-      .is('line_user_id', null)
+      }
 
-    if (updateError) {
-      logger.error('Agency visit update error', { visitId: targetVisit.id, error: updateError.message })
+      logger.info(`IP reverse lookup backfilled ${totalBackfilled} visits for ${lineUserId}`)
     } else {
-      logger.info(`Agency visit linked: ${targetVisit.id} ← ${lineUserId} (${friendType})`)
-      await createAgencyConversion(targetVisit, lineUserId).catch(err => {
-        logger.error('Agency conversion creation failed', { error: err instanceof Error ? err.message : String(err) })
-      })
+      // Step 2b: 既知IPなし → 時間ベースで直近の訪問をリンク
+      const timeWindow = friendType === 'new_friend'
+        ? 7 * 24 * 60 * 60 * 1000   // フォロー: 7日
+        : 7 * 24 * 60 * 60 * 1000   // メッセージ: 7日（1時間→7日に延長）
+      const sinceTime = new Date(Date.now() - timeWindow).toISOString()
+
+      const { data: visits, error } = await supabaseAdmin
+        .from('agency_tracking_visits')
+        .select('id, tracking_link_id, agency_id, device_type, browser, os, created_at, metadata, visitor_ip')
+        .is('line_user_id', null)
+        .gte('created_at', sinceTime)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      if (error) {
+        logger.error('Agency visit search error', { error: error.message })
+        return
+      }
+
+      if (!visits || visits.length === 0) {
+        logger.info('No unlinked agency visits found', { friendType, since: sinceTime })
+        return
+      }
+
+      // 直近の1件をリンク
+      const targetVisit = visits[0]
+      const currentMetadata = targetVisit.metadata || {}
+
+      const { error: updateError } = await supabaseAdmin
+        .from('agency_tracking_visits')
+        .update({
+          line_user_id: lineUserId,
+          metadata: {
+            ...currentMetadata,
+            friend_type: friendType,
+            linked_at: new Date().toISOString(),
+            match_method: friendType === 'new_friend' ? 'follow_event_render' : 'message_event_render'
+          }
+        })
+        .eq('id', targetVisit.id)
+        .is('line_user_id', null)
+
+      if (updateError) {
+        logger.error('Agency visit update error', { visitId: targetVisit.id, error: updateError.message })
+      } else {
+        logger.info(`Agency visit linked: ${targetVisit.id} ← ${lineUserId} (${friendType})`)
+        await createAgencyConversion(targetVisit, lineUserId).catch(() => { })
+
+        // Step 3: リンクした訪問のIPで追加バックフィル
+        const linkedIP = (targetVisit.visitor_ip || '').split(',')[0].trim()
+        if (linkedIP && linkedIP !== 'unknown' && linkedIP !== '127.0.0.1') {
+          const { data: backfilled } = await supabaseAdmin
+            .from('agency_tracking_visits')
+            .update({ line_user_id: lineUserId })
+            .or(`visitor_ip.eq.${linkedIP},visitor_ip.like.${linkedIP},%`)
+            .is('line_user_id', null)
+            .select('id')
+
+          if (backfilled && backfilled.length > 0) {
+            logger.info(`Time-based + IP backfilled ${backfilled.length} additional visits`)
+          }
+        }
+      }
     }
   } catch (error) {
     logger.error('linkVisitToLineUser error', { error: error instanceof Error ? error.message : String(error) })

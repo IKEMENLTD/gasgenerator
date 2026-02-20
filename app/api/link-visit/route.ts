@@ -87,11 +87,10 @@ export async function POST(req: NextRequest) {
         // IP正規化: カンマ区切りの最初のIPを抽出
         const firstIP = linkedVisit.visitor_ip.split(',')[0].trim()
 
-        // 完全一致 + カンマ区切り旧形式(LIKE)の両方でバックフィル
+        // 全tracking_link横断でバックフィル（クロスリンク対応）
         const { data: backfilled } = await supabaseAdmin
           .from('agency_tracking_visits')
           .update({ line_user_id: lineUserId })
-          .eq('tracking_link_id', linkedVisit.tracking_link_id)
           .or(`visitor_ip.eq.${firstIP},visitor_ip.like.${firstIP},%`)
           .is('line_user_id', null)
           .select('id')

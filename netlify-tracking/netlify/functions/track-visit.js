@@ -55,12 +55,30 @@ exports.handler = async (event, context) => {
               if (!clientIP || clientIP === 'unknown') {
                         clientIP = getClientIPFromHeaders(event.headers);
               }
+              // IP正規化: カンマ区切りの場合は最初のIP（実クライアントIP）のみ使用
+              clientIP = (clientIP || 'unknown').split(',')[0].trim();
 
         const userAgent = trackingData.user_agent || event.headers['user-agent'] || 'Unknown';
               const sessionId = generateSessionId();
               const deviceType = getUserDeviceType(userAgent);
               const browser = getUserBrowser(userAgent);
               const os = getUserOS(userAgent);
+
+        // 同じIPの過去訪問からLINEユーザーIDを自動取得（再訪問者の自動リンク）
+        // 全tracking_link横断で検索（クロスリンク対応）
+        let autoLinkedUserId = null;
+        const { data: linkedVisits } = await supabase
+            .from('agency_tracking_visits')
+            .select('line_user_id')
+            .or(`visitor_ip.eq.${clientIP},visitor_ip.like.${clientIP},%`)
+            .not('line_user_id', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (linkedVisits && linkedVisits.length > 0) {
+            autoLinkedUserId = linkedVisits[0].line_user_id;
+            console.log('[track-visit] Auto-link from same IP:', autoLinkedUserId);
+        }
 
         // 重複チェック（過去5分以内の同一IP）
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
@@ -69,8 +87,8 @@ exports.handler = async (event, context) => {
                 .select('id')
                 .eq('tracking_link_id', trackingLink.id)
                 .eq('visitor_ip', clientIP)
-                .gte('visited_at', fiveMinutesAgo)
-                .order('visited_at', { ascending: false })
+                .gte('created_at', fiveMinutesAgo)
+                .order('created_at', { ascending: false })
                 .limit(1);
 
         const recentVisit = recentVisits && recentVisits.length > 0 ? recentVisits[0] : null;
@@ -82,7 +100,7 @@ exports.handler = async (event, context) => {
                 visitId = recentVisit.id;
                   console.log('[track-visit] Reusing existing visit for LIFF linking:', visitId);
         } else {
-                  // 新規訪問をinsert
+                  // 新規訪問をinsert（auto-linked LINE IDがあれば設定）
                 const { data: visit, error: visitError } = await supabase
                     .from('agency_tracking_visits')
                     .insert([{
@@ -95,13 +113,15 @@ exports.handler = async (event, context) => {
                                   device_type: deviceType,
                                   browser: browser,
                                   os: os,
+                                  line_user_id: autoLinkedUserId,
                                   metadata: {
                                                   utm_source: trackingData.utm_source || trackingLink.utm_source,
                                                   utm_medium: trackingData.utm_medium || trackingLink.utm_medium,
                                                   utm_campaign: trackingData.utm_campaign || trackingLink.utm_campaign,
                                                   screen_resolution: trackingData.screen_resolution,
                                                   language: trackingData.language,
-                                                  timezone: trackingData.timezone
+                                                  timezone: trackingData.timezone,
+                                                  auto_linked: autoLinkedUserId ? true : undefined
                                   }
                     }])
                     .select()
@@ -118,7 +138,7 @@ exports.handler = async (event, context) => {
                                               updated_at: new Date().toISOString()
                               })
                               .eq('id', trackingLink.id);
-                            console.log('[track-visit] New visit created:', visitId);
+                            console.log('[track-visit] New visit created:', visitId, autoLinkedUserId ? '(auto-linked)' : '');
                 }
         }
 
