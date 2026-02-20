@@ -457,6 +457,17 @@ const systems = [
     spreadsheetUrl: '',
     manualUrl: '',
   },
+  {
+    id: '41',
+    name: 'Case Snapper',
+    tagline: '事例の即検索・コピーで商談をスムーズに',
+    description: '商談中やチャット対応中に、事例のURLやサマリをすばやく検索・コピーできるツール。業種・テーマ・キーワードで絞り込み、ワンクリックでURLやサマリをコピー。ブックマークレットでどのページからも呼び出し可能。',
+    tags: ['事例検索', 'ワンクリックコピー', '商談支援', 'ブックマークレット'],
+    previewUrl: 'https://tourmaline-rabanadas-36740a.netlify.app/',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1XAjcUJKZ_JvaNnlx5G4Tz1QbgsEFJw0dqfK0gHjqbLI/edit?gid=152362143#gid=152362143',
+    manualUrl: 'https://drive.google.com/file/d/1yl181PrmHnukZH3Kfmq6ZKftmY15ObwF/view?usp=drive_link',
+  },
 ]
 
 export default function SystemCatalogPage() {
