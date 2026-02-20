@@ -75,6 +75,31 @@ export async function POST(req: NextRequest) {
 
     logger.info(`LIFF visit linked: ${visitId} ← ${lineUserId} (${displayName})`)
 
+    // 3.5 同じIPの未紐付け訪問を一括バックフィル（再訪問者のLINE名を遡及反映）
+    try {
+      const { data: linkedVisit } = await supabaseAdmin
+        .from('agency_tracking_visits')
+        .select('visitor_ip, tracking_link_id')
+        .eq('id', visitId)
+        .single()
+
+      if (linkedVisit?.visitor_ip && linkedVisit.visitor_ip !== 'unknown') {
+        const { data: backfilled } = await supabaseAdmin
+          .from('agency_tracking_visits')
+          .update({ line_user_id: lineUserId })
+          .eq('tracking_link_id', linkedVisit.tracking_link_id)
+          .eq('visitor_ip', linkedVisit.visitor_ip)
+          .is('line_user_id', null)
+          .select('id')
+
+        if (backfilled && backfilled.length > 0) {
+          logger.info(`Backfilled ${backfilled.length} visits for IP ${linkedVisit.visitor_ip}`)
+        }
+      }
+    } catch (backfillErr) {
+      logger.error('Backfill error (non-critical)', { error: backfillErr instanceof Error ? backfillErr.message : String(backfillErr) })
+    }
+
     // 4. コンバージョン記録作成
     const { data: existingConversion } = await supabaseAdmin
       .from('agency_conversions')
