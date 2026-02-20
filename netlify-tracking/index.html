@@ -45,6 +45,24 @@
         }
       });
     </script>
+
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '849810494727959');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=849810494727959&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
 </head>
 <body>
     <!-- Loading Screen -->
@@ -1602,6 +1620,28 @@
             }
         }
 
+        // Meta Pixel イベント送信ラッパー
+        function sendMetaEvent(eventName, params) {
+            try {
+                if (typeof fbq === 'function') {
+                    fbq('track', eventName, params || {});
+                    debugLog('Meta:' + eventName, params);
+                }
+            } catch (error) {
+                console.error('Meta Pixel Event Error:', error);
+            }
+        }
+        function sendMetaCustomEvent(eventName, params) {
+            try {
+                if (typeof fbq === 'function') {
+                    fbq('trackCustom', eventName, params || {});
+                    debugLog('Meta(custom):' + eventName, params);
+                }
+            } catch (error) {
+                console.error('Meta Pixel Custom Event Error:', error);
+            }
+        }
+
         // ============================================================
         // 1. 重要コンバージョンイベント
         // ============================================================
@@ -1616,6 +1656,11 @@
                         event_label: buttonText,
                         custom_parameter_1: 'line_cta'
                     });
+                    // Meta: LINE友だち追加 = Lead
+                    sendMetaEvent('Lead', {
+                        content_name: 'LINE Friend Add',
+                        content_category: buttonText
+                    });
                 });
             });
         }
@@ -1627,12 +1672,26 @@
                     const card = this.closest('.pricing-card');
                     const planName = card ? card.querySelector('.pricing-name').textContent.trim() : 'Unknown';
                     const price = card ? card.querySelector('.pricing-amount').textContent.trim() : '0';
+                    const priceValue = parseInt(price.replace(/[^0-9]/g, '')) || 0;
 
                     sendGA4Event('plan_interest', {
                         event_category: 'conversion',
                         event_label: planName,
-                        value: parseInt(price.replace(/[^0-9]/g, '')) || 0,
+                        value: priceValue,
                         custom_parameter_1: 'pricing_click'
+                    });
+                    // Meta: 料金プラン関心 = ViewContent + InitiateCheckout
+                    sendMetaEvent('ViewContent', {
+                        content_name: planName,
+                        content_category: 'Pricing Plan',
+                        value: priceValue,
+                        currency: 'JPY'
+                    });
+                    sendMetaEvent('InitiateCheckout', {
+                        content_name: planName,
+                        value: priceValue,
+                        currency: 'JPY',
+                        num_items: 1
                     });
                 });
             });
@@ -1648,6 +1707,11 @@
                         event_category: 'conversion',
                         event_label: '無料診断申込',
                         custom_parameter_1: 'cta_form'
+                    });
+                    // Meta: フォーム送信 = CompleteRegistration
+                    sendMetaEvent('CompleteRegistration', {
+                        content_name: 'Free Diagnosis Form',
+                        status: true
                     });
 
                     // フォームデータも追跡
@@ -1920,6 +1984,10 @@
                         event_category: 'conversion',
                         event_label: 'Floating LINE CTA',
                         custom_parameter_1: 'floating_button'
+                    });
+                    // Meta: フローティングCTA = Contact
+                    sendMetaEvent('Contact', {
+                        content_name: 'Floating LINE CTA'
                     });
                 });
             }
