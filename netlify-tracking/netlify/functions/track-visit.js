@@ -59,6 +59,26 @@ exports.handler = async (event, context) => {
               clientIP = (clientIP || 'unknown').split(',')[0].trim();
 
         const userAgent = trackingData.user_agent || event.headers['user-agent'] || 'Unknown';
+
+        // Bot/クローラーフィルタ: ダッシュボードのノイズを除去
+        if (isBotUserAgent(userAgent) || isCrawlerIP(clientIP) || isFakeScreen(trackingData.screen_resolution)) {
+            console.log('[track-visit] Bot/Crawler detected, skipping:', { ua: userAgent.substring(0, 60), ip: clientIP });
+            // Botでもリダイレクト先は返す（LINEのリンクプレビューなど正常動作のため）
+            const lineFriendUrl = trackingLink.line_friend_url || trackingLink.destination_url || 'https://lin.ee/4NLfSqH';
+            return {
+                statusCode: 200,
+                headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    success: true,
+                    line_friend_url: lineFriendUrl.includes('liff.line.me') ? 'https://lin.ee/4NLfSqH' : lineFriendUrl,
+                    tracking_link: { name: trackingLink.name },
+                    visit_id: null,
+                    session_id: null,
+                    filtered: 'bot'
+                })
+            };
+        }
+
               const sessionId = generateSessionId();
               const deviceType = getUserDeviceType(userAgent);
               const browser = getUserBrowser(userAgent);
@@ -236,6 +256,51 @@ function getUserOS(userAgent) {
       if (macMatch) return `macOS ${macMatch[1].replace(/_/g, '.')}`;
       if (/linux/i.test(userAgent)) return 'Linux';
       return 'other';
+}
+
+// Bot/クローラー判定関数群
+function isBotUserAgent(ua) {
+    if (!ua) return false;
+    const botPatterns = [
+        /facebookexternalhit/i,
+        /line-poker/i,
+        /Googlebot/i,
+        /bingbot/i,
+        /Slurp/i,
+        /DuckDuckBot/i,
+        /Baiduspider/i,
+        /YandexBot/i,
+        /Sogou/i,
+        /Twitterbot/i,
+        /LinkedInBot/i,
+        /Discordbot/i,
+        /WhatsApp/i,
+        /TelegramBot/i,
+        /Slackbot/i,
+        /PetalBot/i,
+        /AhrefsBot/i,
+        /SemrushBot/i,
+        /MJ12bot/i,
+        /DotBot/i,
+        /HeadlessChrome/i
+    ];
+    return botPatterns.some(p => p.test(ua));
+}
+
+function isCrawlerIP(ip) {
+    if (!ip) return false;
+    // Meta/Facebook crawler IP ranges
+    if (ip.startsWith('2a03:2880:')) return true;
+    // LINE link preview crawler IPs
+    if (ip.startsWith('147.92.179.')) return true;
+    return false;
+}
+
+function isFakeScreen(resolution) {
+    if (!resolution) return false;
+    // Meta crawler uses 2000x2000
+    if (resolution === '2000x2000') return true;
+    return false;
 }
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
