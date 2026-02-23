@@ -74,8 +74,14 @@
   to = "/t/index.html"
   status = 200
 
-# Agency dashboard is now at root (/)
-# SPA routing - serve index.html for all routes (最後に配置)
+# ===== 代理店ダッシュボードSPAルーティング =====
+# /agency/* のサブパスは代理店ダッシュボードのindex.htmlで処理
+[[redirects]]
+  from = "/agency/*"
+  to = "/agency/index.html"
+  status = 200
+
+# LP用 SPA routing - 上記ルールに該当しないパスはLP用index.htmlで処理
 [[redirects]]
   from = "/*"
   to = "/index.html"
