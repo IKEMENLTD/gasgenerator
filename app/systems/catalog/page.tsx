@@ -89,10 +89,10 @@ const systems = [
     tagline: '案件の納期を一元管理・アラート通知',
     description: '案件の納期を一元管理し、超過・緊急案件を自動検出。ダッシュボードで進行中案件、超過案件、今週納期、今月完了を一目で確認。優先度別のリスト表示で見落としを防止します。',
     tags: ['納期管理', 'アラート通知', '案件管理', 'ダッシュボード'],
-    previewUrl: '/demos/nouki-alert/index.html',
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyxf1W8-DPh067BJos9Oyos-66p7elepz9q5BDfb2OnUgdzVtiajrkB8Dhk075iG9CecQ/exec',
     iframeAllowed: true,
-    spreadsheetUrl: '',
-    manualUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1CX7NlOY4jsZYu3Lgd0kPAGRmHTQee4hepLC4wWsVjjk/edit?gid=1958679551#gid=1958679551',
+    manualUrl: '/manuals/nouki-alert.txt',
   },
   {
     id: '08',
