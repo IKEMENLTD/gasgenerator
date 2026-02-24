@@ -477,7 +477,7 @@ const systems = [
     previewUrl: 'https://staff-productivity-sys.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1xy_ATLUxu7KK_6yEVQbdD2lgHIATHZL9VJy77kF-kQA/edit?gid=1944009414#gid=1944009414',
-    manualUrl: '',
+    manualUrl: '/manuals/staff-productivity.txt',
   },
   {
     id: '43',
@@ -488,7 +488,7 @@ const systems = [
     previewUrl: 'https://customer-history-sys.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1L02pSX9xzenH-w16-ef4hpe98t8KPuociQxA7vXb4oc/edit?gid=653270564#gid=653270564',
-    manualUrl: '',
+    manualUrl: '/manuals/customer-history.txt',
   },
   {
     id: '44',
@@ -499,7 +499,7 @@ const systems = [
     previewUrl: 'https://sales-dashboard-sys.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1goK0-8waNVHJr5uCQd2mupewepRBAW-eqigWGJyd9bU/edit?gid=959219761#gid=959219761',
-    manualUrl: '',
+    manualUrl: '/manuals/sales-dashboard.txt',
   },
   {
     id: '45',
@@ -510,7 +510,7 @@ const systems = [
     previewUrl: 'https://sunny-platypus-855e15.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1l7oJ7dTzfucMKhfIpvhXaF3CXeZnMR4lUNPG7mLoBkM/edit?gid=587343578#gid=587343578',
-    manualUrl: '',
+    manualUrl: '/manuals/faq-management.txt',
   },
   {
     id: '46',
@@ -521,7 +521,7 @@ const systems = [
     previewUrl: 'https://trouble-history-sys.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1eSmoYQnACSBhbGxr3qi8S-KdASKJDb9hpst9zkVndfU/edit?gid=1755918717#gid=1755918717',
-    manualUrl: '',
+    manualUrl: '/manuals/trouble-history.txt',
   },
 ]
 
