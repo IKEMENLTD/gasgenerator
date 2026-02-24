@@ -146,7 +146,7 @@ const systems = [
     tags: ['紹介管理', 'キャンペーン', '特典管理', '効果測定'],
     previewUrl: 'https://syoukaipuroguramu.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/17_SZw6VxNiMyvZlmCvOHdBPp-fY1CQb_19wfOSdJwJQ/edit?gid=1938890458#gid=1938890458',
     manualUrl: '',
   },
   {
@@ -201,7 +201,7 @@ const systems = [
     tags: ['請求書', '自動生成', 'PDF送付', '入金管理'],
     previewUrl: 'https://seikyusyokannri.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1TmZdGKNABVe3NPYrDXJ43XWgUUa8NPlbi5zC27w1XEo/edit?usp=sharing',
     manualUrl: '',
   },
   {
@@ -289,7 +289,7 @@ const systems = [
     tags: ['承認フロー', 'ワークフロー', '監査ログ', 'コンプライアンス'],
     previewUrl: 'https://syouninn.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/10nlsRN8HWxrPlWiPK36y5R4O1v5-5-gbkobDq7SrcZ4/edit?gid=439925284#gid=439925284',
     manualUrl: '',
   },
   {
@@ -300,8 +300,8 @@ const systems = [
     tags: ['入金消込', '請求管理', '自動マッチング', '督促管理'],
     previewUrl: 'https://nyukincheck.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
-    manualUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1L4rqQYFdS94QTqxjIwcF9tG3MqwYsN2NJxLnUqu-S_g/edit?gid=1419751613#gid=1419751613',
+    manualUrl: '/manuals/payment-reconciliation.txt',
   },
   {
     id: '27',
@@ -322,7 +322,7 @@ const systems = [
     tags: ['自動送信', 'テンプレート', 'メール', 'LINE', 'スケジュール'],
     previewUrl: 'https://teikei-renraku.netlify.app/',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1lNXzMhf0rtvQ4bSJLCQ5RhYXlcgBW3-zjGZYog8z-Ac/edit?gid=823580013#gid=823580013',
     manualUrl: '',
   },
   {
@@ -399,7 +399,7 @@ const systems = [
     tags: ['試用期間', '評価管理', '面談管理', '人事管理'],
     previewUrl: 'https://shikenkikannkannri.netlify.app/evaluation',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1wHN13F6fhvFqKhSvz0M9qji7wuGZYzsrVM6G7KlJkZ4/edit?gid=1043137265#gid=1043137265',
     manualUrl: '',
   },
   {
@@ -432,7 +432,7 @@ const systems = [
     tags: ['テンプレート', '書類管理', 'バージョン管理', '社内共有'],
     previewUrl: 'https://syoruitemplate.netlify.app/',
     iframeAllowed: false,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1eLsvZMjukOMNnrfmlLSFf6zKOo-IB4oMRVH_gownRQk/edit?usp=sharing',
     manualUrl: '',
   },
   {
