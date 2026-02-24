@@ -147,7 +147,7 @@ const systems = [
     previewUrl: 'https://syoukaipuroguramu.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/17_SZw6VxNiMyvZlmCvOHdBPp-fY1CQb_19wfOSdJwJQ/edit?gid=1938890458#gid=1938890458',
-    manualUrl: '',
+    manualUrl: 'https://drive.google.com/file/d/1gFIv87jXMshPz4KKntapR_sSp5R-b38_/view?usp=drive_link',
   },
   {
     id: '13',
@@ -202,7 +202,7 @@ const systems = [
     previewUrl: 'https://seikyusyokannri.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1TmZdGKNABVe3NPYrDXJ43XWgUUa8NPlbi5zC27w1XEo/edit?usp=sharing',
-    manualUrl: '',
+    manualUrl: 'https://drive.google.com/file/d/1qJkdrSY8YayfKLqXnbaEAfKsaerbPcPm/view?usp=drive_link',
   },
   {
     id: '18',
@@ -290,7 +290,7 @@ const systems = [
     previewUrl: 'https://syouninn.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/10nlsRN8HWxrPlWiPK36y5R4O1v5-5-gbkobDq7SrcZ4/edit?gid=439925284#gid=439925284',
-    manualUrl: '',
+    manualUrl: 'https://drive.google.com/file/d/1VbErAJ_lHDUBdEtESkAuv-QESz2GQ3Gx/view?usp=drive_link',
   },
   {
     id: '26',
@@ -323,7 +323,7 @@ const systems = [
     previewUrl: 'https://teikei-renraku.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1lNXzMhf0rtvQ4bSJLCQ5RhYXlcgBW3-zjGZYog8z-Ac/edit?gid=823580013#gid=823580013',
-    manualUrl: '',
+    manualUrl: 'https://drive.google.com/file/d/13K-efYBgwjAK7VWfxnnL2sR3irO__8fy/view?usp=drive_link',
   },
   {
     id: '29',
@@ -400,7 +400,7 @@ const systems = [
     previewUrl: 'https://shikenkikannkannri.netlify.app/evaluation',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1wHN13F6fhvFqKhSvz0M9qji7wuGZYzsrVM6G7KlJkZ4/edit?gid=1043137265#gid=1043137265',
-    manualUrl: '',
+    manualUrl: 'https://drive.google.com/file/d/1KlqPC3u29MvzvNfsL_GBMTxU25hVRG7-/view?usp=drive_link',
   },
   {
     id: '36',
@@ -433,7 +433,7 @@ const systems = [
     previewUrl: 'https://syoruitemplate.netlify.app/',
     iframeAllowed: false,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1eLsvZMjukOMNnrfmlLSFf6zKOo-IB4oMRVH_gownRQk/edit?usp=sharing',
-    manualUrl: '',
+    manualUrl: 'https://drive.google.com/file/d/1Vb2OlIQyFcf8Sef4zrF7g6njD9HGmsk1/view?usp=drive_link',
   },
   {
     id: '39',
