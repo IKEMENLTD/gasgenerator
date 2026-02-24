@@ -232,10 +232,10 @@ const systems = [
     tagline: '議題収集・アジェンダ配信の自動化',
     description: '定例ミーティングの議題をWebフォームから収集し、アジェンダを自動生成・配信。議題種別（共有/相談/決定/ブレスト）、希望時間、優先度を設定可能。毎日自動で収集開始・リマインド送信。',
     tags: ['MTG管理', 'アジェンダ', '議題収集', '自動配信'],
-    previewUrl: '/demos/mtg-agenda/index.html',
+    previewUrl: 'https://script.google.com/macros/s/AKfycbykpzEy4wGv5BOA9MLYh3BX-duOfukK7u1KWCEs_WDVGdXm5Szq2Kd4egdSNh0Deqy0Dg/exec',
     iframeAllowed: true,
-    spreadsheetUrl: '',
-    manualUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1YAEtD3n0Dr0VjHu6nDwdj5GcLnJS1S7bgQUZuXLl7jI/edit?gid=530276671#gid=530276671',
+    manualUrl: '/manuals/mtg-agenda-collector.txt',
   },
   {
     id: '21',
