@@ -657,6 +657,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1aYfNTco9ci65-bH7ldFMys7YjF7GSCdF9I2ZGGqAfB0/edit?usp=sharing',
     manualUrl: '/manuals/knowledge-base.txt',
   },
+  {
+    id: '59',
+    name: 'Dynamic OGP',
+    tagline: '候補者名入りOGP画像でスカウトのクリック率UP',
+    description: 'スカウトメッセージに貼るURLのOGP画像を候補者名入りにパーソナライズするツール。Google SlidesテンプレートからPNG画像を自動生成し、LINE/Slack等でOGPプレビュー表示。クリック計測・ダッシュボード管理機能付き。',
+    tags: ['採用支援', 'OGP画像', 'スカウト', 'LINE対応'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwLpHTEHO11IKgYUOev9aICG4ogSPQMb3kyWWGBhQ8eQ1OgL7b3TT7U2MuUTyKzU4hM/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1kxBEi3fsllCl8Bzc3YVdyLtp2akf7GjIMX_U4d80lyY/edit?gid=999112693#gid=999112693',
+    manualUrl: '/manuals/dynamic-ogp.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
