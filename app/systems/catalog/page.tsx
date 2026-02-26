@@ -133,10 +133,10 @@ const systems = [
     tagline: '資格・免許の期限を一元管理・自動通知',
     description: '従業員の資格・免許の有効期限を一元管理。期限切れリスクを自動検出し、Slack・メールで通知。ダッシュボードで要対応リスト、リスクレポート、アラート履歴を確認。CSVエクスポート・印刷機能も搭載。',
     tags: ['資格管理', '免許管理', '期限通知', 'リスク管理'],
-    previewUrl: 'https://yuukoukigennkannri.netlify.app/',
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyHOCjBB_x0XfO0x2vljC4jvEBhd4p2lcm4s9uIsEpaN6mgqXZbPgUSCAS2asK4e8zT/exec',
     iframeAllowed: true,
-    spreadsheetUrl: '',
-    manualUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/131aLO7LvIVqb4PDl0fpz_YChjLXFRUMzX36QGGQ1vFw/edit?gid=0#gid=0',
+    manualUrl: '/manuals/yuukoukigen-kanri.txt',
   },
   {
     id: '12',
