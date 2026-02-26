@@ -129,6 +129,22 @@ function TermsContent() {
                     </div>
                   </div>
 
+                  <p className="font-bold text-gray-700 text-sm mb-2">システムダウンロード回数</p>
+                  <div className="bg-gray-50 p-4 rounded mb-6 border border-gray-200">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 text-sm">
+                      <span className="font-bold text-gray-700">無料プラン</span>
+                      <span className="text-gray-600">初回1回のみ（生涯通算）</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200 text-sm">
+                      <span className="font-bold text-gray-700">プレミアムプラン</span>
+                      <span className="text-gray-600">2ヶ月に1回</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 text-sm">
+                      <span className="font-bold text-gray-700">プロフェッショナル</span>
+                      <span className="text-gray-600">毎月3回まで</span>
+                    </div>
+                  </div>
+
                   <ul className="text-sm text-gray-600 space-y-1 pl-4 list-disc">
                     <li>料金は前払い制とし、毎月自動更新されます</li>
                     <li>決済はStripeを通じて安全に処理されます</li>

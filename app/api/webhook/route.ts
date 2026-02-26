@@ -782,7 +782,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
                 // 初回DL使用済み → 有料プラン案内
                 await lineClient.replyMessage(replyToken, [{
                   type: 'text',
-                  text: `🎁 無料ダウンロード（1回）は使用済みです。\n\nさらにシステムをダウンロードするには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 毎月1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
+                  text: `🎁 無料ダウンロード（1回）は使用済みです。\n\nさらにシステムをダウンロードするには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 2か月に1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
                   quickReply: {
                     items: [
                       { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
@@ -802,9 +802,11 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             const catDlResult = await catCheckDL(userId, dlSubscriptionStatus, catalogMatch.id, catalogMatch.name)
             if (!catDlResult.allowed) {
               const planLabel = catUser?.subscription_status === 'professional' ? '5万円プラン' : '1万円プラン'
+              const periodLabel = catUser?.subscription_status === 'premium' ? '2か月に' : '月'
+              const resetLabel = catUser?.subscription_status === 'premium' ? '次の2か月サイクル' : '来月'
               await lineClient.replyMessage(replyToken, [{
                 type: 'text',
-                text: `⚠️ 今月のダウンロード上限（${catDlResult.limit}回）に達しています。\n\n📋 ${planLabel}: 月${catDlResult.limit}回まで\n\n来月になるとリセットされます。\nより多くダウンロードしたい場合は、プランのアップグレードをご検討ください。`,
+                text: `⚠️ ダウンロード上限（${periodLabel}${catDlResult.limit}回）に達しています。\n\n📋 ${planLabel}: ${periodLabel}${catDlResult.limit}回まで\n\n${resetLabel}になるとリセットされます。\nより多くダウンロードしたい場合は、プランのアップグレードをご検討ください。`,
                 quickReply: {
                   items: [
                     { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
@@ -891,7 +893,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         if (!isPaidUser) {
           await lineClient.replyMessage(replyToken, [{
             type: 'text',
-            text: `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 毎月1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
+            text: `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 2か月に1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
             quickReply: {
               items: [
                 { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
@@ -908,9 +910,11 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         const dbDlResult = await dbCheckDL(userId, dlUser.subscription_status, system.id, system.name)
         if (!dbDlResult.allowed) {
           const dbPlanLabel = dlUser.subscription_status === 'professional' ? '5万円プラン' : '1万円プラン'
+          const dbPeriodLabel = dlUser.subscription_status === 'premium' ? '2か月に' : '月'
+          const dbResetLabel = dlUser.subscription_status === 'premium' ? '次の2か月サイクル' : '来月'
           await lineClient.replyMessage(replyToken, [{
             type: 'text',
-            text: `⚠️ 今月のダウンロード上限（${dbDlResult.limit}回）に達しています。\n\n📋 ${dbPlanLabel}: 月${dbDlResult.limit}回まで\n\n来月になるとリセットされます。\nより多くダウンロードしたい場合は、プランのアップグレードをご検討ください。`,
+            text: `⚠️ ダウンロード上限（${dbPeriodLabel}${dbDlResult.limit}回）に達しています。\n\n📋 ${dbPlanLabel}: ${dbPeriodLabel}${dbDlResult.limit}回まで\n\n${dbResetLabel}になるとリセットされます。\nより多くダウンロードしたい場合は、プランのアップグレードをご検討ください。`,
             quickReply: {
               items: [
                 { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
