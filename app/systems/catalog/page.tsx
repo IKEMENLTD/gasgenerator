@@ -633,6 +633,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1LPH_WQiKLcEgIkMnpIBd1M20SHEqpnD9I4bgtG5mqeQ/edit',
     manualUrl: '/manuals/kokyaku-shuekisei-bunseki.txt',
   },
+  {
+    id: '57',
+    name: 'カルテ管理（美容・整体）',
+    tagline: '美容室・整体院の顧客カルテを一元管理',
+    description: '美容室・整体院向けの顧客カルテ管理システム。顧客情報、施術記録（美容/整体対応）、アレルギー・禁忌管理、ビフォーアフター写真、予約管理、施術傾向分析、整体効果追跡を搭載。SVG身体図での痛み部位選択やクイック確認機能で施術前の情報把握を支援します。',
+    tags: ['カルテ管理', '美容・整体', '顧客管理', '予約管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbw1m4LMukiEJMRzePAuJUDqJcBoAf1qrkQp6K-E-afwC9LPGnLTi2yJqLLEjkgBWRKr/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1tQoepHXzT7UAWItzG-u3LzEliPUKV2WU08ZVv2ypT2Y/edit',
+    manualUrl: '/manuals/karte-kanri.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
