@@ -801,7 +801,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             const { checkAndRecordDownload: catCheckDL } = await import('../../../lib/download/download-limiter')
             const catDlResult = await catCheckDL(userId, dlSubscriptionStatus, catalogMatch.id, catalogMatch.name)
             if (!catDlResult.allowed) {
-              const planLabel = catUser.subscription_status === 'professional' ? '5万円プラン' : '1万円プラン'
+              const planLabel = catUser?.subscription_status === 'professional' ? '5万円プラン' : '1万円プラン'
               await lineClient.replyMessage(replyToken, [{
                 type: 'text',
                 text: `⚠️ 今月のダウンロード上限（${catDlResult.limit}回）に達しています。\n\n📋 ${planLabel}: 月${catDlResult.limit}回まで\n\n来月になるとリセットされます。\nより多くダウンロードしたい場合は、プランのアップグレードをご検討ください。`,
