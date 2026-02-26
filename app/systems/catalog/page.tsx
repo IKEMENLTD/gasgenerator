@@ -668,6 +668,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1kxBEi3fsllCl8Bzc3YVdyLtp2akf7GjIMX_U4d80lyY/edit?gid=999112693#gid=999112693',
     manualUrl: '/manuals/dynamic-ogp.txt',
   },
+  {
+    id: '60',
+    name: 'Dynamic OGP 2',
+    tagline: '候補者名入りOGP画像を軽量・高速に自動生成',
+    description: 'Dynamic OGPの軽量版。Google Slides不要で、satori+resvg-wasmによりOGP画像をリアルタイム動的生成。候補者名入りパーソナライズURL発行、クリック計測、テンプレート管理、ダッシュボード機能を搭載。スプレッドシートからの一括生成にも対応。',
+    tags: ['採用支援', 'OGP画像', 'スカウト', '軽量版'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxdavPIVWdUSdrmQQY4uCRZR_IZsIUdZc9oCOKiFRZZZhPvOfGHVj0q0K2R6z9cztvDdw/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1u_dCs5IA5zFMa9k7WDNzOE0rwyjQi6wI9jKSf8LrCXc/edit?gid=498448637#gid=498448637',
+    manualUrl: '/manuals/dynamic-ogp-2.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
