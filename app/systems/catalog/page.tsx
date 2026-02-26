@@ -100,10 +100,10 @@ const systems = [
     tagline: 'テンプレートから漏れなくタスク管理',
     description: '業務テンプレートから自動でチェックリストを生成。タスクの進捗状況を可視化し、担当者別・期限別に管理。完了率や期限超過率を統計表示し、業務の抜け漏れを防止します。',
     tags: ['タスク管理', 'チェックリスト', 'テンプレート', '進捗管理'],
-    previewUrl: '/demos/task-checklist/index.html',
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyXNVgbUztdyxHoMFbMhtinv3gEbHzJPK-1kD3eFNxMqy3-ozZRCLsn0hQ5u8M8htbLHA/exec',
     iframeAllowed: true,
-    spreadsheetUrl: '',
-    manualUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1hmOvlsFCuq0KbcqGRPUc8dC5NloMPxRzJ6fGGWqZUOs/edit?gid=1119511305#gid=1119511305',
+    manualUrl: '/manuals/task-checklist.txt',
   },
   {
     id: '09',
