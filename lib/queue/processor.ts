@@ -479,6 +479,7 @@ export class QueueProcessor {
       // サポート情報
       secondMessage += '困ったら遠慮なく聞いてください！'
 
+      const codeBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
       messages.push({
         type: 'text',
         text: secondMessage,
@@ -486,8 +487,9 @@ export class QueueProcessor {
           items: [
             { type: 'action', action: { type: 'message', label: '✏️ 修正したい', text: '修正' }},
             { type: 'action', action: { type: 'message', label: '📷 エラー画面', text: 'エラーのスクショを送る' }},
+            { type: 'action', action: { type: 'uri', label: '📅 導入相談する', uri: codeBookingUrl }},
             { type: 'action', action: { type: 'message', label: '🔄 別のコード', text: '新しいコードを作りたい' }},
-            { type: 'action', action: { type: 'message', label: '❓ 使い方', text: '使い方を教えて' }}
+            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }}
           ]
         }
       })

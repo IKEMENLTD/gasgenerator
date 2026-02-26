@@ -1034,30 +1034,39 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           }
         }
 
+        const dlBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
+        const dlFollowUpQuickReply = {
+          items: [
+            { type: 'action', action: { type: 'uri', label: '📅 設定サポート相談', uri: dlBookingUrl } },
+            { type: 'action', action: { type: 'message', label: '🔍 他のシステムも診断', text: 'AI診断' } },
+            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+            { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
+          ]
+        }
+
         const messages: any[] = [flexMessage]
+
+        // フォローアップメッセージ追加
+        const followUpText = `セットアップでお困りの際は、お気軽にご相談ください。\n15分の無料相談で設定をサポートします。`
 
         // コードが長い場合は続きを送信
         if (isCodeLong) {
           messages.push({
             type: 'text',
-            text: `📋 続き:\n\n${codeContent.substring(MAX_CODE_LENGTH)}`,
-            quickReply: {
-              items: [
-                { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
-                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
-                { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
-              ]
-            }
+            text: `📋 続き:\n\n${codeContent.substring(MAX_CODE_LENGTH)}`
+          })
+          messages.push({
+            type: 'text',
+            text: followUpText,
+            quickReply: dlFollowUpQuickReply
           })
         } else {
-          // クイックリプライを最後のメッセージに追加
-          ; (flexMessage as any).quickReply = {
-            items: [
-              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
-              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
-              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
-            ]
-          }
+          messages.push({
+            type: 'text',
+            text: followUpText,
+            quickReply: dlFollowUpQuickReply
+          })
         }
 
         await lineClient.replyMessage(replyToken, messages)
@@ -1357,7 +1366,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             columns: [
               {
                 title: '🆓 無料プラン',
-                text: '現在のプラン\n\n✅ 月10回まで生成\n✅ 全機能利用可能\n✅ 画像解析対応\n\n月額 0円',
+                text: '✅ 月10回まで生成\n✅ 全機能利用可能\n✅ 画像解析対応\n✅ 初回1システム無料DL\n\n月額 0円',
                 actions: [{
                   type: 'message',
                   label: currentStatus.isPremium || currentStatus.isProfessional ? 'ダウングレード' : '現在のプラン',
@@ -1365,24 +1374,24 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
                 }]
               },
               {
-                title: '💎 プレミアムプラン',
-                text: '人気No.1\n\n✅ 無制限生成\n✅ 優先サポート\n✅ 履歴無制限保存\n\n月額 10,000円',
+                title: '💎 プレミアム（人気No.1）',
+                text: '月20時間の業務削減で時給換算500円\n\n✅ 無制限コード生成\n✅ 2ヶ月に1回システムDL\n✅ 優先サポート\n\n月額 10,000円',
                 actions: [{
                   type: 'uri',
-                  label: currentStatus.isPremium ? '現在のプラン' : '申し込む',
+                  label: currentStatus.isPremium ? '現在のプラン' : '詳細を見る',
                   uri: currentStatus.isPremium
-                    ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'  // 管理画面へのリンク
+                    ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'
                     : `https://gasgenerator.onrender.com/terms?plan=premium&user_id=${userId}`
                 }]
               },
               {
                 title: '🎆 プロフェッショナル',
-                text: '法人向け\n\n✅ 全機能無制限\n✅ 24時間以内対応\n✅ 専任エンジニア\n✅ APIアクセス\n\n月額 50,000円',
+                text: '専任エンジニア付きで外注費の1/10\n\n✅ 全機能無制限\n✅ 月3回システムDL\n✅ 24時間以内対応\n\n月額 50,000円',
                 actions: [{
                   type: 'uri',
-                  label: currentStatus.isProfessional ? '現在のプラン' : '申し込む',
+                  label: currentStatus.isProfessional ? '現在のプラン' : '詳細を見る',
                   uri: currentStatus.isProfessional
-                    ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'  // 管理画面へのリンク
+                    ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'
                     : `https://gasgenerator.onrender.com/terms?plan=professional&user_id=${userId}`
                 }]
               }
