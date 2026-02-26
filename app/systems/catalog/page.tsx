@@ -122,10 +122,10 @@ const systems = [
     tagline: '休眠顧客を自動抽出・復帰キャンペーン',
     description: '3ヶ月以上来店のない顧客を自動抽出し、セグメント別（3ヶ月/6ヶ月/1年）に分類。復帰キャンペーンメールをワンクリックで一括送信。クーポン発行・使用状況追跡機能も搭載。',
     tags: ['離脱顧客', 'メール配信', 'クーポン管理', '顧客復帰'],
-    previewUrl: 'https://ridatukokyaku.netlify.app/',
+    previewUrl: 'https://script.google.com/macros/s/AKfycbx3XCd4NNbDwYE3hmqpDeny22WESwm5e0kp5QWs453er__BilO5jLHnFyNM6RP831yY/exec',
     iframeAllowed: true,
-    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1_a3-zSwU2FK_fWysFQMd_edDQeLYeFgAD4WogOx0jo4/edit?usp=sharing',
-    manualUrl: 'https://drive.google.com/file/d/1KikZaxndyWqY6sfrarqLvO_L6mL8N2A-/view?usp=drive_link',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1NTuhe-Z3924vQtY-FoGYZpUYeCRfm6FOtUzV9z9SxTg/edit?gid=222979078#gid=222979078',
+    manualUrl: '/manuals/ridatsu-kokyaku-horiokoshi.txt',
   },
   {
     id: '11',
