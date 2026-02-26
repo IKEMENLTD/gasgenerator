@@ -1193,6 +1193,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         const responseText = finalResponse.content[0].text
 
         // メインメニューquickReplyを使用（システム一覧を先頭に配置）
+        const llmBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
         await lineClient.replyMessage(replyToken, [{
           type: 'text',
           text: responseText,
@@ -1200,6 +1201,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             items: [
               { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
               { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
+              { type: 'action', action: { type: 'uri', label: '📅 無料相談を予約', uri: llmBookingUrl } },
               { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
               { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
               { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
@@ -1226,16 +1228,17 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
     // メニュー表示
     if (messageText === 'メニュー' || messageText === 'MENU' || messageText === 'menu' || messageText === 'Menu') {
+      const menuBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
-        text: '📋 メニュー',
+        text: '📋 メニュー\n\n🔍 AI診断 … 30秒で最適なシステムを診断\n📦 システム一覧 … 42種類の自動化システム\n📅 無料相談 … 15分で導入プランをご提案\n🚀 コード生成 … AIがGASコードを自動作成\n💎 料金プラン … 無料/プレミアム/プロ',
         quickReply: {
           items: [
-            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
             { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
+            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+            { type: 'action', action: { type: 'uri', label: '📅 無料相談を予約', uri: menuBookingUrl } },
             { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' } },
             { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
-            { type: 'action', action: { type: 'message', label: '📖 使い方', text: '使い方' } },
             { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談' } },
             { type: 'action', action: { type: 'message', label: '🔄 最初から', text: '最初から' } }
           ] as any
@@ -1388,14 +1391,14 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         },
         {
           type: 'text',
-          text: '下のボタンから操作を選んでください',
+          text: 'プランについてご不明点があれば、無料相談をご利用ください。',
           quickReply: {
             items: [
+              { type: 'action', action: { type: 'uri', label: '📅 無料相談を予約', uri: process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949' } },
               { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
               { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
               { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
               { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
-              { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } },
               { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
               { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
             ]

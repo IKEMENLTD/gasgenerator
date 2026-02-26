@@ -301,16 +301,16 @@ export async function handleDiagnosis(
       type: 'text',
       text: `📊 診断結果\n\n${recommendation.analysisText || '上記3つのシステムがあなたの業務に最適です。'}`,
     }
+    const bookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
     const ctaMessage = {
       type: 'text',
-      text: 'おすすめシステムをすぐに使い始めませんか？\n\n🎁 初回限定：1システム無料でダウンロードできます\n✅ プログラミング知識は不要\n✅ 動作不良時は全額返金保証\n\n気になるシステムをダウンロードして、今日から業務を自動化しましょう！',
+      text: '導入についてご不明点はありませんか？\n\n15分の無料相談で、御社に合った導入プランをご提案します。\n\n✅ プログラミング知識は不要\n✅ 動作不良時は全額返金保証\n✅ 初回限定：1システム無料でダウンロード可能',
       quickReply: {
         items: [
-          { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
-          { type: 'action', action: { type: 'message', label: '🔍 もう一度診断', text: 'AI診断' } },
-          { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' } },
-          { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+          { type: 'action', action: { type: 'uri', label: '📅 無料相談を予約', uri: bookingUrl } },
           { type: 'action', action: { type: 'message', label: '📥 無料で1つDLする', text: 'システム一覧' } },
+          { type: 'action', action: { type: 'message', label: '🔍 もう一度診断', text: 'AI診断' } },
+          { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
           { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
         ],
       },

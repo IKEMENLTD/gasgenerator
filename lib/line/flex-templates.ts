@@ -236,9 +236,9 @@ export class FlexTemplates {
             {
               type: 'button',
               action: {
-                type: 'message',
-                label: '来月まで待つ',
-                text: '来月まで待つ'
+                type: 'uri',
+                label: '無料相談で相談する',
+                uri: process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
               },
               style: 'secondary',
               height: 'sm'

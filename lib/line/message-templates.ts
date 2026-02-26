@@ -62,15 +62,24 @@ export class MessageTemplates {
     }
   }
   static createWelcomeMessage(): Message[] {
+    const bookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
     return [
       {
         type: 'text',
-        text: 'Task mate へようこそ！\n\n業務の自動化をお手伝いするLINE Botです。\nGoogle Apps Script（GAS）のコードをAIが自動で生成します。\n\n明日から役立つ情報をお届けしますね。\n\nまずは下のボタンからお試しください！',
+        text: 'スマートビジネスコンシェルジュへようこそ！\n\n「毎月の請求書作成に丸1日...」\n「顧客リストの更新が追いつかない...」\n\nそんなお悩み、自動化で解決しませんか？\n\nまずは30秒のAI診断で、あなたの業務に最適な自動化システムを見つけましょう。',
         quickReply: {
           items: [
             {
               type: 'action',
-              action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' }
+              action: { type: 'message', label: '🔍 AI診断（30秒）', text: 'AI診断' }
+            },
+            {
+              type: 'action',
+              action: {
+                type: 'uri',
+                label: '📅 無料相談を予約',
+                uri: bookingUrl
+              }
             },
             {
               type: 'action',
@@ -293,6 +302,7 @@ export class MessageTemplates {
    * メインメニューquickReply（「最初から」と同じメニュー）
    */
   static createMainMenuQuickReply(): any {
+    const bookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
     return {
       items: [
         {
@@ -333,6 +343,14 @@ export class MessageTemplates {
             type: 'message',
             label: '✨ その他',
             text: 'その他'
+          }
+        },
+        {
+          type: 'action',
+          action: {
+            type: 'uri',
+            label: '📅 無料相談を予約',
+            uri: bookingUrl
           }
         },
         {
