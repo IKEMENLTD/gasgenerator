@@ -300,17 +300,23 @@ export async function handleDiagnosis(
     const analysisMessage = {
       type: 'text',
       text: `📊 診断結果\n\n${recommendation.analysisText || '上記3つのシステムがあなたの業務に最適です。'}`,
+    }
+    const ctaMessage = {
+      type: 'text',
+      text: 'おすすめシステムをすぐに使い始めませんか？\n\n🎁 初回限定：1システム無料でダウンロードできます\n✅ プログラミング知識は不要\n✅ 動作不良時は全額返金保証\n\n気になるシステムをダウンロードして、今日から業務を自動化しましょう！',
       quickReply: {
         items: [
           { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
           { type: 'action', action: { type: 'message', label: '🔍 もう一度診断', text: 'AI診断' } },
           { type: 'action', action: { type: 'message', label: '🚀 コード生成開始', text: 'コード生成を開始' } },
+          { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+          { type: 'action', action: { type: 'message', label: '📥 無料で1つDLする', text: 'システム一覧' } },
           { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
         ],
       },
     }
 
-    await lineClient.replyMessage(replyToken, [carouselMessage, analysisMessage])
+    await lineClient.replyMessage(replyToken, [carouselMessage, analysisMessage, ctaMessage])
 
   } catch (error) {
     logger.error('LINE diagnosis error', { userId, error })

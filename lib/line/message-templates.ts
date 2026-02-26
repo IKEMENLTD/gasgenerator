@@ -65,127 +65,20 @@ export class MessageTemplates {
     return [
       {
         type: 'text',
-        text: '🎉 Task mate へようこそ！\n\nGoogle Apps Scriptのコードを自動生成するLINE Botです。\n\n📢 2025年9月より本番運用を開始しました。\n現在も改善を重ねておりますが、一部エラーが発生する場合がございます。お手数ですが、不具合等お気づきの点がございましたらお知らせいただけますと幸いです。'
-      },
-      {
-        type: 'template',
-        altText: 'プランを選んで始めましょう！',
-        template: {
-          type: 'carousel',
-          columns: [
-            {
-              title: '💎 プラン一覧',
-              text: 'お好みのプランをお選びください',
-              actions: [
-                {
-                  type: 'message',
-                  label: '✨ 無料で試す',
-                  text: 'コード生成を開始'
-                },
-                {
-                  type: 'uri',
-                  label: '💰 ベーシック（¥10,000/月）',
-                  uri: process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'
-                },
-                {
-                  type: 'uri',
-                  label: '🏆 プロ（¥50,000/月）',
-                  uri: process.env.STRIPE_PAYMENT_LINK_PRO || process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'
-                }
-              ]
-            },
-            {
-              title: '📋 サポート・マイページ',
-              text: '各種サポートをご利用ください',
-              actions: [
-                {
-                  type: 'uri',
-                  label: '📅 まずは無料相談',
-                  uri: process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
-                },
-                {
-                  type: 'message',
-                  label: '📋 マイページ',
-                  text: 'マイページ'
-                },
-                {
-                  type: 'message',
-                  label: '👨‍💻 エンジニアに相談',
-                  text: 'エンジニアに相談する'
-                }
-              ]
-            }
-          ]
-        }
-      },
-      {
-        type: 'text',
-        text: '📦 まずはシステム一覧から、すぐ使えるシステムをチェック！\n\n🔍 どのシステムが合うかわからない方は「AI診断」で最適な3つをご提案します\n\nまたは作りたいコードのカテゴリを選んでください：',
+        text: 'Task mate へようこそ！\n\n業務の自動化をお手伝いするLINE Botです。\nGoogle Apps Script（GAS）のコードをAIが自動で生成します。\n\n明日から役立つ情報をお届けしますね。\n\nまずは下のボタンからお試しください！',
         quickReply: {
           items: [
             {
               type: 'action',
-              action: {
-                type: 'message',
-                label: '📦 システム一覧',
-                text: 'システム一覧'
-              }
+              action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' }
             },
             {
               type: 'action',
-              action: {
-                type: 'message',
-                label: '🔍 AI診断',
-                text: 'AI診断'
-              }
+              action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }
             },
             {
               type: 'action',
-              action: {
-                type: 'message',
-                label: '📊 スプレッドシート',
-                text: 'スプレッドシート操作'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '📧 Gmail',
-                text: 'Gmail自動化'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '📅 カレンダー',
-                text: 'カレンダー連携'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '👨‍💻 エンジニア相談',
-                text: 'エンジニアに相談する'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '📋 マイページ',
-                text: 'マイページ'
-              }
-            },
-            {
-              type: 'action',
-              action: {
-                type: 'message',
-                label: '📋 メニュー',
-                text: 'メニュー'
-              }
+              action: { type: 'message', label: '📋 メニュー', text: 'メニュー' }
             }
           ]
         }

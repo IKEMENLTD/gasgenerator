@@ -20,7 +20,8 @@ import { RecoveryManager } from '../../../lib/error-recovery/recovery-manager'
 import { QAService } from '../../../lib/rag/qa-service'
 import { DownloadQueries } from '../../../lib/supabase/subscription-queries'
 import { supabaseAdmin } from '../../../lib/supabase/client'
-import { startDrip, stopDrip, checkAndStopDripOnUserAction } from '../../../lib/drip/drip-service'
+// [Lmessage一本化] コード内ドリップ無効化
+// import { startDrip, stopDrip, checkAndStopDripOnUserAction } from '../../../lib/drip/drip-service'
 import { handleDiagnosis, isDiagnosisTrigger } from '../../../lib/line/diagnosis-handler'
 
 // Node.jsランタイムを使用（AI処理のため）
@@ -205,10 +206,10 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
   const messageText = event.message?.text?.trim() || ''
   const replyToken = event.replyToken
 
-  // ドリップ配信停止チェック（ユーザーがメッセージを送った = アクティブなので停止）
-  if (userId) {
-    checkAndStopDripOnUserAction(userId).catch(() => { })
-  }
+  // [Lmessage一本化] コード内ドリップ無効化
+  // if (userId) {
+  //   checkAndStopDripOnUserAction(userId).catch(() => { })
+  // }
 
   // デバッグ情報をログに記録
   logger.debug('Event source info', {
@@ -765,7 +766,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             // サブスクリプション判定（usersテーブルで統一）
             const { data: catUser } = await supabaseAdmin
               .from('users')
-              .select('subscription_status, subscription_end_date')
+              .select('subscription_status, subscription_end_date, free_download_used')
               .eq('line_user_id', userId)
               .maybeSingle()
 
@@ -775,24 +776,30 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
               new Date(catUser.subscription_end_date) > new Date()
 
             if (!catUserIsPaid) {
-              // 無料ユーザー → 有料プラン案内
-              await lineClient.replyMessage(replyToken, [{
-                type: 'text',
-                text: `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 毎月1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
-                quickReply: {
-                  items: [
-                    { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
-                    { type: 'action', action: { type: 'uri', label: '📦 カタログで見る', uri: catalogUrl } },
-                    { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
-                  ]
-                }
-              }] as any)
-              return true
+              // 無料ユーザー: 初回DL未使用なら許可、使用済みなら有料プラン案内
+              const freeUsed = catUser?.free_download_used === true
+              if (freeUsed) {
+                // 初回DL使用済み → 有料プラン案内
+                await lineClient.replyMessage(replyToken, [{
+                  type: 'text',
+                  text: `🎁 無料ダウンロード（1回）は使用済みです。\n\nさらにシステムをダウンロードするには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 毎月1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
+                  quickReply: {
+                    items: [
+                      { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+                      { type: 'action', action: { type: 'uri', label: '📦 カタログで見る', uri: catalogUrl } },
+                      { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
+                    ]
+                  }
+                }] as any)
+                return true
+              }
+              // 初回DL未使用 → freeプランとしてDL処理を続行
             }
 
-            // ダウンロード回数チェック
+            // ダウンロード回数チェック（freeプラン or 有料プラン）
+            const dlSubscriptionStatus = catUserIsPaid ? catUser.subscription_status : 'free'
             const { checkAndRecordDownload: catCheckDL } = await import('../../../lib/download/download-limiter')
-            const catDlResult = await catCheckDL(userId, catUser.subscription_status, catalogMatch.id, catalogMatch.name)
+            const catDlResult = await catCheckDL(userId, dlSubscriptionStatus, catalogMatch.id, catalogMatch.name)
             if (!catDlResult.allowed) {
               const planLabel = catUser.subscription_status === 'professional' ? '5万円プラン' : '1万円プラン'
               await lineClient.replyMessage(replyToken, [{
@@ -2102,114 +2109,39 @@ async function handleFollowEvent(event: any): Promise<void> {
         throw new Error('Failed to send premium welcome message')
       }
     } else if (isNewUser) {
-      // 新規無料ユーザーには決済ボタン付きウェルカムメッセージ
+      // 新規無料ユーザー: シンプルなウェルカムメッセージ1通
       const welcomeMessages = MessageTemplates.createWelcomeMessage()
-
-      // LINE User IDをBase64エンコードしてStripeリンクに追加
-      const encodedUserId = Buffer.from(userId).toString('base64')
-
-      // Stripeリンクにclient_reference_idを追加
-      const updatedMessages = welcomeMessages.map(msg => {
-        if (msg.type === 'template' && 'template' in msg) {
-          // カルーセルテンプレートの場合
-          if (msg.template.type === 'carousel' && msg.template.columns) {
-            msg.template.columns = msg.template.columns.map((col: any) => {
-              col.actions = col.actions.map((action: any) => {
-                if (action.type === 'uri' && action.uri.includes('stripe.com')) {
-                  const separator = action.uri.includes('?') ? '&' : '?'
-                  action.uri += `${separator}client_reference_id=${encodedUserId}`
-                }
-                return action
-              })
-              return col
-            })
-          }
-          // ボタンテンプレートの場合（レガシー互換）
-          if (msg.template.type === 'buttons') {
-            msg.template.actions = msg.template.actions.map((action: any) => {
-              if (action.type === 'uri' && action.uri.includes('stripe.com')) {
-                const separator = action.uri.includes('?') ? '&' : '?'
-                action.uri += `${separator}client_reference_id=${encodedUserId}`
-              }
-              return action
-            })
-          }
-        }
-        return msg
-      })
-
-      // メッセージを個別に送信（確実に全て送信されるように）
-      for (let i = 0; i < updatedMessages.length; i++) {
-        const success = await lineClient.pushMessage(userId, [updatedMessages[i]])
-
+      for (let i = 0; i < welcomeMessages.length; i++) {
+        const success = await lineClient.pushMessage(userId, [welcomeMessages[i]])
         if (!success) {
-          throw new Error(`Failed to send welcome message ${i + 1}/${updatedMessages.length}`)
+          throw new Error(`Failed to send welcome message ${i + 1}/${welcomeMessages.length}`)
         }
-
-        // メッセージ間に100ms遅延を入れて順番を保証
-        if (i < updatedMessages.length - 1) {
+        if (i < welcomeMessages.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
       }
 
-      // ドリップキャンペーン開始（7日間の面談CTA配信）
-      await startDrip(userId)
+      // [Lmessage一本化] コード内ドリップ無効化
+      // await startDrip(userId)
     } else {
-      // 既存無料ユーザー（ブロック解除/再追加）
-      // ウェルカムメッセージをベースに、文言のみ「おかえりなさい」に変更して一貫性を保つ
-      const welcomeMessages = MessageTemplates.createWelcomeMessage()
-
-      welcomeMessages[0] = {
+      // 既存無料ユーザー（ブロック解除/再追加）: シンプルな「おかえり」メッセージ1通
+      const success = await lineClient.pushMessage(userId, [{
         type: 'text',
-        text: '🎉 おかえりなさい！\n\nまたご利用いただきありがとうございます。\n\n引き続き、GASコード生成やエンジニア相談をご利用いただけます！'
+        text: 'おかえりなさい！\n\nまたご利用いただきありがとうございます。\n引き続き、GASコード生成やエンジニア相談をご利用いただけます！',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
+            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
+          ]
+        }
+      }])
+      if (!success) {
+        logger.error('Failed to send returning welcome message', { userId })
       }
 
-      // LINE User IDをBase64エンコードしてStripeリンクに追加
-      const encodedUserId = Buffer.from(userId).toString('base64')
-
-      // Stripeリンクにclient_reference_idを追加（新規ユーザー同様）
-      const updatedMessages = welcomeMessages.map(msg => {
-        if (msg.type === 'template' && 'template' in msg) {
-          // カルーセルテンプレートの場合
-          if (msg.template.type === 'carousel' && msg.template.columns) {
-            msg.template.columns = msg.template.columns.map((col: any) => {
-              col.actions = col.actions.map((action: any) => {
-                if (action.type === 'uri' && action.uri.includes('stripe.com')) {
-                  const separator = action.uri.includes('?') ? '&' : '?'
-                  action.uri += `${separator}client_reference_id=${encodedUserId}`
-                }
-                return action
-              })
-              return col
-            })
-          }
-          // ボタンテンプレートの場合（レガシー互換）
-          if (msg.template.type === 'buttons') {
-            msg.template.actions = msg.template.actions.map((action: any) => {
-              if (action.type === 'uri' && action.uri.includes('stripe.com')) {
-                const separator = action.uri.includes('?') ? '&' : '?'
-                action.uri += `${separator}client_reference_id=${encodedUserId}`
-              }
-              return action
-            })
-          }
-        }
-        return msg
-      })
-
-      // メッセージを送信
-      for (let i = 0; i < updatedMessages.length; i++) {
-        const success = await lineClient.pushMessage(userId, [updatedMessages[i]])
-        if (!success) {
-          logger.error(`Failed to send returning welcome message ${i + 1}`, { userId })
-        }
-        if (i < updatedMessages.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 100))
-        }
-      }
-
-      // 再追加ユーザーにもドリップキャンペーン開始（ステップ0から）
-      await startDrip(userId)
+      // [Lmessage一本化] コード内ドリップ無効化
+      // await startDrip(userId)
     }
 
     // Agency tracking: LINE profile保存 + 訪問記録紐付け（非同期、失敗しても影響なし）
@@ -2234,8 +2166,8 @@ async function handleUnfollowEvent(event: any): Promise<void> {
 
   logger.info('User unfollowed', { userId })
 
-  // ドリップ配信停止
-  await stopDrip(userId, 'unfollowed').catch(() => { })
+  // [Lmessage一本化] コード内ドリップ無効化
+  // await stopDrip(userId, 'unfollowed').catch(() => { })
 
   // セッションクリーンアップ
   await sessionManager.deleteSession(userId)

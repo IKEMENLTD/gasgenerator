@@ -3,6 +3,7 @@ import { logger } from '@/lib/utils/logger'
 
 /** プラン別月間ダウンロード上限 */
 const PLAN_LIMITS: Record<string, number> = {
+  free: 1,          // 無料プラン: 初回1回のみ（生涯通算）
   premium: 1,       // 1万円プラン: 月1回
   professional: 3,  // 5万円プラン: 月3回
 }
@@ -35,6 +36,23 @@ export async function getDownloadInfo(
     return { remaining: 0, limit: 0, currentCount: 0 }
   }
 
+  // 無料プラン: 生涯通算1回チェック
+  if (subscriptionStatus === 'free') {
+    const { data: user } = await (supabaseAdmin as any)
+      .from('users')
+      .select('free_download_used')
+      .eq('line_user_id', lineUserId)
+      .maybeSingle()
+
+    const used = user?.free_download_used === true
+    return {
+      remaining: used ? 0 : 1,
+      limit: 1,
+      currentCount: used ? 1 : 0,
+    }
+  }
+
+  // 有料プラン: 月次チェック
   const { data: user } = await (supabaseAdmin as any)
     .from('users')
     .select('monthly_download_count, download_reset_month')
@@ -71,6 +89,34 @@ export async function checkAndRecordDownload(
     return { allowed: false, remaining: 0, limit: 0, currentCount: 0 }
   }
 
+  // 無料プラン: 生涯通算1回チェック & 記録
+  if (subscriptionStatus === 'free') {
+    const { data: user } = await (supabaseAdmin as any)
+      .from('users')
+      .select('free_download_used')
+      .eq('line_user_id', lineUserId)
+      .maybeSingle()
+
+    if (user?.free_download_used === true) {
+      return { allowed: false, remaining: 0, limit: 1, currentCount: 1 }
+    }
+
+    // 初回DL記録: free_download_used = true
+    const { error: updateError } = await (supabaseAdmin as any)
+      .from('users')
+      .update({ free_download_used: true })
+      .eq('line_user_id', lineUserId)
+
+    if (updateError) {
+      logger.error('Failed to update free_download_used', { lineUserId, error: updateError })
+    } else {
+      logger.info('Free download recorded', { lineUserId, systemId, systemName })
+    }
+
+    return { allowed: true, remaining: 0, limit: 1, currentCount: 1 }
+  }
+
+  // 有料プラン: 月次チェック & 記録
   const { data: user } = await (supabaseAdmin as any)
     .from('users')
     .select('monthly_download_count, download_reset_month')
