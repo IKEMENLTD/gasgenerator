@@ -646,6 +646,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1tQoepHXzT7UAWItzG-u3LzEliPUKV2WU08ZVv2ypT2Y/edit',
     manualUrl: '/manuals/karte-kanri.txt',
   },
+  {
+    id: '58',
+    name: 'ナレッジベース',
+    tagline: '組織の知識・ノウハウを一元管理・検索・活用',
+    description: '業務ノウハウ・知識を登録・分類・全文検索できるナレッジ管理システム。タグ・同義語による高精度検索、5段階評価・フィードバック、エキスパートマッピング、質問・相談機能、月次分析・要更新自動検出を搭載。退職・異動による知識喪失を防ぎ、組織全体のナレッジ活用を促進します。',
+    tags: ['ナレッジ管理', '全文検索', 'エキスパート', '分析・レポート'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbymFk0zLHo65iRBLUvrNwBpEysfO_gACPmcXl0Ry8reZLXbfoKuWfiUWf--C1TbOwLj/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1aYfNTco9ci65-bH7ldFMys7YjF7GSCdF9I2ZGGqAfB0/edit?usp=sharing',
+    manualUrl: '/manuals/knowledge-base.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
