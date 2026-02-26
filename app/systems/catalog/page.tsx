@@ -611,6 +611,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1sB4we97k8wJ0OPPKH__yGYG263t0bwb1UamIEdJCRj0/edit?gid=1055425724#gid=1055425724',
     manualUrl: '/manuals/welcome-snap.txt',
   },
+  {
+    id: '55',
+    name: '粗利管理',
+    tagline: '売上・原価データから粗利を分析・管理',
+    description: '売上・原価データの登録から粗利分析、アラート通知、シミュレーションまでを一元管理。商品別・顧客別・担当者別の粗利分析、月次サマリー、粗利目標管理、原価変動追跡機能を搭載。Chart.jsによるグラフ表示でデータを可視化します。',
+    tags: ['粗利管理', '売上分析', 'アラート通知', 'シミュレーション'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzmD9RMr-xOQzI0fjGWJJ1iiMbB1Hswv67qTZtIbfh_cf1ck8dgIgID3QnN6KPPIfW-2A/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1s5e8Kv8fxBWWQIHfLnh6XL-BTvnsbIZlAba8bEixyc8/edit',
+    manualUrl: '/manuals/arari-kanri.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
