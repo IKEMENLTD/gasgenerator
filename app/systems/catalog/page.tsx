@@ -622,6 +622,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1s5e8Kv8fxBWWQIHfLnh6XL-BTvnsbIZlAba8bEixyc8/edit',
     manualUrl: '/manuals/arari-kanri.txt',
   },
+  {
+    id: '56',
+    name: '顧客別収益性分析',
+    tagline: '顧客ごとの収益性をABC・LTV・セグメントで多角分析',
+    description: '顧客マスタ・売上・コスト工数を登録し、月次/年次の収益サマリー、ABC分析、デシル分析、LTV分析、セグメント分類、戦略マトリクス、担当者ポートフォリオを自動算出。ダッシュボードでKPIとChart.jsグラフを一覧表示し、売上減少・休眠・粗利率低下をメールアラートで通知します。',
+    tags: ['収益性分析', '顧客管理', 'ABC分析', 'LTV', 'セグメント'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxqVf5Ozhjv8bbmupeBwJYrwclON2ttQbD4d0xkoRdc5TSBoc7pIOpb1dqYFPD_JcBKag/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1LPH_WQiKLcEgIkMnpIBd1M20SHEqpnD9I4bgtG5mqeQ/edit',
+    manualUrl: '/manuals/kokyaku-shuekisei-bunseki.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
