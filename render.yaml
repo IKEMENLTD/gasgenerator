@@ -16,3 +16,13 @@ services:
         value: "10000"
     healthCheckPath: /api/health
     autoDeploy: true
+
+  - type: cron
+    name: drip-campaign
+    runtime: node
+    schedule: "0 * * * *"
+    buildCommand: ""
+    startCommand: "curl -s -H 'Authorization: Bearer $CRON_SECRET' https://gasgenerator.onrender.com/api/cron/drip"
+    envVars:
+      - key: CRON_SECRET
+        sync: false
