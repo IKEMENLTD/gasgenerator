@@ -679,6 +679,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1u_dCs5IA5zFMa9k7WDNzOE0rwyjQi6wI9jKSf8LrCXc/edit?gid=498448637#gid=498448637',
     manualUrl: '/manuals/dynamic-ogp-2.txt',
   },
+  {
+    id: '61',
+    name: 'リードタイム分析ツール',
+    tagline: '製造・物流のリードタイムを可視化・改善',
+    description: '案件登録から工程実績記録、ボトルネック分析、改善施策管理まで一元的に行えるリードタイム分析ツール。KPIダッシュボード、工程別・顧客別・カテゴリ別の多角的分析、納期遅延アラート、改善施策の効果測定機能を搭載。Chart.jsによるグラフ表示、Soft UIデザインでスマホ対応。',
+    tags: ['リードタイム', 'ボトルネック分析', '納期管理', 'KPIダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzztX_48pnx9BFkO6QHLxZ0gUElxhFFLWUSAEBIQNOPia_KBWJqeVBFfTrIZly-M-B2/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1vck079nPIF8G8bHqBIW-YDQWsNNKaLcXhwes2TKCd48/edit',
+    manualUrl: '/manuals/leadtime-analysis.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
