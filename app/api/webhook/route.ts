@@ -1353,6 +1353,23 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       return true
     }
 
+    // 無料プランを継続ボタン押下時のROI訴求ハンドラー
+    if (messageText === '無料プランを継続') {
+      await lineClient.replyMessage(replyToken, [{
+        type: 'text',
+        text: '現在、無料プランをご利用中です。\n\nプレミアムプランにアップグレードすると、月20時間の業務削減が可能です。時給2,500円換算で月5万円分の価値があります。\n\n✅ コード生成が無制限に\n✅ 2ヶ月に1回、完成システムをDL\n✅ 優先サポートでトラブル即解決\n\nまずは無料相談で、あなたの業務に合う自動化をご提案します。',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'uri', label: '📅 無料相談を予約', uri: process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949' } },
+            { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
+            { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
+          ]
+        }
+      }] as any)
+      return true
+    }
+
     if (messageText === 'プレミアムプラン' || messageText === 'プレミアムプランを見る' || messageText === '料金プラン' || messageText === 'アップグレード') {
       // 現在のプレミアムステータスを確認
       const currentStatus = await PremiumChecker.checkPremiumStatus(userId)
@@ -1376,23 +1393,27 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
               {
                 title: '💎 プレミアム（人気No.1）',
                 text: '月20時間の業務削減で時給換算500円\n\n✅ 無制限コード生成\n✅ 2ヶ月に1回システムDL\n✅ 優先サポート\n\n月額 10,000円',
-                actions: [{
+                actions: [currentStatus.isPremium ? {
+                  type: 'message',
+                  label: 'チャットで相談',
+                  text: 'エンジニアに相談する'
+                } : {
                   type: 'uri',
-                  label: currentStatus.isPremium ? '現在のプラン' : '詳細を見る',
-                  uri: currentStatus.isPremium
-                    ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'
-                    : `https://gasgenerator.onrender.com/terms?plan=premium&user_id=${userId}`
+                  label: '詳細を見る',
+                  uri: `https://gasgenerator.onrender.com/terms?plan=premium&user_id=${userId}`
                 }]
               },
               {
                 title: '🎆 プロフェッショナル',
                 text: '専任エンジニア付きで外注費の1/10\n\n✅ 全機能無制限\n✅ 月3回システムDL\n✅ 24時間以内対応\n\n月額 50,000円',
-                actions: [{
+                actions: [currentStatus.isProfessional ? {
+                  type: 'message',
+                  label: 'チャットで相談',
+                  text: 'エンジニアに相談する'
+                } : {
                   type: 'uri',
-                  label: currentStatus.isProfessional ? '現在のプラン' : '詳細を見る',
-                  uri: currentStatus.isProfessional
-                    ? 'https://line.me/R/ti/p/@YOUR_LINE_ID'
-                    : `https://gasgenerator.onrender.com/terms?plan=professional&user_id=${userId}`
+                  label: '詳細を見る',
+                  uri: `https://gasgenerator.onrender.com/terms?plan=professional&user_id=${userId}`
                 }]
               }
             ]
@@ -2105,16 +2126,15 @@ async function handleFollowEvent(event: any): Promise<void> {
       new Date((user as any).subscription_end_date) > new Date()
 
     if (isPremium) {
-      // プレミアムユーザーにはシステム一覧を先頭に表示
+      // プレミアムユーザーには活用相談への誘導を含むウェルカムメッセージを表示
       const success = await lineClient.pushMessage(userId, [{
         type: 'text',
-        text: '🎉 おかえりなさい！\n\nプレミアムプランご利用中です。\n無制限でGASコードを生成できます。\n\n📦 まずはシステム一覧から、すぐ使えるシステムをチェック！',
+        text: '🎉 おかえりなさい！\n\nプレミアムプランご利用中です。\n無制限でGASコードを生成できます。\n\n新しいシステムの追加や活用のご相談もお気軽にどうぞ。',
         quickReply: {
           items: [
             { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
-            { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
-            { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
-            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+            { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
+            { type: 'action', action: { type: 'uri', label: '📅 活用相談を予約', uri: process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949' } },
             { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
             { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ]
@@ -2143,10 +2163,11 @@ async function handleFollowEvent(event: any): Promise<void> {
       // 既存無料ユーザー（ブロック解除/再追加）: シンプルな「おかえり」メッセージ1通
       const success = await lineClient.pushMessage(userId, [{
         type: 'text',
-        text: 'おかえりなさい！\n\nまたご利用いただきありがとうございます。\n引き続き、GASコード生成やエンジニア相談をご利用いただけます！',
+        text: 'おかえりなさい！\n\nまたご利用いただきありがとうございます。\n\n前回気になったシステムはありましたか？\n15分の無料相談で、御社に合った導入プランをご提案します。',
         quickReply: {
           items: [
             { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
+            { type: 'action', action: { type: 'uri', label: '📅 無料相談を予約', uri: process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949' } },
             { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
             { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ]
