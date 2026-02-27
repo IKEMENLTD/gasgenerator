@@ -14,7 +14,6 @@ interface AuthState {
   downloadsRemaining: number
   downloadsLimit: number
   // 無料初回DL可能フラグ
-  freeDownloadAvailable: boolean
 }
 
 // システムデータ
@@ -718,8 +717,7 @@ export default function SystemCatalogPage() {
     authParams: '',
     downloadsRemaining: 0,
     downloadsLimit: 0,
-    freeDownloadAvailable: false,
-  })
+      })
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -741,7 +739,7 @@ export default function SystemCatalogPage() {
 
     if (!u || !t || !s) {
       // 署名パラメータなし → 未認証（直接アクセス）
-      setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '', downloadsRemaining: 0, downloadsLimit: 0, freeDownloadAvailable: false })
+      setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '', downloadsRemaining: 0, downloadsLimit: 0, })
       return
     }
 
@@ -758,11 +756,10 @@ export default function SystemCatalogPage() {
           authParams,
           downloadsRemaining: data.downloadsRemaining || 0,
           downloadsLimit: data.downloadsLimit || 0,
-          freeDownloadAvailable: data.freeDownloadAvailable || false,
-        })
+                  })
       })
       .catch(() => {
-        setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '', downloadsRemaining: 0, downloadsLimit: 0, freeDownloadAvailable: false })
+        setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '', downloadsRemaining: 0, downloadsLimit: 0, })
       })
   }, [])
 
@@ -1086,25 +1083,6 @@ export default function SystemCatalogPage() {
                           </a>
                           <p className="text-xs text-center text-gray-500">
                             導入・カスタマイズのご相談を承ります
-                          </p>
-                        </>
-                      ) : auth.freeDownloadAvailable && selectedSystem.spreadsheetUrl ? (
-                        /* 無料ユーザー + 初回DL未使用 + スプレッドシートあり → 初回無料DL可能 */
-                        <>
-                          <a
-                            href={`/api/systems/download?id=${selectedSystem.id}&${auth.authParams}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg shadow-amber-500/30"
-                          >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
-                              <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
-                            </svg>
-                            初回無料DL
-                          </a>
-                          <p className="text-xs text-center text-amber-600 font-medium">
-                            初回限定 1回無料でダウンロードできます
                           </p>
                         </>
                       ) : (

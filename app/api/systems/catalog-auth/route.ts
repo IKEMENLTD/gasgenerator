@@ -72,12 +72,12 @@ export async function GET(request: NextRequest) {
     // Supabase でサブスクリプション確認
     const { data: user } = await (supabaseAdmin as any)
       .from('users')
-      .select('subscription_status, subscription_end_date, monthly_usage_count, free_download_used')
+      .select('subscription_status, subscription_end_date, monthly_usage_count')
       .eq('line_user_id', userId)
       .maybeSingle()
 
     if (!user) {
-      return NextResponse.json({ authenticated: true, isPaid: false, planName: '無料プラン', freeDownloadAvailable: true })
+      return NextResponse.json({ authenticated: true, isPaid: false, planName: '無料プラン' })
     }
 
     const now = new Date()
@@ -85,17 +85,13 @@ export async function GET(request: NextRequest) {
       user.subscription_end_date &&
       new Date(user.subscription_end_date) > now
 
-    // ダウンロード残回数を取得（有料 or 無料初回DL）
+    // ダウンロード残回数を取得（有料プランのみ）
     let downloadsRemaining = 0
     let downloadsLimit = 0
-    const freeDownloadAvailable = !isPaid && user.free_download_used !== true
     if (isPaid) {
       const dlInfo = await getDownloadInfo(userId, user.subscription_status)
       downloadsRemaining = dlInfo.remaining
       downloadsLimit = dlInfo.limit
-    } else if (freeDownloadAvailable) {
-      downloadsRemaining = 1
-      downloadsLimit = 1
     }
 
     return NextResponse.json({
@@ -106,7 +102,6 @@ export async function GET(request: NextRequest) {
         : '無料プラン',
       downloadsRemaining,
       downloadsLimit,
-      freeDownloadAvailable,
     })
 
   } catch (error) {

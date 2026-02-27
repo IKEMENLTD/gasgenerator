@@ -777,7 +777,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             // サブスクリプション判定（usersテーブルで統一）
             const { data: catUser } = await supabaseAdmin
               .from('users')
-              .select('subscription_status, subscription_end_date, free_download_used')
+              .select('subscription_status, subscription_end_date')
               .eq('line_user_id', userId)
               .maybeSingle()
 
@@ -787,31 +787,26 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
               new Date(catUser.subscription_end_date) > new Date()
 
             if (!catUserIsPaid) {
-              // 無料ユーザー: 初回DL未使用なら許可、使用済みなら有料プラン案内
-              const freeUsed = catUser?.free_download_used === true
-              if (freeUsed) {
-                // 初回DL使用済み → 有料プラン案内
-                const freeUsedBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
-                await lineClient.replyMessage(replyToken, [{
-                  type: 'text',
-                  text: `ご利用ありがとうございます。\n\n無料ダウンロード（1回）はご利用済みのため、このシステムのDLには有料プランが必要です。\n\n導入企業では平均月20時間の業務削減を実現しています。\n（時給2,500円換算で月5万円相当）\n\n「このシステムがうちに合うか？」など、\n15分の無料相談でお気軽にご確認ください。\nエンジニアがLINEで即お答えすることも可能です。`,
-                  quickReply: {
-                    items: [
-                      { type: 'action', action: { type: 'uri', label: '📅 15分無料相談を予約', uri: freeUsedBookingUrl } },
-                      { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアにLINE質問', text: 'エンジニアに相談する' } },
-                      { type: 'action', action: { type: 'message', label: '💎 料金プランを見る', text: '料金プラン' } },
-                      { type: 'action', action: { type: 'uri', label: '📦 カタログで見る', uri: catalogUrl } },
-                      { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
-                    ]
-                  }
-                }] as any)
-                return true
-              }
-              // 初回DL未使用 → freeプランとしてDL処理を続行
+              // 無料ユーザー → 有料プラン案内（カタログ閲覧は可能）
+              const paidOnlyBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
+              await lineClient.replyMessage(replyToken, [{
+                type: 'text',
+                text: `このシステム、カタログページで動いている実物をご確認いただけます。\n\nダウンロードには有料プランが必要ですが、\n気になる点は15分の無料相談で何でも確認できます。\n\n▼ よくあるご質問\n・「うちの業種でも使える？」\n・「設定にどれくらいかかる？」\n・「動かなかったらどうなる？」\n→ 動作不良時は全額返金保証あり`,
+                quickReply: {
+                  items: [
+                    { type: 'action', action: { type: 'uri', label: '📅 15分無料相談を予約', uri: paidOnlyBookingUrl } },
+                    { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアにLINE質問', text: 'エンジニアに相談する' } },
+                    { type: 'action', action: { type: 'message', label: '💎 料金プランを見る', text: '料金プラン' } },
+                    { type: 'action', action: { type: 'uri', label: '📦 カタログで見る', uri: catalogUrl } },
+                    { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
+                  ]
+                }
+              }] as any)
+              return true
             }
 
-            // ダウンロード回数チェック（freeプラン or 有料プラン）
-            const dlSubscriptionStatus = catUserIsPaid ? catUser.subscription_status : 'free'
+            // ダウンロード回数チェック（有料プランのみ）
+            const dlSubscriptionStatus = catUser.subscription_status
             const { checkAndRecordDownload: catCheckDL } = await import('../../../lib/download/download-limiter')
             const catDlResult = await catCheckDL(userId, dlSubscriptionStatus, catalogMatch.id, catalogMatch.name)
             if (!catDlResult.allowed) {
@@ -1412,7 +1407,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
             columns: [
               {
                 title: '🆓 無料プラン',
-                text: '✅ 月10回まで生成\n✅ 全機能利用可能\n✅ 画像解析対応\n✅ 初回1システム無料DL\n\n月額 0円',
+                text: '✅ 月10回まで生成\n✅ 全機能利用可能\n✅ 画像解析対応\n✅ AI診断で最適システム提案\n\n月額 0円',
                 actions: [{
                   type: 'message',
                   label: currentStatus.isPremium || currentStatus.isProfessional ? 'ダウングレード' : '現在のプラン',

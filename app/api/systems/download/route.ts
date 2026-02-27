@@ -65,10 +65,10 @@ export async function GET(request: NextRequest) {
     // ユーザーID復元
     const userId = atob(encodedUserId)
 
-    // サブスクリプション確認
+    // サブスクリプション確認（有料プランのみDL可能）
     const { data: user } = await (supabaseAdmin as any)
       .from('users')
-      .select('subscription_status, subscription_end_date, free_download_used')
+      .select('subscription_status, subscription_end_date')
       .eq('line_user_id', userId)
       .maybeSingle()
 
@@ -78,11 +78,8 @@ export async function GET(request: NextRequest) {
       user.subscription_end_date &&
       new Date(user.subscription_end_date) > now
 
-    // 無料ユーザー: 初回DL未使用ならfreeプランとして許可
-    const isFreeEligible = !isPaid && user && user.free_download_used !== true
-
-    if (!isPaid && !isFreeEligible) {
-      return NextResponse.redirect(new URL('/systems/catalog?error=free_plan', request.url))
+    if (!isPaid) {
+      return NextResponse.redirect(new URL('/systems/catalog?error=paid_only', request.url))
     }
 
     // スプレッドシートURL取得
@@ -91,8 +88,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL(`/systems/catalog?error=not_ready&id=${systemId}`, request.url))
     }
 
-    // ダウンロード回数チェック & 記録（freeプラン or 有料プラン）
-    const dlStatus = isPaid ? user.subscription_status : 'free'
+    // ダウンロード回数チェック & 記録（有料プランのみ）
+    const dlStatus = user.subscription_status
     const downloadCheck = await checkAndRecordDownload(userId, dlStatus, systemId, '')
     if (!downloadCheck.allowed) {
       const limitParam = `download_limit&plan=${user.subscription_status}&limit=${downloadCheck.limit}`

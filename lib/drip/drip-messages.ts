@@ -22,8 +22,8 @@ const CONSULTATION_LABEL = '📅 無料相談を予約する'
 const CONSULTATION_TEXT = '無料相談を予約'
 const CATALOG_LABEL = '📦 システム一覧を見る'
 const CATALOG_TEXT = 'システム一覧'
-const TRY_LABEL = '✨ 無料で試してみる'
-const TRY_TEXT = 'コード生成を開始'
+const TRY_LABEL = '🔍 業務の自動化を診断する'
+const TRY_TEXT = 'AI診断'
 
 function getConsultationAction(): any {
   const bookingUrl = process.env.CONSULTATION_BOOKING_URL

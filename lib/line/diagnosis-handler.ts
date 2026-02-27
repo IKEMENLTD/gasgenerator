@@ -307,13 +307,13 @@ export async function handleDiagnosis(
     const bookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
     const ctaMessage = {
       type: 'text',
-      text: '導入についてご不明点はありませんか？\n\n15分の無料相談で、御社に合った導入プランをご提案します。\n\n✅ プログラミング知識は不要\n✅ 動作不良時は全額返金保証\n✅ 初回限定：1システム無料でダウンロード可能',
+      text: '診断結果をもとに、御社に合った活用プランをご提案します。\n\n✅ カタログで動いている実物を確認できます\n✅ プログラミング知識は不要\n✅ 動作不良時は全額返金保証',
       quickReply: {
         items: [
-          { type: 'action', action: { type: 'uri', label: '📅 無料相談を予約', uri: bookingUrl } },
-          { type: 'action', action: { type: 'message', label: '📥 無料で1つDLする', text: 'システム一覧' } },
+          { type: 'action', action: { type: 'uri', label: '📅 15分無料相談を予約', uri: bookingUrl } },
+          { type: 'action', action: { type: 'message', label: '📦 カタログで実物を見る', text: 'システム一覧' } },
           { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに質問', text: 'エンジニアに相談する' } },
-          { type: 'action', action: { type: 'message', label: '🔍 もう一度診断', text: 'AI診断' } },
+          { type: 'action', action: { type: 'message', label: '💎 料金プランを見る', text: '料金プラン' } },
           { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
         ],
       },
