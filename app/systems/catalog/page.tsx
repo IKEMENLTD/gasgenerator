@@ -711,6 +711,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ZVWaD3sVuNj84vEwbT6GRCAXtgjgtU_SNXwnLc6d5go/edit',
     manualUrl: '/manuals/claim-trend-analysis.txt',
   },
+  {
+    id: '64',
+    name: '日程調整自動化',
+    tagline: 'カレンダー連携で候補自動抽出・回答受付・日程確定',
+    description: 'Googleカレンダーから空き時間を自動抽出し、候補日時を参加者にメール送信。参加者がURLから回答すると集計され、条件を満たすと日程を自動確定。確定時にはGoogleカレンダーへの予定登録・Meet URL自動生成・確定通知メールまで一括実行。未回答リマインド、予定前日リマインド、月次パフォーマンスレポートも自動化。テンプレート機能で定型調整を効率化。',
+    tags: ['日程調整', 'カレンダー連携', '自動確定', 'メール通知'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzQ-nzXxVAxgL0u8NeTskf-IxX7SpBRJaH3Uwole2eEbtwQI_OP6hvjZCY9mWOiiaA-DA/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1lC28l4dROWD7l-IV3eOTrsvUU7l6uhULdx2jebFePD8/edit',
+    manualUrl: '/manuals/schedule-coordinator.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
