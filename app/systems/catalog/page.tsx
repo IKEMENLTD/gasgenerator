@@ -700,6 +700,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1g2KENClH0_bBwgl0XtIwNlXQxqkPNGwQ3x26FynL9Es/edit',
     manualUrl: '/manuals/roas-manager.txt',
   },
+  {
+    id: '63',
+    name: 'クレーム傾向分析',
+    tagline: 'クレームの記録・分析・再発防止を一元管理',
+    description: 'クレームの受付から完了までの一連管理、傾向の可視化・パターン分析、根本原因の特定、再発防止策の登録・進捗管理・効果測定を一元的に行うシステム。KPIダッシュボード、商品別・分類別・原因別の多角的分析、再発クレーム追跡、件数急増・未解決長期化のアラート検知、月次/週次レポート自動配信機能を搭載。Chart.jsによるグラフ表示、Soft UIデザインでスマホ対応。',
+    tags: ['クレーム管理', '傾向分析', '再発防止', 'アラート'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwTo3RljmsUxF-oaLlvfvrJmr58IpaPqZdWfavG8J7r42tR7x6wXkl7pxAFcJpCJjEK0g/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ZVWaD3sVuNj84vEwbT6GRCAXtgjgtU_SNXwnLc6d5go/edit',
+    manualUrl: '/manuals/claim-trend-analysis.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
