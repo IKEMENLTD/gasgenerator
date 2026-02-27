@@ -283,7 +283,12 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
-        text: '📸 エラーのスクリーンショットを送信してください。\n\n画像を確認後、エラーの原因と解決方法をお伝えします。\n\n※画像を送信するか、「キャンセル」と入力してください。'
+        text: '📸 エラーのスクリーンショットを送信してください。\n\n画像を確認後、エラーの原因と解決方法をお伝えします。\n\n※画像を送信するか、「キャンセル」と入力してください。',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' } },
+          ]
+        }
       }])
 
       // スクショ待ちモードをセット（SessionManager経由）
@@ -300,7 +305,13 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     if (messageText === '画像を解析') {
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
-        text: '📸 解析したい画像を送信してください。\n\nスクリーンショット、エラー画面、Excel・PDFのスクショなど、どんな画像でも解析します。'
+        text: '📸 解析したい画像を送信してください。\n\nスクリーンショット、エラー画面、Excel・PDFのスクショなど、どんな画像でも解析します。',
+        quickReply: {
+          items: [
+            { type: 'action', action: { type: 'message', label: '❌ キャンセル', text: 'キャンセル' } },
+            { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
+          ]
+        }
       }])
       return true
     }
@@ -406,6 +417,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     const myPageUrl = `https://gasgenerator.onrender.com/mypage?uid=${encodedUserId}&sig=${encodedSignature}`
 
     if (messageText === 'マイページ' ||
+      messageText === 'マイステータス' ||
       messageText === 'プラン変更' ||
       messageText === 'プランをダウングレードしたい' || // ユーザーの入力例
       messageText.includes('ダウングレード') ||
@@ -1318,6 +1330,8 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: 'TaskMateと他のLLMサービスの本質的な違い\n\n【TaskMateにしかない強み】\n\n1. 無制限の会話履歴と文脈保持\nTaskMateは全ての会話履歴を永続的に保存。1ヶ月前の続きから再開可能。他のLLMは会話が長くなると文脈を失い、最初から説明し直す必要があります。\n\n2. 現役PMエンジニアへの直接相談\n「エンジニアに相談」ボタンで、10年以上の実務経験を持つフルスタックエンジニアが直接対応。複雑な要件も一緒に設計から考えます。他のLLMではAIのみの対応です。\n\n3. 修正履歴の完全管理\n過去に生成した全てのコードを記憶し、修正要望も文脈を保持したまま対応。「先週作ったコードの〇〇を修正」といった依頼も可能。\n\n4. LINE完結の業務フロー\nスクショ送信→コード生成→動作確認→修正依頼まで全てLINE内で完結。ブラウザを開く必要なし。\n\n5. 実装サポートまで含む\n生成したコードの実装方法、エラー対処、カスタマイズまで一貫してサポート。孤独な試行錯誤は不要です。\n\n【使い分けの目安】\n・他のLLM：調査や学習向き\n・TaskMate：実務で今すぐ使えるコードと実装サポートが必要な方向き',
         quickReply: {
           items: [
+            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+            { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
             { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
             { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
             { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
@@ -1338,11 +1352,10 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: '📖 Task mate 使い方ガイド\n\n【基本の使い方】\n1️⃣ 「コード生成を開始」を送信\n2️⃣ カテゴリを選択（スプレッドシート等）\n3️⃣ 詳しい要望を入力\n4️⃣ 数分でコードが生成されます\n\n【便利な機能】\n🔄 修正したい：生成後に修正可能\n📷 エラースクショ：エラー画面を送信で解決策提示\n📸 画像解析：Excel/PDFのスクショからコード生成\n\n【料金プラン】\n🆓 無料：月10回\n💎 プレミアム：月額10,000円\n🎆 プロフェッショナル：月額50,000円\n\n💡 コツ：具体的に要望を伝えるほど、良いコードが生成されます！',
         quickReply: {
           items: [
+            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+            { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
             { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
             { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
-            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
-            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
-            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } },
             { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
             { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ]
@@ -1357,11 +1370,10 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
         text: '📸 画像解析の使い方\n\n1️⃣ エラー画面のスクショを送る\n→ エラーの原因と解決コードを生成\n\n2️⃣ ExcelやPDFのスクショを送る\n→ データ構造を理解してコード生成\n\n3️⃣ Webサイトのスクショを送る\n→ スクレイピングやAPI連携コード生成\n\n💡 コツ：画像は鮮明に、文字が読めるように撮影してください',
         quickReply: {
           items: [
+            { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+            { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
             { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
             { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
-            { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
-            { type: 'action', action: { type: 'message', label: '🔗 API', text: 'API連携' } },
-            { type: 'action', action: { type: 'message', label: '✨ その他', text: 'その他' } },
             { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
             { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
           ]
@@ -1579,9 +1591,13 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           text: '過去の会話履歴が見つかりません。新しく始めましょう！',
           quickReply: {
             items: [
+              { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+              { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
               { type: 'action', action: { type: 'message', label: '📊 スプレッドシート', text: 'スプレッドシート操作' } },
               { type: 'action', action: { type: 'message', label: '📧 Gmail', text: 'Gmail自動化' } },
-              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } }
+              { type: 'action', action: { type: 'message', label: '📅 カレンダー', text: 'カレンダー連携' } },
+              { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニア相談', text: 'エンジニアに相談する' } },
+              { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
             ]
           }
         }] as any)

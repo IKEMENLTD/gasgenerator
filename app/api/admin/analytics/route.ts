@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/client'
 
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY
+
 export async function GET(request: NextRequest) {
+  // 認証チェック
+  const authHeader = request.headers.get('authorization')
+  const apiKey = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : request.nextUrl.searchParams.get('key')
+  if (!ADMIN_API_KEY || apiKey !== ADMIN_API_KEY) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const { searchParams } = new URL(request.url)
     const startDate = searchParams.get('startDate')

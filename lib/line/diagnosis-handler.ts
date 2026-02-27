@@ -312,8 +312,8 @@ export async function handleDiagnosis(
         items: [
           { type: 'action', action: { type: 'uri', label: '📅 無料相談を予約', uri: bookingUrl } },
           { type: 'action', action: { type: 'message', label: '📥 無料で1つDLする', text: 'システム一覧' } },
+          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに質問', text: 'エンジニアに相談する' } },
           { type: 'action', action: { type: 'message', label: '🔍 もう一度診断', text: 'AI診断' } },
-          { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
           { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
         ],
       },
