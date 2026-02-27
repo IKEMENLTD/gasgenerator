@@ -1119,33 +1119,61 @@ export default function SystemCatalogPage() {
                           </p>
                         </>
                       ) : (
-                        /* 無料ユーザー（使用済み） or 未認証 → 面談誘導 */
-                        <>
-                          <div className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg shadow-green-500/30 cursor-default opacity-60">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
-                              <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
-                            </svg>
-                            システムをダウンロード
+                        /* 無料ユーザー or 未認証 → 有料プラン訴求カード */
+                        <div className="w-full rounded-2xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-teal-50 p-4 flex flex-col gap-3">
+                          {/* ROI計算 */}
+                          <div className="rounded-xl bg-white border border-cyan-100 px-4 py-3">
+                            <p className="text-xs font-bold text-cyan-700 mb-1 uppercase tracking-wide">ROI試算</p>
+                            <p className="text-sm font-bold text-gray-900 leading-snug">
+                              月額1万円で、毎月<span className="text-cyan-600">4万円分</span>の時間を取り戻す
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              時給2,000円 × 月20時間削減の場合
+                            </p>
                           </div>
-                          <p className="text-xs text-center text-gray-500">
-                            有料プラン限定
-                          </p>
-                          <a
-                            href="https://timerex.net/s/cz1917903_47c5/7caf7949"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg shadow-orange-500/30"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            無料相談を予約する
-                          </a>
-                          <p className="text-xs text-center text-orange-600 font-medium">
-                            導入のご質問・お見積り・カスタマイズ相談
-                          </p>
-                        </>
+
+                          {/* 3つの安心保証 */}
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-start gap-2 text-sm text-gray-700">
+                              <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">✓</span>
+                              <span>動作不良時は<strong>全額返金保証</strong></span>
+                            </div>
+                            <div className="flex items-start gap-2 text-sm text-gray-700">
+                              <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">✓</span>
+                              <span>最短<strong>5分</strong>で導入完了</span>
+                            </div>
+                            <div className="flex items-start gap-2 text-sm text-gray-700">
+                              <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">✓</span>
+                              <span><strong>プログラミング知識不要</strong></span>
+                            </div>
+                          </div>
+
+                          {/* CTAボタン群 */}
+                          <div className="flex flex-col gap-2 pt-1">
+                            <a
+                              href="https://line.me/R/ti/p/@taskmate"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white rounded-xl bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 transition-all shadow-md shadow-cyan-500/30 text-sm"
+                            >
+                              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                              </svg>
+                              プレミアムプランを見る
+                            </a>
+                            <a
+                              href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-cyan-700 rounded-xl border-2 border-cyan-300 bg-white hover:bg-cyan-50 transition-all text-sm"
+                            >
+                              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              15分の無料相談を予約
+                            </a>
+                          </div>
+                        </div>
                       )}
                       {auth.isPaid && (
                         <p className="text-xs text-center text-emerald-600 font-medium">
