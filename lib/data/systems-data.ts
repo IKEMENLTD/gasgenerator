@@ -34,6 +34,7 @@ const SPREADSHEET_URLS: Record<string, string> = {
   '37': 'https://docs.google.com/spreadsheets/d/1ldLrsxvKCXkyqUSb1tK6mLYHBLdSabZwg-SUsACHudU/edit?gid=1182986624#gid=1182986624',
   '39': 'https://docs.google.com/spreadsheets/d/1fqzkWdTr_6iz--3zVB9IR1lAjDtirIYsEAXti0nucio/edit?gid=2063281868#gid=2063281868',
   '41': 'https://docs.google.com/spreadsheets/d/1XAjcUJKZ_JvaNnlx5G4Tz1QbgsEFJw0dqfK0gHjqbLI/edit?gid=152362143#gid=152362143',
+  '42': 'https://docs.google.com/spreadsheets/d/1g3NoofvrzMaCOrKSoaKOAokQs0AxNYPpcDCF2i-fof0/edit',
 }
 
 /** システムIDからスプレッドシートURLを取得 */
@@ -84,5 +85,6 @@ export function getSystemsData(): SystemData[] {
     { id: '39', name: '案件別工数管理', tagline: '案件ごとの工数記録・集計を自動化', tags: ['工数管理', 'プロジェクト管理', 'コスト分析', '収益管理'] },
     { id: '40', name: '材料・消耗品管理', tagline: '材料・消耗品の在庫管理・発注管理を自動化', tags: ['材料管理', '消耗品管理', '在庫管理', '発注管理'] },
     { id: '41', name: 'Case Snapper', tagline: '事例の即検索・コピーで商談をスムーズに', tags: ['事例検索', 'ワンクリックコピー', '商談支援', 'ブックマークレット'] },
+    { id: '42', name: 'FirstLine AI', tagline: 'コールドメールの冒頭フックをAIで自動生成', tags: ['AI生成', 'コールドメール', 'フック生成', '営業支援'] },
   ]
 }
