@@ -780,12 +780,15 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
               const freeUsed = catUser?.free_download_used === true
               if (freeUsed) {
                 // 初回DL使用済み → 有料プラン案内
+                const freeUsedBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
                 await lineClient.replyMessage(replyToken, [{
                   type: 'text',
-                  text: `🎁 無料ダウンロード（1回）は使用済みです。\n\nさらにシステムをダウンロードするには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 2か月に1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
+                  text: `ご利用ありがとうございます。\n\n無料ダウンロード（1回）はご利用済みのため、このシステムのDLには有料プランが必要です。\n\n導入企業では平均月20時間の業務削減を実現しています。\n（時給2,500円換算で月5万円相当）\n\n「このシステムがうちに合うか？」など、\n15分の無料相談でお気軽にご確認ください。\nエンジニアがLINEで即お答えすることも可能です。`,
                   quickReply: {
                     items: [
-                      { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+                      { type: 'action', action: { type: 'uri', label: '📅 15分無料相談を予約', uri: freeUsedBookingUrl } },
+                      { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアにLINE質問', text: 'エンジニアに相談する' } },
+                      { type: 'action', action: { type: 'message', label: '💎 料金プランを見る', text: '料金プラン' } },
                       { type: 'action', action: { type: 'uri', label: '📦 カタログで見る', uri: catalogUrl } },
                       { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
                     ]
@@ -806,10 +809,11 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
               const resetLabel = catUser?.subscription_status === 'premium' ? '次の2か月サイクル' : '来月'
               await lineClient.replyMessage(replyToken, [{
                 type: 'text',
-                text: `⚠️ ダウンロード上限（${periodLabel}${catDlResult.limit}回）に達しています。\n\n📋 ${planLabel}: ${periodLabel}${catDlResult.limit}回まで\n\n${resetLabel}になるとリセットされます。\nより多くダウンロードしたい場合は、プランのアップグレードをご検討ください。`,
+                text: `今期のダウンロード上限に達しました。\n\n現在のプラン: ${planLabel}（${periodLabel}${catDlResult.limit}回）\n次回リセット: ${resetLabel}\n\nより多くのシステムが必要な場合は、プランのアップグレードをご検討ください。\nご不明点はエンジニアにお気軽にどうぞ。`,
                 quickReply: {
                   items: [
-                    { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+                    { type: 'action', action: { type: 'message', label: '💎 プランをアップグレード', text: '料金プラン' } },
+                    { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアにLINE質問', text: 'エンジニアに相談する' } },
                     { type: 'action', action: { type: 'uri', label: '📦 カタログで見る', uri: catalogUrl } },
                     { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
                   ]
@@ -891,12 +895,15 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           new Date(dlUser.subscription_end_date) > new Date()
 
         if (!isPaidUser) {
+          const dbFreeBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
           await lineClient.replyMessage(replyToken, [{
             type: 'text',
-            text: `❌ ダウンロードには有料プランへの登録が必要です。\n\n📋 料金プラン\n• 1万円プラン: 2か月に1回ダウンロード可能\n• 5万円プラン: 毎月3回までダウンロード可能\n\n詳しくは「料金プラン」と送信してください。`,
+            text: `ご利用ありがとうございます。\n\nこのシステムのダウンロードには有料プランへの登録が必要です。\n\n導入企業では平均月20時間の業務削減を実現しています。\n（時給2,500円換算で月5万円相当）\n\n「このシステムがうちに合うか？」など、\n15分の無料相談でお気軽にご確認ください。\nエンジニアがLINEで即お答えすることも可能です。`,
             quickReply: {
               items: [
-                { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+                { type: 'action', action: { type: 'uri', label: '📅 15分無料相談を予約', uri: dbFreeBookingUrl } },
+                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアにLINE質問', text: 'エンジニアに相談する' } },
+                { type: 'action', action: { type: 'message', label: '💎 料金プランを見る', text: '料金プラン' } },
                 { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
                 { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
               ]
@@ -914,10 +921,11 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
           const dbResetLabel = dlUser.subscription_status === 'premium' ? '次の2か月サイクル' : '来月'
           await lineClient.replyMessage(replyToken, [{
             type: 'text',
-            text: `⚠️ ダウンロード上限（${dbPeriodLabel}${dbDlResult.limit}回）に達しています。\n\n📋 ${dbPlanLabel}: ${dbPeriodLabel}${dbDlResult.limit}回まで\n\n${dbResetLabel}になるとリセットされます。\nより多くダウンロードしたい場合は、プランのアップグレードをご検討ください。`,
+            text: `今期のダウンロード上限に達しました。\n\n現在のプラン: ${dbPlanLabel}（${dbPeriodLabel}${dbDlResult.limit}回）\n次回リセット: ${dbResetLabel}\n\nより多くのシステムが必要な場合は、プランのアップグレードをご検討ください。\nご不明点はエンジニアにお気軽にどうぞ。`,
             quickReply: {
               items: [
-                { type: 'action', action: { type: 'message', label: '💎 料金プラン', text: '料金プラン' } },
+                { type: 'action', action: { type: 'message', label: '💎 プランをアップグレード', text: '料金プラン' } },
+                { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアにLINE質問', text: 'エンジニアに相談する' } },
                 { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
                 { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } }
               ]
