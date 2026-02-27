@@ -21,6 +21,7 @@ interface DripUser {
   id: string
   line_user_id: string
   followed_at: string
+  drip_started_at: string | null
   drip_step: number
   drip_active: boolean
 }
@@ -36,24 +37,26 @@ export function isWithinSendingHours(): boolean {
 
 /**
  * ユーザーが次のステップを受け取るべきタイミングか判定
- * followed_at + step日数 が現在時刻を過ぎているかチェック
+ * drip_started_at（またはfollowed_at）+ step日数 が現在時刻を過ぎているかチェック
  */
-function shouldSendNextStep(followedAt: string, currentStep: number): boolean {
-  const followDate = new Date(followedAt)
-  const nextStepDate = new Date(followDate)
+function shouldSendNextStep(dripStartedAt: string, currentStep: number): boolean {
+  const startDate = new Date(dripStartedAt)
+  const nextStepDate = new Date(startDate)
   nextStepDate.setDate(nextStepDate.getDate() + currentStep)
   return new Date() >= nextStepDate
 }
 
 /**
  * ドリップ配信を開始（フォローイベント時に呼ぶ）
+ * followed_at は上書きしない（ファネル分析用の正確な追加日を保持）
+ * drip_started_at で配信タイミングを独立管理
  */
 export async function startDrip(lineUserId: string): Promise<void> {
   try {
     await (supabaseAdmin as any)
       .from('users')
       .update({
-        followed_at: new Date().toISOString(),
+        drip_started_at: new Date().toISOString(),
         drip_step: 0,
         drip_active: true,
         drip_stopped_reason: null,
@@ -206,14 +209,13 @@ export async function processDripCampaign(): Promise<{
   }
 
   try {
-    // ドリップ対象ユーザーを取得
+    // ドリップ対象ユーザーを取得（drip_started_at基準、後方互換でfollowed_atも取得）
     const { data: users, error } = await (supabaseAdmin as any)
       .from('users')
-      .select('id, line_user_id, followed_at, drip_step, drip_active')
+      .select('id, line_user_id, followed_at, drip_started_at, drip_step, drip_active')
       .eq('drip_active', true)
-      .not('followed_at', 'is', null)
-      .order('followed_at', { ascending: true })
-      .limit(50) // バッチサイズ制限（メモリ・API制限対策）
+      .order('drip_started_at', { ascending: true, nullsFirst: false })
+      .limit(30) // バッチサイズ制限（LINE APIレート制限対策）
 
     if (error) {
       logger.error('Failed to fetch drip users', { error })
@@ -230,8 +232,15 @@ export async function processDripCampaign(): Promise<{
     for (const user of users as DripUser[]) {
       result.processed++
 
-      // タイミングチェック
-      if (!shouldSendNextStep(user.followed_at, user.drip_step + 1)) {
+      // drip_started_at がない場合はスキップ（マイグレーション未適用 or 旧データ）
+      const dripStart = user.drip_started_at || user.followed_at
+      if (!dripStart) {
+        result.skipped++
+        continue
+      }
+
+      // タイミングチェック（drip_started_at基準）
+      if (!shouldSendNextStep(dripStart, user.drip_step + 1)) {
         result.skipped++
         continue
       }
@@ -243,10 +252,8 @@ export async function processDripCampaign(): Promise<{
         result.errors++
       }
 
-      // API制限対策: 送信間に200ms待機
-      if (result.sent > 0) {
-        await new Promise(resolve => setTimeout(resolve, 200))
-      }
+      // API制限対策: ユーザー間に500ms待機（LINE APIレート制限回避）
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
 
     logger.info('Drip processing completed', result)

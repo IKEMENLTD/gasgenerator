@@ -33,11 +33,13 @@ function getConsultationAction(): any {
   return { type: 'message', label: CONSULTATION_LABEL, text: CONSULTATION_TEXT }
 }
 
-function createQuickReplyItems(items: Array<{ label: string; text: string }>): any {
-  return items.map(item => ({
-    type: 'action',
-    action: { type: 'message', label: item.label, text: item.text }
-  }))
+function createQuickReplyItems(items: Array<{ label: string; text?: string; uri?: string }>): any {
+  return items.map(item => {
+    if (item.uri) {
+      return { type: 'action', action: { type: 'uri', label: item.label, uri: item.uri } }
+    }
+    return { type: 'action', action: { type: 'message', label: item.label, text: item.text } }
+  })
 }
 
 /**
@@ -48,6 +50,7 @@ function createQuickReplyItems(items: Array<{ label: string; text: string }>): a
  * CTA強度: ★☆☆☆☆（ソフト）
  */
 export function getDripMessageDay1(): DripMessage[] {
+  const consultAction = getConsultationAction()
   return [
     {
       type: 'text',
@@ -67,11 +70,13 @@ export function getDripMessageDay1(): DripMessage[] {
           'お気軽にご相談ください👇',
         ].join('\n'),
         quickReply: {
-          items: createQuickReplyItems([
-            { label: CONSULTATION_LABEL, text: CONSULTATION_TEXT },
-            { label: TRY_LABEL, text: TRY_TEXT },
-            { label: CATALOG_LABEL, text: CATALOG_TEXT },
-          ])
+          items: [
+            { type: 'action', action: consultAction },
+            ...createQuickReplyItems([
+              { label: TRY_LABEL, text: TRY_TEXT },
+              { label: CATALOG_LABEL, text: CATALOG_TEXT },
+            ]),
+          ]
         }
       }
     }
@@ -86,6 +91,11 @@ export function getDripMessageDay1(): DripMessage[] {
  * CTA強度: ★★☆☆☆（やや強め）
  */
 export function getDripMessageDay2(): DripMessage[] {
+  const consultAction = getConsultationAction()
+  // Day2用: ラベルを「試算する」に差し替え
+  const day2ConsultAction = consultAction.type === 'uri'
+    ? { ...consultAction, label: '📅 無料相談で試算する' }
+    : { ...consultAction, label: '📅 無料相談で試算する' }
   return [
     {
       type: 'text',
@@ -105,10 +115,12 @@ export function getDripMessageDay2(): DripMessage[] {
           '具体的な削減時間を一緒に計算してみませんか？👇',
         ].join('\n'),
         quickReply: {
-          items: createQuickReplyItems([
-            { label: '📅 無料相談で試算する', text: CONSULTATION_TEXT },
-            { label: TRY_LABEL, text: TRY_TEXT },
-          ])
+          items: [
+            { type: 'action', action: day2ConsultAction },
+            ...createQuickReplyItems([
+              { label: TRY_LABEL, text: TRY_TEXT },
+            ]),
+          ]
         }
       }
     }
@@ -123,6 +135,7 @@ export function getDripMessageDay2(): DripMessage[] {
  * CTA強度: ★★☆☆☆
  */
 export function getDripMessageDay3(): DripMessage[] {
+  const consultAction = getConsultationAction()
   return [
     {
       type: 'text',
@@ -147,10 +160,12 @@ export function getDripMessageDay3(): DripMessage[] {
           '15分の面談でご提案します👇',
         ].join('\n'),
         quickReply: {
-          items: createQuickReplyItems([
-            { label: CONSULTATION_LABEL, text: CONSULTATION_TEXT },
-            { label: CATALOG_LABEL, text: CATALOG_TEXT },
-          ])
+          items: [
+            { type: 'action', action: consultAction },
+            ...createQuickReplyItems([
+              { label: CATALOG_LABEL, text: CATALOG_TEXT },
+            ]),
+          ]
         }
       }
     }
@@ -165,6 +180,7 @@ export function getDripMessageDay3(): DripMessage[] {
  * CTA強度: ★★★☆☆（中程度）
  */
 export function getDripMessageDay4(): DripMessage[] {
+  const consultAction = getConsultationAction()
   return [
     {
       type: 'text',
@@ -184,10 +200,12 @@ export function getDripMessageDay4(): DripMessage[] {
           '具体的な改善案をお伝えします👇',
         ].join('\n'),
         quickReply: {
-          items: createQuickReplyItems([
-            { label: CONSULTATION_LABEL, text: CONSULTATION_TEXT },
-            { label: '👨‍💻 チャットで質問', text: 'エンジニアに相談する' },
-          ])
+          items: [
+            { type: 'action', action: consultAction },
+            ...createQuickReplyItems([
+              { label: '👨‍💻 チャットで質問', text: 'エンジニアに相談する' },
+            ]),
+          ]
         }
       }
     }
@@ -202,6 +220,7 @@ export function getDripMessageDay4(): DripMessage[] {
  * CTA強度: ★★★☆☆
  */
 export function getDripMessageDay5(): DripMessage[] {
+  const consultAction = getConsultationAction()
   return [
     {
       type: 'text',
@@ -227,9 +246,9 @@ export function getDripMessageDay5(): DripMessage[] {
           '安心してお気軽にどうぞ👇',
         ].join('\n'),
         quickReply: {
-          items: createQuickReplyItems([
-            { label: CONSULTATION_LABEL, text: CONSULTATION_TEXT },
-          ])
+          items: [
+            { type: 'action', action: consultAction },
+          ]
         }
       }
     }
@@ -244,6 +263,7 @@ export function getDripMessageDay5(): DripMessage[] {
  * CTA強度: ★★★★☆（強め）
  */
 export function getDripMessageDay6(): DripMessage[] {
+  const consultAction = getConsultationAction()
   return [
     {
       type: 'text',
@@ -264,10 +284,12 @@ export function getDripMessageDay6(): DripMessage[] {
           'その最初の一歩を、面談でお手伝いします👇',
         ].join('\n'),
         quickReply: {
-          items: createQuickReplyItems([
-            { label: CONSULTATION_LABEL, text: CONSULTATION_TEXT },
-            { label: TRY_LABEL, text: TRY_TEXT },
-          ])
+          items: [
+            { type: 'action', action: consultAction },
+            ...createQuickReplyItems([
+              { label: TRY_LABEL, text: TRY_TEXT },
+            ]),
+          ]
         }
       }
     }
@@ -282,6 +304,7 @@ export function getDripMessageDay6(): DripMessage[] {
  * CTA強度: ★★★★★（最強）
  */
 export function getDripMessageDay7(): DripMessage[] {
+  const consultAction = getConsultationAction()
   return [
     {
       type: 'text',
@@ -306,11 +329,13 @@ export function getDripMessageDay7(): DripMessage[] {
           'いつでもお待ちしています👇',
         ].join('\n'),
         quickReply: {
-          items: createQuickReplyItems([
-            { label: CONSULTATION_LABEL, text: CONSULTATION_TEXT },
-            { label: CATALOG_LABEL, text: CATALOG_TEXT },
-            { label: '📋 メニュー', text: 'メニュー' },
-          ])
+          items: [
+            { type: 'action', action: consultAction },
+            ...createQuickReplyItems([
+              { label: CATALOG_LABEL, text: CATALOG_TEXT },
+              { label: '📋 メニュー', text: 'メニュー' },
+            ]),
+          ]
         }
       }
     }

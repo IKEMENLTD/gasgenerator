@@ -20,8 +20,7 @@ import { RecoveryManager } from '../../../lib/error-recovery/recovery-manager'
 import { QAService } from '../../../lib/rag/qa-service'
 import { DownloadQueries } from '../../../lib/supabase/subscription-queries'
 import { supabaseAdmin } from '../../../lib/supabase/client'
-// [Lmessage一本化] コード内ドリップ無効化
-// import { startDrip, stopDrip, checkAndStopDripOnUserAction } from '../../../lib/drip/drip-service'
+import { startDrip, stopDrip, checkAndStopDripOnUserAction } from '../../../lib/drip/drip-service'
 import { handleDiagnosis, isDiagnosisTrigger } from '../../../lib/line/diagnosis-handler'
 
 // Node.jsランタイムを使用（AI処理のため）
@@ -206,10 +205,10 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
   const messageText = event.message?.text?.trim() || ''
   const replyToken = event.replyToken
 
-  // [Lmessage一本化] コード内ドリップ無効化
-  // if (userId) {
-  //   checkAndStopDripOnUserAction(userId).catch(() => { })
-  // }
+  // ユーザーがメッセージ送信 → ドリップ配信を停止（自発的なアクションなのでドリップ不要）
+  if (userId) {
+    checkAndStopDripOnUserAction(userId).catch(() => { })
+  }
 
   // デバッグ情報をログに記録
   logger.debug('Event source info', {
@@ -2175,8 +2174,8 @@ async function handleFollowEvent(event: any): Promise<void> {
         }
       }
 
-      // [Lmessage一本化] コード内ドリップ無効化
-      // await startDrip(userId)
+      // ドリップ配信開始（7日間ステップ配信）
+      await startDrip(userId)
     } else {
       // 既存無料ユーザー（ブロック解除/再追加）: シンプルな「おかえり」メッセージ1通
       const success = await lineClient.pushMessage(userId, [{
@@ -2195,8 +2194,8 @@ async function handleFollowEvent(event: any): Promise<void> {
         logger.error('Failed to send returning welcome message', { userId })
       }
 
-      // [Lmessage一本化] コード内ドリップ無効化
-      // await startDrip(userId)
+      // 復帰ユーザーにもドリップ配信開始（再エンゲージメント）
+      await startDrip(userId)
     }
 
     // Agency tracking: LINE profile保存 + 訪問記録紐付け（非同期、失敗しても影響なし）
@@ -2221,8 +2220,8 @@ async function handleUnfollowEvent(event: any): Promise<void> {
 
   logger.info('User unfollowed', { userId })
 
-  // [Lmessage一本化] コード内ドリップ無効化
-  // await stopDrip(userId, 'unfollowed').catch(() => { })
+  // ブロック時にドリップ配信を停止
+  await stopDrip(userId, 'unfollowed').catch(() => { })
 
   // セッションクリーンアップ
   await sessionManager.deleteSession(userId)
