@@ -690,6 +690,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1vck079nPIF8G8bHqBIW-YDQWsNNKaLcXhwes2TKCd48/edit',
     manualUrl: '/manuals/leadtime-analysis.txt',
   },
+  {
+    id: '62',
+    name: '広告費対効果（ROAS）',
+    tagline: '広告媒体別のROASを自動計算・分析・最適化',
+    description: '広告媒体・キャンペーン別のROAS（広告費対効果）を自動計算・分析するシステム。日次/月次ROAS集計、媒体別比較グラフ、効率ランキング、低効率アラート自動検出、予算配分シミュレーション、LTV連携分析、トレンド分析を搭載。目標ROAS比較・推奨アクション提示で広告運用の意思決定を支援します。',
+    tags: ['広告管理', 'ROAS分析', '予算最適化', 'アラート'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyPSxoqwhmU22wx81WtYGwb5_gmxvbkoJIsk8-isLPPOSTIV1UngF1UQoZOJNlxYjpy/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1g2KENClH0_bBwgl0XtIwNlXQxqkPNGwQ3x26FynL9Es/edit',
+    manualUrl: '/manuals/roas-manager.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
