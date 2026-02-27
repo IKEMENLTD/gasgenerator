@@ -722,6 +722,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1lC28l4dROWD7l-IV3eOTrsvUU7l6uhULdx2jebFePD8/edit',
     manualUrl: '/manuals/schedule-coordinator.txt',
   },
+  {
+    id: '65',
+    name: 'Form Filler Pro',
+    tagline: '問い合わせフォーム営業の入力をワンクリック自動化',
+    description: '問い合わせフォーム営業で、自社情報と訴求パターンをワンクリックで自動入力するChrome拡張機能＋管理画面。フォーム項目を自動検知し、会社名・氏名・メール・電話・本文などを一括入力。訴求パターンのテンプレート管理、検知辞書のカスタマイズ、入力ログの記録に対応。送信は必ず手動で行う安全設計。',
+    tags: ['フォーム自動入力', 'Chrome拡張', '営業支援', 'テンプレート管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycby-n1C-md5OqlCTJH0Kc2-GJ-88G9v-51jQIgst9NrFb0dZgiSoPRUdd4itgkHI4wwQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1gUUM3KLlDwKTeKlMvBv8nfFbyONxBlWxrmTzQk1vAro/edit?gid=559293208#gid=559293208',
+    manualUrl: '/manuals/form-filler-pro.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
