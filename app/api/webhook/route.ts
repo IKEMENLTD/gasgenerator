@@ -824,6 +824,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
             // 有料ユーザー → スプレッドシートURL提供
             if (sheetUrl) {
+              const catDlBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
               await lineClient.replyMessage(replyToken, [{
                 type: 'flex',
                 altText: `${catalogMatch.name} ダウンロード`,
@@ -848,6 +849,15 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
                     ],
                     paddingAll: '12px',
                   },
+                },
+                quickReply: {
+                  items: [
+                    { type: 'action', action: { type: 'uri', label: '📅 設定サポート相談', uri: catDlBookingUrl } },
+                    { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに質問', text: 'エンジニアに相談する' } },
+                    { type: 'action', action: { type: 'message', label: '🔍 他のシステムも診断', text: 'AI診断' } },
+                    { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
+                    { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
+                  ]
                 },
               }] as any)
             } else {

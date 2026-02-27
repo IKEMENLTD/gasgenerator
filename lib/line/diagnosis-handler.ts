@@ -167,11 +167,14 @@ export async function handleDiagnosis(
   if (context?.diagnosisMode && (messageText === 'キャンセル' || messageText === '最初から')) {
     const updated = { ...context, diagnosisMode: false, diagnosisStep: undefined, diagnosisAnswers: undefined }
     await sessionManager.saveContext(userId, updated)
+    const cancelBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
-      text: 'AI診断をキャンセルしました。',
+      text: 'AI診断をキャンセルしました。\n\n「どのシステムが合うかわからない」場合は、15分の無料相談でエンジニアがご提案します。',
       quickReply: {
         items: [
+          { type: 'action', action: { type: 'uri', label: '📅 無料相談を予約', uri: cancelBookingUrl } },
+          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに質問', text: 'エンジニアに相談する' } },
           { type: 'action', action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' } },
           { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
           { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
@@ -321,12 +324,15 @@ export async function handleDiagnosis(
   } catch (error) {
     logger.error('LINE diagnosis error', { userId, error })
 
+    const errorBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
     await lineClient.replyMessage(replyToken, [{
       type: 'text',
-      text: '申し訳ありません。診断中にエラーが発生しました。もう一度お試しください。',
+      text: '申し訳ありません。診断中にエラーが発生しました。\n\nエンジニアに直接ご相談いただくことも可能です。',
       quickReply: {
         items: [
-          { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },
+          { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに質問', text: 'エンジニアに相談する' } },
+          { type: 'action', action: { type: 'uri', label: '📅 無料相談を予約', uri: errorBookingUrl } },
+          { type: 'action', action: { type: 'message', label: '🔍 もう一度診断', text: 'AI診断' } },
           { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
         ],
       },
