@@ -163,6 +163,7 @@ export function getDripMessageDay3(): DripMessage[] {
           items: [
             { type: 'action', action: consultAction },
             ...createQuickReplyItems([
+              { label: TRY_LABEL, text: TRY_TEXT },
               { label: CATALOG_LABEL, text: CATALOG_TEXT },
             ]),
           ]
@@ -203,6 +204,7 @@ export function getDripMessageDay4(): DripMessage[] {
           items: [
             { type: 'action', action: consultAction },
             ...createQuickReplyItems([
+              { label: TRY_LABEL, text: TRY_TEXT },
               { label: '👨‍💻 チャットで質問', text: 'エンジニアに相談する' },
             ]),
           ]
@@ -248,6 +250,9 @@ export function getDripMessageDay5(): DripMessage[] {
         quickReply: {
           items: [
             { type: 'action', action: consultAction },
+            ...createQuickReplyItems([
+              { label: TRY_LABEL, text: TRY_TEXT },
+            ]),
           ]
         }
       }
@@ -332,6 +337,7 @@ export function getDripMessageDay7(): DripMessage[] {
           items: [
             { type: 'action', action: consultAction },
             ...createQuickReplyItems([
+              { label: TRY_LABEL, text: TRY_TEXT },
               { label: CATALOG_LABEL, text: CATALOG_TEXT },
               { label: '📋 メニュー', text: 'メニュー' },
             ]),

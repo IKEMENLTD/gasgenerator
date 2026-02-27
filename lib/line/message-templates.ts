@@ -66,24 +66,24 @@ export class MessageTemplates {
     return [
       {
         type: 'text',
-        text: 'スマートビジネスコンシェルジュへようこそ！\n\n「毎月の請求書作成に丸1日...」\n「顧客リストの更新が追いつかない...」\n\nそんなお悩み、自動化で解決しませんか？\n\nまずは30秒のAI診断で、あなたの業務に最適な自動化システムを見つけましょう。',
+        text: 'TaskMate へようこそ！\n\nスプレッドシートの手作業、まだ続けていますか？\n\n150社以上が、こんな業務を自動化しています：\n📊 毎朝の売上集計 → ワンタッチで完了\n📧 請求書の作成・送信 → 毎月自動\n📅 期限管理・リマインド → 漏れゼロ\n\nプログラミング知識は不要。\nまずは無料のAI診断（5問・30秒）で、\nあなたの業務に最適なシステムを見つけましょう。',
         quickReply: {
           items: [
             {
               type: 'action',
-              action: { type: 'message', label: '🔍 AI診断（30秒）', text: 'AI診断' }
+              action: { type: 'message', label: '🔍 AI診断（無料・30秒）', text: 'AI診断' }
             },
             {
               type: 'action',
               action: {
                 type: 'uri',
-                label: '📅 無料相談を予約',
+                label: '📅 15分無料相談を予約',
                 uri: bookingUrl
               }
             },
             {
               type: 'action',
-              action: { type: 'message', label: '📦 システム一覧', text: 'システム一覧' }
+              action: { type: 'message', label: '📦 システム一覧を見る', text: 'システム一覧' }
             },
             {
               type: 'action',
