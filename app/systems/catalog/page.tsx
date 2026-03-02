@@ -740,6 +740,7 @@ export default function SystemCatalogPage() {
   const [searchQuery, setSearchQuery] = useState('')
   // モバイルでは最初からサイドバー（システム一覧）を開いた状態にする
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isInfoExpanded, setIsInfoExpanded] = useState(false)
 
   // 認証状態（LINE Bot経由の署名付きURLで有料/無料を判定）
   const [auth, setAuth] = useState<AuthState>({
@@ -815,6 +816,7 @@ export default function SystemCatalogPage() {
   const handleSelectSystem = (id: string) => {
     setSelectedSystemId(id)
     setIsSidebarOpen(false) // モバイルではサイドバーを閉じる
+    setIsInfoExpanded(false) // 情報パネルを閉じる
   }
 
   return (
@@ -973,7 +975,7 @@ export default function SystemCatalogPage() {
           {selectedSystem ? (
             <>
               {/* プレビューエリア */}
-              <div className="flex-1 bg-gray-100 p-2 sm:p-4 overflow-hidden">
+              <div className="flex-1 bg-gray-100 p-2 sm:p-4 overflow-hidden pb-16 lg:pb-0">
                 {selectedSystem.iframeAllowed ? (
                   <div className="h-full bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
                     {/* URLバー */}
@@ -1037,8 +1039,8 @@ export default function SystemCatalogPage() {
                 )}
               </div>
 
-              {/* システム情報パネル */}
-              <div className="bg-white border-t border-gray-200 px-4 py-4 flex-shrink-0">
+              {/* === デスクトップ用: 既存レイアウトそのまま === */}
+              <div className="hidden lg:block bg-white border-t border-gray-200 px-4 py-4 flex-shrink-0">
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -1052,7 +1054,6 @@ export default function SystemCatalogPage() {
                     {/* ダウンロードボタンエリア */}
                     <div className="flex flex-col gap-2 w-full sm:w-auto">
                       {auth.loading ? (
-                        /* ローディング中 */
                         <div className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gray-400 cursor-default">
                           <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -1061,7 +1062,6 @@ export default function SystemCatalogPage() {
                           読み込み中...
                         </div>
                       ) : auth.isPaid && selectedSystem.spreadsheetUrl && auth.downloadsRemaining > 0 ? (
-                        /* 有料ユーザー + スプレッドシートあり + 残回数あり → ダウンロード可能 */
                         <>
                           <a
                             href={`/api/systems/download?id=${selectedSystem.id}&${auth.authParams}`}
@@ -1080,7 +1080,6 @@ export default function SystemCatalogPage() {
                           </p>
                         </>
                       ) : auth.isPaid && selectedSystem.spreadsheetUrl && auth.downloadsRemaining <= 0 ? (
-                        /* 有料ユーザー + スプレッドシートあり + 上限到達 → ダウンロード不可 */
                         <>
                           <div className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gray-400 cursor-default">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -1094,7 +1093,6 @@ export default function SystemCatalogPage() {
                           </p>
                         </>
                       ) : auth.isPaid && !selectedSystem.spreadsheetUrl ? (
-                        /* 有料ユーザー + スプレッドシートなし → 準備中 + 面談誘導 */
                         <>
                           <div className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gray-400 cursor-default">
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -1119,9 +1117,7 @@ export default function SystemCatalogPage() {
                           </p>
                         </>
                       ) : (
-                        /* 無料ユーザー or 未認証 → 有料プラン訴求カード */
                         <div className="w-full rounded-2xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-teal-50 p-4 flex flex-col gap-3">
-                          {/* ROI計算 */}
                           <div className="rounded-xl bg-white border border-cyan-100 px-4 py-3">
                             <p className="text-xs font-bold text-cyan-700 mb-1 uppercase tracking-wide">ROI試算</p>
                             <p className="text-sm font-bold text-gray-900 leading-snug">
@@ -1131,8 +1127,6 @@ export default function SystemCatalogPage() {
                               時給2,000円 × 月20時間削減の場合
                             </p>
                           </div>
-
-                          {/* 3つの安心保証 */}
                           <div className="flex flex-col gap-1.5">
                             <div className="flex items-start gap-2 text-sm text-gray-700">
                               <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">✓</span>
@@ -1147,8 +1141,6 @@ export default function SystemCatalogPage() {
                               <span><strong>プログラミング知識不要</strong></span>
                             </div>
                           </div>
-
-                          {/* CTAボタン群 */}
                           <div className="flex flex-col gap-2 pt-1">
                             <a
                               href="https://line.me/R/ti/p/@taskmate"
@@ -1214,6 +1206,238 @@ export default function SystemCatalogPage() {
                       ))}
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* === モバイル用: フローティングCTAバー === */}
+              <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] pb-[env(safe-area-inset-bottom)]">
+                {/* 展開時の情報パネル */}
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isInfoExpanded ? 'max-h-[60vh] opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className="px-4 py-3 max-h-[60vh] overflow-y-auto border-b border-gray-100">
+                    {/* ダウンロードボタンエリア */}
+                    <div className="flex flex-col gap-2 mb-3">
+                      {auth.loading ? (
+                        <div className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white rounded-xl bg-gray-400 cursor-default text-sm">
+                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          読み込み中...
+                        </div>
+                      ) : auth.isPaid && selectedSystem.spreadsheetUrl && auth.downloadsRemaining > 0 ? (
+                        <>
+                          <a
+                            href={`/api/systems/download?id=${selectedSystem.id}&${auth.authParams}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg shadow-green-500/30 text-sm"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                              <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
+                            </svg>
+                            システムをダウンロード
+                          </a>
+                          <p className="text-xs text-center text-emerald-600">
+                            今月の残り: {auth.downloadsRemaining}/{auth.downloadsLimit}回
+                          </p>
+                        </>
+                      ) : auth.isPaid && selectedSystem.spreadsheetUrl && auth.downloadsRemaining <= 0 ? (
+                        <>
+                          <div className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white rounded-xl bg-gray-400 cursor-default text-sm">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                              <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
+                            </svg>
+                            今月の上限に達しました
+                          </div>
+                          <p className="text-xs text-center text-orange-600 font-medium">
+                            月{auth.downloadsLimit}回まで（来月リセットされます）
+                          </p>
+                        </>
+                      ) : auth.isPaid && !selectedSystem.spreadsheetUrl ? (
+                        <>
+                          <div className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white rounded-xl bg-gray-400 cursor-default text-sm">
+                            準備中
+                          </div>
+                          <a
+                            href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg shadow-orange-500/30 text-sm"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            このシステムについて無料相談
+                          </a>
+                          <p className="text-xs text-center text-gray-500">
+                            導入・カスタマイズのご相談を承ります
+                          </p>
+                        </>
+                      ) : (
+                        <div className="w-full rounded-2xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-teal-50 p-4 flex flex-col gap-3">
+                          {/* ROI計算 */}
+                          <div className="rounded-xl bg-white border border-cyan-100 px-4 py-3">
+                            <p className="text-xs font-bold text-cyan-700 mb-1 uppercase tracking-wide">ROI試算</p>
+                            <p className="text-sm font-bold text-gray-900 leading-snug">
+                              月額1万円で、毎月<span className="text-cyan-600">4万円分</span>の時間を取り戻す
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              時給2,000円 × 月20時間削減の場合
+                            </p>
+                          </div>
+                          {/* 3つの安心保証 */}
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-start gap-2 text-sm text-gray-700">
+                              <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">✓</span>
+                              <span>動作不良時は<strong>全額返金保証</strong></span>
+                            </div>
+                            <div className="flex items-start gap-2 text-sm text-gray-700">
+                              <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">✓</span>
+                              <span>最短<strong>5分</strong>で導入完了</span>
+                            </div>
+                            <div className="flex items-start gap-2 text-sm text-gray-700">
+                              <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">✓</span>
+                              <span><strong>プログラミング知識不要</strong></span>
+                            </div>
+                          </div>
+                          {/* CTAボタン群 */}
+                          <div className="flex flex-col gap-2 pt-1">
+                            <a
+                              href="https://line.me/R/ti/p/@taskmate"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white rounded-xl bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 transition-all shadow-md shadow-cyan-500/30 text-sm"
+                            >
+                              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                              </svg>
+                              プレミアムプランを見る
+                            </a>
+                            <a
+                              href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-cyan-700 rounded-xl border-2 border-cyan-300 bg-white hover:bg-cyan-50 transition-all text-sm"
+                            >
+                              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              15分の無料相談を予約
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                      {auth.isPaid && (
+                        <p className="text-xs text-center text-emerald-600 font-medium">
+                          {auth.planName}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* 使い方説明書ボタン */}
+                    {selectedSystem.manualUrl && (
+                      <div className="flex flex-col gap-2 mb-3">
+                        <a
+                          href={selectedSystem.manualUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl transition-all shadow-lg shadow-blue-500/30 text-sm"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                          使い方説明書を見る
+                        </a>
+                        <p className="text-xs text-center text-gray-500">
+                          セットアップ手順を確認できます
+                        </p>
+                      </div>
+                    )}
+
+                    {/* タグ */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedSystem.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 常時表示のCTAバー */}
+                <div className="px-4 py-3 flex items-center gap-3">
+                  {/* 左: システム情報 */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-gray-900 truncate">{selectedSystem.name}</p>
+                    <p className="text-xs text-cyan-600 truncate">{selectedSystem.tagline}</p>
+                  </div>
+
+                  {/* 中: メインCTA（auth状態で変化） */}
+                  {auth.loading ? (
+                    <div className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold text-white rounded-lg bg-gray-400 cursor-default flex-shrink-0">
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    </div>
+                  ) : auth.isPaid && selectedSystem.spreadsheetUrl && auth.downloadsRemaining > 0 ? (
+                    <a
+                      href={`/api/systems/download?id=${selectedSystem.id}&${auth.authParams}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 transition-all shadow-md shadow-green-500/30 flex-shrink-0"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                        <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z" />
+                      </svg>
+                      DL
+                    </a>
+                  ) : auth.isPaid && selectedSystem.spreadsheetUrl && auth.downloadsRemaining <= 0 ? (
+                    <div className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white rounded-lg bg-gray-400 cursor-default flex-shrink-0">
+                      上限到達
+                    </div>
+                  ) : auth.isPaid && !selectedSystem.spreadsheetUrl ? (
+                    <a
+                      href="https://timerex.net/s/cz1917903_47c5/7caf7949"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 transition-all shadow-md shadow-orange-500/30 flex-shrink-0"
+                    >
+                      相談
+                    </a>
+                  ) : (
+                    <a
+                      href="https://line.me/R/ti/p/@taskmate"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white rounded-lg bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 transition-all shadow-md shadow-cyan-500/30 flex-shrink-0"
+                    >
+                      プランを見る
+                    </a>
+                  )}
+
+                  {/* 右: 展開トグル */}
+                  <button
+                    onClick={() => setIsInfoExpanded(!isInfoExpanded)}
+                    className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                    aria-label={isInfoExpanded ? '情報パネルを閉じる' : '情報パネルを開く'}
+                  >
+                    <svg
+                      className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${isInfoExpanded ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </>
