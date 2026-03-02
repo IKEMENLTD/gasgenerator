@@ -70,8 +70,16 @@ function calculateCancellationFee(contractStartDate: string | Date, currentPrice
 // ==========================================
 
 function CancellationModal({ isOpen, onClose, subscription }: any) {
-    const [step, setStep] = useState('confirm')
+    const [step, setStep] = useState<'confirm' | 'calculating' | 'fee-check' | 'processing' | 'completed' | 'error'>('confirm')
     const [feeInfo, setFeeInfo] = useState<any>(null)
+    const [errorMessage, setErrorMessage] = useState('')
+
+    const handleClose = () => {
+        setStep('confirm')
+        setFeeInfo(null)
+        setErrorMessage('')
+        onClose()
+    }
 
     if (!isOpen) return null
 
@@ -85,10 +93,27 @@ function CancellationModal({ isOpen, onClose, subscription }: any) {
 
     const handleProceed = async () => {
         setStep('processing')
-        await new Promise(r => setTimeout(r, 1500))
-        alert('解約リクエストを受け付けました。（デモ）')
-        setStep('completed')
-        onClose()
+        setErrorMessage('')
+        try {
+            const res = await fetch('/api/subscription/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: subscription.userId })
+            })
+            const data = await res.json()
+            if (!res.ok) {
+                throw new Error(data.error || '解約処理に失敗しました')
+            }
+            if (data.requiresPayment && data.checkoutUrl) {
+                window.location.href = data.checkoutUrl
+                return
+            }
+            setStep('completed')
+        } catch (e: any) {
+            console.error('Cancellation error:', e)
+            setErrorMessage(e.message || '予期せぬエラーが発生しました')
+            setStep('error')
+        }
     }
 
     return (
@@ -103,7 +128,7 @@ function CancellationModal({ isOpen, onClose, subscription }: any) {
                             本プランには6ヶ月の最低利用期間があります。期間内の解約には違約金が発生する場合があります。
                         </div>
                         <div className="flex justify-end gap-3 mt-4">
-                            <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">キャンセル</button>
+                            <button onClick={handleClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">キャンセル</button>
                             <button onClick={handleCheckFee} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">手続きを進める</button>
                         </div>
                     </div>
@@ -119,16 +144,60 @@ function CancellationModal({ isOpen, onClose, subscription }: any) {
                 {step === 'fee-check' && feeInfo && (
                     <div className="space-y-4">
                         <div className="text-center bg-gray-50 p-4 rounded-xl">
-                            <p className="text-sm text-gray-500 mb-1">違約金（残 {feeInfo.remainingMonths}ヶ月分）</p>
-                            <p className={`text-2xl font-bold ${feeInfo.fee > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                {formatCurrencyJP(feeInfo.fee)}
-                            </p>
+                            {feeInfo.fee > 0 ? (
+                                <>
+                                    <p className="text-sm text-gray-500 mb-1">違約金（残 {feeInfo.remainingMonths}ヶ月分）</p>
+                                    <p className="text-2xl font-bold text-red-600">{formatCurrencyJP(feeInfo.fee)}</p>
+                                    <p className="text-xs text-gray-400 mt-1">{formatCurrencyJP(subscription.price)} x {feeInfo.remainingMonths}ヶ月</p>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-sm text-gray-500 mb-1">違約金</p>
+                                    <p className="text-2xl font-bold text-green-600">{formatCurrencyJP(0)}</p>
+                                    <p className="text-xs text-gray-400 mt-1">最低利用期間を満了しています</p>
+                                </>
+                            )}
                         </div>
+                        {feeInfo.fee === 0 && (
+                            <p className="text-xs text-gray-500 text-center">次回更新日に解約が適用されます。それまでは引き続きご利用いただけます。</p>
+                        )}
+                        {feeInfo.fee > 0 && (
+                            <p className="text-xs text-gray-500 text-center">Stripeの決済画面に進みます。決済完了後に解約が確定します。</p>
+                        )}
                         <div className="flex justify-end gap-3 mt-4">
-                            <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">キャンセル</button>
+                            <button onClick={handleClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">キャンセル</button>
                             <button onClick={handleProceed} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold">
-                                {feeInfo.fee > 0 ? '違約金を了承して解約' : '解約を確定する'}
+                                {feeInfo.fee > 0 ? '違約金を支払って解約' : '解約を確定する'}
                             </button>
+                        </div>
+                    </div>
+                )}
+
+                {step === 'processing' && (
+                    <div className="text-center py-8">
+                        <div className="animate-spin h-8 w-8 border-2 border-red-600 border-t-transparent rounded-full mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">解約処理を実行中...</p>
+                    </div>
+                )}
+
+                {step === 'completed' && (
+                    <div className="text-center py-6 space-y-4">
+                        <div className="text-4xl">✅</div>
+                        <h4 className="font-bold text-lg">解約手続きが完了しました</h4>
+                        <p className="text-sm text-gray-600">次回更新日をもってサービスが停止されます。<br />それまでは引き続きご利用いただけます。</p>
+                        <p className="text-xs text-gray-400">再度ご契約いただく場合は、いつでもプランページからお手続きいただけます。</p>
+                        <button onClick={() => { handleClose(); window.location.reload() }} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold">閉じる</button>
+                    </div>
+                )}
+
+                {step === 'error' && (
+                    <div className="text-center py-6 space-y-4">
+                        <div className="text-4xl">❌</div>
+                        <h4 className="font-bold text-lg text-red-600">エラーが発生しました</h4>
+                        <p className="text-sm text-gray-600">{errorMessage}</p>
+                        <div className="flex justify-center gap-3">
+                            <button onClick={handleClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">閉じる</button>
+                            <button onClick={() => setStep('fee-check')} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold">もう一度試す</button>
                         </div>
                     </div>
                 )}

@@ -389,7 +389,7 @@ const systems = [
     tags: ['オンボーディング', '進捗管理', '新入社員', '人事管理'],
     previewUrl: 'https://onboarding-shintyoku.netlify.app/reports.html',
     iframeAllowed: true,
-    spreadsheetUrl: '',
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1_a3-zSwU2FK_fWysFQMd_edDQeLYeFgAD4WogOx0jo4/edit?usp=sharing',
     manualUrl: '',
   },
   {
