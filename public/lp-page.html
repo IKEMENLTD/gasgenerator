@@ -6668,6 +6668,104 @@
             });
         });
     }
+
+    // === Exit-Intent ポップアップ（離脱防止 → AI診断CTA） ===
+    (function() {
+      var EXIT_COOKIE = 'tm_exit_shown';
+      var LINE_URL = 'https://agency.ikemen.ltd/t/ky0zmcgdoqja';
+      var shown = false;
+      var scrolledEnough = false;
+
+      // 既に表示済みならスキップ
+      if (document.cookie.indexOf(EXIT_COOKIE + '=1') !== -1) return;
+
+      // 30%以上スクロールしたらフラグON（興味があるユーザーのみ対象）
+      window.addEventListener('scroll', function() {
+        var pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+        if (pct > 0.3) scrolledEnough = true;
+      });
+
+      function showPopup() {
+        if (shown || !scrolledEnough) return;
+        shown = true;
+        document.cookie = EXIT_COOKIE + '=1;max-age=86400;path=/';
+
+        var overlay = document.createElement('div');
+        overlay.id = 'exit-overlay';
+        overlay.innerHTML = ''
+          + '<div id="exit-popup">'
+          + '  <button id="exit-close" aria-label="閉じる">&times;</button>'
+          + '  <div style="text-align:center;margin-bottom:16px;">'
+          + '    <span style="font-size:2.5rem;">🔍</span>'
+          + '  </div>'
+          + '  <h3 style="font-size:1.3rem;font-weight:800;color:#1a1a1a;margin:0 0 8px;text-align:center;">'
+          + '    ちょっと待ってください！'
+          + '  </h3>'
+          + '  <p style="font-size:0.95rem;color:#555;line-height:1.6;margin:0 0 16px;text-align:center;">'
+          + '    あなたの業務に最適なシステムを<br>'
+          + '    <strong style="color:#2d8f5e;">30秒のAI診断</strong>で無料ご提案します'
+          + '  </p>'
+          + '  <ul style="list-style:none;padding:0;margin:0 0 20px;font-size:0.88rem;color:#444;">'
+          + '    <li style="padding:4px 0;">✅ たった5問・30秒で完了</li>'
+          + '    <li style="padding:4px 0;">✅ プログラミング知識は一切不要</li>'
+          + '    <li style="padding:4px 0;">✅ 150社以上の導入実績</li>'
+          + '  </ul>'
+          + '  <a href="' + LINE_URL + '" id="exit-cta">'
+          + '    無料でAI診断を受ける →'
+          + '  </a>'
+          + '  <p style="font-size:0.75rem;color:#999;margin:12px 0 0;text-align:center;">'
+          + '    営業電話は一切ありません'
+          + '  </p>'
+          + '</div>';
+
+        // スタイル注入
+        var style = document.createElement('style');
+        style.textContent = ''
+          + '#exit-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;animation:eoFadeIn .3s ease}'
+          + '#exit-popup{background:#fff;border-radius:16px;padding:32px 28px;max-width:380px;width:90%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:eoSlideUp .4s ease}'
+          + '#exit-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.8rem;color:#999;cursor:pointer;line-height:1}'
+          + '#exit-close:hover{color:#333}'
+          + '#exit-cta{display:block;background:linear-gradient(135deg,#2d8f5e,#22c55e);color:#fff;text-align:center;padding:14px;border-radius:10px;font-weight:700;font-size:1rem;text-decoration:none;transition:transform .2s,box-shadow .2s}'
+          + '#exit-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(45,143,94,0.4)}'
+          + '@keyframes eoFadeIn{from{opacity:0}to{opacity:1}}'
+          + '@keyframes eoSlideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}';
+        document.head.appendChild(style);
+        document.body.appendChild(overlay);
+
+        // Meta Pixel イベント
+        if (typeof fbq === 'function') fbq('trackCustom', 'ExitIntentShown');
+
+        // 閉じるボタン・オーバーレイクリック
+        document.getElementById('exit-close').addEventListener('click', function() { overlay.remove(); });
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+
+        // CTAクリック追跡
+        document.getElementById('exit-cta').addEventListener('click', function() {
+          if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: 'exit_intent_ai_diagnosis' });
+          if (typeof gtag === 'function') gtag('event', 'exit_intent_click', { event_category: 'cro', event_label: 'ai_diagnosis' });
+        });
+      }
+
+      // デスクトップ: マウスが画面上端を離れた時
+      document.addEventListener('mouseleave', function(e) {
+        if (e.clientY < 5) showPopup();
+      });
+
+      // モバイル: 素早い上スクロール（戻るジェスチャー検出）
+      var lastScrollY = 0;
+      var scrollUpCount = 0;
+      window.addEventListener('scroll', function() {
+        var current = window.scrollY;
+        if (current < lastScrollY && (lastScrollY - current) > 80) {
+          scrollUpCount++;
+          if (scrollUpCount >= 3 && current < 200) showPopup();
+        } else {
+          scrollUpCount = 0;
+        }
+        lastScrollY = current;
+      });
+    })();
+
     </script>
 </body>
 
