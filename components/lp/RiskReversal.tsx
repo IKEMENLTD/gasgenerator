@@ -11,7 +11,7 @@ export default function RiskReversal() {
                 </h2>
             </div>
 
-            <div className="guarantee-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', maxWidth: '1200px', margin: '50px auto 0' }}>
+            <div className="guarantee-grid">
                 <div className="guarantee-card">
                     <div className="guarantee-num">01</div>
                     <h4>動作不良時 返金保証</h4>

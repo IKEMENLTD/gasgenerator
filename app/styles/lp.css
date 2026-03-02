@@ -3312,6 +3312,20 @@ section:not(#hero):not(.no-panel)>* {
 }
 
 /* --- RISK REVERSAL (Success Guarantee) --- */
+.lp-wrapper .guarantee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 50px auto 0;
+}
+
+@media (max-width: 600px) {
+  .lp-wrapper .guarantee-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .guarantee-card {
   background: linear-gradient(165deg,
       rgba(255, 255, 255, 0.98) 0%,
