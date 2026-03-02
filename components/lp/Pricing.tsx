@@ -24,7 +24,7 @@ export default function Pricing() {
                         <li>基本的なサポート</li>
                         <li>LINE連携対応</li>
                     </ul>
-                    <a href="#" className="btn-core">無料利用開始</a>
+                    <a href="https://lin.ee/4NLfSqH" target="_blank" rel="noopener noreferrer" className="btn-core">無料利用開始</a>
                 </div>
                 <div className="pricing-card featured">
                     <div className="recommend-ribbon"></div>
@@ -39,7 +39,7 @@ export default function Pricing() {
                         <li>LINE即時サポート</li>
                         <li>動作不良時返金保証</li>
                     </ul>
-                    <a href="#" className="btn-core btn-primary">このプランで始める</a>
+                    <a href="/terms?plan=premium" className="btn-core btn-primary">このプランで始める</a>
                 </div>
                 <div className="pricing-card">
                     <div className="plan-name">プロフェッショナル</div>
@@ -55,7 +55,7 @@ export default function Pricing() {
                     <p style={{ fontSize: '0.75rem', color: 'var(--force)', marginTop: '10px', padding: '8px 12px', background: 'rgba(45, 143, 94, 0.05)', borderRadius: '4px' }}>
                         <strong>急ぎオプション：</strong>+¥50,000で納期半分
                     </p>
-                    <a href="#" className="btn-core">詳細を確認</a>
+                    <a href="/terms?plan=professional" className="btn-core">このプランで始める</a>
                 </div>
                 <div className="pricing-card">
                     <div className="plan-name">エンタープライズ</div>
@@ -68,7 +68,7 @@ export default function Pricing() {
                         <li>オンサイト対応</li>
                         <li>24時間緊急対応</li>
                     </ul>
-                    <a href="#contact" className="btn-core">お問い合わせ</a>
+                    <a href="https://timerex.net/s/cz1917903_47c5/7caf7949" target="_blank" rel="noopener noreferrer" className="btn-core">お問い合わせ</a>
                 </div>
             </div>
         </section>
