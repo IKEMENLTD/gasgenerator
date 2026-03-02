@@ -741,6 +741,7 @@ export default function SystemCatalogPage() {
   // モバイルでは最初からサイドバー（システム一覧）を開いた状態にする
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isInfoExpanded, setIsInfoExpanded] = useState(false)
+  const [userId, setUserId] = useState('')
 
   // 認証状態（LINE Bot経由の署名付きURLで有料/無料を判定）
   const [auth, setAuth] = useState<AuthState>({
@@ -776,6 +777,9 @@ export default function SystemCatalogPage() {
       setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '', downloadsRemaining: 0, downloadsLimit: 0, })
       return
     }
+
+    // userIdを復元（Base64デコード）
+    try { setUserId(atob(u)) } catch { /* invalid base64 */ }
 
     const authParams = `u=${encodeURIComponent(u)}&t=${t}&s=${s}`
 
@@ -1143,7 +1147,7 @@ export default function SystemCatalogPage() {
                           </div>
                           <div className="flex flex-col gap-2 pt-1">
                             <a
-                              href="/systems/pricing"
+                              href={`/systems/pricing${userId ? `?user_id=${userId}` : ''}`}
                               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white rounded-xl bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 transition-all shadow-md shadow-cyan-500/30 text-sm"
                             >
                               <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1303,7 +1307,7 @@ export default function SystemCatalogPage() {
                           {/* CTAボタン群 */}
                           <div className="flex flex-col gap-2 pt-1">
                             <a
-                              href="/systems/pricing"
+                              href={`/systems/pricing${userId ? `?user_id=${userId}` : ''}`}
                               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white rounded-xl bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 transition-all shadow-md shadow-cyan-500/30 text-sm"
                             >
                               <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1410,7 +1414,7 @@ export default function SystemCatalogPage() {
                     </a>
                   ) : (
                     <a
-                      href="/systems/pricing"
+                      href={`/systems/pricing${userId ? `?user_id=${userId}` : ''}`}
                       className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white rounded-lg bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 transition-all shadow-md shadow-cyan-500/30 flex-shrink-0"
                     >
                       プランを見る

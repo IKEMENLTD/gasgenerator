@@ -1,6 +1,16 @@
 import React from 'react'
 
-export default function Pricing() {
+interface PricingProps {
+    userId?: string
+}
+
+export default function Pricing({ userId }: PricingProps = {}) {
+    const termsParams = (plan: string) => {
+        const params = new URLSearchParams({ plan })
+        if (userId) params.set('user_id', userId)
+        return `/terms?${params.toString()}`
+    }
+
     return (
         <section id="pricing" className="section-compact section-layer section-layer-white">
             <div className="marker tr">SEC.09 // PRICING</div>
@@ -39,7 +49,7 @@ export default function Pricing() {
                         <li>LINE即時サポート</li>
                         <li>動作不良時返金保証</li>
                     </ul>
-                    <a href="/terms?plan=premium" className="btn-core btn-primary">このプランで始める</a>
+                    <a href={termsParams('premium')} className="btn-core btn-primary">このプランで始める</a>
                 </div>
                 <div className="pricing-card">
                     <div className="plan-name">プロフェッショナル</div>
@@ -55,7 +65,7 @@ export default function Pricing() {
                     <p style={{ fontSize: '0.75rem', color: 'var(--force)', marginTop: '10px', padding: '8px 12px', background: 'rgba(45, 143, 94, 0.05)', borderRadius: '4px' }}>
                         <strong>急ぎオプション：</strong>+¥50,000で納期半分
                     </p>
-                    <a href="/terms?plan=professional" className="btn-core">このプランで始める</a>
+                    <a href={termsParams('professional')} className="btn-core">このプランで始める</a>
                 </div>
                 <div className="pricing-card">
                     <div className="plan-name">エンタープライズ</div>

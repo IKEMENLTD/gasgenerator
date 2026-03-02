@@ -28,7 +28,7 @@ function PricingContent() {
     <div className="lp-wrapper">
       <Header />
       <div className="main-content" style={{ paddingTop: '100px' }}>
-        <Pricing />
+        <Pricing userId={userId} />
         <Comparison />
         <RiskReversal />
         <FAQ />
