@@ -1264,7 +1264,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       const menuBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
-        text: '📋 メニュー\n\n🔍 AI診断 … 30秒で最適なシステムを診断\n📦 システム一覧 … 42種類の自動化システム\n📅 無料相談 … 15分で導入プランをご提案\n🚀 コード生成 … AIがGASコードを自動作成\n💎 料金プラン … 無料/プレミアム/プロ',
+        text: '📋 メニュー\n\n🔍 AI診断 … 30秒で最適なシステムを診断\n📦 システム一覧 … 65種類の自動化システム\n📅 無料相談 … 15分で導入プランをご提案\n🚀 コード生成 … AIがGASコードを自動作成\n💎 料金プラン … 無料/プレミアム/プロ',
         quickReply: {
           items: [
             { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },

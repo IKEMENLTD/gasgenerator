@@ -38,13 +38,13 @@ export default function Catalog() {
             </h2>
             <div style={{ textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
                 <p className="lead-text" style={{ margin: '30px auto', textAlign: 'center' }}>
-                    現在<span className="text-force" style={{ fontWeight: 700, fontSize: '1.2em' }}>40</span>システム公開中。毎月追加で、300システム以上に拡大予定。<br />
+                    現在<span className="text-force" style={{ fontWeight: 700, fontSize: '1.2em' }}>65</span>システム公開中。毎月追加で、300システム以上に拡大予定。<br />
                     「こんなシステムが欲しかった」が、きっと見つかります。
                 </p>
             </div>
 
             {/* カテゴリ①：営業・顧客管理系 */}
-            <CatalogCategory num="01" title="営業・顧客管理系" count="7 Systems">
+            <CatalogCategory num="01" title="営業・顧客管理系" count="12 Systems">
                 <div className="catalog-item">
                     <div className="catalog-item-num">01</div>
                     <h4>営業日報システム</h4>
@@ -83,7 +83,7 @@ export default function Catalog() {
             </CatalogCategory>
 
             {/* カテゴリ②：管理・バックオフィス系 */}
-            <CatalogCategory num="02" title="管理・バックオフィス系" count="6 Systems">
+            <CatalogCategory num="02" title="管理・バックオフィス系" count="15 Systems">
                 <div className="catalog-item">
                     <div className="catalog-item-num">08</div>
                     <h4>経費精算ワークフロー</h4>
@@ -117,7 +117,7 @@ export default function Catalog() {
             </CatalogCategory>
 
             {/* カテゴリ③：在庫・発注系 */}
-            <CatalogCategory num="03" title="在庫・発注系" count="3 Systems">
+            <CatalogCategory num="03" title="在庫・発注系" count="6 Systems">
                 <div className="catalog-item">
                     <div className="catalog-item-num">14</div>
                     <h4>在庫アラートシステム</h4>
@@ -136,7 +136,7 @@ export default function Catalog() {
             </CatalogCategory>
 
             {/* カテゴリ④：分析・レポート系 */}
-            <CatalogCategory num="04" title="分析・レポート系" count="5 Systems">
+            <CatalogCategory num="04" title="分析・レポート系" count="14 Systems">
                 <div className="catalog-item">
                     <div className="catalog-item-num">17</div>
                     <h4>売上日報自動集計</h4>
@@ -165,7 +165,7 @@ export default function Catalog() {
             </CatalogCategory>
 
             {/* カテゴリ⑤：コミュニケーション・会議系 */}
-            <CatalogCategory num="05" title="コミュニケーション・会議系" count="3 Systems">
+            <CatalogCategory num="05" title="コミュニケーション・会議系" count="5 Systems">
                 <div className="catalog-item">
                     <div className="catalog-item-num">22</div>
                     <h4>定例MTGアジェンダ自動収集</h4>
@@ -184,7 +184,7 @@ export default function Catalog() {
             </CatalogCategory>
 
             {/* カテゴリ⑥：その他ツール */}
-            <CatalogCategory num="06" title="その他ツール" count="4 Systems">
+            <CatalogCategory num="06" title="その他ツール" count="5 Systems">
                 <div className="catalog-item">
                     <div className="catalog-item-num">25</div>
                     <h4>納期アラートシステム</h4>
@@ -215,12 +215,12 @@ export default function Catalog() {
                 </div>
                 <h4 style={{ marginBottom: '15px', color: 'var(--text-main)' }}>今後の追加予定</h4>
                 <p style={{ fontSize: '0.9rem', color: '#6e8274', lineHeight: 1.8, marginBottom: '20px' }}>
-                    採用管理システム / タスク管理ボード / シフト管理システム / 問い合わせ対応管理 / 社内Wiki自動更新 / データバックアップ自動化 / レビュー分析ダッシュボード / SNS投稿スケジューラー ...他多数
+                    タスク管理ボード / 問い合わせ対応管理 / 社内Wiki自動更新 / データバックアップ自動化 / レビュー分析ダッシュボード / SNS投稿スケジューラー ...他多数
                 </p>
                 <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>
                         <span style={{ color: '#6e8274' }}>現在</span>
-                        <span style={{ color: 'var(--force)', fontSize: '1.5rem', fontWeight: 700, margin: '0 5px' }}>40</span>
+                        <span style={{ color: 'var(--force)', fontSize: '1.5rem', fontWeight: 700, margin: '0 5px' }}>65</span>
                         <span style={{ color: '#6e8274' }}>→</span>
                         <span style={{ color: 'var(--force)', fontSize: '1.5rem', fontWeight: 700, margin: '0 5px' }}>300+</span>
                         <span style={{ color: '#6e8274' }}>システムに拡大予定</span>

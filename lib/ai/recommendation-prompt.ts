@@ -48,7 +48,7 @@ function getCategoryById(id: string): string {
 }
 
 /**
- * 39システムを圧縮（元データから必要フィールドのみ抽出）
+ * システムを圧縮（元データから必要フィールドのみ抽出）
  */
 function compressSystems(systems: any[]): CompressedSystem[] {
   return systems.map((s) => ({
@@ -71,7 +71,7 @@ export function generateRecommendationPrompt(
 
   const systemPrompt = `# タスク: ビジネス課題に最適な業務自動化システム推薦
 
-あなたは中小企業の業務自動化コンサルタントです。ユーザーの業種・課題から、以下の39システムの中から最適な3つを推薦してください。
+あなたは中小企業の業務自動化コンサルタントです。ユーザーの業種・課題から、以下の${compressedSystems.length}システムの中から最適な3つを推薦してください。
 
 ## 推薦基準（重要度順）
 
@@ -80,7 +80,7 @@ export function generateRecommendationPrompt(
 3. **ROI（時間削減効果）（20%）**: 月間顧客数・削減希望時間から実現可能性を評価
 4. **予算適合度（10%）**: 予算感とシステムの規模・複雑さが適合するか
 
-## 利用可能なシステム（39システム）
+## 利用可能なシステム（${compressedSystems.length}システム）
 
 \`\`\`json
 ${JSON.stringify(compressedSystems, null, 2)}
@@ -285,7 +285,7 @@ ${JSON.stringify(userAnswers, null, 2)}
 
 ## 指示
 
-上記のユーザー回答と39システムのデータを分析し、業種・課題に最適な3システムを推薦してください。
+上記のユーザー回答と${compressedSystems.length}システムのデータを分析し、業種・課題に最適な3システムを推薦してください。
 必ず上記の出力形式（JSON）で応答し、推薦理由は具体的かつユーザーの状況に即したものにしてください。`
 
   return systemPrompt
