@@ -733,6 +733,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1gUUM3KLlDwKTeKlMvBv8nfFbyONxBlWxrmTzQk1vAro/edit?gid=559293208#gid=559293208',
     manualUrl: '/manuals/form-filler-pro.txt',
   },
+  {
+    id: '66',
+    name: 'スタッフ指名管理',
+    tagline: 'スタッフ指名率の可視化・分析・育成支援',
+    description: 'スタッフへの指名状況を一元管理し、指名率・偏り（ジニ係数）・顧客パターンを可視化。予約・施術記録から日次〜月次の集計を自動化し、スタッフ別の個人成績・目標管理・育成プランまでカバー。顧客の指名傾向分析や離反リスク検知、アラート通知機能も搭載。全13画面・33APIアクション・7自動トリガーで指名売上の最大化を支援します。',
+    tags: ['指名管理', '偏り分析', '育成支援', 'ダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyzcvGPF6-KBBsHx5ep3mT86a1IKGJ3Nzxdx0xGoK1Vzct-6qzOBTehrrKvsEJb9H17/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1gl3pbmzijFNmDxY6W-DJ0gOUstDH2Xp6s3Bf2mpqTKc/edit?gid=547742766#gid=547742766',
+    manualUrl: '/manuals/staff-nomination.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
