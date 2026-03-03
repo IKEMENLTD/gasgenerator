@@ -744,6 +744,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1gl3pbmzijFNmDxY6W-DJ0gOUstDH2Xp6s3Bf2mpqTKc/edit?gid=547742766#gid=547742766',
     manualUrl: '/manuals/staff-nomination.txt',
   },
+  {
+    id: '67',
+    name: '資格管理＋更新アラート',
+    tagline: '社員の資格・期限を一元管理し更新漏れを防止',
+    description: '社員の資格保有状況と有効期限を一元管理し、期限切れリスクを自動検出。期限間近で更新タスクを自動生成し、メール・Slackでアラート通知。ダッシュボードで期限切れ・充足率を可視化し、資格別・部署別のレポートも自動集計。従業員マスタ・資格マスタ・保有管理・タスク管理・アラート設定・ログ・レポートの全7画面で資格管理業務をカバーします。',
+    tags: ['資格管理', '期限アラート', '更新タスク自動生成', 'レポート'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwG2scuedevaPdMo8x74NoJuU3C45c6T_ZfRtJBIEbEvVKt6AA0CKaQ7Vqat-ebi060Mw/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1YMzfpJuQEYKvDU6Z7WUiGqWpKO8SBANw1s3fufnX56c/edit?gid=948078851#gid=948078851',
+    manualUrl: '/manuals/shikaku-kanri.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
