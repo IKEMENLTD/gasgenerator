@@ -810,6 +810,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1tr7ISISoPw6fEYwzccKxfSIfyMhj4kSh5P9CvibxWA0/edit?gid=0#gid=0',
     manualUrl: '/manuals/shinsei-shounin-workflow.txt',
   },
+  {
+    id: '73',
+    name: 'テーブル回転率管理',
+    tagline: '飲食店のテーブル回転率を可視化・分析し売上向上を支援',
+    description: 'テーブルの着席・退席をリアルタイムに記録し、回転率・稼働率・滞在時間を自動集計するシステムです。テーブル稼働マップ、超過アラート、時間帯別・曜日別・月次の多角的分析、待ち客の機会損失記録、改善施策管理など飲食店の回転率向上に必要な機能を網羅。15シート構成で全データをスプレッドシートに保存。Soft UIデザインでスマホ対応。',
+    tags: ['回転率分析', '稼働状況', '機会損失', 'Soft UI'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxALC2I7TSX3Oh2ejZHi91o3AAPZoaHOhjTBj3JqWpz7xDRSAyoBb8wAZLHlzYddT-m/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1Tv7OoAdqG76MlV-a1s9kXv-TZYug9wyEevndimk2yEA/edit?gid=0#gid=0',
+    manualUrl: '/manuals/table-turnover.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
