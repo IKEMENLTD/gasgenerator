@@ -799,6 +799,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1A1Aw2aZGR-A1toSVLjJygXQaKWhTcrVVO6qQ9FaBRrs/edit?gid=0#gid=0',
     manualUrl: '/manuals/jinkenhi-simulation.txt',
   },
+  {
+    id: '72',
+    name: '申請・承認ワークフロー',
+    tagline: '各種申請の電子化と承認フロー自動化',
+    description: '経費精算・休暇申請・購買申請・出張申請・稟議など各種申請を電子化し、金額・部署に応じた承認ルートを自動設定。承認状況のリアルタイム可視化、承認者への自動通知・リマインド、代理承認、滞留アラート・エスカレーション、承認者別パフォーマンスレポート、月次集計を搭載。15シート構成で全データをスプレッドシートに保存。Soft UIデザインでスマホ対応。',
+    tags: ['承認フロー', '申請管理', '自動通知', 'ワークフロー'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxooCJHkaLOQTY33ZRw8tE5vnYckkl3gJt7_R3_LOd5nOI2Vv6vA_06Aa0O72Vyg_ZW/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1tr7ISISoPw6fEYwzccKxfSIfyMhj4kSh5P9CvibxWA0/edit?gid=0#gid=0',
+    manualUrl: '/manuals/shinsei-shounin-workflow.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
