@@ -777,6 +777,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1RNALTHM5BoswKAsURx7IMmNTDMhH_AJQoMPaGAWsgfY/edit?gid=0#gid=0',
     manualUrl: '/manuals/applicant-tracking-system.txt',
   },
+  {
+    id: '70',
+    name: 'スキルマップ管理',
+    tagline: '社員スキル・資格・育成計画を一元管理',
+    description: '社員のスキル自己評価・上長評価・確定レベル算出、資格取得管理と期限アラート、職種別必須スキル定義によるギャップ分析、属人化リスク検出、育成計画の作成・進捗管理、研修履歴記録、スキル横断検索、チーム/部署/スキル別の集計レポートを搭載。日次〜四半期の自動トリガーでデータ集計・アラート通知を実行。全9画面、16シート構成。Soft UIデザインでスマホ対応。',
+    tags: ['スキル管理', 'ギャップ分析', '育成計画', '資格管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbx7-N3nF1EiAkAjs9yZ2so66LsiDP_4XKVdhZ6tjOFtN5_gqTbRLN5NXNZpHKCqXd0TDQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1AVoDLCCyCmGSDe9pEhB-EUV-3D8R-RFQIs31CwmWd8Y/edit',
+    manualUrl: '/manuals/skill-map.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
