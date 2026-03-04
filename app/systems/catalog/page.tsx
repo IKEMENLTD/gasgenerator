@@ -788,6 +788,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1AVoDLCCyCmGSDe9pEhB-EUV-3D8R-RFQIs31CwmWd8Y/edit',
     manualUrl: '/manuals/skill-map.txt',
   },
+  {
+    id: '71',
+    name: '人件費シミュレーション',
+    tagline: '採用・昇給の総コストを即座に算出',
+    description: '社員の人件費を総合的に管理・分析するWebアプリ。採用時の総コスト（給与+社会保険+福利厚生+採用費用）を即座に算出し、昇給・ベースアップの年間影響額を事前把握。部署別・職種別・等級別の人件費分析、月次予算管理、中長期予測機能を搭載。18シート構成で全データをスプレッドシートに保存。Soft UIデザインでスマホ対応。',
+    tags: ['人件費管理', '採用シミュレーション', '予算管理', 'コスト分析'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbya7_0zooIzXMYhDksYUmzMCgYjWHFpmvYRJ3rMfntqMfL24rUuDgohJypYcjDMlv8xYQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1A1Aw2aZGR-A1toSVLjJygXQaKWhTcrVVO6qQ9FaBRrs/edit?gid=0#gid=0',
+    manualUrl: '/manuals/jinkenhi-simulation.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
