@@ -832,6 +832,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1WeaI05HY2y-U9rrPsJnv4NyV5SQh9xw_gT4OXcs_AV8/edit?gid=0#gid=0',
     manualUrl: '/manuals/inventory-reorder-alert.txt',
   },
+  {
+    id: '75',
+    name: '出荷チェックリスト管理システム',
+    tagline: 'EC出荷作業のチェックリスト・バーコード照合・品質管理を一元化',
+    description: 'EC出荷作業のチェックリスト生成、バーコードスキャン照合、エラー・クレーム追跡、スタッフパフォーマンス分析を備えた総合品質管理システムです。注文内容に応じたチェック項目の自動生成、同梱物の自動判定、日次・月次の自動集計トリガー（6種類）、メール/Slack通知機能を搭載。18シート構成のスプレッドシートをデータベースとして活用。Soft UIデザインでハンバーガーメニュー対応。',
+    tags: ['出荷管理', 'チェックリスト', 'バーコード照合', 'Soft UI'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzCRaMCLRVpLW1M3vMY-a4jHhM4WUE5c4wL_9g-ABeuPIn7Vlvi2IERF_8OsMHUSaOV_w/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1fPn7_llS92qwwzV1eHb5HTA5BSD3BX3ltXDruLFxHZM/edit?gid=0#gid=0',
+    manualUrl: '/manuals/shipping-checklist.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
