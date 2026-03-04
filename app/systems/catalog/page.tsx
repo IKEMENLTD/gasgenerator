@@ -887,6 +887,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1D_7H8e1IPNSE6RajTIHFW-4koWUPrQ9oRQJb_q81seo/edit',
     manualUrl: '/manuals/training-record-history.txt',
   },
+  {
+    id: '80',
+    name: 'フィードバック収集システム',
+    tagline: '改善提案・問題報告・要望を一元収集し対応状況を見える化',
+    description: 'メンバーからのフィードバック（改善提案・問題報告・要望・称賛・質問）を定期・随時で収集し、分類・優先度付け・対応管理・傾向分析まで一気通貫で行うシステムです。匿名投稿にも対応。ダッシュボードではカテゴリ別・月別推移・対応状況・優先度分布をグラフ表示し、未対応件数や平均対応日数をリアルタイム表示。アンケート機能で定期調査を配信・集計でき、5段階評価や自由記述の回答を自動集計。レポートページではカテゴリ別集計・月次推移・対応パフォーマンス・優先度分析の4タブで多角的に分析。メール通知（新着FB・対応完了・週次サマリー等6種）とアラート設定にも対応。14シート構成、8タブのSPA。',
+    tags: ['フィードバック', '改善提案', '匿名投稿', 'ダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwEW_lGL9eH1IHbIzjkCUJpUJhfHsc7ezkAoNJROOOA45C_XRD016JsmAY7x5wUJZCpvQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/13ah7LCNhumwy1Nw9fJgcVp9sJwDzj7UHepX5foc2GtM/edit',
+    manualUrl: '/manuals/feedback-collection.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
