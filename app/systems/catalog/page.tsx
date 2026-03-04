@@ -755,6 +755,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1YMzfpJuQEYKvDU6Z7WUiGqWpKO8SBANw1s3fufnX56c/edit?gid=948078851#gid=948078851',
     manualUrl: '/manuals/shikaku-kanri.txt',
   },
+  {
+    id: '68',
+    name: '評価シート管理',
+    tagline: '評価シートの配布・回収・集計を一元管理',
+    description: '人事評価の全プロセスを一元管理するシステム。自己評価→1次評価→2次評価のワークフロー管理、進捗のリアルタイム可視化、締切前の自動リマインド、評価結果の集計・ランク確定、評価履歴の蓄積・参照、フィードバック面談記録までをカバー。部署別・評価者別の進捗管理、ダッシュボードでの全体把握、メール通知による催促自動化で、評価時期のバタバタを解消します。全14画面、18シート構成。Soft UIデザインでスマホ対応。',
+    tags: ['人事評価', '進捗管理', '自動リマインド', 'ワークフロー'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbydDCx-szuHdzSvSJRVIjFi1SJ2yMPgMKcMkLLaIDxYI97iScHu17xglkUXRlLTK6QB/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ucuR3Be4xKWjZfKgNizCvAntEolRC5GPCfYBLzzqKW0/edit',
+    manualUrl: '/manuals/evaluation-sheet-manager.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
