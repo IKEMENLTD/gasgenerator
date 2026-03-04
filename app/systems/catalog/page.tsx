@@ -843,6 +843,28 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1fPn7_llS92qwwzV1eHb5HTA5BSD3BX3ltXDruLFxHZM/edit?gid=0#gid=0',
     manualUrl: '/manuals/shipping-checklist.txt',
   },
+  {
+    id: '76',
+    name: '返品・クレーム管理システム',
+    tagline: '返品・クレームの受付から改善まで一元管理',
+    description: 'EC運営者向けの返品・クレーム対応を一元管理するシステム。受付登録から対応記録、検品、返金コスト管理、改善アクション、仕入先フィードバックまで網羅。返品理由を大中小カテゴリで構造化し、商品別・理由別・仕入先別の返品率を自動分析。対応期限管理とエスカレーション自動化、担当者パフォーマンス評価、メール・Slack通知機能を搭載。20シート構成でスプレッドシートにデータ保存。Soft UIデザインでスマホ対応。',
+    tags: ['返品管理', 'クレーム対応', 'コスト分析', 'Soft UI'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzwv9ent4SbIbVORXo4jr_FNE0DNvnAUobJ7ZNmPCqSxRmOSowVdbCxs8pClf_czMvB/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/18GFDK4Xou2cRy_VuqTWQC1HcZVN2QmE_QczdWbRVOxA/edit?gid=0#gid=0',
+    manualUrl: '/manuals/returns-claims-management.txt',
+  },
+  {
+    id: '77',
+    name: '仕入先比較管理システム',
+    tagline: '複数仕入先の価格・品質・納期を横断比較し最適な仕入先を選定',
+    description: '複数仕入先の価格テーブル・評価・発注実績を一元管理し、商品別の横断比較で最適な仕入先を自動推奨するシステムです。数量ブレイク対応の価格管理、5段階評価による仕入先スコアリング、コスト削減シミュレーション、価格変動アラート通知、月次パフォーマンス集計（S〜Dランク判定）を搭載。18シート構成、6つの自動トリガー、10タブのSPA。Soft UIデザインでスマホ対応。',
+    tags: ['仕入先比較', '価格管理', 'コスト削減', 'Soft UI'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyrvUMBoivdL_QAgx08gCnUYuEsug76BntdxjvccWtcRZxJFjVxDSFtun-yt_CdTnktzA/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1CZCL9mrfdVFkyu3VRWFOIClJ_swMsr94zGElCmj-jU0/edit?gid=0#gid=0',
+    manualUrl: '/manuals/shiresaki-hikaku.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
