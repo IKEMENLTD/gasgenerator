@@ -821,6 +821,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1Tv7OoAdqG76MlV-a1s9kXv-TZYug9wyEevndimk2yEA/edit?gid=0#gid=0',
     manualUrl: '/manuals/table-turnover.txt',
   },
+  {
+    id: '74',
+    name: '在庫管理＋発注点アラートシステム',
+    tagline: '在庫のリアルタイム管理と発注点アラート自動通知',
+    description: '商品の入出庫をリアルタイムに記録し、在庫が発注点を下回った際にメールで自動通知するシステムです。推奨発注量の自動算出、在庫回転率の可視化、入出庫履歴のフィルタ検索、アラートログの管理機能を搭載。毎日9時の自動チェックと手動チェックの両方に対応。Soft UIデザインでスマホ対応。',
+    tags: ['在庫管理', '発注アラート', '入出庫記録', 'Soft UI'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwMMfu6e7QX_R3k76ZzDaSdQb16ifAlCOJjxUkhwRHTF3R0QINBRIetMxVxxVDab3M/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1WeaI05HY2y-U9rrPsJnv4NyV5SQh9xw_gT4OXcs_AV8/edit?gid=0#gid=0',
+    manualUrl: '/manuals/inventory-reorder-alert.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
