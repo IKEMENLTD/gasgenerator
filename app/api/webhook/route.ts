@@ -22,6 +22,7 @@ import { DownloadQueries } from '../../../lib/supabase/subscription-queries'
 import { supabaseAdmin } from '../../../lib/supabase/client'
 import { startDrip, stopDrip, checkAndStopDripOnUserAction } from '../../../lib/drip/drip-service'
 import { handleDiagnosis, isDiagnosisTrigger } from '../../../lib/line/diagnosis-handler'
+import { handleConsultation, isConsultationTrigger } from '../../../lib/line/consultation-handler'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -319,6 +320,12 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     // AI診断ハンドラー（diagnosisMode中の回答 or トリガーテキスト）
     if ((context as any)?.diagnosisMode || isDiagnosisTrigger(messageText)) {
       const handled = await handleDiagnosis(userId, messageText, replyToken, context, sessionManager, lineClient)
+      if (handled) return true
+    }
+
+    // Haiku相談ハンドラー（consultationMode中 or トリガーテキスト）
+    if ((context as any)?.consultationMode || isConsultationTrigger(messageText)) {
+      const handled = await handleConsultation(userId, messageText, replyToken, context, sessionManager, lineClient)
       if (handled) return true
     }
 

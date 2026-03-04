@@ -50,6 +50,11 @@ export interface ConversationContext {
   diagnosisMode?: boolean
   diagnosisStep?: number
   diagnosisAnswers?: Array<{ questionId: number; answer: string }>
+  // Haiku相談モード
+  consultationMode?: boolean
+  consultationMessages?: Array<{ role: 'user' | 'assistant'; content: string }>
+  consultationDiagnosisContext?: string // 診断結果JSON
+  consultationNotified?: boolean // 管理者通知済みフラグ
 }
 
 // カテゴリ別の質問テンプレート

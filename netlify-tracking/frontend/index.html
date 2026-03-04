@@ -4158,6 +4158,10 @@
         @keyframes ai-spin {
             to { transform: rotate(360deg); }
         }
+        @keyframes dotPulse {
+            0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+            40% { opacity: 1; transform: scale(1); }
+        }
         .ai-loading-title {
             font-size: 1.25rem;
             font-weight: 600;
@@ -6369,7 +6373,8 @@
             sessionId: '',
             recommendations: null,
             isLoading: false,
-            error: null
+            error: null,
+            lastResult: null
         };
 
         // DOM Elements
@@ -6583,12 +6588,23 @@
                 html += '</div></div>';
             });
 
+            // 「詳しく相談する」CTAボタン（ai-actionsの前に追加）
+            html += '<div class="ai-consultation-cta" style="margin: 24px 0; padding: 20px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; text-align: center;">';
+            html += '<p style="font-size: 1rem; color: #1e3a5f; margin-bottom: 12px; font-weight: 600;">診断結果について、もっと詳しく知りたいですか？</p>';
+            html += '<button class="ai-action-btn" id="startConsultationBtn" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; padding: 14px 28px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">';
+            html += '&#128172; AIに詳しく相談する（無料）</button>';
+            html += '<p style="font-size: 0.85rem; color: #64748b; margin-top: 8px;">専門AIがあなたの業務課題を深掘りし、具体的なROI試算をお出しします</p>';
+            html += '</div>';
+
             html += '<div class="ai-actions">';
             html += '<button class="ai-action-btn ai-action-primary" data-system-id="' + rec.recommendations[0].systemId + '">';
             html += '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
             html += '1位のシステムを詳しく見る</button>';
             html += '<button class="ai-action-btn ai-action-secondary" id="aiRestartBtn">もう一度診断する</button>';
             html += '</div>';
+
+            // 診断結果をstateに保存（相談チャットからの「戻る」用）
+            state.lastResult = rec;
 
             modalBody.innerHTML = html;
 
@@ -6613,7 +6629,196 @@
             if (restartBtn) {
                 restartBtn.addEventListener('click', resetState);
             }
+
+            // 「詳しく相談する」ボタン
+            var consultBtn = document.getElementById('startConsultationBtn');
+            if (consultBtn) {
+                consultBtn.addEventListener('click', function() {
+                    renderConsultationChat();
+                });
+            }
         }
+
+        // ============================================================
+        // 相談チャット機能
+        // ============================================================
+
+        // 相談チャット状態管理
+        var consultationState = {
+            sessionId: null,
+            messages: [],
+            diagnosisContext: null
+        };
+
+        // 相談チャットUIをレンダリング
+        function renderConsultationChat() {
+            // プログレスバーを非表示
+            progress.style.display = 'none';
+
+            // モーダルタイトル変更
+            var titleEl = document.querySelector('.ai-modal-title');
+            if (titleEl) { titleEl.textContent = 'AIに相談'; }
+
+            var html = '';
+            html += '<div class="consultation-chat" style="display: flex; flex-direction: column; height: 60vh; max-height: 500px;">';
+
+            // メッセージエリア
+            html += '<div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;">';
+            html += '<div class="chat-loading" style="text-align: center; padding: 20px; color: #64748b;">AIアシスタントを準備中...</div>';
+            html += '</div>';
+
+            // 入力エリア
+            html += '<div style="border-top: 1px solid #e2e8f0; padding: 12px 16px; display: flex; gap: 8px; background: #f8fafc;">';
+            html += '<input type="text" id="chatInput" placeholder="メッセージを入力..." style="flex: 1; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; outline: none;" maxlength="500" />';
+            html += '<button id="chatSendBtn" style="padding: 10px 20px; background: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap;">送信</button>';
+            html += '</div>';
+
+            html += '</div>';
+
+            // 戻るボタン
+            html += '<div style="padding: 12px 16px; text-align: center;">';
+            html += '<button id="backToResultBtn" style="padding: 8px 16px; background: transparent; color: #64748b; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">&#8592; 診断結果に戻る</button>';
+            html += '</div>';
+
+            modalBody.innerHTML = html;
+
+            // イベントリスナー
+            document.getElementById('chatSendBtn').addEventListener('click', sendChatMessage);
+            document.getElementById('chatInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            });
+            document.getElementById('backToResultBtn').addEventListener('click', function() {
+                // モーダルタイトルを元に戻す
+                var titleElBack = document.querySelector('.ai-modal-title');
+                if (titleElBack) { titleElBack.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/></svg> AI診断'; }
+                renderResult();
+            });
+
+            // 初回メッセージをAPI経由で取得
+            startConsultation();
+        }
+
+        // 相談セッション開始
+        function startConsultation() {
+            var industryAnswer = state.answers.find(function(a) { return a.questionId === 1; });
+            var challengeAnswer = state.answers.find(function(a) { return a.questionId === 2; });
+
+            consultationState.diagnosisContext = {
+                industry: industryAnswer ? industryAnswer.answer : '不明',
+                challenge: challengeAnswer ? challengeAnswer.answer : '不明',
+                recommendations: state.lastResult ? state.lastResult.recommendations : []
+            };
+            consultationState.sessionId = 'web_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            consultationState.messages = [];
+
+            // 初回メッセージをAPI経由で取得
+            callConsultationAPI('開始');
+        }
+
+        // メッセージ送信
+        function sendChatMessage() {
+            var input = document.getElementById('chatInput');
+            if (!input) return;
+            var text = input.value.trim();
+            if (!text) return;
+
+            input.value = '';
+            addChatBubble(text, 'user');
+            callConsultationAPI(text);
+        }
+
+        // 相談チャットAPI呼び出し
+        function callConsultationAPI(message) {
+            var sendBtn = document.getElementById('chatSendBtn');
+            if (sendBtn) sendBtn.disabled = true;
+
+            addChatBubble('...', 'assistant-loading');
+
+            fetch('https://gasgenerator.onrender.com/api/consultation-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId: consultationState.sessionId,
+                    message: message,
+                    diagnosisContext: consultationState.diagnosisContext,
+                    messages: consultationState.messages
+                })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                var loading = document.querySelector('.assistant-loading');
+                if (loading) loading.remove();
+
+                if (data.success) {
+                    addChatBubble(data.reply, 'assistant');
+                    consultationState.messages.push({ role: 'user', content: message });
+                    consultationState.messages.push({ role: 'assistant', content: data.reply });
+
+                    // 予約URLが含まれていれば予約ボタンを追加
+                    if (data.reply.indexOf('timerex.net') !== -1) {
+                        addBookingButton();
+                    }
+                } else {
+                    addChatBubble('申し訳ありません。エラーが発生しました。', 'assistant');
+                }
+                if (sendBtn) sendBtn.disabled = false;
+            })
+            .catch(function() {
+                var loading = document.querySelector('.assistant-loading');
+                if (loading) loading.remove();
+                addChatBubble('通信エラーが発生しました。もう一度お試しください。', 'assistant');
+                if (sendBtn) sendBtn.disabled = false;
+            });
+        }
+
+        // チャットバブル追加
+        function addChatBubble(text, type) {
+            var container = document.getElementById('chatMessages');
+            if (!container) return;
+
+            // 初回のローディングメッセージを削除
+            var initialLoading = container.querySelector('.chat-loading');
+            if (initialLoading) initialLoading.remove();
+
+            var bubble = document.createElement('div');
+
+            if (type === 'user') {
+                bubble.style.cssText = 'align-self: flex-end; background: #0ea5e9; color: white; padding: 10px 14px; border-radius: 12px 12px 2px 12px; max-width: 80%; font-size: 0.95rem; line-height: 1.5;';
+                bubble.textContent = text;
+            } else if (type === 'assistant-loading') {
+                bubble.className = 'assistant-loading';
+                bubble.style.cssText = 'align-self: flex-start; background: #f1f5f9; color: #64748b; padding: 10px 14px; border-radius: 12px 12px 12px 2px; max-width: 80%; font-size: 0.95rem;';
+                bubble.innerHTML = '<span style="display: inline-flex; gap: 4px;"><span style="animation: dotPulse 1.4s infinite ease-in-out both; animation-delay: 0s;">&#9679;</span><span style="animation: dotPulse 1.4s infinite ease-in-out both; animation-delay: 0.2s;">&#9679;</span><span style="animation: dotPulse 1.4s infinite ease-in-out both; animation-delay: 0.4s;">&#9679;</span></span>';
+            } else {
+                bubble.style.cssText = 'align-self: flex-start; background: #f1f5f9; color: #1e293b; padding: 10px 14px; border-radius: 12px 12px 12px 2px; max-width: 80%; font-size: 0.95rem; line-height: 1.5;';
+                // URLをリンク化
+                var linkedText = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #0ea5e9; text-decoration: underline;">$1</a>');
+                bubble.innerHTML = linkedText;
+            }
+
+            container.appendChild(bubble);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 予約ボタン追加
+        function addBookingButton() {
+            var container = document.getElementById('chatMessages');
+            if (!container) return;
+            var btn = document.createElement('a');
+            btn.href = 'https://timerex.net/s/cz1917903_47c5/7caf7949';
+            btn.target = '_blank';
+            btn.style.cssText = 'align-self: center; display: inline-block; margin: 12px 0; padding: 12px 24px; background: #2d8f5e; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; text-align: center;';
+            btn.textContent = '無料相談を予約する';
+            container.appendChild(btn);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // ============================================================
+        // 相談チャット機能ここまで
+        // ============================================================
 
         // Render Error State
         function renderError() {

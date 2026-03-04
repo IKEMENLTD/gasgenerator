@@ -236,11 +236,15 @@ export async function handleDiagnosis(
   }
 
   // 5問完了 → Claude APIで推薦生成
+  // 診断コンテキストを先に保存（相談モードで使用するため）
   const updated = { ...context, diagnosisAnswers: answers }
   await sessionManager.saveContext(userId, updated)
 
   // ローディング表示
   lineClient.showLoadingAnimation(userId, 60).catch(() => {})
+
+  // 相談モード用の診断コンテキストJSON（try外でも参照するため事前宣言）
+  let diagnosisContextJson: string | undefined
 
   try {
     // 回答データを整形
@@ -298,6 +302,17 @@ export async function handleDiagnosis(
     const sig = await generateUrlSignature(`${encodedUserId}:${timestamp}`)
     const catalogAuthParams = `u=${encodeURIComponent(encodedUserId)}&t=${timestamp}&s=${sig}`
 
+    // 診断コンテキストを保存（相談モード用）
+    diagnosisContextJson = JSON.stringify({
+      industry: userAnswers.industry,
+      challenge: userAnswers.challenge,
+      recommendations: recommendation.recommendations.map((r) => ({
+        systemName: r.systemName,
+        systemId: r.systemId,
+        estimatedTimeSaving: r.estimatedTimeSaving,
+      })),
+    })
+
     // 結果をFlexカルーセルで送信
     const carouselMessage = buildResultCarousel(recommendation.recommendations, systems, catalogAuthParams)
     const analysisMessage = {
@@ -310,10 +325,10 @@ export async function handleDiagnosis(
       text: '診断結果をもとに、御社に合った活用プランをご提案します。\n\n✅ カタログで動いている実物を確認できます\n✅ プログラミング知識は不要\n✅ 動作不良時は全額返金保証',
       quickReply: {
         items: [
+          { type: 'action', action: { type: 'message', label: '💬 詳しく相談する', text: '詳しく相談する' } },
           { type: 'action', action: { type: 'uri', label: '📅 15分無料相談を予約', uri: bookingUrl } },
           { type: 'action', action: { type: 'message', label: '📦 カタログで実物を見る', text: 'システム一覧' } },
           { type: 'action', action: { type: 'message', label: '👨‍💻 エンジニアに質問', text: 'エンジニアに相談する' } },
-          { type: 'action', action: { type: 'message', label: '💎 料金プランを見る', text: '料金プラン' } },
           { type: 'action', action: { type: 'message', label: '📋 メニュー', text: 'メニュー' } },
         ],
       },
@@ -339,8 +354,14 @@ export async function handleDiagnosis(
     }])
   }
 
-  // 診断モード解除
-  const cleared = { ...context, diagnosisMode: false, diagnosisStep: undefined, diagnosisAnswers: undefined }
+  // 診断モード解除（consultationDiagnosisContextは相談モード用に保持）
+  const cleared = {
+    ...context,
+    diagnosisMode: false,
+    diagnosisStep: undefined,
+    diagnosisAnswers: undefined,
+    consultationDiagnosisContext: diagnosisContextJson,
+  }
   await sessionManager.saveContext(userId, cleared)
 
   return true
