@@ -865,6 +865,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1CZCL9mrfdVFkyu3VRWFOIClJ_swMsr94zGElCmj-jU0/edit?gid=0#gid=0',
     manualUrl: '/manuals/shiresaki-hikaku.txt',
   },
+  {
+    id: '78',
+    name: '物件情報管理システム',
+    tagline: '物件情報の鮮度スコアで確認漏れゼロ、不動産仲介の一元管理',
+    description: '不動産仲介会社向けの物件情報一元管理システムです。物件の鮮度スコア（1〜100）を自動算出し、確認経過日数・空室日数・問い合わせ数から情報の新鮮さをA〜Eの5段階で可視化。確認期限管理とリマインド通知で確認漏れを防止し、長期空室物件の自動検出・アラート通知にも対応。SUUMO/HOME\'S/ATBB等の掲載状況一元管理、オーナー連絡履歴、問い合わせ〜内覧〜成約の追跡、月次集計（空室率・成約件数・媒体別効果測定・担当者パフォーマンス）を搭載。20シート構成、8つの自動トリガー、12タブのSPA。Soft UIデザインでスマホ対応。',
+    tags: ['物件管理', '鮮度スコア', '不動産仲介', 'Soft UI'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycby-lwzil35vbEZtcSI5ZZCoCqDmuyyKyLOyTWRTgodWja6md0KtT16w5KX-7W4K76FA/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1UBa4Zk7m-DDMhLZbIoCnrEZH-1GT_ijp4dRMUlz6qE4/edit?gid=0#gid=0',
+    manualUrl: '/manuals/bukken-joho-kanri.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
