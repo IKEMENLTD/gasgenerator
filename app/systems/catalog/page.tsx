@@ -766,6 +766,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ucuR3Be4xKWjZfKgNizCvAntEolRC5GPCfYBLzzqKW0/edit',
     manualUrl: '/manuals/evaluation-sheet-manager.txt',
   },
+  {
+    id: '69',
+    name: '応募者管理（簡易ATS）',
+    tagline: '応募から入社まで採用活動を一元管理',
+    description: '応募者の選考ステータス管理、面接スケジュール・評価記録、内定オファー管理、メール自動通知、Googleカレンダー連携、滞留アラート、求人別・チャネル別・月次の採用分析を搭載した簡易ATS。選考パイプラインをダッシュボードで可視化し、対応漏れを防止。全10画面、18シート構成。Soft UIデザインでスマホ対応。',
+    tags: ['採用管理', '選考パイプライン', '面接評価', '自動通知'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzgDZyHOaWxpOx_fQxc7A5Z4cgJ0_Rl5-YVBokq7GtDKhV2vym-sa0WDlVu8Z_VUxy-XQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1RNALTHM5BoswKAsURx7IMmNTDMhH_AJQoMPaGAWsgfY/edit?gid=0#gid=0',
+    manualUrl: '/manuals/applicant-tracking-system.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
