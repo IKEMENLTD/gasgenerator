@@ -145,7 +145,7 @@ const systems = [
     tagline: '紹介キャンペーンの一元管理・効果測定',
     description: '紹介プログラムを完全管理。紹介者・被紹介者の追跡、特典付与状況の管理、紹介効果の分析機能を搭載。紹介経由の売上貢献を可視化し、プログラムの最適化をサポートします。',
     tags: ['紹介管理', 'キャンペーン', '特典管理', '効果測定'],
-    previewUrl: 'https://shoukai-program-kanri.netlify.app/',
+    previewUrl: 'https://syoukaipuroguramu.netlify.app/',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/17_SZw6VxNiMyvZlmCvOHdBPp-fY1CQb_19wfOSdJwJQ/edit?gid=1938890458#gid=1938890458',
     manualUrl: 'https://drive.google.com/file/d/1gFIv87jXMshPz4KKntapR_sSp5R-b38_/view?usp=drive_link',
