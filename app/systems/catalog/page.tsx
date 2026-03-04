@@ -876,6 +876,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1UBa4Zk7m-DDMhLZbIoCnrEZH-1GT_ijp4dRMUlz6qE4/edit?gid=0#gid=0',
     manualUrl: '/manuals/bukken-joho-kanri.txt',
   },
+  {
+    id: '79',
+    name: '研修受講履歴管理システム',
+    tagline: '社内研修の受講管理・必須研修チェック・費用分析をワンストップで',
+    description: '社内研修の一元管理システムです。研修マスタ・スケジュール・社員マスタの3つのマスタを軸に、受講履歴の記録、研修申込と上長承認ワークフロー、必須研修の期限管理と期限超過アラート、受講後フィードバック・効果測定の収集、有効期限管理と再受講リマインドを搭載。ダッシュボードでは部署別受講率・カテゴリ別受講時間・月別受講者数推移をグラフ表示し、満足度ランキング・承認待ち・未受講者アラートを一覧表示。月次バッチで社員別・部署別・研修別サマリーと費用管理を自動集計。メール通知とGoogleカレンダー自動登録にも対応。15シート構成、11タブのSPA。ダークブルーサイドバーデザインでスマホ対応。',
+    tags: ['研修管理', '受講履歴', '必須研修チェック', 'ダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzU5zjogPaMMPwhdbN45LO8arFXEgV-5I6Qy7V_mojSA4rBi9KoBJnHo5NCNIP5bFwb/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1D_7H8e1IPNSE6RajTIHFW-4koWUPrQ9oRQJb_q81seo/edit',
+    manualUrl: '/manuals/training-record-history.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
