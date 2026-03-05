@@ -997,6 +997,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ahmNTukCT0gwj7X_fAyW1IQ1zagzNoKj9JpOKbdKnYg/edit?gid=0#gid=0',
     manualUrl: '/manuals/attendance-tuition-manager.txt',
   },
+  {
+    id: '90',
+    name: '生徒管理＋進捗記録システム',
+    tagline: '生徒情報・授業記録・成績・退塾リスクを一元管理',
+    description: '学習塾・スクール向けの生徒管理と進捗記録を一元管理するWebアプリケーションです。生徒の基本情報・保護者情報・コース・担当講師の統合管理、毎回の授業内容・理解度（5段階）・演習正答率・つまずき箇所の記録、出欠管理と連続欠席自動検知・アラート通知、成績・テスト結果の記録と推移分析、退塾リスクスコアの自動算出（欠席率30%・成績変化20%・理解度15%・進捗遅れ15%・宿題提出率10%・保護者連絡頻度10%の6指標）、保護者連絡・面談記録の一元管理とフォロー予定追跡、月次集計（生徒別サマリー・講師パフォーマンス・コース分析・退塾分析・教材効果分析）、Slack/メール通知による自動アラートを搭載。21シート構成、6個の自動トリガー、11画面のSPA。Soft UIデザインでフルレスポンシブ対応。',
+    tags: ['生徒管理', '進捗記録', '退塾リスク分析', '成績管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbySnRD5eGb_do-xzk015EP5PHNrUoWm_GCjQBCy6DUV3eUWhCMTQG8mKU9Q7U22IUfl/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1xG-ZO1N_-O8qs4wIzExbMsEEA43ZV3DuBjswi6Xaxww/edit?usp=sharing',
+    manualUrl: '/manuals/student-progress-manager.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
