@@ -898,6 +898,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/13ah7LCNhumwy1Nw9fJgcVp9sJwDzj7UHepX5foc2GtM/edit',
     manualUrl: '/manuals/feedback-collection.txt',
   },
+  {
+    id: '81',
+    name: '感謝・称賛の見える化',
+    tagline: '感謝メッセージの投稿・共有でチームの一体感を醸成',
+    description: '感謝・称賛メッセージの投稿・タイムライン共有、ポイント・バッジによるゲーミフィケーション、個人別/部署別/カテゴリ別の月次分析レポート、定期的な称賛促進リマインドを一体化。10画面SPA、14シート、トリガー5種で称賛文化を定着させます。',
+    tags: ['称賛', 'ゲーミフィケーション', 'チームビルディング', 'モチベーション'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzpYrLqK_CzGGfxOJkVjTc-xQtkblY3SB8TltaevL_ePbJ0bKym7PSVHxliURZ-DZUN/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1wPnATcc6R4kfofOwWRRd6oPsM9XPKWXuKcNQX70hKLk/edit',
+    manualUrl: '/manuals/kansha-shosan-mieruka.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
