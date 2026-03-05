@@ -964,6 +964,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/18H0q3t44L1J8xWlzJCupSlMTWVJrH9kDBGrtkfqEick/edit',
     manualUrl: '/manuals/raiten-count.txt',
   },
+  {
+    id: '87',
+    name: 'オーナー連絡履歴管理システム',
+    tagline: 'オーナーとの連絡履歴・フォロー・リスクを一元管理',
+    description: '不動産管理会社向けのオーナー連絡履歴管理システムです。電話・メール・訪問等の連絡履歴を一元記録し、フォロー予定管理・リマインド通知、オーナープロファイル（性格・NGワード・こだわり）管理、担当変更時の引き継ぎサマリー自動生成（Googleドキュメント出力）、長期未連絡アラート、解約リスクスコア・関係値スコアの自動算出、クレーム・要望記録、月次報告管理、担当者別パフォーマンス集計（S〜Cランク判定）を搭載。18シート構成、7つの自動トリガー、10タブのSPA。Soft UIデザインでスマホ対応。',
+    tags: ['オーナー管理', '連絡履歴', 'リスク分析', 'Soft UI'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxxMF5a4vGEX6txOHRBSapjPKpwND2U9PSFAyybDnCRCasi-_DB01aKQzdakBtReP30WQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1KWC1GQ6-omxZdKzdvp904gGwiqK-uplbROBLLs_3tLg/edit?gid=0#gid=0',
+    manualUrl: '/manuals/owner-contact-history.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
