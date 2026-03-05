@@ -9,10 +9,22 @@ import { logger } from '@/lib/utils/logger'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+const ALLOWED_ORIGINS = [
+  'https://taskmateai.net',
+  'https://www.taskmateai.net',
+  'https://gasgenerator.onrender.com',
+  'http://localhost:3000',
+]
+
+function getCorsHeaders(origin?: string | null) {
+  const allowed = origin && ALLOWED_ORIGINS.some((o) => origin.startsWith(o))
+    ? origin
+    : ALLOWED_ORIGINS[0]
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  }
 }
 
 // メッセージ型定義
@@ -42,11 +54,14 @@ interface ConsultationRequest {
   messages?: ChatMessage[]
 }
 
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 200, headers: corsHeaders })
+export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin')
+  return new NextResponse(null, { status: 200, headers: getCorsHeaders(origin) })
 }
 
 export async function POST(request: NextRequest) {
+  const origin = request.headers.get('origin')
+  const corsHeaders = getCorsHeaders(origin)
   try {
     const body = await request.json() as ConsultationRequest
     const { sessionId, message, diagnosisContext, messages } = body

@@ -56,7 +56,7 @@ interface LeadData {
  * 相談モード開始トリガーかどうか判定する
  */
 export function isConsultationTrigger(text: string): boolean {
-  return CONSULTATION_TRIGGERS.includes(text)
+  return CONSULTATION_TRIGGERS.some((trigger) => text.includes(trigger))
 }
 
 // ============================================================
