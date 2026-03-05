@@ -975,6 +975,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1KWC1GQ6-omxZdKzdvp904gGwiqK-uplbROBLLs_3tLg/edit?gid=0#gid=0',
     manualUrl: '/manuals/owner-contact-history.txt',
   },
+  {
+    id: '88',
+    name: '内見予約管理システム',
+    tagline: '不動産内見の予約・鍵手配・結果記録を一元管理',
+    description: '不動産会社向けの内見予約管理Webアプリケーションです。内見予約の登録・キャンセル・リスケジュール、鍵手配管理（キーボックス・物理鍵・スマートロック対応）、内見結果記録（顧客反応5段階評価・次アクション管理）、ダブルブッキング自動検知、予約確認・前日/当日リマインド・内見後フォローの自動メール送信、日次/月次集計・担当者別パフォーマンス・物件別分析・チャネル別分析の自動レポート、カレンダー表示（担当者別/物件別切り替え）を搭載。マスタ管理（物件・顧客・スタッフ・鍵）、18シート構成、10個の自動トリガー、8画面のSPA。Soft UIデザインでフルレスポンシブ対応。',
+    tags: ['内見管理', '予約管理', '鍵手配', 'ダブルブッキング防止'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxCu19cvhGSpsKGP-XZ9N01s7Ds0OT-PN-iIJylavAN_0VoBiAjk_6j_VwNAWhx3clc/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1stwxLXus9bku6DmaAfS-T-yZAw6pB5JWbJ5fnLWpAWY/edit',
+    manualUrl: '/manuals/naiken-reservation-manager.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
