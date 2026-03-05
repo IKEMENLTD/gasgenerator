@@ -70,6 +70,7 @@ const SPREADSHEET_URLS: Record<string, string> = {
   '64': 'https://docs.google.com/spreadsheets/d/1lC28l4dROWD7l-IV3eOTrsvUU7l6uhULdx2jebFePD8/edit',
   '65': 'https://docs.google.com/spreadsheets/d/1gUUM3KLlDwKTeKlMvBv8nfFbyONxBlWxrmTzQk1vAro/edit?gid=559293208#gid=559293208',
   '88': 'https://docs.google.com/spreadsheets/d/1stwxLXus9bku6DmaAfS-T-yZAw6pB5JWbJ5fnLWpAWY/edit',
+  '94': 'https://docs.google.com/spreadsheets/d/1I8p1-7QQsuWw7weOWQ0v4iHoReKgOBit9colGnB7GeQ/edit?gid=246119447#gid=246119447',
 }
 
 /** システムIDからスプレッドシートURLを取得 */
@@ -148,5 +149,6 @@ export function getSystemsData(): SystemData[] {
     { id: '66', name: 'スタッフ指名管理', tagline: 'スタッフ指名率の可視化・分析・育成支援', tags: ['指名管理', '偏り分析', '育成支援', 'ダッシュボード'] },
     { id: '67', name: '資格管理＋更新アラート', tagline: '社員の資格・期限を一元管理し更新漏れを防止', tags: ['資格管理', '期限アラート', '更新タスク自動生成', 'レポート'] },
     { id: '88', name: '内見予約管理システム', tagline: '不動産内見の予約・鍵手配・結果記録を一元管理', tags: ['内見管理', '予約管理', '鍵手配', 'ダブルブッキング防止'] },
+    { id: '94', name: '改善提案ボックス', tagline: '現場の改善提案を投稿・管理・追跡し効果を見える化', tags: ['改善提案', '提案管理', 'ポイント制度', 'ダッシュボード'] },
   ]
 }

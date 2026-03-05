@@ -1041,6 +1041,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1RMm9_O6Uvj2v4pmIdsYS_jM2UNQmDxgVP_VJ6IJsPzw/edit?gid=0#gid=0',
     manualUrl: '/manuals/goal-commit-manager.txt',
   },
+  {
+    id: '94',
+    name: '改善提案ボックス',
+    tagline: '現場の改善提案を投稿・管理・追跡し効果を見える化',
+    description: '現場スタッフの改善提案を匿名/記名で投稿・管理するWebアプリです。提案の自動分類、優先度スコア自動計算（緊急度x影響範囲）、ステータス追跡（受付→検討→採用→実施→完了）、担当者自動アサイン、提案者とのやり取り機能、採用・実施管理、効果記録を搭載。ダッシュボードではステータス別・カテゴリ別グラフ、月別トレンド、部署別・提案者別ランキングを可視化。レポートは提案者別・部署別・カテゴリ別・効果サマリーの4種。ポイント・表彰システム（投稿10pt、採用30pt、高効果50pt）でモチベーション向上。未対応アラート、日次/週次/月次の自動トリガー3種。14シート構成、8画面のSPA。Soft UIデザインでフルレスポンシブ対応。',
+    tags: ['改善提案', '提案管理', 'ポイント制度', 'ダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxM3CD3G54ODn8_OSzSDK-dHE26bRzS3MkfcgI3xIBL2n7kg1401_jzsLSlvRF8a0YM/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1I8p1-7QQsuWw7weOWQ0v4iHoReKgOBit9colGnB7GeQ/edit?gid=246119447#gid=246119447',
+    manualUrl: '/manuals/kaizen-proposal-box.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
