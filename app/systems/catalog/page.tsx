@@ -1008,6 +1008,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1xG-ZO1N_-O8qs4wIzExbMsEEA43ZV3DuBjswi6Xaxww/edit?usp=sharing',
     manualUrl: '/manuals/student-progress-manager.txt',
   },
+  {
+    id: '91',
+    name: '習慣トラッカーシステム',
+    tagline: '習慣の記録・ストリーク追跡・チーム共有・分析レポート',
+    description: '日々の習慣をワンクリックでチェックインし、連続達成日数（ストリーク）を自動追跡するWebアプリケーションです。週間ヒートマップで達成パターンを可視化、バッジ・実績システムでモチベーション維持、チーム機能でメンバーと達成状況を共有・応援。習慣登録（9カテゴリ・頻度設定・目標量設定）、毎日のチェックイン（完了/スキップ/失敗・気分スコア・コメント）、ストリーク自動計算・途切れ警告、12種のバッジ獲得条件、チーム作成・招待コード参加・ランキング・応援コメント、目標管理と期限アラート、週次/月次レポート自動生成・メール送付、習慣別/カテゴリ別パフォーマンス分析を搭載。20シート構成、9個の自動トリガー、8画面のSPA。Soft UIデザインでフルレスポンシブ対応。',
+    tags: ['習慣管理', 'ストリーク追跡', 'チーム共有', 'バッジ・実績'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzkPq3ooW3-17RZ39tWfGlxTLSPvprsQt-d-F3M0wnotr6bFKLAdePvzwfUVy5hNrGr/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ZGaeQgVZdhqhFYQY5uueLQj_6DNAsi-o88YNWekARTE/edit?gid=0#gid=0',
+    manualUrl: '/manuals/habit-tracker.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
