@@ -1019,6 +1019,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ZGaeQgVZdhqhFYQY5uueLQj_6DNAsi-o88YNWekARTE/edit?gid=0#gid=0',
     manualUrl: '/manuals/habit-tracker.txt',
   },
+  {
+    id: '92',
+    name: '振替レッスン管理システム',
+    tagline: '欠席連絡から振替完了まで一気通貫で管理・期限追跡・分析',
+    description: 'スクール・学習塾の振替レッスンを一元管理するWebアプリです。欠席連絡の受付から振替申請、日程確定、完了登録までの一連のフローをスプレッドシート上で管理します。生徒インクリメンタルサーチ、振替期限の自動計算（欠席日から/月末/翌月末）、オーバーブッキング防止（定員チェック・ブロック）、振替完了と出席記録の紐付け、期限切れ振替の自動失効処理（消滅/繰越/返還）、保護者への自動メール通知（受付確認・日程確定・期限リマインド・失効通知）、コース別振替ポリシー設定、講師別振替受入コマ数管理を搭載。分析ダッシュボードでは月次サマリー、コース別・講師別振替状況、欠席理由別内訳、曜日x時間帯の需要ヒートマップを可視化。20シート構成、5個の自動トリガー、9画面のSPA。Soft UIデザインでフルレスポンシブ対応。テストデータ一括挿入機能付き。',
+    tags: ['振替管理', 'スクール運営', '期限追跡', '分析ダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwoIw2IJlLm7kcaWJ9CjpvJj6OlvXGulcdICBrB3JUnCjhRZYfG-aaxTH4TiJcA3xbyVQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1uZfJveRP3lqpt3EGSBk3lO8gSU8TPPJzeMhbrzA9Cp0/edit?gid=0#gid=0',
+    manualUrl: '/manuals/furikae-lesson-manager.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
