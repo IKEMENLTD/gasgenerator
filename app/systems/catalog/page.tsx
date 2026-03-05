@@ -1030,6 +1030,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1uZfJveRP3lqpt3EGSBk3lO8gSU8TPPJzeMhbrzA9Cp0/edit?gid=0#gid=0',
     manualUrl: '/manuals/furikae-lesson-manager.txt',
   },
+  {
+    id: '93',
+    name: '目標コミット管理',
+    tagline: '目標設定から達成まで一気通貫で管理・週次レビュー・バッジ機能付き',
+    description: '目標の設定から進捗管理、週次レビュー、達成宣言までを一元管理するWebアプリです。個人目標・チーム目標の登録、達成率の自動計算とグラフ可視化、週次レビューによる定期振り返り、期限が近い目標への自動アラート通知、バッジ機能によるモチベーション維持を実現。17シート構成、8個の自動トリガー（日次リマインダー・週次レビュー集計・月次レポート・未達アラート・バッジ付与・アーカイブ・バックアップ）、11画面のSPA。CSV形式でのレポート出力、操作ログ・エラーログの自動記録、テストデータ一括挿入機能付き。Soft UIデザインでフルレスポンシブ対応。個人利用から最大50名のチーム利用まで対応。',
+    tags: ['目標管理', '進捗追跡', '週次レビュー', 'バッジ機能'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbypvzdgNYXgu02zY-PWBfl8Id1fqn-IuwLPPe_IYxXb8J_BP_XrEuhXiB_TeM9tWdrInw/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1RMm9_O6Uvj2v4pmIdsYS_jM2UNQmDxgVP_VJ6IJsPzw/edit?gid=0#gid=0',
+    manualUrl: '/manuals/goal-commit-manager.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
