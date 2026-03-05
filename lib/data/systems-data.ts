@@ -69,6 +69,7 @@ const SPREADSHEET_URLS: Record<string, string> = {
   '63': 'https://docs.google.com/spreadsheets/d/1ZVWaD3sVuNj84vEwbT6GRCAXtgjgtU_SNXwnLc6d5go/edit',
   '64': 'https://docs.google.com/spreadsheets/d/1lC28l4dROWD7l-IV3eOTrsvUU7l6uhULdx2jebFePD8/edit',
   '65': 'https://docs.google.com/spreadsheets/d/1gUUM3KLlDwKTeKlMvBv8nfFbyONxBlWxrmTzQk1vAro/edit?gid=559293208#gid=559293208',
+  '68': 'https://docs.google.com/spreadsheets/d/1stwxLXus9bku6DmaAfS-T-yZAw6pB5JWbJ5fnLWpAWY/edit',
 }
 
 /** システムIDからスプレッドシートURLを取得 */
@@ -146,5 +147,6 @@ export function getSystemsData(): SystemData[] {
     { id: '65', name: 'Form Filler Pro', tagline: '問い合わせフォーム営業の入力をワンクリック自動化', tags: ['フォーム自動入力', 'Chrome拡張', '営業支援', 'テンプレート管理'] },
     { id: '66', name: 'スタッフ指名管理', tagline: 'スタッフ指名率の可視化・分析・育成支援', tags: ['指名管理', '偏り分析', '育成支援', 'ダッシュボード'] },
     { id: '67', name: '資格管理＋更新アラート', tagline: '社員の資格・期限を一元管理し更新漏れを防止', tags: ['資格管理', '期限アラート', '更新タスク自動生成', 'レポート'] },
+    { id: '68', name: '内見予約管理システム', tagline: '不動産内見の予約・鍵手配・結果記録を一元管理', tags: ['内見管理', '予約管理', '鍵手配', 'ダブルブッキング防止'] },
   ]
 }
