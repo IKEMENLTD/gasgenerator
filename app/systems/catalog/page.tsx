@@ -1052,6 +1052,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1I8p1-7QQsuWw7weOWQ0v4iHoReKgOBit9colGnB7GeQ/edit?gid=246119447#gid=246119447',
     manualUrl: '/manuals/kaizen-proposal-box.txt',
   },
+  {
+    id: '95',
+    name: '目標共有ボード',
+    tagline: '会社→部署→チーム→個人の目標を階層管理し進捗をリアルタイム共有',
+    description: '会社・部署・チーム・個人の目標を階層的に管理し、進捗状況をリアルタイムで共有するWebアプリです。目標の親子関係による階層ツリー表示、進捗の自動集計（子目標→親目標）、テンプレートからの目標作成、アクション・タスク紐付け、振り返りレビュー記録を搭載。ダッシュボードでは進捗分布ドーナツチャート、組織別進捗バーチャート、アラート一覧を表示。レポートは目標別・組織別・個人別サマリーと階層ツリーの4種。アラート自動検出（進捗遅れ・未更新・期限接近）、リマインドメール、達成通知などトリガー3種。14シート構成、10画面のSPA。配色は良い→悪い=青→緑→黄→赤のルール。フルレスポンシブ対応。',
+    tags: ['目標管理', 'OKR', '進捗共有', 'ダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwBRaZ7f6zRdwvVEQFstm2CqKXPuKj5dkd0LZ8FGzd_YoIhhE5vn0HJOqmcuBgsHMfu/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1wKDvqT04la1cxAZq8jWeghnbLvMvUFHTU-vE7uphtU4/edit',
+    manualUrl: '/manuals/goal-sharing-board.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
