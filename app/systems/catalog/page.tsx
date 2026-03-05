@@ -986,6 +986,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1stwxLXus9bku6DmaAfS-T-yZAw6pB5JWbJ5fnLWpAWY/edit',
     manualUrl: '/manuals/naiken-reservation-manager.txt',
   },
+  {
+    id: '89',
+    name: '出席管理＋月謝計算システム',
+    tagline: '出席・月謝・請求・入金・振替を一元管理',
+    description: '学習塾・スクール向けの出席管理と月謝計算を一元管理するWebアプリケーションです。出席一括登録（出席/欠席/遅刻/早退/振替）、月謝自動計算（月固定/回数制/従量制/日割り対応）、請求書一括生成・メール送付、入金登録・自動照合、未納段階別催促（3日/10日/20日/3ヶ月）、振替授業追跡管理、休会・復会処理、月次売上レポート・コース別分析・講師別コマ数集計、経営ダッシュボード（売上推移・コース別生徒数）を搭載。22シート構成、9個の自動トリガー、8画面のSPA。Soft UIデザインでフルレスポンシブ対応。',
+    tags: ['出席管理', '月謝計算', '請求書自動生成', '未納催促'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzRXm1t4vnksx1kj6S6MNd3JGBlnHpoPTK6q5IL5f2koHvBzI54h0lJC7jj5QR6WE5Reg/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ahmNTukCT0gwj7X_fAyW1IQ1zagzNoKj9JpOKbdKnYg/edit?gid=0#gid=0',
+    manualUrl: '/manuals/attendance-tuition-manager.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
