@@ -1074,6 +1074,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/10cdc0Ndg9gvXPq2LfijKsn5mJVXAm1Q1c2-sLif4l-g/edit?gid=0#gid=0',
     manualUrl: '/manuals/diet-record.txt',
   },
+  {
+    id: '97',
+    name: '禁煙・禁酒トラッカー',
+    tagline: '禁煙・禁酒の継続日数と節約金額を自動追跡しバッジで達成感を可視化する習慣改善アプリ',
+    description: '禁煙・禁酒の日次記録（継続/失敗）、継続日数・節約金額の自動計算、目標設定・進捗管理、バッジ・実績システム（継続日数8種+節約金額5種の計13種）を搭載した習慣改善Webアプリです。ダッシュボードでは継続日数・節約金額・獲得バッジ数・最終失敗日の統計カード、目標プログレスバー、週間推移チャートを表示。失敗記録では消費量・金額・理由・状況（感情/トリガー/場所/時間帯）を詳細記録し、失敗分析ドーナツチャートで弱点を可視化。ジャーナル機能で日々の感情や工夫を記録。週次・月次レポート自動生成、リマインダー通知、バッジ達成通知など8種のトリガー。データエクスポート（CSV）対応。17シート構成、11画面のSPA。Soft UIデザイン、ダーク/ライトモード、フルレスポンシブ対応。テストデータ一括挿入/クリア機能付き。',
+    tags: ['禁煙', '禁酒', '習慣改善', 'モチベーション管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycby_Gxhpw2ad628yMQOLm4ee_Z11bvbeXEL7eFZqzUZ3gOoQ6_kM6BOFli8vrnugWUPP/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1HdBMxzaHYtCcq7D0tBLeO8M8d_OfTRYeiqwGnFOZNIk/edit?gid=0#gid=0',
+    manualUrl: '/manuals/quit-tracker.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
