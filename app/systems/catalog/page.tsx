@@ -1107,6 +1107,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1lhkT3HqlLHqYIdFcx7dovili-1-LzFNyIDwTDXILh6I/edit',
     manualUrl: '/manuals/report-template-enforcer.txt',
   },
+  {
+    id: '100',
+    name: 'タスク先送り防止',
+    tagline: '重要タスクの先送りをペナルティ制度と可視化で防止するタスク管理システム',
+    description: '重要だが緊急でないタスクの先送りを防ぐためのタスク管理ウェブアプリです。タスク登録・進捗管理、期限切れタスクへの自動ペナルティ付与、目標とタスクの紐付けによる進捗自動計算、ダッシュボードでの全体状況可視化（ステータス別・カテゴリ別グラフ）、チームメンバー間でのタスク共有・コメント機能、レポート生成・CSVエクスポート、リマインダー通知を搭載。ペナルティルール設定（期限切れ日数に応じたポイント減算）で先送り抑止力を強化。日次/週次/月次の自動集計トリガー8種搭載。ユーザー管理・カテゴリ管理・目標管理・操作ログ・システム設定の管理画面完備。テストデータ一括挿入/クリア機能付き。20シート構成、10画面SPA、Soft UIデザイン、フルレスポンシブ対応。',
+    tags: ['タスク管理', 'ペナルティ制度', '目標管理', '先送り防止'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwhgdMEwYnfPa7DlfxLPJ0FltsgibWqpuykq3ud5gMq5XsJOsE_Pdi41Vm0aYH3sY4w6g/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1mDb0DgSlHJd_PHrQl9VkOfziH5UARSpkZyv2ghl6-5k/edit?gid=0#gid=0',
+    manualUrl: '/manuals/task-procrastination-prevention.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
