@@ -1,0 +1,221 @@
+# 顧客ランク自動分類（RFM）システム仕様書
+
+## 1. システム概要
+
+### 1.1 基本情報
+- システム名: 顧客ランク自動分類（RFM）
+- バージョン: 1.0.0
+- 提供形態: Google Apps Script (GAS) ウェブアプリ
+- スプレッドシートID: 1uQOsVim0PYvHv9e3B9ic55USEnEdvew8DZsuhDcL4VM
+- GASスクリプトID: 1L_xok2JBwSxpv90iNX1wrHaibiG1N0Pf_nTr7FaSRDiSghbw-wWVoi3k
+- デプロイメントID: AKfycbwYn8uAPW16oEs7MuY2LDQQ2fIui8hNd7bP-nDSbPfM47OERiLK2XU1fsVUUpDhl__h
+- Web App URL: https://script.google.com/macros/s/AKfycbwYn8uAPW16oEs7MuY2LDQQ2fIui8hNd7bP-nDSbPfM47OERiLK2XU1fsVUUpDhl__h/exec
+
+### 1.2 システムの目的
+購入履歴データからRFM分析（Recency/Frequency/Monetary）を自動計算し、顧客をランク別に自動分類するシステム。施策管理・レポート出力・ダッシュボード可視化を統合したワンストップの顧客管理ウェブアプリ。
+
+### 1.3 技術スタック
+- フロントエンド: HTML/CSS/JavaScript SPA（Index.html単一ファイル）
+- バックエンド: Google Apps Script (Code.gs)
+- データベース: Google Spreadsheet（18シート構成）
+- UIデザイン: Soft UI / Neumorphic デザイン
+- グラフ描画: Chart.js（遅延読み込み）
+- デプロイ: clasp（自動化スクリプト付き）
+
+### 1.4 対象ユーザー
+- EC事業者、小売業、サービス業の顧客管理担当者
+- マーケティング担当者
+- 経営分析担当者
+
+---
+
+## 2. 主要機能
+
+### 2.1 RFMスコア自動計算
+- Recency（最終購入日からの経過日数）
+- Frequency（購入回数）
+- Monetary（合計購入金額）
+- 各指標を5段階スコア（1-5）で自動評価
+- スコア閾値はカスタマイズ可能
+
+### 2.2 顧客ランク自動分類
+- RFMスコア合計に基づく自動ランク付け
+- デフォルトランク: VIP、優良、一般、休眠、離脱
+- ランク名・条件・表示色はカスタマイズ可能
+- ランク変動履歴の自動記録
+
+### 2.3 顧客管理
+- 顧客一覧表示（ページネーション・ソート・検索・ランクフィルタ）
+- 顧客詳細画面（基本情報/RFM履歴/購入履歴/施策履歴タブ切替）
+- 顧客の新規登録・編集・無効化
+- タグ管理（複数タグ付与・カテゴリ分類）
+
+### 2.4 購入履歴インポート
+- CSVファイルインポート（ドラッグ&ドロップ対応）
+- プレビュー表示・バリデーション
+- インポート履歴管理
+
+### 2.5 施策管理
+- 施策記録（対象顧客・施策内容・チャネル・効果記録）
+- テンプレート管理
+- 施策実行履歴
+
+### 2.6 レポート
+- 期間指定レポート生成
+- ランク分布集計
+- RFMスコア再計算（手動トリガー）
+
+### 2.7 ダッシュボード
+- 顧客数サマリー（総数/アクティブ/新規/休眠）
+- ランク分布チャート（ドーナツグラフ）
+- RFMスコア分布チャート（棒グラフ）
+- 最近のアクティビティ表示
+
+### 2.8 設定管理
+- RFM設定（スコア閾値カスタマイズ）
+- ランク設定（ランク名・条件・色）
+- ユーザー管理（管理者のみ）
+- 店舗/チャネル管理
+- タグ管理
+- システム設定
+
+---
+
+## 3. データ構造（スプレッドシート18シート）
+
+| # | シート名 | 用途 |
+|---|---------|------|
+| 1 | 顧客マスタ | 顧客基本情報 |
+| 2 | 購入履歴 | 購入トランザクションデータ |
+| 3 | RFMスコア | 計算済みRFMスコア |
+| 4 | RFMスコア履歴 | RFMスコア変動履歴 |
+| 5 | 顧客ランク | 現在のランク割当 |
+| 6 | ランク変動履歴 | ランク変動ログ |
+| 7 | 施策管理 | 施策記録データ |
+| 8 | 施策テンプレート | 施策テンプレート |
+| 9 | 通知テンプレート | 通知テンプレート |
+| 10 | タグマスタ | タグ定義 |
+| 11 | 顧客タグ | 顧客-タグ紐付け |
+| 12 | インポート履歴 | CSVインポートログ |
+| 13 | 通知ログ | 通知送信履歴 |
+| 14 | RFM設定 | RFMスコア閾値設定 |
+| 15 | ランク設定 | ランク条件設定 |
+| 16 | 店舗チャネル | 店舗/チャネルマスタ |
+| 17 | ユーザー | システムユーザー |
+| 18 | システム設定 | 各種設定値 |
+
+---
+
+## 4. 時限トリガー（8本）
+
+| トリガー | 実行間隔 | 処理内容 |
+|---------|---------|---------|
+| triggerRfmCalc | 毎日 | RFMスコア全顧客再計算 |
+| triggerRankUpdate | 毎日 | 顧客ランク更新 |
+| triggerDailyReport | 毎日 | 日次レポート生成 |
+| triggerWeeklyReport | 毎週 | 週次レポート生成 |
+| triggerMonthlyReport | 毎月 | 月次レポート生成 |
+| triggerNotification | 毎時 | 通知チェック・送信 |
+| triggerDataCleanup | 毎週 | 古いデータのクリーンアップ |
+| triggerBackup | 毎日 | バックアップ処理 |
+
+---
+
+## 5. API設計
+
+### バックエンド関数
+- gasApiGet(action, params): GET系API統合エンドポイント
+- gasApiPost(action, data): POST系API統合エンドポイント
+
+### 主要アクション一覧
+| アクション | メソッド | 説明 |
+|-----------|---------|------|
+| getDashboard | GET | ダッシュボードデータ取得 |
+| getCustomers | GET | 顧客一覧取得（ページネーション対応） |
+| getCustomerDetail | GET | 顧客詳細取得 |
+| saveCustomer | POST | 顧客保存（新規/更新） |
+| deleteCustomer | POST | 顧客無効化 |
+| importPurchase | POST | 購入履歴インポート |
+| getRfmSettings | GET | RFM設定取得 |
+| saveRfmSettings | POST | RFM設定保存 |
+| getRankSettings | GET | ランク設定取得 |
+| saveRankSetting | POST | ランク設定保存 |
+| getPromos | GET | 施策一覧取得 |
+| savePromo | POST | 施策保存 |
+| getReports | GET | レポート取得 |
+| generateReport | POST | レポート生成 |
+| getTags | GET | タグ一覧取得 |
+| saveTags | POST | タグ保存 |
+| assignTag | POST | 顧客タグ付与 |
+| removeTag | POST | 顧客タグ解除 |
+| getChannels | GET | チャネル一覧取得 |
+| saveChannel | POST | チャネル保存 |
+| getUsers | GET | ユーザー一覧取得 |
+| saveUser | POST | ユーザー保存 |
+| getSystemSettings | GET | システム設定取得 |
+| saveSystemSettings | POST | システム設定保存 |
+| triggerRfmCalc | POST | RFMスコア手動再計算 |
+
+---
+
+## 6. UI/UXデザイン
+
+### デザインシステム
+- Soft UI（Neumorphism）ベース
+- カラーパレット: 背景#e0e5ec、プライマリ#4d7bf3、テキスト#4a4a4a
+- フォント: Nunito（Google Fonts）
+- アイコン: インラインSVG（外部ライブラリ不使用）
+- レスポンシブ対応: 320px〜1920px
+
+### 画面構成
+- サイドバーナビゲーション（モバイルはハンバーガーメニュー）
+- ダッシュボード
+- 顧客一覧 / 顧客詳細
+- 購入履歴インポート
+- 施策管理（記録/テンプレート/履歴タブ）
+- レポート
+- 設定（RFM/ランク/ユーザー/チャネル/タグ/システムタブ）
+
+---
+
+## 7. ファイル構成
+
+```
+顧客ランク自動分類（RFM）/
+  gas/
+    .clasp.json          - claspプロジェクト設定
+    .gas-deploy-config   - デプロイメントID設定
+    appsscript.json      - GASマニフェスト
+    Code.gs              - バックエンド全コード
+    Index.html           - フロントエンドSPA（HTML/CSS/JS一体）
+  scripts/
+    deploy-gas.sh        - デプロイ自動化スクリプト
+  package.json           - npm scripts（deploy）
+```
+
+---
+
+## 8. 初期セットアップ手順
+
+1. GASエディタで `initializeSheets()` を実行（18シート自動作成）
+2. デフォルト管理者: admin@example.com / admin123
+3. RFM設定・ランク設定がデフォルト値で初期化される
+4. 顧客データ・購入履歴をCSVインポートまたは手動登録
+
+---
+
+## 9. デプロイ方法
+
+```bash
+npm run deploy
+```
+内部で `scripts/deploy-gas.sh` が実行され、clasp push + clasp deploy を自動実行。
+
+---
+
+## 10. セキュリティ
+
+- GAS WebApp: ANYONE_ANONYMOUS（URLを知っている人がアクセス可能）
+- executeAs: USER_DEPLOYING（デプロイユーザーの権限で実行）
+- フロントエンド-バックエンド通信: google.script.run（GAS内部通信）
+- XSS対策: HTMLエスケープ、イベント委任パターン使用
