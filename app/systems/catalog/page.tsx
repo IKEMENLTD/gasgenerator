@@ -1162,6 +1162,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1af3q64ao96l6YYacpVdqVyuuA8w0RBBsj_Mt8_T0XLQ/edit?gid=0#gid=0',
     manualUrl: '/manuals/gratitude-journal.txt',
   },
+  {
+    id: '105',
+    name: '社内連絡の既読管理',
+    tagline: '社内連絡の配信・既読状況を一元管理し、伝達漏れを防止するシステム',
+    description: '社内連絡の配信・既読状況を一元管理するWebアプリです。「誰が読んで誰が読んでいないか」を可視化し、未読者への自動リマインドや確認必須連絡の強制確認機能により、伝達漏れを防止します。連絡管理（下書き/配信/アーカイブ）、配信対象の柔軟な指定（全社/部署/個人/役職）、既読状況のリアルタイム確認、手動・自動リマインド送信、確認必須連絡の承認管理（確認証跡記録付き）を搭載。ダッシュボードで配信中連絡数・全体既読率・未読アラート・期限接近・確認必須未完了を統計カードで表示、既読率推移グラフ（過去6ヶ月）・部署別既読率比較チャート、社員別WORST10ランキング。レポート機能は社員別/部署別/カテゴリ別/月次の4種サブタブで分析可能。アラート設定（未読継続/期限接近/既読率低下）によるカスタム通知。5種の自動トリガー（毎時リマインド/毎朝サマリー更新/夕方アラート/週次部署長レポート/月次集計）。メール通知対応。13シート構成、8タブSPA。',
+    tags: ['既読管理', '社内連絡', 'リマインド', 'レポート'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzfkG3_L5nDLf6rj8f1NILF9AnH0YX3zN1_pZAJX2Vm73wkn6y7yMvz7L8S5EhmOcGl/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1KjHe1cibdOnixQGi7rp2yB6KqwiS9KXDuJOF_dQ6lSA/edit',
+    manualUrl: '/manuals/kidoku-kanri.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
