@@ -1085,6 +1085,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1HdBMxzaHYtCcq7D0tBLeO8M8d_OfTRYeiqwGnFOZNIk/edit?gid=0#gid=0',
     manualUrl: '/manuals/quit-tracker.txt',
   },
+  {
+    id: '98',
+    name: '学習時間記録',
+    tagline: '学習時間をタイマー/手動で記録し目標達成をグラフとバッジで可視化する学習管理アプリ',
+    description: '学習時間の記録・分析・目標管理を一体化したWebアプリです。タイマー機能（開始/一時停止/再開/停止）と手動入力で学習時間を記録。ダッシュボードでは今日・今週・今月の学習時間と目標達成率、直近7日間の棒グラフ、カテゴリ別円グラフを表示。学習目標の設定（全体時間/カテゴリ別/カスタム）と進捗の自動計算。バッジシステム（連続学習日数・総学習時間で7種）でモチベーション維持。学習記録の検索・フィルタリング・CSV出力、カテゴリ管理（色設定付き）、週間/月間/年間の分析グラフ、通知機能を搭載。19シート構成のSPA。Soft UIデザイン、フルレスポンシブ対応。テストデータ一括挿入/クリア機能付き。',
+    tags: ['学習管理', 'タイマー', '目標達成', 'データ分析'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxtiBkBabQhGAa03Chx8lMoyuh4unlMR8VTOM5K2IvNtC0qWYslitjkHuJlh-SQ4MPC/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1UBFETiI8agZEQrPv0iYiZAoNQmZykOZi6Md7s_SXEsw/edit?gid=0#gid=0',
+    manualUrl: '/manuals/study-time-tracker.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
