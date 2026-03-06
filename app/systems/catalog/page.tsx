@@ -1063,6 +1063,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1wKDvqT04la1cxAZq8jWeghnbLvMvUFHTU-vE7uphtU4/edit',
     manualUrl: '/manuals/goal-sharing-board.txt',
   },
+  {
+    id: '96',
+    name: 'ダイエット記録',
+    tagline: '体重・食事・運動を一元管理し目標達成をサポートするダイエット支援アプリ',
+    description: '体重・体脂肪率の日次記録、食事内容と栄養素（カロリー・たんぱく質・脂質・炭水化物）の記録、運動内容とMETs値ベースの消費カロリー自動計算を搭載したダイエット支援Webアプリです。ダッシュボードでは体重推移グラフ（Chart.js）、カロリー比較チャート、進捗バー、主要統計カードを表示。目標設定機能では目標体重・期日・ご褒美・宣言文を管理し進捗率をリアルタイム更新。バッジ・アチーブメント機能（連続記録・減量達成・運動回数など8種）でゲーミフィケーション。週次・月次レポート自動生成、リマインダー通知、記録途絶え検知通知、目標達成通知など8種のトリガー。データエクスポート（CSV/JSON）対応。18シート構成、10画面のSPA。Soft UIデザイン、フルレスポンシブ対応。',
+    tags: ['ダイエット', '体重管理', '健康記録', 'カロリー管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzaLocMbe4scuKD0knOS42YF5A3dEiylO1Qp2i-xVPvjJmEPt1CUuaWOVbXqVvWn3Wslw/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/10cdc0Ndg9gvXPq2LfijKsn5mJVXAm1Q1c2-sLif4l-g/edit?gid=0#gid=0',
+    manualUrl: '/manuals/diet-record.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
