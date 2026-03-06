@@ -4,7 +4,7 @@
 
 ### 1.1 基本情報
 - システム名: 顧客ランク自動分類（RFM）
-- バージョン: 1.0.0
+- バージョン: 1.0.1
 - 提供形態: Google Apps Script (GAS) ウェブアプリ
 - スプレッドシートID: 1uQOsVim0PYvHv9e3B9ic55USEnEdvew8DZsuhDcL4VM
 - GASスクリプトID: 1L_xok2JBwSxpv90iNX1wrHaibiG1N0Pf_nTr7FaSRDiSghbw-wWVoi3k
@@ -21,6 +21,7 @@
 - UIデザイン: Soft UI / Neumorphic デザイン
 - グラフ描画: Chart.js（遅延読み込み）
 - デプロイ: clasp（自動化スクリプト付き）
+- フロントエンド通信: google.script.run（GAS内部通信、fetchは不使用）
 
 ### 1.4 対象ユーザー
 - EC事業者、小売業、サービス業の顧客管理担当者
@@ -49,6 +50,7 @@
 - 顧客詳細画面（基本情報/RFM履歴/購入履歴/施策履歴タブ切替）
 - 顧客の新規登録・編集・無効化
 - タグ管理（複数タグ付与・カテゴリ分類）
+- 登録後のデータ即時反映（SpreadsheetApp.flush()による書き込み確定）
 
 ### 2.4 購入履歴インポート
 - CSVファイルインポート（ドラッグ&ドロップ対応）
@@ -85,24 +87,31 @@
 
 | # | シート名 | 用途 |
 |---|---------|------|
-| 1 | 顧客マスタ | 顧客基本情報 |
-| 2 | 購入履歴 | 購入トランザクションデータ |
-| 3 | RFMスコア | 計算済みRFMスコア |
-| 4 | RFMスコア履歴 | RFMスコア変動履歴 |
-| 5 | 顧客ランク | 現在のランク割当 |
-| 6 | ランク変動履歴 | ランク変動ログ |
-| 7 | 施策管理 | 施策記録データ |
-| 8 | 施策テンプレート | 施策テンプレート |
-| 9 | 通知テンプレート | 通知テンプレート |
-| 10 | タグマスタ | タグ定義 |
-| 11 | 顧客タグ | 顧客-タグ紐付け |
-| 12 | インポート履歴 | CSVインポートログ |
-| 13 | 通知ログ | 通知送信履歴 |
-| 14 | RFM設定 | RFMスコア閾値設定 |
-| 15 | ランク設定 | ランク条件設定 |
-| 16 | 店舗チャネル | 店舗/チャネルマスタ |
-| 17 | ユーザー | システムユーザー |
-| 18 | システム設定 | 各種設定値 |
+| 1 | M_顧客 | 顧客基本情報 |
+| 2 | T_購入履歴 | 購入トランザクションデータ |
+| 3 | T_顧客RFMスコア | 計算済みRFMスコア |
+| 4 | A_日次RFMサマリー | RFMスコア日次集計 |
+| 5 | A_月次RFM推移 | 月次ランク推移 |
+| 6 | M_ランク設定 | ランク条件設定 |
+| 7 | T_施策実行履歴 | 施策記録データ |
+| 8 | M_施策テンプレート | 施策テンプレート |
+| 9 | M_通知テンプレート | 通知テンプレート |
+| 10 | M_タグ | タグ定義 |
+| 11 | T_顧客タグ付与履歴 | 顧客-タグ紐付け |
+| 12 | L_操作ログ | 操作ログ |
+| 13 | T_システム通知ログ | 通知送信履歴 |
+| 14 | M_RFM設定 | RFMスコア閾値設定 |
+| 15 | A_施策効果分析 | 施策効果分析集計 |
+| 16 | M_店舗/チャネル | 店舗/チャネルマスタ |
+| 17 | M_ユーザー | システムユーザー |
+| 18 | S_システム設定 | 各種設定値 |
+
+### シート自動作成機能
+- getSheet()関数がシートの存在チェックとヘッダー自動付与を実行
+- SHEET_HEADERS定数にて全18シートのヘッダー定義を保持
+- シートが存在しない場合: 自動作成+ヘッダー追加
+- シートが空の場合: ヘッダー自動追加
+- initializeSheets()でデフォルトデータ（管理者、RFM設定、ランク設定等）を一括投入
 
 ---
 
@@ -126,35 +135,44 @@
 ### バックエンド関数
 - gasApiGet(action, params): GET系API統合エンドポイント
 - gasApiPost(action, data): POST系API統合エンドポイント
+- 戻り値: JSON.stringify済み文字列
 
-### 主要アクション一覧
-| アクション | メソッド | 説明 |
-|-----------|---------|------|
-| getDashboard | GET | ダッシュボードデータ取得 |
-| getCustomers | GET | 顧客一覧取得（ページネーション対応） |
-| getCustomerDetail | GET | 顧客詳細取得 |
-| saveCustomer | POST | 顧客保存（新規/更新） |
-| deleteCustomer | POST | 顧客無効化 |
-| importPurchase | POST | 購入履歴インポート |
-| getRfmSettings | GET | RFM設定取得 |
-| saveRfmSettings | POST | RFM設定保存 |
-| getRankSettings | GET | ランク設定取得 |
-| saveRankSetting | POST | ランク設定保存 |
-| getPromos | GET | 施策一覧取得 |
-| savePromo | POST | 施策保存 |
-| getReports | GET | レポート取得 |
-| generateReport | POST | レポート生成 |
-| getTags | GET | タグ一覧取得 |
-| saveTags | POST | タグ保存 |
-| assignTag | POST | 顧客タグ付与 |
-| removeTag | POST | 顧客タグ解除 |
-| getChannels | GET | チャネル一覧取得 |
-| saveChannel | POST | チャネル保存 |
-| getUsers | GET | ユーザー一覧取得 |
-| saveUser | POST | ユーザー保存 |
-| getSystemSettings | GET | システム設定取得 |
-| saveSystemSettings | POST | システム設定保存 |
-| triggerRfmCalc | POST | RFMスコア手動再計算 |
+### 主要アクション一覧（GET）
+| アクション | 説明 |
+|-----------|------|
+| getDashboard | ダッシュボードデータ取得 |
+| getCustomers | 顧客一覧取得（ページネーション・ソート・検索・フィルタ対応） |
+| getCustomerDetail | 顧客詳細取得（タグ・RFM履歴・購入履歴・施策履歴含む） |
+| getCustomerSuggestions | 顧客検索候補取得 |
+| getRfmSettings | RFM設定取得 |
+| getRankSettings | ランク設定取得 |
+| getPromoTemplates | 施策テンプレート取得 |
+| getPromoHistory | 施策実行履歴取得 |
+| getReports | レポート取得 |
+| getTags | タグ一覧取得 |
+| getChannels | チャネル一覧取得 |
+| getUsers | ユーザー一覧取得 |
+| getSystemSettings | システム設定取得 |
+| getNotifications | 通知一覧取得 |
+
+### 主要アクション一覧（POST）
+| アクション | 説明 |
+|-----------|------|
+| saveCustomer | 顧客保存（新規/更新、flush付き） |
+| deleteCustomer | 顧客無効化 |
+| importPurchase | 購入履歴CSVインポート |
+| saveRfmSetting | RFM設定保存 |
+| saveRankSetting | ランク設定保存 |
+| savePromoTemplate | 施策テンプレート保存 |
+| recordPromo | 施策記録 |
+| saveTag | タグ保存 |
+| assignTag | 顧客タグ付与 |
+| removeTag | 顧客タグ解除 |
+| saveChannel | チャネル保存 |
+| saveUser | ユーザー保存 |
+| saveSystemSetting | システム設定保存 |
+| runRfmCalc | RFMスコア手動再計算 |
+| generateReport | レポート生成 |
 
 ---
 
@@ -176,6 +194,10 @@
 - レポート
 - 設定（RFM/ランク/ユーザー/チャネル/タグ/システムタブ）
 
+### イベント処理
+- data-action属性によるイベント委任パターン（onclick直書き最小化）
+- A()ヘルパー関数でクリック可能要素を安全に生成（クォート衝突回避）
+
 ---
 
 ## 7. ファイル構成
@@ -185,19 +207,21 @@
   gas/
     .clasp.json          - claspプロジェクト設定
     .gas-deploy-config   - デプロイメントID設定
-    appsscript.json      - GASマニフェスト
-    Code.gs              - バックエンド全コード
-    Index.html           - フロントエンドSPA（HTML/CSS/JS一体）
+    appsscript.json      - GASマニフェスト（V8ランタイム）
+    Code.gs              - バックエンド全コード（SHEET_HEADERS定数、API、CRUD、トリガー）
+    Index.html           - フロントエンドSPA（HTML/CSS/JS一体、Soft UI）
   scripts/
-    deploy-gas.sh        - デプロイ自動化スクリプト
+    deploy-gas.sh        - デプロイ自動化スクリプト（clasp push + deploy）
   package.json           - npm scripts（deploy）
+  顧客ランク自動分類（RFM）仕様書.txt - 本ファイル
 ```
 
 ---
 
 ## 8. 初期セットアップ手順
 
-1. GASエディタで `initializeSheets()` を実行（18シート自動作成）
+1. GASエディタで `initializeSheets()` を実行（18シート自動作成+デフォルトデータ投入）
+   - ※未実行でもgetSheet()がシート・ヘッダーを自動作成するため基本動作は可能
 2. デフォルト管理者: admin@example.com / admin123
 3. RFM設定・ランク設定がデフォルト値で初期化される
 4. 顧客データ・購入履歴をCSVインポートまたは手動登録
@@ -209,7 +233,7 @@
 ```bash
 npm run deploy
 ```
-内部で `scripts/deploy-gas.sh` が実行され、clasp push + clasp deploy を自動実行。
+内部で `scripts/deploy-gas.sh` が実行され、clasp push --force + clasp deploy -i DEPLOYMENT_ID を自動実行。
 
 ---
 
@@ -217,5 +241,34 @@ npm run deploy
 
 - GAS WebApp: ANYONE_ANONYMOUS（URLを知っている人がアクセス可能）
 - executeAs: USER_DEPLOYING（デプロイユーザーの権限で実行）
-- フロントエンド-バックエンド通信: google.script.run（GAS内部通信）
-- XSS対策: HTMLエスケープ、イベント委任パターン使用
+- フロントエンド-バックエンド通信: google.script.run（GAS内部通信、CORS不要）
+- XSS対策: HTMLエスケープ、イベント委任パターン、A()ヘルパー関数使用
+- ログイン画面なし（自動ログイン、URLアクセス制御のみ）
+
+---
+
+## 11. 既知の技術的注意点
+
+### GAS HTML サニタイザー制約
+- GAS の HtmlService は独自のHTMLサニタイザーを持つ
+- \x27（シングルクォートエスケープ）はサニタイザーにブロックされる
+- JS文字列内でのHTML属性生成時にクォート衝突が発生しやすい
+- 解決策: data-action属性によるイベント委任 + A()ヘルパー関数
+
+### データ永続化
+- SpreadsheetApp.flush()をsaveCustomer等の書き込み後に呼び出し
+- getSheet()でシート存在チェック+ヘッダー自動作成（SHEET_HEADERS定数参照）
+- 後続のgetSheetData()で最新データを確実に取得
+
+### Chart.js遅延読み込み
+- CDN読み込みがGAS iframeサンドボックスでページロードをブロックする問題を回避
+- loadChartJs()関数で必要時にのみ動的読み込み
+
+---
+
+## 12. 更新履歴
+
+| バージョン | 日付 | 内容 |
+|-----------|------|------|
+| 1.0.0 | 2026-03-06 | 初版リリース |
+| 1.0.1 | 2026-03-06 | 顧客登録が反映されないバグ修正（flush追加、ヘッダー自動作成、ログインコード残骸削除） |
