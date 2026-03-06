@@ -1151,6 +1151,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1BtXF5UvCYN067PpNfDgmlyV0cnzeK3QtBP6_CnlKVqo/edit?gid=0#gid=0',
     manualUrl: '/manuals/reading-output-management.txt',
   },
+  {
+    id: '104',
+    name: '感謝日記',
+    tagline: '日々の感謝を記録・振り返りできる感謝日記アプリ',
+    description: '日々の感謝を記録し、カテゴリ別・気分別に振り返りできるWebアプリです。感謝記録のCRUD、キーワード検索（インクリメンタルサーチ対応）、日次/週次/月次の自動集計、目標管理（進捗バー付き）、12種バッジによるゲーミフィケーション（記録数/連続日数/カテゴリ数/気分/目標達成）、カスタムカテゴリ管理、5段階気分記録、リマインダー通知（毎日21時）、CSVエクスポート（BOM付きUTF-8）、プロフィール管理を搭載。ダッシュボードで総記録数・連続日数・平均気分・直近7日グラフを可視化。8個の自動トリガー（リマインダー/日次集計/週次集計/月次集計/バッジチェック/目標進捗/通知クリーンアップ/バックアップ）。Soft UIデザイン、フルレスポンシブ対応。20シート構成。',
+    tags: ['感謝日記', '気分記録', '目標管理', 'バッジ'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbz5srPvNINJK7Ad6UIz0FJ43U-RMLaX1KQJIRoHAC3hKIXwlMROVWjNTnVpIXiEWMNB/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1af3q64ao96l6YYacpVdqVyuuA8w0RBBsj_Mt8_T0XLQ/edit?gid=0#gid=0',
+    manualUrl: '/manuals/gratitude-journal.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
