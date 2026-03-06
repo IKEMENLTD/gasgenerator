@@ -1140,6 +1140,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1x1Sco6FgkurW_kOYwFbQI-o3hj4iqR_zh9Q6mNmdWls/edit?gid=0#gid=0',
     manualUrl: '/manuals/side-job-time-management.txt',
   },
+  {
+    id: '103',
+    name: '読書記録＋アウトプット管理',
+    tagline: '読書の学びを確実にアウトプットに変える読書活動総合管理システム',
+    description: '読書記録・学びメモ・アウトプット計画/実績を一元管理し、知識の定着と活用を支援するWebアプリです。ISBN検索によるGoogle Books API連携で書籍情報を自動取得。読書ステータス管理（未読/読書中/読了/中断）、5段階評価、感想記録。学びメモではページ/章と紐付けてハイライトやキーワードを記録。アウトプット計画（ブログ/SNS/プレゼン等8タイプ）の立案から実績登録まで一貫管理。月間・年間目標設定と進捗トラッキング。8種バッジによるゲーミフィケーション（初心者マーク/読書家/多読家/月間読書王/アウトプットマスター等）。ダッシュボードで月別推移グラフ・カテゴリ別分析・目標進捗を可視化。日次/月次の自動集計、バッジ自動判定、データバックアップの各トリガー搭載。テストデータ一括挿入/クリア機能付き。Soft UIデザイン、フルレスポンシブ対応。19シート構成。',
+    tags: ['読書管理', 'アウトプット管理', '目標管理', 'バッジ'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbx0JpvUJbkKo6gKB2LtL0c6k6KCLrAxo5YRpmacB3Ru0kL9wCJ-co7i-4dH8oy0onGurQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1BtXF5UvCYN067PpNfDgmlyV0cnzeK3QtBP6_CnlKVqo/edit?gid=0#gid=0',
+    manualUrl: '/manuals/reading-output-management.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
