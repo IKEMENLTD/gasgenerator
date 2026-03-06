@@ -1193,7 +1193,9 @@ SUPABASE_SERVICE_KEY=eyJ...(service_role key)
 LINE_CHANNEL_ACCESS_TOKEN=xxx
 
 # その他
-NETLIFY_NEXT_PLUGIN_SKIP=true  # 重要: Next.jsプラグイン回避
+# ⚠️ NETLIFY_NEXT_PLUGIN_SKIP=true は「メインサイト」には絶対に設定しないこと！
+# これを設定するとNext.jsプラグインがスキップされ、全ページ404になる。
+# netlify-tracking（代理店LP）専用の設定。メインサイト（taskmateai.net）では不要。
 NETLIFY=true  # 自動設定
 ```
 
@@ -1246,7 +1248,7 @@ services:
 # SUPABASE_URL
 # SUPABASE_SERVICE_KEY
 # LINE_CHANNEL_ACCESS_TOKEN
-# NETLIFY_NEXT_PLUGIN_SKIP=true
+# ⚠️ NETLIFY_NEXT_PLUGIN_SKIP=true ← メインサイトには設定禁止（全ページ404の原因になる）
 ```
 
 ---

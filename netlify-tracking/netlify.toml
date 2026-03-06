@@ -5,6 +5,9 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # ⚠️ この設定はnetlify-tracking（代理店LP）専用。
+  # メインサイト（taskmateai.net）のNetlify環境変数には絶対に設定しないこと。
+  # メインサイトに設定すると@netlify/plugin-nextjsがスキップされ全ページ404になる。
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
 
 # ===== API Proxy to Render backend =====
