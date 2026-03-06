@@ -1118,6 +1118,28 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1mDb0DgSlHJd_PHrQl9VkOfziH5UARSpkZyv2ghl6-5k/edit?gid=0#gid=0',
     manualUrl: '/manuals/task-procrastination-prevention.txt',
   },
+  {
+    id: '101',
+    name: '読書記録＋アウトプット管理',
+    tagline: '読書の学びを確実にアウトプットに変える読書活動総合管理システム',
+    description: '読書記録・学びメモ・アウトプット計画/実績を一元管理し、知識の定着と活用を支援するWebアプリです。ISBN検索によるGoogle Books API連携で書籍情報を自動取得。読書ステータス管理（未読/読書中/読了/中断）、5段階評価、感想記録。学びメモではページ/章と紐付けてハイライトやキーワードを記録。アウトプット計画（ブログ/SNS/プレゼン等8タイプ）の立案から実績登録まで一貫管理。月間・年間目標設定と進捗トラッキング。8種バッジによるゲーミフィケーション（初心者マーク/読書家/多読家/月間読書王/アウトプットマスター等）。ダッシュボードで月別推移グラフ・カテゴリ別分析・目標進捗を可視化。日次/月次の自動集計、バッジ自動判定、データバックアップの各トリガー搭載。Soft UIデザイン、フルレスポンシブ対応。19シート構成。',
+    tags: ['読書管理', 'アウトプット管理', '目標管理', 'バッジ'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbx0JpvUJbkKo6gKB2LtL0c6k6KCLrAxo5YRpmacB3Ru0kL9wCJ-co7i-4dH8oy0onGurQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1BtXF5UvCYN067PpNfDgmlyV0cnzeK3QtBP6_CnlKVqo/edit?gid=0#gid=0',
+    manualUrl: '/manuals/reading-output-management.txt',
+  },
+  {
+    id: '102',
+    name: '副業時間管理',
+    tagline: '副業の作業時間を記録・分析し、目標達成とモチベーション維持を支援する個人向け時間管理システム',
+    description: '副業に取り組む個人のための時間管理・進捗追跡Webアプリです。複数の副業プロジェクトとタスクを構造的に管理し、作業開始/休憩/終了をワンクリックで記録。週次・月次の目標時間を設定し、ダッシュボードで達成率をリアルタイム表示。カテゴリ別（開発/執筆/学習/リサーチ/デザイン）の時間分析、年間ヒートマップ、過去30日間推移グラフで作業パターンを可視化。6種バッジ（初心者マーク/10h突破/50h突破/100h突破/継続の証/開発エキスパート）によるゲーミフィケーション。日次リマインダー/未記録アラート/週次進捗通知のメール・アプリ内通知。週次・月次レポート生成、CSV/JSONエクスポート対応。日次/週次/月次サマリー自動集計トリガー搭載。テストデータ一括挿入機能付き。Soft UIデザイン、ダークモード対応、フルレスポンシブ。19シート構成。',
+    tags: ['時間管理', '副業管理', '目標管理', 'バッジ'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbx6ilW8gnw3W44gdtedKHEQknhSfLVs5iR0A6tiD1z4LvZTdPAs1O2BsR83KkUf_-T6/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1x1Sco6FgkurW_kOYwFbQI-o3hj4iqR_zh9Q6mNmdWls/edit?gid=0#gid=0',
+    manualUrl: '/manuals/side-job-time-management.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
