@@ -1173,6 +1173,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1KjHe1cibdOnixQGi7rp2yB6KqwiS9KXDuJOF_dQ6lSA/edit',
     manualUrl: '/manuals/kidoku-kanri.txt',
   },
+  {
+    id: '106',
+    name: '次回来店日予測アラート',
+    tagline: '顧客の来店サイクルを自動分析し、次回来店日を予測してアラートを生成するシステム',
+    description: '美容院・歯科医院・整体院・エステサロンなど、顧客のリピートが重要なサービス業向けのWebアプリです。来店履歴から平均来店サイクルを自動計算し、予測来店日を超過した顧客をアラートリスト化します。ダッシュボードで総顧客数・新規・休眠・離反の状況、月別来店数推移グラフ、超過日数別アラート分布、スタッフ別未対応アラート、誕生日近接顧客を一覧表示。顧客管理（基本情報・来店履歴・フォローアップ・カルテ・来店サイクルの5タブ詳細画面）、来店履歴登録（サイクル自動再計算・アラート自動対応済み更新）、来店予測アラート（超過日数バッジ・色分け・ステータス管理・フォロー連携）、フォローアップ履歴（電話/メール/LINE/DM/SMS対応・結果記録）、スタッフ別・店舗別分析レポート、マスタ管理（スタッフ・店舗・メニュー・ユーザー・設定）、CSVインポート/エクスポート機能を搭載。7種の自動トリガー（サイクル再計算/アラート生成/誕生日メール/アラート通知/ステータス更新/月次分析/データクリーンアップ）。17シート構成、8画面SPA、Neumorphism UIデザイン。',
+    tags: ['来店予測', 'アラート', '顧客管理', 'リピート分析'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxTSSpU8z_DKLHWe7L4RI9IlBDTbpOLMIeGmJ832WEbJgB9NY9JkLvtpgD3VlNlen_O/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1Ub89-p2d3Gar9R7dtVkM70GjA7zQlp4dnuZ7u20c3rI/edit?gid=0#gid=0',
+    manualUrl: '/manuals/raiten-yosoku-alert.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
