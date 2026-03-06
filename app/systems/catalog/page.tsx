@@ -1195,6 +1195,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1z_dj8EqlXE-j8i4fO0yXPuHBrB852frk0PKuiokdLHU/edit?gid=0#gid=0',
     manualUrl: '/manuals/asakatsu-kiroku.txt',
   },
+  {
+    id: '108',
+    name: '社内用語辞書',
+    tagline: '社内の略語・専門用語を一元管理し、検索・リクエスト・学習進捗まで支援する用語辞書システム',
+    description: '新人が社内の略語や専門用語が分からず困る問題を解決するWebアプリです。用語の登録・検索・カテゴリ管理に加え、用語リクエスト機能で「この用語を追加してほしい」という声を拾い上げます。閲覧履歴・人気ランキング・検索ログの自動記録により利用状況を可視化。新人向けオンボーディング用語セットで学習進捗を自動追跡し、週次ランキング更新・月次レポート生成も自動化。8画面SPA、11シート、2トリガーで構成。',
+    tags: ['用語管理', '社内辞書', 'オンボーディング', 'ランキング'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyzS4q8nohkFzT1ETtQ4Dn2BJ0E0bRRZNxaqYZxlexTSdMBpjjgvySkjX7gzH2WTycb/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1-IfYYHmDl7z_9LaHVeVkclYZW1pmP-j7EhNUvRYKsNs/edit',
+    manualUrl: '/manuals/shanai-yougo-jisho.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
