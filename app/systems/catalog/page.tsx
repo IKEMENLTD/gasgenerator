@@ -1184,6 +1184,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1Ub89-p2d3Gar9R7dtVkM70GjA7zQlp4dnuZ7u20c3rI/edit?gid=0#gid=0',
     manualUrl: '/manuals/raiten-yosoku-alert.txt',
   },
+  {
+    id: '107',
+    name: '朝活記録',
+    tagline: '早起き習慣化と朝活の記録・分析・モチベーション維持を支援するシステム',
+    description: '毎日の起床時刻・就寝時刻・気分・朝活内容を記録し、早起き習慣の定着を支援するWebアプリです。起床目標の設定と自動達成判定、連続達成日数（ストリーク）の自動計算・可視化、バッジ（実績）システムによるモチベーション維持機能を搭載。週次・月次レポートの自動生成で振り返りを促進し、睡眠時間トラッキングと気分との相関分析で睡眠改善をサポートします。カレンダー表示、記録検索、データCSVエクスポート、メール通知（起床リマインダー・未記録アラート・バッジ獲得通知）にも対応。朝活カテゴリは読書・運動・瞑想・学習など自由に追加可能。17シート構成、9タブSPA、Soft UIデザイン。',
+    tags: ['朝活記録', '習慣化', 'ストリーク', '睡眠分析'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwisnPlBQgpYMjiroqFPWt9i7ku6GQJ8II3tEFK3JDpZnFHbpDPdDwU-BfNRzzvCHAx/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1z_dj8EqlXE-j8i4fO0yXPuHBrB852frk0PKuiokdLHU/edit?gid=0#gid=0',
+    manualUrl: '/manuals/asakatsu-kiroku.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
