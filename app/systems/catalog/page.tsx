@@ -1096,6 +1096,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1UBFETiI8agZEQrPv0iYiZAoNQmZykOZi6Md7s_SXEsw/edit?gid=0#gid=0',
     manualUrl: '/manuals/study-time-tracker.txt',
   },
+  {
+    id: '99',
+    name: '報告テンプレート強制',
+    tagline: '報告フォーマットを統一し必要情報の抜け漏れを防ぐ報告管理システム',
+    description: '報告のフォーマット統一、必須項目バリデーション、品質スコア自動計算、提出状況の可視化、未提出者への自動リマインドまで一元管理できるWebアプリです。テンプレート別の入力フォーム自動生成（テキスト/数値/日付/選択/複数選択）、品質スコア100点満点自動計算（必須項目充足率50点+文字数充足率30点+期限遵守20点）、S/A/B/C/Dランク判定。承認ワークフロー（未承認→承認済/差戻し→再提出）、差戻し時のメール通知。ダッシュボードでは提出数推移・部署別提出率・品質スコア分布・ランキング・不備項目TOP10・連続未提出者アラートを表示。日次チェック自動実行（毎日9時）、週次レポート（毎週月曜10時）、月次サマリー自動生成（毎月1日8時）の3種トリガー搭載。8画面SPA、14シート構成。サンプルデータ（6テンプレート/15項目/8報告者/4アラート設定/4フィードバック）自動登録。フルレスポンシブ対応。',
+    tags: ['報告管理', 'テンプレート', '品質スコア', '承認ワークフロー'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxTMfx8AZAiaeAYGNP6OO8kSTpCZFeD9Mg-agUIXwDjnpM0Eiy0eZk3o04SaFT7SaNCWQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1lhkT3HqlLHqYIdFcx7dovili-1-LzFNyIDwTDXILh6I/edit',
+    manualUrl: '/manuals/report-template-enforcer.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
