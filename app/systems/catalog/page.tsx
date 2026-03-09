@@ -1206,6 +1206,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1-IfYYHmDl7z_9LaHVeVkclYZW1pmP-j7EhNUvRYKsNs/edit',
     manualUrl: '/manuals/shanai-yougo-jisho.txt',
   },
+  {
+    id: '109',
+    name: '仕入先・外注先情報管理',
+    tagline: '仕入先・外注先の基本情報から契約・取引・評価まで一元管理し、担当者不在でも業者情報を共有できるシステム',
+    description: '仕入先・外注先の基本情報、担当者、契約条件、取扱商品、取引履歴、評価、問合せ履歴を一元管理するWebアプリです。業者カテゴリ管理・業者比較分析機能により、最適な発注先選定を支援。契約更新アラート（90日以内）で更新漏れを防止し、業者評価履歴で品質・納期・価格を定量的に記録。ダッシュボードでは業種カテゴリ別・ステータス別の構成比や評価低い業者を一覧表示。10画面SPA、12シート、3トリガー（日次契約チェック・週次サマリー・月次レポート）で構成。',
+    tags: ['仕入管理', '外注管理', '契約管理', '業者評価'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyD5ghVa55BSb-BV6KlNNU88TOZPf4y67CtPuV5AsDRYBY4h0LB-Bj1QG7QKgE0iKGaNg/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1yp0Gv3ZvW-1OTmsAWrAoURr3WDlFx2yoJThFw6XeI_4/edit',
+    manualUrl: '/manuals/shiresaki-gaichuusaki-kanri.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
