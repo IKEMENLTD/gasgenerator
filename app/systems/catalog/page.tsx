@@ -1228,6 +1228,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1aZY7-DMldcvTqb2uVFduvkP0M9Bjvf00RMtPT7XiuZE/edit',
     manualUrl: '/manuals/numeric-validation.txt',
   },
+  {
+    id: '111',
+    name: 'メール送信前チェックリスト',
+    tagline: 'メール送信前のチェックを仕組み化し、宛先間違い・添付忘れ・CC/BCC誤用などの誤送信を未然に防止',
+    description: 'メール送信前にチェックリストの確認を強制し、誤送信を防止するWebアプリです。宛先件数・CC/BCC・添付有無・件名を入力すると、要注意パターン（大量送信・フリーメール・添付忘れ・件名なし等）を自動検出して警告表示。必須チェック項目をすべて確認しないと送信できない仕組みで、ミスを構造的に防止します。送信先ブラックリスト/要確認リスト照合、部署別チェック項目カスタマイズ、ミス報告・傾向分析レポート（個人別/全体/ミス種別）、ダッシュボード（警告率・ミス種別分布・部署別発生率グラフ）を搭載。週次/月次レポート自動生成・メール通知機能付き。10画面SPA、10シート、2トリガー（週次/月次）で構成。',
+    tags: ['メール', '誤送信防止', 'チェックリスト', '分析レポート'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbz2anRVfqnHd9CQnb99BhsJa5nOPgAlsEqqGup3Ehf7xfDZv7pQCtjGWLRjyzjwspufMw/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1KMgWW5m2S5t60oyEkJjTaV1I8WSnKKTnIiIyKGkFS7c/edit',
+    manualUrl: '/manuals/email-presend-checklist.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
