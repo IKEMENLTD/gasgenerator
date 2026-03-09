@@ -1217,6 +1217,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1yp0Gv3ZvW-1OTmsAWrAoURr3WDlFx2yoJThFw6XeI_4/edit',
     manualUrl: '/manuals/shiresaki-gaichuusaki-kanri.txt',
   },
+  {
+    id: '110',
+    name: '数値入力バリデーション',
+    tagline: '見積・発注・請求の数値入力を自動チェックし、桁違い・範囲超過・計算ミスを未然に防ぐバリデーションシステム',
+    description: '見積・発注・請求時の数値入力をリアルタイムでバリデーションし、入力ミスを未然に防止するWebアプリです。商品マスタの標準単価・許容範囲に基づく自動チェック、桁違いパターン検出（10倍/100倍/1/10/1/100）、計算チェック（単価×数量=小計）を実装。警告・エラー時は確定理由の入力を必須とし、対応履歴を記録。ダッシュボードではミスパターン別件数・個人別警告率・商品別異常値検出率をグラフ表示。週次・月次レポート自動生成機能付き。8画面SPA、9シート、2トリガー（週次/月次）で構成。',
+    tags: ['バリデーション', '入力ミス防止', 'ダッシュボード', '分析レポート'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwBgGSqWbjNm2MeDNkag9Y0kG_Bz44Cc6XyU1sYVlnUSUncGqZy9A6kTXOLuUbO7HEa/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1aZY7-DMldcvTqb2uVFduvkP0M9Bjvf00RMtPT7XiuZE/edit',
+    manualUrl: '/manuals/numeric-validation.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
