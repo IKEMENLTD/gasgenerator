@@ -1239,6 +1239,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1KMgWW5m2S5t60oyEkJjTaV1I8WSnKKTnIiIyKGkFS7c/edit',
     manualUrl: '/manuals/email-presend-checklist.txt',
   },
+  {
+    id: '112',
+    name: '商品セット販売分析',
+    tagline: '注文データから同時購買ペアを自動抽出し、セット販売・クロスセル戦略をデータで支援',
+    description: '注文データを分析して「一緒に買われやすい商品ペア」を自動抽出するWebアプリです。同時購買率・売上貢献額のランキング、月別/週別トレンド推移、カテゴリ別クロス購買ヒートマップ、チャネル別・顧客セグメント別のペア分析が可能。セット候補シミュレーション（セット価格・割引率・粗利率自動算出）、キャンペーン効果検証（施策前/中/後の同時購買率比較）、同時購買率の急変アラート＋メール通知機能を搭載。ダッシュボードでTop10ペア・トレンドグラフ・ヒートマップ・チャネル比較を一覧表示。9画面SPA、17シート、7トリガーで構成。',
+    tags: ['販売分析', 'クロスセル', 'セット販売', 'ダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycby0r_-Fidpl6q162xOGoPpzcBRaM_OI2VFHjvfeHifnXMc2-fC0e63jQZcjKodFbWqK/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1XRyUuRLj2kevfKkdnKfbThFFGRqBVbkiBwzRqitj6J0/edit',
+    manualUrl: '/manuals/product-set-analysis.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
