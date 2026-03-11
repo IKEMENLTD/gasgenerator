@@ -1250,6 +1250,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1XRyUuRLj2kevfKkdnKfbThFFGRqBVbkiBwzRqitj6J0/edit',
     manualUrl: '/manuals/product-set-analysis.txt',
   },
+  {
+    id: '113',
+    name: '見込み客スコアリング',
+    tagline: '10項目の自動スコアリングで見込み客をランク分類し、営業の優先順位付けを効率化',
+    description: '見込み客（リード）を10項目のスコアリング基準で自動評価し、A〜Dランクに分類するWebアプリです。属性スコア（企業規模・役職・業種・予算）、行動スコア（問合せ回数・資料DL）、関心度スコア（反応・商談進捗）、タイミングスコア（検討時期・競合状況）の4カテゴリで総合判定。ダッシュボードでランク分布・スコア推移・コンバージョンファネル・今週のアクション達成率を可視化。営業活動履歴・タスク管理・スコア履歴・レポート（担当者別/期間別/経路別）機能を搭載。11画面SPA、19シート、4トリガーで構成。',
+    tags: ['営業支援', 'スコアリング', 'リード管理', 'ダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbylHXFMEXbUj5nmyZhGGzalKzVrm8eNBHsvFZkj-_UIFEyMonSuJoTkxNj5junUDu9e/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1faHcIF_S8Wpo4Gag1E93dRoYN4i9BQ5gVkQlKh44mwU/edit',
+    manualUrl: '/manuals/prospect-scoring.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
