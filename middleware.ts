@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
 
   // app.taskmateai.net のルートアクセスをカタログにリダイレクト
-  if (hostname.includes('app.taskmateai.net') && request.nextUrl.pathname === '/') {
+  if (hostname === 'app.taskmateai.net' && request.nextUrl.pathname === '/') {
     return NextResponse.redirect(new URL('/systems/catalog', request.url))
   }
 
