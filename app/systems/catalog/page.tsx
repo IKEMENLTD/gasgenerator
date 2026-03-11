@@ -1261,6 +1261,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1faHcIF_S8Wpo4Gag1E93dRoYN4i9BQ5gVkQlKh44mwU/edit',
     manualUrl: '/manuals/prospect-scoring.txt',
   },
+  {
+    id: '114',
+    name: 'サブスク解約予兆アラート',
+    tagline: '顧客の利用状況から解約リスクを自動スコアリングし、CSMにアラート通知で解約を未然に防止',
+    description: 'SaaS/サブスクリプションサービスの顧客解約リスクを5指標（ログイン間隔・月次ログイン回数・利用機能数・サポート問い合わせ件数・契約更新残日数）で自動スコアリングし、高リスク顧客をCSM担当者にメールで即時通知するWebアプリです。5種類のアラート（スコア閾値超え・急激な低下・連続未ログイン・更新60日前・更新30日前）を自動検知。フォロー対応記録とアクション効果検証で、どの対応が解約防止に効果的かを数値で分析。ダッシュボードでリスク分布・チャーンレート推移・CSM別パフォーマンスを可視化。11画面SPA、17シート、12トリガーで構成。',
+    tags: ['カスタマーサクセス', '解約防止', 'スコアリング', 'アラート通知'],
+    previewUrl: 'https://churn-prediction-alert.netlify.app',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1FJ1atwLReO1SNgYIeOB6lAasmhV-7U1ssVxM8A723Ow/edit',
+    manualUrl: '/manuals/churn-prediction-alert.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
