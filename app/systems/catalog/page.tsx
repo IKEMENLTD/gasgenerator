@@ -1272,6 +1272,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1FJ1atwLReO1SNgYIeOB6lAasmhV-7U1ssVxM8A723Ow/edit',
     manualUrl: '/manuals/churn-prediction-alert.txt',
   },
+  {
+    id: '115',
+    name: '解約申し出後のウィンバック管理',
+    tagline: '解約申し出から引き止め対応・結果追跡までを一元管理し、ウィンバック率と施策効果を可視化',
+    description: 'SaaS/サブスクリプションの解約申し出を受けてから、引き止め施策の実施・結果判定・MRR影響分析までを一気通貫で管理するWebアプリです。解約理由に応じた推奨施策の自動提案、複数施策の同時記録、対応期限アラート、担当者別ウィンバック成功率の可視化機能を搭載。ダッシュボードでは今月のウィンバック率・MRR純損失・解約理由Top5・月次トレンドをリアルタイム表示。6種レポート（申し出サマリー・理由分析・施策効果・担当者パフォーマンス・プラン別分析・月次トレンド）で多角的に分析。11画面SPA、15シート、日次/月次トリガーで構成。',
+    tags: ['カスタマーサクセス', 'ウィンバック', '解約防止', 'MRR分析'],
+    previewUrl: 'https://winback-management.netlify.app',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1EiBCbGb3hEtcSuk88esv4Rek0FBqGSPjBQLtaWWr_q0/edit',
+    manualUrl: '/manuals/winback-management.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
