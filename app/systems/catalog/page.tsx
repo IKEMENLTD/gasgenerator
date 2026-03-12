@@ -1283,6 +1283,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1EiBCbGb3hEtcSuk88esv4Rek0FBqGSPjBQLtaWWr_q0/edit',
     manualUrl: '/manuals/winback-management.txt',
   },
+  {
+    id: '116',
+    name: 'イベント・セミナー集客管理',
+    tagline: '申込受付から事後フォローまで全自動メール配信＋リアルタイム集客ダッシュボードで集客ROIを最大化',
+    description: 'セミナー・説明会・体験レッスン・ウェビナーなどの申込管理から事後フォローまでを一元管理するWebアプリです。申込確認・リマインド（3日前/前日）・当日案内・事後フォロー・アンケート依頼の各メールをトリガーで全自動送信。定員超過時のキャンセル待ち自動受付＋キャンセル発生時の繰り上げ案内メール送信。アンケート回答の関心度に応じて個別商談案内/詳細資料/次回セミナー案内を自動出し分け。申込経路別（SNS/メルマガ/紹介/広告）のCPA・ROI自動計測、月次レポート自動送信。ダッシュボードではKPI5種・グラフ5種・テーブル3種で集客状況をリアルタイム可視化。10タブSPA、17シート、11トリガーで構成。',
+    tags: ['イベント管理', 'メール自動化', '集客分析', 'ROI計測'],
+    previewUrl: 'https://event-seminar-management.netlify.app',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1WC4JosPo9-7Tgggmc4JkYQwRRSuJAdpmTnLs6FKppyE/edit',
+    manualUrl: '/manuals/event-seminar-management.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
