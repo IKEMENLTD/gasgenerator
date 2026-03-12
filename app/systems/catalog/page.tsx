@@ -1294,6 +1294,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1WC4JosPo9-7Tgggmc4JkYQwRRSuJAdpmTnLs6FKppyE/edit',
     manualUrl: '/manuals/event-seminar-management.txt',
   },
+  {
+    id: '117',
+    name: 'アップセル実施率管理',
+    tagline: 'スタッフ別提案率・成功率をリアルタイム可視化し、機会損失額の自動算出で売上最大化を支援',
+    description: '接客記録からアップセル提案率・成功率・客単価をスタッフ別・店舗別・商品別に自動集計し、S/A/B/C/Dの5段階パフォーマンスランクで評価するWebアプリです。ダッシュボードでは月別推移グラフ・週次トレンド・スタッフ×商品クロス分析マトリクスをリアルタイム表示。未提案件数×平均成功単価×平均成功率で機会損失額を自動算出し、改善優先度の高いスタッフを可視化。育成イベント（研修・OJT・ロープレ）の実施前後の提案率・成功率変化を自動トラッキングし、育成効果を定量評価。アラート通知（提案率低下・成功率低下・未提案連続・機会損失超過・優秀者表彰）で迅速なフォローアップを実現。11タブSPA、15シート、11トリガーで構成。',
+    tags: ['アップセル管理', 'スタッフ評価', '機会損失分析', '育成効果測定'],
+    previewUrl: 'https://upsell-rate-management.netlify.app',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1duF9xv_n87baG5axSJURxwVVzMbTy4RR5gKhbea8OLE/edit',
+    manualUrl: '/manuals/upsell-rate-management.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
