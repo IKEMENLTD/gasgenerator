@@ -1316,6 +1316,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1NxEvGkof_cn06SEk5uZ93vfG4N1X_rfFBilHXlxKR_o/edit',
     manualUrl: '/manuals/cancel-waitlist-management.txt',
   },
+  {
+    id: '119',
+    name: 'AI冒頭文メーカー',
+    tagline: 'ターゲット企業サイトからAIでコールドメールの冒頭文を自動生成',
+    description: 'ターゲット企業のWebサイトURLを入力するだけで、AIが企業固有の情報（数字・取り組み・ニュース）を抽出し、パーソナライズされたコールドメール冒頭文を3パターン自動生成。丁寧・標準・親しみやすいの3トーン対応。手動テキスト入力にも対応し、生成履歴の検索・再利用、1日100件の生成上限管理機能を搭載。',
+    tags: ['営業支援', 'AI生成', 'コールドメール', 'パーソナライズ'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwyEolDp68qKbsAmp7iYbfTwA3rYUg0B8Ul_GHp6veKdJFwJ7gmKsLeKQA_LQ_rmjzl/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1g3NoofvrzMaCOrKSoaKOAokQs0AxNYPpcDCF2i-fof0/edit',
+    manualUrl: '/manuals/firstline-ai.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
