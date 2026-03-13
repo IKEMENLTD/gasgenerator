@@ -96,13 +96,24 @@ exports.handler = async (event, context) => {
         // 同じIPの過去訪問からLINEユーザーIDを自動取得（再訪問者の自動リンク）
         // 全tracking_link横断で検索（クロスリンク対応）
         // auto-linkと重複チェックを並列実行（応答速度改善）
+        //
+        // [RISK] 共有IP問題: 企業NW・カフェ・CGNAT環境では複数人が同一IPを使用するため、
+        // IPだけで自動リンクすると無関係な別人のLINE IDが紐付く誤マッチが発生する。
+        // [MITIGATION]
+        //   1. 直近30分以内の訪問のみ対象（同一セッション内の再訪問を想定）
+        //   2. user_agentも一致する訪問のみ対象（同一デバイスを確認）
+        // これにより「同じIP・同じブラウザ・30分以内」の3条件が揃った場合のみ自動リンクする。
+        // 完全な解決策ではないが、誤マッチ率を大幅に低減できる。
         let autoLinkedUserId = null;
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+        const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
         const [linkedResult, recentResult] = await Promise.all([
             supabase
                 .from('agency_tracking_visits')
                 .select('line_user_id')
-                .or(`visitor_ip.eq.${clientIP},visitor_ip.like.${clientIP},%`)
+                .eq('visitor_ip', clientIP)
+                .eq('user_agent', userAgent)
+                .gte('created_at', thirtyMinutesAgo)
                 .not('line_user_id', 'is', null)
                 .order('created_at', { ascending: false })
                 .limit(1),

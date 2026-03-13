@@ -150,6 +150,26 @@ async function calculateCommissions(supabase, dealAmount, closingAgencyId, conve
         logger.log('=== 報酬分配記録の保存開始 ===');
 
         for (const distribution of distributions) {
+            // 冪等チェック: 同一 (conversion_id, agency_id, commission_type) が
+            // 既に存在する場合はスキップ（Stripe イベント二重配信対策）
+            const { data: existing, error: checkError } = await supabase
+                .from('agency_commission_distributions')
+                .select('id')
+                .eq('conversion_id', conversionId)
+                .eq('agency_id', distribution.agency_id)
+                .eq('commission_type', distribution.commission_type)
+                .maybeSingle();
+
+            if (checkError) {
+                logger.error('冪等チェッククエリエラー:', checkError);
+                throw new Error('冪等チェックに失敗しました');
+            }
+
+            if (existing) {
+                logger.log(`⏭ スキップ（既存）: ${distribution.agency_name} (${distribution.commission_type}) conversion=${conversionId}`);
+                continue;
+            }
+
             const { error: insertError } = await supabase
                 .from('agency_commission_distributions')
                 .insert({
@@ -165,6 +185,12 @@ async function calculateCommissions(supabase, dealAmount, closingAgencyId, conve
                 });
 
             if (insertError) {
+                // UNIQUE 制約違反 (code 23505) は競合状態による重複挿入。
+                // ログだけ出してスキップ — 他の代理店分の処理を継続する。
+                if (insertError.code === '23505') {
+                    logger.warn(`⚠ UNIQUE 制約違反（競合）をスキップ: ${distribution.agency_name} (${distribution.commission_type})`);
+                    continue;
+                }
                 logger.error('報酬分配記録の保存エラー:', insertError);
                 throw new Error('報酬分配記録の保存に失敗しました');
             }

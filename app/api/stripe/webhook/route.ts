@@ -45,26 +45,39 @@ export async function POST(req: NextRequest) {
 
     const eventType = event.type
 
-    // 重複チェック
-    const { data: existingEvent } = await supabase
-      .from('stripe_events')
-      .select('id')
-      .eq('event_id', event.id)
-      .single()
+    // ────────────────────────────────────────────────────────────────
+    // 冪等性チェック（二重処理防止）
+    //
+    // このハンドラー（Render）はユーザーサブスク更新・LINE通知を担当する。
+    // Netlify側ハンドラーは代理店コミッション計算を担当する。
+    // 両者が同じStripeイベントを受信するため、ハンドラー名をサフィックス
+    // として付加した複合キー "evt_xxx:render" で独立して重複制御する。
+    // これにより、Netlify が先に処理してもこちらがスキップされない。
+    //
+    // 競合状態対策:
+    //   INSERT の UNIQUE 違反エラー (23505) を検出してスキップする。
+    //   SELECT → INSERT の非アトミック操作を避け、INSERT 結果のみで判定する。
+    // ────────────────────────────────────────────────────────────────
+    const handlerEventId = `${event.id}:render`
 
-    if (existingEvent) {
-      logger.info(`[${reqId}] Duplicate webhook event, skipping`, { eventId: event.id })
-      return NextResponse.json({ received: true, duplicate: true })
-    }
-
-    // イベント記録
-    await supabase
+    const { error: insertError } = await supabase
       .from('stripe_events')
       .insert({
-        event_id: event.id,
+        event_id: handlerEventId,
         event_type: eventType,
         processed_at: new Date().toISOString()
       })
+
+    if (insertError) {
+      // UNIQUE 制約違反 (23505) = 既に処理済み or 同時リクエストが先行
+      if (insertError.code === '23505') {
+        logger.info(`[${reqId}] Duplicate webhook event (render handler), skipping`, { eventId: event.id })
+        return NextResponse.json({ received: true, duplicate: true })
+      }
+      // その他のDBエラーはログに残して続行しない
+      logger.error(`[${reqId}] Failed to record stripe event for idempotency`, { eventId: event.id, error: insertError })
+      return NextResponse.json({ error: 'Failed to record event for idempotency' }, { status: 500 })
+    }
 
     switch (eventType) {
       case 'checkout.session.completed':
