@@ -658,7 +658,7 @@ const systems = [
   },
   {
     id: '59',
-    name: 'Dynamic OGP',
+    name: 'スカウト画像メーカー',
     tagline: '候補者名入りOGP画像でスカウトのクリック率UP',
     description: 'スカウトメッセージに貼るURLのOGP画像を候補者名入りにパーソナライズするツール。Google SlidesテンプレートからPNG画像を自動生成し、LINE/Slack等でOGPプレビュー表示。クリック計測・ダッシュボード管理機能付き。',
     tags: ['採用支援', 'OGP画像', 'スカウト', 'LINE対応'],
