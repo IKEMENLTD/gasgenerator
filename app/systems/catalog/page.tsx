@@ -603,11 +603,11 @@ const systems = [
   },
   {
     id: '54',
-    name: 'Welcome Snap',
+    name: '面接ウェルカム動画',
     tagline: '面接官の挨拶動画を録画・共有',
     description: '面接官が候補者に送る15秒の挨拶動画を録画・共有するツール。GAS HtmlService版でカメラ録画、Google Drive保存、共有URL発行、期限切れ自動処理を搭載。候補者体験を向上させます。',
     tags: ['採用支援', '動画録画', '候補者体験', 'Google Drive'],
-    previewUrl: 'https://script.google.com/macros/s/AKfycbxj4-HiWY_0QwjgjiRlmlU1x-ZQ6Plp6un6MP0zzrvAgZZXQUSJwVIjl5zSvj8bl1vO/exec',
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyM2nB_b1uCFQ1FqnFypGoEGUO6pZbxfaoOJRNw7baJCT3k6JXbCxTnuh7Y5oQ7ZtQ/exec',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1sB4we97k8wJ0OPPKH__yGYG263t0bwb1UamIEdJCRj0/edit?gid=1055425724#gid=1055425724',
     manualUrl: '/manuals/welcome-snap.txt',
