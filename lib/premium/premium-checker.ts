@@ -210,6 +210,11 @@ export class PremiumChecker {
    */
   static getUpgradeUrl(userId: string): string {
     const encodedUserId = Buffer.from(userId).toString('base64')
-    return `${process.env.STRIPE_PAYMENT_LINK || 'https://buy.stripe.com/test_5kQ6oHdq63gzbxLbdQ8EM00'}?client_reference_id=${encodedUserId}`
+    const paymentLink = process.env.STRIPE_PAYMENT_LINK
+    if (!paymentLink) {
+      logger.error('STRIPE_PAYMENT_LINK environment variable is not set')
+      return ''
+    }
+    return `${paymentLink}?client_reference_id=${encodedUserId}`
   }
 }
