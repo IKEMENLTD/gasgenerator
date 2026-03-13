@@ -15,7 +15,7 @@ OGP画像がプレビュー表示されます。
 ブラウザで以下のURLを開いてください。
 スマホからもアクセスできます。
 
-https://script.google.com/macros/s/AKfycbwLpHTEHO11IKgYUOev9aICG4ogSPQMb3kyWWGBhQ8eQ1OgL7b3TT7U2MuUTyKzU4hM/exec
+https://script.google.com/macros/s/AKfycbxH9k0B1kImvgdaTt59WiFkHmqP404MCpYXbLRSxRsP1j2Iv_raHFkXvCW4QlztDm46/exec
 
 
 ■ リンクの発行手順

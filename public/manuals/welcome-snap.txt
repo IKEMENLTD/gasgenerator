@@ -8,7 +8,7 @@
 面接日を過ぎると動画は自動的に期限切れになります。
 
 ■ アクセスURL
-https://script.google.com/macros/s/AKfycbxj4-HiWY_0QwjgjiRlmlU1x-ZQ6Plp6un6MP0zzrvAgZZXQUSJwVIjl5zSvj8bl1vO/exec
+https://script.google.com/macros/s/AKfycbyM2nB_b1uCFQ1FqnFypGoEGUO6pZbxfaoOJRNw7baJCT3k6JXbCxTnuh7Y5oQ7ZtQ/exec
 
 ■ スプレッドシート
 https://docs.google.com/spreadsheets/d/1sB4we97k8wJ0OPPKH__yGYG263t0bwb1UamIEdJCRj0/edit
