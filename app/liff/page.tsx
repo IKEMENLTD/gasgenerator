@@ -143,6 +143,11 @@ export default function LiffBridgePage() {
       <Script
         src="https://static.line-scdn.net/liff/edge/2/sdk.js"
         onLoad={() => setSdkLoaded(true)}
+        onError={() => {
+          setStatus('friend-prompt')
+          setMessage('LINE連携の準備中です')
+          if (!lineUrl) setLineUrl('https://lin.ee/4NLfSqH')
+        }}
       />
       <div style={{
         minHeight: '100vh',

@@ -26,7 +26,16 @@ exports.handler = async (event, context) => {
       }
 
       try {
-              const trackingData = JSON.parse(event.body);
+              let trackingData;
+              try {
+                  trackingData = JSON.parse(event.body);
+              } catch (parseErr) {
+                  return {
+                      statusCode: 400,
+                      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ error: 'Invalid request body' })
+                  };
+              }
 
         if (!trackingData.tracking_code) {
                   return {
@@ -107,8 +116,10 @@ exports.handler = async (event, context) => {
                 .limit(1)
         ]);
 
-        const linkedVisits = linkedResult.data;
-        const recentVisits = recentResult.data;
+        const linkedVisits = linkedResult.error ? null : linkedResult.data;
+        const recentVisits = recentResult.error ? null : recentResult.data;
+        if (linkedResult.error) console.error('[track-visit] auto-link query error:', linkedResult.error.message);
+        if (recentResult.error) console.error('[track-visit] dedup query error:', recentResult.error.message);
 
         if (linkedVisits && linkedVisits.length > 0) {
             autoLinkedUserId = linkedVisits[0].line_user_id;
