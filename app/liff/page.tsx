@@ -39,13 +39,15 @@ export default function LiffBridgePage() {
 
         if (encodedLineUrl) {
           setLineUrl(decodeURIComponent(encodedLineUrl))
+        } else {
+          // 直接アクセス時のフォールバック
+          setLineUrl('https://lin.ee/4NLfSqH')
         }
 
-        if (!visitId) {
-          setStatus('error')
-          setMessage('訪問情報が見つかりません')
-          addLog('ERROR: visit_id missing')
-          return
+        // visit_idがない場合（直接アクセス）はトラッキング連携をスキップ
+        const isDirectAccess = !visitId
+        if (isDirectAccess) {
+          addLog('Direct access (no tracking link) - skipping visit linkage')
         }
 
         // LIFF 初期化
@@ -69,24 +71,29 @@ export default function LiffBridgePage() {
         const profile = await window.liff.getProfile()
         addLog(`Profile OK: ${profile.displayName} (${profile.userId.substring(0, 8)}...)`)
 
-        // サーバーに紐付けリクエスト
-        addLog(`POST /api/link-visit (visitId: ${visitId})`)
-        const response = await fetch('/api/link-visit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lineUserId: profile.userId,
-            visitId,
-            displayName: profile.displayName,
-            pictureUrl: profile.pictureUrl
+        // サーバーに紐付けリクエスト（トラッキング経由の場合のみ）
+        if (visitId) {
+          addLog(`POST /api/link-visit (visitId: ${visitId})`)
+          const response = await fetch('/api/link-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lineUserId: profile.userId,
+              visitId,
+              displayName: profile.displayName,
+              pictureUrl: profile.pictureUrl
+            })
           })
-        })
 
-        const responseData = await response.json()
-        addLog(`API response: ${response.status} ${JSON.stringify(responseData)}`)
+          const responseData = await response.json()
+          addLog(`API response: ${response.status} ${JSON.stringify(responseData)}`)
 
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status} ${JSON.stringify(responseData)}`)
+          if (!response.ok) {
+            // APIエラーでもブロックしない - トラッキング連携失敗は致命的でない
+            addLog(`WARNING: link-visit API failed but continuing: ${response.status}`)
+          }
+        } else {
+          addLog('Skipped link-visit API (direct access)')
         }
 
         // 友だち追加状態チェック
@@ -239,8 +246,8 @@ export default function LiffBridgePage() {
             </div>
           )}
 
-          {/* デバッグログ */}
-          {debugLog.length > 0 && (
+          {/* デバッグログ（エラー時のみ表示） */}
+          {debugLog.length > 0 && status === 'error' && (
             <div style={{
               marginTop: '16px',
               padding: '12px',

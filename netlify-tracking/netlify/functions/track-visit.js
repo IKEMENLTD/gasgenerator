@@ -86,30 +86,34 @@ exports.handler = async (event, context) => {
 
         // 同じIPの過去訪問からLINEユーザーIDを自動取得（再訪問者の自動リンク）
         // 全tracking_link横断で検索（クロスリンク対応）
+        // auto-linkと重複チェックを並列実行（応答速度改善）
         let autoLinkedUserId = null;
-        const { data: linkedVisits } = await supabase
-            .from('agency_tracking_visits')
-            .select('line_user_id')
-            .or(`visitor_ip.eq.${clientIP},visitor_ip.like.${clientIP},%`)
-            .not('line_user_id', 'is', null)
-            .order('created_at', { ascending: false })
-            .limit(1);
-
-        if (linkedVisits && linkedVisits.length > 0) {
-            autoLinkedUserId = linkedVisits[0].line_user_id;
-            console.log('[track-visit] Auto-link from same IP:', autoLinkedUserId);
-        }
-
-        // 重複チェック（過去5分以内の同一IP）
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-              const { data: recentVisits } = await supabase
+        const [linkedResult, recentResult] = await Promise.all([
+            supabase
+                .from('agency_tracking_visits')
+                .select('line_user_id')
+                .or(`visitor_ip.eq.${clientIP},visitor_ip.like.${clientIP},%`)
+                .not('line_user_id', 'is', null)
+                .order('created_at', { ascending: false })
+                .limit(1),
+            supabase
                 .from('agency_tracking_visits')
                 .select('id')
                 .eq('tracking_link_id', trackingLink.id)
                 .eq('visitor_ip', clientIP)
                 .gte('created_at', fiveMinutesAgo)
                 .order('created_at', { ascending: false })
-                .limit(1);
+                .limit(1)
+        ]);
+
+        const linkedVisits = linkedResult.data;
+        const recentVisits = recentResult.data;
+
+        if (linkedVisits && linkedVisits.length > 0) {
+            autoLinkedUserId = linkedVisits[0].line_user_id;
+            console.log('[track-visit] Auto-link from same IP:', autoLinkedUserId);
+        }
 
         const recentVisit = recentVisits && recentVisits.length > 0 ? recentVisits[0] : null;
 
@@ -151,13 +155,16 @@ exports.handler = async (event, context) => {
                             console.error('[track-visit] Error creating visit:', JSON.stringify(visitError));
                 } else {
                             visitId = visit.id;
-                            await supabase
+                            // visit_count更新は非同期（レスポンス速度優先）
+                            supabase
                               .from('agency_tracking_links')
                               .update({
                                               visit_count: (trackingLink.visit_count || 0) + 1,
                                               updated_at: new Date().toISOString()
                               })
-                              .eq('id', trackingLink.id);
+                              .eq('id', trackingLink.id)
+                              .then(() => {})
+                              .catch(err => console.error('[track-visit] visit_count update error:', err));
                             console.log('[track-visit] New visit created:', visitId, autoLinkedUserId ? '(auto-linked)' : '');
                 }
         }
@@ -194,10 +201,17 @@ exports.handler = async (event, context) => {
 
       } catch (error) {
               console.error('[track-visit] Function error:', error);
+              // エラーでもline_friend_urlを返す（フロントエンドがフォールバックできるように）
               return {
-                        statusCode: 500,
+                        statusCode: 200,
                         headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ error: 'Internal server error: ' + error.message })
+                        body: JSON.stringify({
+                                  success: false,
+                                  error: error.message,
+                                  line_friend_url: 'https://lin.ee/4NLfSqH',
+                                  visit_id: null,
+                                  session_id: null
+                        })
               };
       }
 };
