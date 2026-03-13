@@ -1305,6 +1305,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1duF9xv_n87baG5axSJURxwVVzMbTy4RR5gKhbea8OLE/edit',
     manualUrl: '/manuals/upsell-rate-management.txt',
   },
+  {
+    id: '118',
+    name: 'キャンセル待ち自動管理',
+    tagline: 'キャンセル発生→待機者への自動通知→返答期限管理→繰り上げ充填を完全自動化し、充填率・機会損失額をKPI管理',
+    description: '予約キャンセル発生時にキャンセル待ちリストの1番目へ自動通知を送信し、返答期限切れ時は次順位へ自動繰り上げして充填プロセスを完走させるWebアプリです。ダッシュボードでは月間充填率・拠点別充填率・月別機会損失額推移・曜日×時間帯ヒートマップ・スタッフ別/メニュー別充填率・充填所要時間トレンドなど6種グラフ+ヒートマップをリアルタイム表示。優先スコア自動計算（VIP+20/登録日数+1/条件柔軟性+5）で最適な案内順位を決定。SHA-256トークン認証のメール確認リンクで顧客が直接確定/辞退を返答可能。5種アラート（充填率低下/損失額超過/待機リスト枯渇/期限切れ多発/ノーショー多発）で管理者へ自動通知。週次・月次レポートをHTML形式で自動送信。10タブSPA、17シート、9トリガーで構成。',
+    tags: ['キャンセル管理', '充填率KPI', '自動通知', '機会損失分析'],
+    previewUrl: 'https://cancel-waitlist-management.netlify.app',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1NxEvGkof_cn06SEk5uZ93vfG4N1X_rfFBilHXlxKR_o/edit',
+    manualUrl: '/manuals/cancel-waitlist-management.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
