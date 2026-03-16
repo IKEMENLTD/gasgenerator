@@ -65,11 +65,11 @@ exports.handler = async (event) => {
         // Get agency commission rate for calculation
         const { data: agencyData } = await supabase
             .from('agencies')
-            .select('commission_rate')
+            .select('own_commission_rate, commission_rate')
             .eq('id', agencyId)
             .single();
 
-        const commissionRate = agencyData?.commission_rate || 10;
+        const commissionRate = agencyData?.own_commission_rate || agencyData?.commission_rate || 20;
 
         // Get all conversions for this agency with user billing info
         console.log('🔍 [DEBUG] Fetching conversions for agency:', agencyId);
@@ -127,7 +127,8 @@ exports.handler = async (event) => {
                     subscription_end_date,
                     payment_start_date,
                     is_premium,
-                    stripe_customer_id
+                    stripe_customer_id,
+                    current_plan_price
                 `)
                 .in('id', userIds);
 
@@ -140,12 +141,14 @@ exports.handler = async (event) => {
 
                 // Process billing data
                 billingUsers = users.map(user => {
-                    const isActive = user.subscription_status === 'active' || user.subscription_status === 'trialing';
+                    const isActive = user.subscription_status === 'active' || user.subscription_status === 'trialing'
+                        || user.subscription_status === 'premium' || user.subscription_status === 'professional';
                     const isPremium = user.is_premium === true;
 
-                    // Calculate commission for this user
-                    // Assuming monthly subscription is 980円
-                    const monthlyFee = 980;
+                    // Determine monthly fee from actual plan price
+                    // Premium: 10,000円/月, Professional: 50,000円/月
+                    const monthlyFee = user.current_plan_price
+                        || (user.subscription_status === 'professional' ? 50000 : 10000);
                     let userCommission = 0;
 
                     if (isActive && user.subscription_started_at) {
@@ -222,6 +225,24 @@ exports.handler = async (event) => {
             (sum, c) => sum + (parseFloat(c.commission_amount) || 0), 0
         ) || 0;
 
+        // リファラルコミッション集計（agency_commission_distributions テーブルから）
+        const { data: distributions } = await supabase
+            .from('agency_commission_distributions')
+            .select('commission_type, commission_amount, payment_status')
+            .eq('agency_id', agencyId);
+
+        const referralTotal = (distributions || [])
+            .filter(d => d.commission_type === 'referral')
+            .reduce((sum, d) => sum + (parseFloat(d.commission_amount) || 0), 0);
+
+        const referralPending = (distributions || [])
+            .filter(d => d.commission_type === 'referral' && d.payment_status === 'pending')
+            .reduce((sum, d) => sum + (parseFloat(d.commission_amount) || 0), 0);
+
+        const referralPaid = (distributions || [])
+            .filter(d => d.commission_type === 'referral' && d.payment_status === 'paid')
+            .reduce((sum, d) => sum + (parseFloat(d.commission_amount) || 0), 0);
+
         const responseData = {
             // サマリー統計
             summary: {
@@ -230,7 +251,10 @@ exports.handler = async (event) => {
                 totalCommission: Math.round(totalCommission),
                 paidCommission: Math.round(totalPaidCommission),
                 pendingCommission: Math.round(totalPendingCommission),
-                commissionRate: commissionRate
+                commissionRate: commissionRate,
+                referralCommissionTotal: Math.round(referralTotal),
+                referralPending: Math.round(referralPending),
+                referralPaid: Math.round(referralPaid)
             },
             // 個別ユーザーの課金状態
             billingUsers: billingUsers,

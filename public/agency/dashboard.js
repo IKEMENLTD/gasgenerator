@@ -1127,9 +1127,10 @@ function agencyDashboard() {
 
             const conversions = this.selectedLink.conversion_count || 0;
             const commissionRate = this.agencyInfo.own_commission_rate || 20;
-            const baseCommissionPerConversion = 1000; // ベース報酬額
+            // Premium: 10,000円/月, Professional: 50,000円/月（最低プランで概算）
+            const baseMonthlyFee = 10000;
 
-            const totalCommission = conversions * baseCommissionPerConversion * (commissionRate / 100);
+            const totalCommission = conversions * baseMonthlyFee * (commissionRate / 100);
 
             return totalCommission.toLocaleString('ja-JP');
         },
