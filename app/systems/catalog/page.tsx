@@ -1349,6 +1349,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1Nd17qaUtZOitdAR4fgm54-C1J-SVNPMs7GaP_GND3fo/edit',
     manualUrl: '/manuals/email-open-rate-tracker.txt',
   },
+  {
+    id: '122',
+    name: '問い合わせ自動仕分けメール',
+    tagline: 'メール問い合わせを自動分類し担当者へ即時転送',
+    description: 'メール問い合わせのカテゴリをキーワード＋AI（Claude）で自動判定し、適切な担当者へ即時転送。対応状況を一元管理し、エスカレーション自動検知・通知で対応漏れを防止。7タブSPA構成（問い合わせ管理・カテゴリ設定・担当者管理・返信テンプレート・カテゴリ別レポート・担当者別レポート・日次サマリー）、7トリガー自動処理、月次レポート自動配信機能を搭載。',
+    tags: ['問い合わせ管理', 'メール自動仕分け', 'エスカレーション', 'AI判定'],
+    previewUrl: 'https://inquiry-auto-sort-email.netlify.app',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1oOUPce9oSIxckV3MPW9HYMizhVAY95GH81NlEkthCKU/edit',
+    manualUrl: '/manuals/inquiry-auto-sort-email.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
