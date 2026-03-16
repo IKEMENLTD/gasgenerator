@@ -32,27 +32,52 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        // 運営の代理店コード（level=0または1の最上位代理店）を取得
-        // まずlevel=0を探す
-        let { data: masterAgency, error: level0Error } = await supabase
-            .from('agencies')
-            .select('code, name, level')
-            .eq('level', 0)
-            .eq('status', 'active')
-            .single();
+        let masterAgency = null;
 
-        // level=0が見つからない場合、level=1を探す
-        if (level0Error || !masterAgency) {
-            const { data: level1Agencies, error: level1Error } = await supabase
+        // 環境変数でマスター代理店コードが指定されている場合、それを使用
+        const masterCode = process.env.MASTER_AGENCY_CODE;
+        if (masterCode) {
+            const { data, error } = await supabase
+                .from('agencies')
+                .select('code, name, level')
+                .eq('code', masterCode)
+                .eq('status', 'active')
+                .single();
+
+            if (!error && data) {
+                masterAgency = data;
+            }
+        }
+
+        // フォールバック: level=1 + company_nameで株式会社イケメンを検索
+        if (!masterAgency) {
+            const { data } = await supabase
                 .from('agencies')
                 .select('code, name, level')
                 .eq('level', 1)
                 .eq('status', 'active')
+                .eq('company_name', '株式会社イケメン')
+                .limit(1);
+
+            if (data?.[0]) {
+                masterAgency = data[0];
+            }
+        }
+
+        // 最終フォールバック: level=1 + parent_agency_id IS NULL + テストデータ除外
+        if (!masterAgency) {
+            const { data, error } = await supabase
+                .from('agencies')
+                .select('code, name, level, company_name')
+                .eq('level', 1)
+                .eq('status', 'active')
+                .is('parent_agency_id', null)
+                .not('company_name', 'like', '株式会社テスト%')
                 .order('created_at', { ascending: true })
                 .limit(1);
 
-            if (level1Error) {
-                console.error('❌ level=1代理店の検索に失敗:', level1Error);
+            if (error) {
+                console.error('代理店検索エラー:', error);
                 return {
                     statusCode: 500,
                     headers: {
@@ -60,28 +85,25 @@ exports.handler = async (event, context) => {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        error: 'データベースエラーが発生しました: ' + level1Error.message
+                        error: 'データベースエラーが発生しました: ' + error.message
                     })
                 };
             }
 
-            const level1Agency = level1Agencies?.[0];
+            masterAgency = data?.[0] || null;
+        }
 
-            if (!level1Agency) {
-                // 最上位代理店が見つからない場合
-                return {
-                    statusCode: 404,
-                    headers: {
-                        'Access-Control-Allow-Origin': '*',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        error: '運営の代理店が見つかりません。まずagenciesテーブルにlevel=0またはlevel=1の代理店を登録してください。'
-                    })
-                };
-            }
-
-            masterAgency = level1Agency;
+        if (!masterAgency) {
+            return {
+                statusCode: 404,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    error: '運営の代理店が見つかりません。'
+                })
+            };
         }
 
         return {

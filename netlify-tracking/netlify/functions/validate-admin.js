@@ -22,11 +22,17 @@ exports.handler = async (event, context) => {
     try {
         const { username, password } = JSON.parse(event.body);
 
-        // 環境変数から認証情報を取得
+        // 環境変数から認証情報を取得（2アカウント対応）
         const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'TaskMate2024Admin!';
+        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'TaskMate2026Admin';
+        const ADMIN_USERNAME_2 = process.env.ADMIN_USERNAME_2 || 'admin';
+        const ADMIN_PASSWORD_2 = process.env.ADMIN_PASSWORD_2 || 'TaskMate2026Admin';
 
-        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        const isValid =
+            (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) ||
+            (username === ADMIN_USERNAME_2 && password === ADMIN_PASSWORD_2);
+
+        if (isValid) {
             return {
                 statusCode: 200,
                 headers: {

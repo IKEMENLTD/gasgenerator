@@ -181,43 +181,29 @@ async function handleFollowEvent(event, headers) {
             console.log('- 代理店コード:', agency.code);
             console.log('- 現在のステータス:', agency.status);
 
-            // 代理店が既にアクティブの場合は何もしない（重複防止）
-            if (agency.status === 'active') {
-                console.log('⚠️ 代理店は既にアクティブ - スキップします');
+            // 既に処理済みの場合はスキップ（重複防止）
+            if (agency.status === 'active' || agency.status === 'pending') {
+                console.log(`⚠️ 代理店は既に${agency.status} - スキップします`);
                 return;
             }
 
-            // 代理店をアクティブ化
+            // 友達追加完了 → 管理者承認待ち（pending）に遷移
+            // ※ pending_friend_add または pending_line_verification から遷移
             const { error: updateError } = await supabase
                 .from('agencies')
                 .update({
-                    status: 'active'
+                    status: 'pending'
                 })
                 .eq('id', agency.id);
 
             if (updateError) {
-                console.error('❌ 代理店アクティベーション失敗:', updateError);
+                console.error('❌ 代理店ステータス更新失敗:', updateError);
             } else {
-                console.log('✅ 代理店をアクティブ化しました');
+                console.log('✅ 代理店を承認待ち（pending）に更新しました');
 
-                // ユーザーもアクティブ化
-                const { error: userUpdateError } = await supabase
-                    .from('agency_users')
-                    .update({
-                        is_active: true
-                    })
-                    .eq('agency_id', agency.id)
-                    .eq('role', 'owner');
-
-                if (userUpdateError) {
-                    console.error('❌ ユーザーアクティベーション失敗:', userUpdateError);
-                } else {
-                    console.log('✅ ユーザーをアクティブ化しました');
-                }
-
-                // 🎉 代理店登録完了メッセージを送信
-                await sendAgencyWelcomeMessage(userId, agency);
-                console.log('✅ 代理店ウェルカムメッセージ送信完了');
+                // 友達追加完了メッセージを送信（承認待ちの案内）
+                await sendAgencyPendingMessage(userId, agency);
+                console.log('✅ 代理店承認待ちメッセージ送信完了');
             }
 
             return; // 代理店フロー完了
@@ -722,10 +708,16 @@ async function createAgencyLineConversion(session, lineUserId, userId) {
 
             // Update tracking link conversion count
             if (session.tracking_link_id) {
+                const { data: linkData } = await supabase
+                    .from('agency_tracking_links')
+                    .select('conversion_count')
+                    .eq('id', session.tracking_link_id)
+                    .single();
+
                 await supabase
                     .from('agency_tracking_links')
                     .update({
-                        conversion_count: supabase.raw('conversion_count + 1')
+                        conversion_count: (linkData?.conversion_count || 0) + 1
                     })
                     .eq('id', session.tracking_link_id);
             }
@@ -830,6 +822,13 @@ async function sendLineMessage(userId, message) {
 }
 
 // 🆕 Send agency registration welcome message
+async function sendAgencyPendingMessage(userId, agency) {
+    // ⚠️ Netlify側ではメッセージ送信を完全に無効化（Render側のみが送信）
+    console.log('⚠️ sendAgencyPendingMessage called but disabled (Netlify side)');
+    console.log(`代理店: ${agency.name} (${agency.code}) - LINE友達追加完了、管理者承認待ち`);
+    return;
+}
+
 async function sendAgencyWelcomeMessage(userId, agency) {
     // ⚠️ Netlify側ではメッセージ送信を完全に無効化（Render側のみが送信）
     console.log('⚠️ sendAgencyWelcomeMessage called but disabled (Netlify side)');

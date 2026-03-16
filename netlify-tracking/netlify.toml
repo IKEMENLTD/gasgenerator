@@ -76,9 +76,34 @@
   from = "/t/*"
   to = "/t/index.html"
   status = 200
+  force = true
 
-# ===== 代理店ダッシュボードSPAルーティング =====
-# /agency/* のサブパスは代理店ダッシュボードのindex.htmlで処理
+# ===== 静的ページ（SPA/catch-allより前に配置）=====
+[[redirects]]
+  from = "/shindan"
+  to = "/shindan.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/agency/guide"
+  to = "/agency/guide.html"
+  status = 200
+  force = true
+
+# ===== 管理画面SPAルーティング（forceなし：既存ファイルはそのまま配信）=====
+[[redirects]]
+  from = "/admin"
+  to = "/admin/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/admin/index.html"
+  status = 200
+
+# ===== 代理店ダッシュボードSPAルーティング（forceなし：既存ファイルはそのまま配信）=====
 [[redirects]]
   from = "/agency/*"
   to = "/agency/index.html"
@@ -149,3 +174,4 @@
 
 [context.branch-deploy]
   command = "echo 'Branch deploy'"
+

@@ -73,7 +73,10 @@ exports.handler = async (event) => {
                         contact_email: agency.contact_email,
                         contact_phone: agency.contact_phone,
                         address: agency.address,
-                        commission_rate: agency.commission_rate
+                        commission_rate: agency.commission_rate,
+                        level: agency.level,
+                        own_commission_rate: agency.own_commission_rate,
+                        parent_agency_id: agency.parent_agency_id
                     },
                     paymentInfo: agency.payment_info || {},
                     settings: agency.settings || {}
