@@ -1338,6 +1338,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1HuhGjmq2OAOd0lkJgGKfcgnZyTBFw37aASepGReL5qw/edit',
     manualUrl: '/manuals/segment-offer-delivery.txt',
   },
+  {
+    id: '121',
+    name: '営業メール開封率トラッカー',
+    tagline: 'メール開封率・返信率をスタッフ別・テンプレ別に可視化',
+    description: '送信した営業メールの開封・返信状況を自動追跡し、スタッフ別・テンプレート別に開封率・返信率を集計。フォロー推奨日を自動算出し、適切なタイミングでのフォローを支援。6タブSPA構成（送信ログ・スタッフ管理・送信先管理・テンプレート管理・スタッフ別レポート・テンプレート別レポート）、6トリガー自動処理、月次レポート管理者メール配信機能を搭載。',
+    tags: ['営業メール', '開封率追跡', 'フォロー管理', 'テンプレート分析'],
+    previewUrl: 'https://email-open-rate-tracker.netlify.app',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1Nd17qaUtZOitdAR4fgm54-C1J-SVNPMs7GaP_GND3fo/edit',
+    manualUrl: '/manuals/email-open-rate-tracker.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
