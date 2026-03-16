@@ -1327,6 +1327,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1g3NoofvrzMaCOrKSoaKOAokQs0AxNYPpcDCF2i-fof0/edit',
     manualUrl: '/manuals/firstline-ai.txt',
   },
+  {
+    id: '120',
+    name: '顧客セグメント別オファー配信',
+    tagline: 'RFM分析で顧客を自動セグメント→最適オファーをメール配信',
+    description: '顧客の購買履歴をRFM分析（Recency/Frequency/Monetary）で自動スコアリングし、VIP・優良・一般・休眠などのセグメントに分類。セグメントごとに最適なオファーメールを自動配信し、開封率・クリック率・コンバージョン率をダッシュボードで可視化。6タブSPA構成、7トリガー自動処理、月次レポートPDF送信機能を搭載。',
+    tags: ['RFM分析', 'セグメント配信', 'メールマーケティング', 'CVR分析'],
+    previewUrl: 'https://segment-offer-delivery.netlify.app',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1HuhGjmq2OAOd0lkJgGKfcgnZyTBFw37aASepGReL5qw/edit',
+    manualUrl: '/manuals/segment-offer-delivery.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
