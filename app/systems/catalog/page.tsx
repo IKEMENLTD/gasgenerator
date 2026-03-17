@@ -1684,14 +1684,19 @@ export default function SystemCatalogPage() {
                     <span className="text-gray-400 text-xs hidden xl:inline">—</span>
                     <span className="text-gray-400 text-xs truncate hidden xl:inline">{selectedSystem.tagline}</span>
                   </div>
-                  <svg
-                    className={`w-5 h-5 text-gray-400 group-hover:text-cyan-500 transition-all duration-300 flex-shrink-0 ${isDetailCollapsed ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <span className="text-xs text-cyan-500 group-hover:text-cyan-600 transition-colors">
+                      {isDetailCollapsed ? '詳細を開く' : '詳細を閉じる'}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 text-cyan-500 group-hover:text-cyan-600 transition-all duration-300 ${isDetailCollapsed ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </button>
 
                 {/* 折りたたみコンテンツ */}
