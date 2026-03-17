@@ -1371,6 +1371,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1k5P2GYtuPbrSIy8smzyjV-9HU-85sFeUXarhYNakBeI/edit',
     manualUrl: '/manuals/competitor-price-monitor.txt',
   },
+  {
+    id: '124',
+    name: '年末調整プロ',
+    tagline: 'フォーム回収から控除計算・e-Tax CSV出力まで完結する年末調整システム',
+    description: '【令和7年税制改正完全対応】基礎控除5段階制(58万〜95万円)・特定親族特別控除(新設10段階)・給与所得控除65万円引上げに対応。Googleフォームで従業員から申告内容を収集→GASが国税庁計算ロジック準拠で全自動計算→e-Tax/eLTAX標準CSV出力で電子提出まで完結。前年データ自動引継ぎで「変更点だけ入力」、未提出者への自動リマインド、入力バリデーション付き。過不足一覧表で12月給与精算額を即確認。従業員への源泉徴収票PDF交付機能搭載。対応控除: 基礎控除(段階制)/給与所得控除/配偶者控除・特別控除/扶養控除/特定親族特別控除/社会保険料控除/生命保険料控除(新旧対応)/地震保険料控除/住宅借入金等特別控除/所得金額調整控除/障害者控除/寡婦・ひとり親控除。出力帳票: e-Tax用CSV/eLTAX用CSV/過不足一覧表/源泉徴収票PDF。10シート構成、3個の自動トリガー。Soft UIデザインでスマホ対応。',
+    tags: ['年末調整', 'e-Tax CSV出力', '控除自動計算', '令和7年改正対応'],
+    previewUrl: '/demos/nenmatsu-chosei/index.html',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1uCl37elZddzL80Fnax4LdL8jwg6dz2i_7oyuBhLObOQ/edit',
+    manualUrl: '/manuals/nenmatsu-chosei.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {

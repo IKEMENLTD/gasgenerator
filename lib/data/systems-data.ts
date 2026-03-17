@@ -71,6 +71,7 @@ const SPREADSHEET_URLS: Record<string, string> = {
   '65': 'https://docs.google.com/spreadsheets/d/1gUUM3KLlDwKTeKlMvBv8nfFbyONxBlWxrmTzQk1vAro/edit?gid=559293208#gid=559293208',
   '88': 'https://docs.google.com/spreadsheets/d/1stwxLXus9bku6DmaAfS-T-yZAw6pB5JWbJ5fnLWpAWY/edit',
   '94': 'https://docs.google.com/spreadsheets/d/1I8p1-7QQsuWw7weOWQ0v4iHoReKgOBit9colGnB7GeQ/edit?gid=246119447#gid=246119447',
+  '124': 'https://docs.google.com/spreadsheets/d/1uCl37elZddzL80Fnax4LdL8jwg6dz2i_7oyuBhLObOQ/edit',
 }
 
 /** システムIDからスプレッドシートURLを取得 */
@@ -200,5 +201,6 @@ export function getSystemsData(): SystemData[] {
     { id: '117', name: 'アップセル実施率管理', tagline: 'スタッフ別提案率・成功率をリアルタイム可視化し、機会損失額の自動算出で売上最大化を支援', tags: ['アップセル管理', 'スタッフ評価', '機会損失分析', '育成効果測定'] },
     { id: '118', name: 'キャンセル待ち自動管理', tagline: 'キャンセル発生→待機者への自動通知→返答期限管理→繰り上げ充填を完全自動化', tags: ['キャンセル管理', '充填率KPI', '自動通知', '機会損失分析'] },
     { id: '119', name: 'AI冒頭文メーカー', tagline: 'ターゲット企業サイトからAIでコールドメールの冒頭文を自動生成', tags: ['営業支援', 'AI生成', 'コールドメール', 'パーソナライズ'] },
+    { id: '124', name: '年末調整プロ', tagline: 'フォーム回収から控除計算・e-Tax CSV出力まで完結する年末調整システム', tags: ['年末調整', 'e-Tax CSV出力', '控除自動計算', '令和7年改正対応'] },
   ]
 }

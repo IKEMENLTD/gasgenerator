@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>年末調整プロ - デモ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #e0e5ec;
+  --shadow-light: #ffffff;
+  --shadow-dark: #a3b1c6;
+  --primary: #4d7bf3;
+  --primary-dark: #3a5fc8;
+  --success: #2ecc71;
+  --warning: #f39c12;
+  --danger: #e74c3c;
+  --info: #3498db;
+  --text: #2d3436;
+  --text-light: #636e72;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+.demo-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white; padding: 10px 20px; text-align: center;
+  font-weight: 600; font-size: 13px; position: fixed;
+  top: 0; left: 0; right: 0; z-index: 9999;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.app-container { margin-top: 42px; padding: 20px; max-width: 1200px; margin-left: auto; margin-right: auto; }
+
+.soft-nav {
+  background: var(--bg); border-radius: 25px; padding: 8px;
+  box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 8px;
+}
+.soft-nav .brand { font-size: 18px; font-weight: 700; color: var(--primary); padding: 0 16px; white-space: nowrap; }
+.soft-nav .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.nav-tab {
+  border: none; background: var(--bg); color: var(--text-light);
+  padding: 10px 18px; border-radius: 20px; cursor: pointer;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+  transition: all 0.2s;
+}
+.nav-tab.active { color: var(--primary); box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
+.nav-tab:hover { color: var(--primary); }
+.soft-nav .year-badge { font-size: 12px; color: var(--text-light); padding: 0 12px; white-space: nowrap; }
+
+.view { display: none; }
+.view.active { display: block; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--bg); border-radius: 20px; padding: 20px;
+  box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+  text-align: center;
+}
+.stat-icon { width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px; font-size: 16px; color: white; }
+.stat-value { font-size: 28px; font-weight: 700; }
+.stat-label { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+.stat-bar { height: 6px; background: var(--bg); border-radius: 3px; margin-top: 10px; box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light); }
+.stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+
+.soft-card {
+  background: var(--bg); border-radius: 20px; padding: 24px; margin-bottom: 20px;
+  box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+}
+.card-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.card-title i { color: var(--primary); }
+
+.two-col { display: grid; grid-template-columns: 3fr 2fr; gap: 20px; margin-bottom: 20px; }
+
+.summary-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
+.summary-row + .summary-row { border-top: 1px solid rgba(0,0,0,0.06); }
+.summary-label { font-size: 14px; color: var(--text-light); }
+.summary-value { font-size: 18px; font-weight: 700; }
+.summary-value.refund { color: var(--success); }
+.summary-value.collect { color: var(--danger); }
+
+.badge { display: inline-block; padding: 3px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+.badge-pending { background: rgba(243,156,18,0.15); color: var(--warning); }
+.badge-submitted { background: rgba(77,123,243,0.15); color: var(--primary); }
+.badge-confirmed { background: rgba(46,204,113,0.15); color: var(--success); }
+.badge-revision { background: rgba(231,76,60,0.15); color: var(--danger); }
+
+table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+thead th { background: var(--primary); color: white; padding: 12px 14px; text-align: left; font-weight: 600; }
+thead th:first-child { border-radius: 12px 0 0 0; }
+thead th:last-child { border-radius: 0 12px 0 0; }
+tbody td { padding: 12px 14px; }
+tbody tr:nth-child(even) { background: rgba(0,0,0,0.02); }
+tbody tr:hover { background: rgba(77,123,243,0.05); }
+
+.btn-soft {
+  border: none; background: var(--bg); font-weight: 600; padding: 10px 20px;
+  border-radius: 50px; cursor: pointer; font-size: 13px; font-family: inherit;
+  box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+  transition: all 0.2s; color: var(--primary);
+}
+.btn-soft:hover { transform: translateY(-1px); }
+.btn-soft:active { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); transform: translateY(0); }
+.btn-soft:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-soft.btn-success { color: var(--success); }
+.btn-soft.btn-danger { color: var(--danger); }
+
+.select-soft {
+  border: none; background: var(--bg); padding: 10px 16px; border-radius: 15px;
+  font-size: 14px; font-family: inherit; color: var(--text); width: 100%; max-width: 300px;
+  box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+}
+
+.calc-step { display: flex; align-items: center; gap: 16px; padding: 10px 0; }
+.calc-step + .calc-step { border-top: 1px solid rgba(0,0,0,0.06); }
+.calc-num { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; background: var(--primary); flex-shrink: 0; }
+.calc-label { flex: 1; font-size: 14px; }
+.calc-value { font-size: 16px; font-weight: 700; text-align: right; min-width: 120px; }
+.calc-note { font-size: 11px; color: var(--text-light); }
+.calc-total { background: rgba(46,204,113,0.08); border-radius: 12px; padding: 4px 8px; }
+
+.timeline { list-style: none; }
+.timeline li { position: relative; padding: 0 0 16px 28px; font-size: 13px; }
+.timeline li::before { content: ''; position: absolute; left: 8px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+.timeline li::after { content: ''; position: absolute; left: 11px; top: 18px; width: 2px; height: calc(100% - 12px); background: rgba(77,123,243,0.2); }
+.timeline li:last-child::after { display: none; }
+.timeline .time { color: var(--text-light); font-size: 11px; }
+
+.output-btn { width: 100%; text-align: left; padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.output-btn i { font-size: 20px; }
+.output-btn .output-info { flex: 1; }
+.output-btn .output-title { font-weight: 600; font-size: 14px; }
+.output-btn .output-desc { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+.toast {
+  position: fixed; top: 60px; right: 20px; background: var(--bg); padding: 16px 24px;
+  border-radius: 15px; border-left: 4px solid var(--success);
+  box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+  font-size: 14px; font-weight: 600; z-index: 10000;
+  transform: translateX(120%); transition: transform 0.3s ease;
+}
+.toast.show { transform: translateX(0); }
+
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+  .soft-nav .tabs { width: 100%; justify-content: center; }
+  table { font-size: 12px; }
+  thead th, tbody td { padding: 8px 10px; }
+}
+@media (max-width: 500px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .soft-card { padding: 16px; border-radius: 16px; }
+  .stat-card { padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="demo-banner">
+  <i class="fas fa-info-circle"></i> デモ版 - サンプルデータで動作を体験できます（データは保存されません）
+</div>
+
+<div class="app-container">
+  <nav class="soft-nav">
+    <div class="brand"><i class="fas fa-file-invoice-dollar"></i> 年末調整プロ</div>
+    <div class="tabs">
+      <button class="nav-tab active" data-view="dashboard"><i class="fas fa-chart-pie"></i> ダッシュボード</button>
+      <button class="nav-tab" data-view="employees"><i class="fas fa-users"></i> 従業員一覧</button>
+      <button class="nav-tab" data-view="calculation"><i class="fas fa-calculator"></i> 控除計算</button>
+      <button class="nav-tab" data-view="output"><i class="fas fa-file-export"></i> 帳票出力</button>
+    </div>
+    <div class="year-badge">令和7年（2025年）</div>
+  </nav>
+
+  <!-- ダッシュボード -->
+  <div id="dashboardView" class="view active">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--primary)"><i class="fas fa-users"></i></div>
+        <div class="stat-value">20</div>
+        <div class="stat-label">対象者数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--info)"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-value">14</div>
+        <div class="stat-label">提出済</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:70%;background:var(--primary)"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--warning)"><i class="fas fa-exclamation-circle"></i></div>
+        <div class="stat-value">6</div>
+        <div class="stat-label">未提出</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--success)"><i class="fas fa-calculator"></i></div>
+        <div class="stat-value">12</div>
+        <div class="stat-label">計算完了</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:60%;background:var(--success)"></div></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="soft-card">
+        <div class="card-title"><i class="fas fa-chart-pie"></i> 提出状況</div>
+        <canvas id="statusChart" height="200"></canvas>
+      </div>
+      <div class="soft-card">
+        <div class="card-title"><i class="fas fa-yen-sign"></i> 過不足サマリー</div>
+        <div class="summary-row">
+          <span class="summary-label"><i class="fas fa-arrow-down" style="color:var(--success)"></i> 還付合計</span>
+          <span class="summary-value refund">&yen;71,000</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label"><i class="fas fa-arrow-up" style="color:var(--danger)"></i> 追徴合計</span>
+          <span class="summary-value collect">&yen;4,400</span>
+        </div>
+        <div class="summary-row" style="background:rgba(46,204,113,0.06);border-radius:10px;padding:12px 16px;margin-top:8px">
+          <span class="summary-label" style="font-weight:700">差引合計</span>
+          <span class="summary-value refund">&yen;66,600 還付超過</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="soft-card">
+      <div class="card-title"><i class="fas fa-history"></i> 直近アクティビティ</div>
+      <ul class="timeline">
+        <li><span class="time">3/15 14:22</span> 山田太郎の計算を確認済に変更</li>
+        <li><span class="time">3/15 11:05</span> 高橋健太に修正依頼を送信</li>
+        <li><span class="time">3/14 16:30</span> 鈴木一郎の計算を確認済に変更</li>
+        <li><span class="time">3/14 10:15</span> 佐藤花子が申告書を提出</li>
+        <li><span class="time">3/13 09:00</span> 年末調整の案内メールを一括送信（20名）</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 従業員一覧 -->
+  <div id="employeesView" class="view">
+    <div class="soft-card">
+      <div class="card-title"><i class="fas fa-users"></i> 従業員一覧</div>
+      <table>
+        <thead>
+          <tr><th>番号</th><th>氏名</th><th>部署</th><th>ステータス</th><th>還付/追徴</th><th>操作</th></tr>
+        </thead>
+        <tbody id="employeeTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 控除計算 -->
+  <div id="calculationView" class="view">
+    <div class="soft-card" style="margin-bottom:16px">
+      <label style="font-weight:600;font-size:14px;margin-right:12px">従業員選択:</label>
+      <select class="select-soft" id="empSelect"></select>
+    </div>
+    <div class="two-col">
+      <div class="soft-card">
+        <div class="card-title"><i class="fas fa-list"></i> 所得控除内訳</div>
+        <table>
+          <thead><tr><th>控除区分</th><th style="text-align:right">金額</th><th>備考</th></tr></thead>
+          <tbody id="deductionTable"></tbody>
+        </table>
+      </div>
+      <div class="soft-card">
+        <div class="card-title"><i class="fas fa-calculator"></i> 過不足計算過程</div>
+        <div id="calcSteps"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 帳票出力 -->
+  <div id="outputView" class="view">
+    <div class="soft-card">
+      <div class="card-title"><i class="fas fa-file-export"></i> 帳票出力</div>
+      <button class="btn-soft output-btn btn-success" onclick="showToast('源泉徴収票 2件を生成しました')">
+        <i class="fas fa-file-pdf"></i>
+        <div class="output-info"><div class="output-title">源泉徴収票（PDF）</div><div class="output-desc">確認済の従業員分を一括生成</div></div>
+        <span class="badge badge-confirmed">12/20 生成可能</span>
+      </button>
+      <button class="btn-soft output-btn" disabled>
+        <i class="fas fa-file-csv"></i>
+        <div class="output-info"><div class="output-title">e-Tax用 法定調書合計表（CSV）</div><div class="output-desc">全従業員の確認完了後に出力可能</div></div>
+        <span class="badge badge-pending">12/20 完了</span>
+      </button>
+      <button class="btn-soft output-btn" disabled>
+        <i class="fas fa-file-csv"></i>
+        <div class="output-info"><div class="output-title">eLTAX用 給与支払報告書（CSV）</div><div class="output-desc">全従業員の確認完了後に出力可能</div></div>
+        <span class="badge badge-pending">12/20 完了</span>
+      </button>
+      <button class="btn-soft output-btn btn-success" onclick="showToast('過不足一覧をダウンロードしました')">
+        <i class="fas fa-file-excel"></i>
+        <div class="output-info"><div class="output-title">過不足一覧（Excel形式）</div><div class="output-desc">全従業員の還付/追徴額サマリー</div></div>
+        <span class="badge badge-confirmed">生成済</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const EMPLOYEES = [
+  { id:'E001', name:'山田太郎', dept:'総務部', status:'confirmed', income:5000000, salaryDeduction:1440000, salaryIncome:3560000,
+    deductions:[{name:'基礎控除',amount:480000,note:'所得2,400万以下'},{name:'配偶者控除',amount:380000,note:'一般（所得38万以下）'},{name:'扶養控除（一般）',amount:380000,note:'16歳 子1名'},{name:'社会保険料控除',amount:750000,note:'健保+厚年+雇用'}],
+    totalDeduction:1990000, taxableIncome:1570000, incomeTax:78500, reconstructionTax:1648, finalTax:80100, withheld:92400, result:-12300 },
+  { id:'E002', name:'佐藤花子', dept:'営業部', status:'submitted', income:3500000, salaryDeduction:1130000, salaryIncome:2370000,
+    deductions:[{name:'基礎控除',amount:480000,note:'所得2,400万以下'},{name:'生命保険料控除（新）',amount:40000,note:'年間8万超→上限4万'},{name:'社会保険料控除',amount:525000,note:'健保+厚年+雇用'}],
+    totalDeduction:1045000, taxableIncome:1325000, incomeTax:66250, reconstructionTax:1391, finalTax:67600, withheld:63200, result:4400 },
+  { id:'E003', name:'鈴木一郎', dept:'経理部', status:'confirmed', income:7000000, salaryDeduction:1800000, salaryIncome:5200000,
+    deductions:[{name:'基礎控除',amount:480000,note:'所得2,400万以下'},{name:'配偶者特別控除',amount:310000,note:'配偶者所得95万超100万以下'},{name:'扶養控除（老人同居）',amount:580000,note:'70歳以上同居の親1名'},{name:'社会保険料控除',amount:1050000,note:'健保+厚年+雇用'}],
+    totalDeduction:2420000, taxableIncome:2780000, incomeTax:180500, reconstructionTax:3790, finalTax:184200, withheld:189600, result:-5400 },
+  { id:'E004', name:'田中美咲', dept:'人事部', status:'pending', income:2800000, salaryDeduction:920000, salaryIncome:1880000,
+    deductions:[{name:'基礎控除',amount:480000,note:'所得2,400万以下'},{name:'ひとり親控除',amount:350000,note:'所得500万以下'},{name:'扶養控除（一般）',amount:380000,note:'16歳 子1名'},{name:'社会保険料控除',amount:420000,note:'健保+厚年+雇用'}],
+    totalDeduction:1630000, taxableIncome:250000, incomeTax:12500, reconstructionTax:262, finalTax:12700, withheld:18000, result:-5300 },
+  { id:'E005', name:'高橋健太', dept:'開発部', status:'revision', income:4500000, salaryDeduction:1340000, salaryIncome:3160000,
+    deductions:[{name:'基礎控除',amount:480000,note:'所得2,400万以下'},{name:'社会保険料控除',amount:675000,note:'健保+厚年+雇用'},{name:'住宅ローン控除',amount:140000,note:'税額控除（残高2,000万×0.7%）'}],
+    totalDeduction:1155000, taxableIncome:2005000, incomeTax:102000, reconstructionTax:2142, finalTax:0, withheld:48000, result:-48000,
+    housingLoan:140000 }
+];
+
+const STATUS_MAP = { confirmed:'確認済', submitted:'提出済', pending:'未提出', revision:'要修正' };
+const STATUS_CLASS = { confirmed:'badge-confirmed', submitted:'badge-submitted', pending:'badge-pending', revision:'badge-revision' };
+
+function fmt(n) { return Math.abs(n).toLocaleString(); }
+
+// Tab navigation
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(this.dataset.view + 'View').classList.add('active');
+  });
+});
+
+// Dashboard chart
+new Chart(document.getElementById('statusChart'), {
+  type: 'doughnut',
+  data: { labels: ['提出済','未提出','要修正'], datasets: [{ data: [14,5,1], backgroundColor: ['#4d7bf3','#f39c12','#e74c3c'], borderWidth: 0 }] },
+  options: { responsive: true, cutout: '65%', plugins: { legend: { position: 'bottom' } } }
+});
+
+// Employee table
+document.getElementById('employeeTable').innerHTML = EMPLOYEES.map(e => `
+  <tr>
+    <td>${e.id}</td><td style="font-weight:600">${e.name}</td><td>${e.dept}</td>
+    <td><span class="badge ${STATUS_CLASS[e.status]}">${STATUS_MAP[e.status]}</span></td>
+    <td style="font-weight:700;color:${e.result<0?'var(--success)':'var(--danger)'}">
+      ${e.result<0?'還付':'追徴'} &yen;${fmt(e.result)}${e.status==='pending'?' <span style="color:var(--text-light);font-weight:400;font-size:11px">(仮)</span>':''}
+    </td>
+    <td><button class="btn-soft" style="padding:6px 14px;font-size:12px" onclick="showEmployee('${e.id}')">詳細</button></td>
+  </tr>
+`).join('');
+
+// Employee select
+const sel = document.getElementById('empSelect');
+sel.innerHTML = EMPLOYEES.map(e => `<option value="${e.id}">${e.id} ${e.name}（${e.dept}）</option>`).join('');
+sel.addEventListener('change', () => renderCalc(sel.value));
+
+function renderCalc(id) {
+  const e = EMPLOYEES.find(x => x.id === id);
+  document.getElementById('deductionTable').innerHTML = e.deductions.map(d => `
+    <tr><td>${d.name}</td><td style="text-align:right;font-weight:600">&yen;${d.amount.toLocaleString()}</td><td style="font-size:11px;color:var(--text-light)">${d.note}</td></tr>
+  `).join('') + `<tr style="font-weight:700;background:rgba(77,123,243,0.05)"><td>所得控除合計</td><td style="text-align:right">&yen;${e.totalDeduction.toLocaleString()}</td><td></td></tr>`;
+
+  const steps = [
+    {n:1,l:'給与所得',v:e.salaryIncome,note:''},
+    {n:2,l:'所得控除合計',v:e.totalDeduction,note:''},
+    {n:3,l:'課税所得（1-2）',v:e.taxableIncome,note:'千円未満切捨'},
+    {n:4,l:'所得税額',v:e.incomeTax,note:'速算表適用'},
+    {n:5,l:'復興特別所得税',v:e.reconstructionTax,note:'x2.1%'},
+    {n:6,l:'年税額',v:e.finalTax,note:'百円未満切捨'},
+    {n:7,l:'源泉徴収済額',v:e.withheld,note:''},
+  ];
+  const resultClass = e.result < 0 ? 'refund' : 'collect';
+  const resultLabel = e.result < 0 ? '還付' : '追徴';
+
+  document.getElementById('calcSteps').innerHTML = steps.map(s =>
+    `<div class="calc-step"><div class="calc-num">${s.n}</div><div class="calc-label">${s.l} <span class="calc-note">${s.note}</span></div><div class="calc-value">&yen;${s.v.toLocaleString()}</div></div>`
+  ).join('') + `<div class="calc-step calc-total"><div class="calc-num" style="background:${e.result<0?'var(--success)':'var(--danger)'}">!</div><div class="calc-label" style="font-weight:700">過不足（7-6）</div><div class="calc-value summary-value ${resultClass}">${resultLabel} &yen;${fmt(e.result)}</div></div>`;
+}
+renderCalc('E001');
+
+function showEmployee(id) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-view="calculation"]').classList.add('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('calculationView').classList.add('active');
+  document.getElementById('empSelect').value = id;
+  renderCalc(id);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
