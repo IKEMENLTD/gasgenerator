@@ -1368,6 +1368,7 @@ export default function SystemCatalogPage() {
   // モバイルでは最初からサイドバー（システム一覧）を開いた状態にする
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isInfoExpanded, setIsInfoExpanded] = useState(false)
+  const [isDetailCollapsed, setIsDetailCollapsed] = useState(false)
   const [userId, setUserId] = useState('')
 
   // 認証状態（LINE Bot経由の署名付きURLで有料/無料を判定）
@@ -1670,14 +1671,36 @@ export default function SystemCatalogPage() {
                 )}
               </div>
 
-              {/* === デスクトップ用: 既存レイアウトそのまま === */}
-              <div className="hidden lg:block bg-white border-t border-gray-200 px-4 py-4 flex-shrink-0">
+              {/* === デスクトップ用: 折りたたみ可能な詳細パネル === */}
+              <div className="hidden lg:block bg-white border-t border-gray-200 flex-shrink-0">
+                {/* 折りたたみトグルバー */}
+                <button
+                  onClick={() => setIsDetailCollapsed(!isDetailCollapsed)}
+                  className="w-full flex items-center justify-between px-4 py-2 hover:bg-gray-50 transition-colors group"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-cyan-500 font-bold text-sm">{selectedSystem.id}</span>
+                    <h2 className="text-base font-bold text-gray-900 truncate">{selectedSystem.name}</h2>
+                    <span className="text-gray-400 text-xs hidden xl:inline">—</span>
+                    <span className="text-gray-400 text-xs truncate hidden xl:inline">{selectedSystem.tagline}</span>
+                  </div>
+                  <svg
+                    className={`w-5 h-5 text-gray-400 group-hover:text-cyan-500 transition-all duration-300 flex-shrink-0 ${isDetailCollapsed ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* 折りたたみコンテンツ */}
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${isDetailCollapsed ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'}`}
+                >
+                <div className="px-4 pb-4">
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-cyan-500 font-bold text-sm">{selectedSystem.id}</span>
-                      <h2 className="text-lg font-bold text-gray-900 truncate">{selectedSystem.name}</h2>
-                    </div>
                     <p className="text-cyan-600 text-sm font-medium mb-2">{selectedSystem.tagline}</p>
                     <p className="text-gray-600 text-sm line-clamp-2 hidden sm:block">{selectedSystem.description}</p>
                   </div>
@@ -1835,6 +1858,8 @@ export default function SystemCatalogPage() {
                       ))}
                     </div>
                   </div>
+                </div>
+                </div>
                 </div>
               </div>
 
