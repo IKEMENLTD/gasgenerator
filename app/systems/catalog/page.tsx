@@ -1360,6 +1360,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1oOUPce9oSIxckV3MPW9HYMizhVAY95GH81NlEkthCKU/edit',
     manualUrl: '/manuals/inquiry-auto-sort-email.txt',
   },
+  {
+    id: '123',
+    name: '競合価格モニタリング',
+    tagline: '競合商品の価格変動を自動検出しアラート通知',
+    description: '競合商品の価格データを定期記録し、変動を自動検出して担当者にメール・Slackアラートを送信。自社vs競合の価格差を横並びで比較し、推移グラフで値動きを可視化。5タブSPA構成（ダッシュボード・商品管理・価格履歴・アラート履歴・競合比較）、4トリガー自動処理（価格収集＋アラート送信・競合比較更新・ダッシュボード更新・月次レポート）、6種ダッシュボード可視化、CSV出力、PDF月次レポート自動送信機能を搭載。',
+    tags: ['価格モニタリング', '競合分析', 'アラート通知', 'EC・小売・SaaS'],
+    previewUrl: 'https://competitor-price-monitor.netlify.app',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1k5P2GYtuPbrSIy8smzyjV-9HU-85sFeUXarhYNakBeI/edit',
+    manualUrl: '/manuals/competitor-price-monitor.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
