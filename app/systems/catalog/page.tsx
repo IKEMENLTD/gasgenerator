@@ -1415,6 +1415,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1g63chFtdj2errqWx084wyK7qMXlbK1QkJYOJSaVRJr8/edit',
     manualUrl: '/manuals/quote-invoice-management.txt',
   },
+  {
+    id: '128',
+    name: '入金確認自動通知',
+    tagline: '入金記録と同時に顧客へ自動お礼メールを送信',
+    description: '入金記録をスプレッドシートに登録すると同時に、GASが顧客へ自動お礼メールを送信するシステム。入金額と請求金額の差額を自動計算し、完済・一部入金・過払いを判定。テンプレート自動選択（標準/一部入金/高額入金/カスタム）で状況に応じた文面を生成。通知受取フラグや有効フラグによる送信スキップ制御、送信エラーの翌朝自動再送、日次送信サマリーレポートのメール送信を搭載。ダッシュボードに本日の入金件数・合計額、通知ステータス別件数（円グラフ）、月別入金額推移（折れ線）、未解決エラー件数を表示。10種プレースホルダー対応のメールテンプレート、CC送信、CSV出力。4シート・5トリガー・5タブSPA構成。',
+    tags: ['入金管理', '自動メール', 'テンプレート', '経理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyES5ocsjEeao_XI9ovtbb0I5RTVFvlOf0ctWrAWGh0AY3BOnoC1AN0v1NCpb_4DjqL/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1S5UoYruv5t6gNckN8fLsXLj7rj1vOQGHmV6603Wgvbs/edit',
+    manualUrl: '/manuals/payment-auto-notification.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
