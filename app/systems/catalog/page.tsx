@@ -1393,6 +1393,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1UUMo-oJSOxPUi6qwWewynU2M-gmTMZTFI7VWOML6OU0/edit',
     manualUrl: '/manuals/ec-line-crm-hub.txt',
   },
+  {
+    id: '126',
+    name: '商談パイプライン管理',
+    tagline: '案件をフェーズ別に管理し、停滞案件を自動検出してパイプライン全体を可視化',
+    description: '商談案件をリード〜受注/失注の8フェーズで管理し、フェーズごとの停滞閾値（7〜14日）を超えた案件を自動検出。ダッシュボードにフェーズ別ファネル・加重期待値棒グラフ・停滞率推移折れ線・スタッフ別目標達成率/受注率の6種チャートを表示。案件管理はテーブルビューとカンバンビューを切替可能。停滞・期限超過案件は行背景色で即座に判別（オレンジ=停滞、赤=期限超過、緑=受注、グレー=失注）。フェーズ変更時に履歴を自動記録し滞在日数を算出。毎日07:00に加重期待値・停滞指標を一括更新、07:30にパイプラインサマリー集計、08:00にスタッフ別実績集計、09:00に停滞アラートメールを担当者・管理者に自動送信。毎週月曜08:30に週次レポートを生成しマネージャー以上にメール配信。7シート・7トリガー・15種条件付き書式。スタッフ管理・顧客管理・案件管理のCRUD、フェーズ変更履歴・パイプラインサマリー・スタッフ別パイプライン・週次レポートログの閲覧画面を含む8タブSPA構成。',
+    tags: ['営業管理', 'パイプライン', '停滞検出', '週次レポート'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzvIfzVgb01XP4EIzLP9O2PCgsc5BvLE6tw8IcTTnwOGL2cWfQAdW-_zDU9_XbuHkx1/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1JPa8SzJcrXXAQRQX6qKqET_PDvdCseskOMIfdmt8US8/edit',
+    manualUrl: '/manuals/deal-pipeline-management.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
