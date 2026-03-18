@@ -1426,6 +1426,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1S5UoYruv5t6gNckN8fLsXLj7rj1vOQGHmV6603Wgvbs/edit',
     manualUrl: '/manuals/payment-auto-notification.txt',
   },
+  {
+    id: '129',
+    name: '提案書テンプレート差し込み生成',
+    tagline: 'フォーム入力だけで提案書を自動生成し共有リンクを即発行',
+    description: 'Googleドキュメントのテンプレートに顧客名・金額・担当者名など15変数を自動差し込みし、提案書を一括生成するシステム。生成前にプレビュー画面で差し込み内容を確認でき、確定後にGoogle Drive共有リンクを即発行。テンプレートマスタで書式を一元管理し、顧客マスタ・担当者マスタとの連携で入力ミスを防止。ダッシュボードに本日の生成件数、ステータス別件数（円グラフ）、月別提案金額合計（折れ線）、担当者別生成件数（縦棒）、有効期限アラートを表示。閲覧権限の自動設定（リンク閲覧可/特定ユーザーのみ）、有効期限アラートメール（毎日8時）、日次生成レポートメール（毎日9時）、CSV出力、再生成機能を搭載。4シート・6トリガー・5タブSPA構成。',
+    tags: ['提案書', '差し込み生成', 'Google Docs', '営業'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyJtPHJdk_SxVh_lXrPDVoV5FzO_V5rqKYp_0wYnueUmUziwTFkWNMZrdMYgeu20YOI/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1Xuf0Z3z8Dg3q-Ain9tTN_Zsg7kqZKU_5IEwjryS-gHw/edit',
+    manualUrl: '/manuals/proposal-template-generator.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
