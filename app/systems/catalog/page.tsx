@@ -1404,6 +1404,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1JPa8SzJcrXXAQRQX6qKqET_PDvdCseskOMIfdmt8US8/edit',
     manualUrl: '/manuals/deal-pipeline-management.txt',
   },
+  {
+    id: '127',
+    name: '見積→請求 通貫管理',
+    tagline: '見積承認→受注登録→請求書PDF生成をワンフローで一元管理',
+    description: '見積作成から受注登録、請求書発行・入金管理までを一つの画面で完結する一気通貫管理システム。見積明細の入力で小計・消費税・合計を自動計算し、承認フローを経て受注データを自動生成。受注では原価入力で粗利・粗利率を自動算出。請求書はボタン1つでPDF生成しGoogleドライブに保存。入金額入力で入金ステータス（未入金・部分入金・入金済・延滞）を自動判定。ダッシュボードに月別受注金額推移（折れ線）・見積ステータス別件数（ドーナツ）・入金ステータス別請求額（積上棒）・案件別粗利率TOP10（横棒）・顧客別累計受注金額（縦棒）の5種グラフを表示。自動採番ID（Q/QI/O/INV+日付連番、C/U+連番）、有効期限デフォルト+30日、支払期日は顧客の支払サイトから自動設定。CSV出力はフィルタ適用結果のみ。6シート・7トリガー・5タブSPA構成。',
+    tags: ['見積管理', '請求書PDF', '粗利計算', '入金管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbw9DVWr952NFPmjjsJrLA4qiTzH1GOC_KMPjKq3Pz3OLcMhKUR4Jj4mSzdAZjj-yED-sg/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1g63chFtdj2errqWx084wyK7qMXlbK1QkJYOJSaVRJr8/edit',
+    manualUrl: '/manuals/quote-invoice-management.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
