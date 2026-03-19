@@ -1459,6 +1459,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1r0JD44K-PyDMBOTt44UzZZou-K83RwUBwjPLKOjJmfw/edit',
     manualUrl: '/manuals/pulse-survey-weekly.txt',
   },
+  {
+    id: '132',
+    name: '書類PDF一括生成',
+    tagline: 'スプレッドシートの書類データをボタン1つでPDF化・自動配信',
+    description: 'スプレッドシートに登録した請求書・見積書・領収書・契約書・報告書のデータを一括でPDF化し、Google Driveに自動保存・メール添付で自動配信するシステム。書類種別ごとのHTMLテンプレートでPDFを生成し、フォルダ階層（フラット/年月別/書類種別別）を選択して自動整理。税込金額の自動算出（10%/8%/0%対応・端数切り捨て）、セミコロン区切りの複数宛先・CC対応、メール本文テンプレート変数置換（{宛先名}{件名}{DriveURL}）に対応。毎日9:00の自動バッチ処理、エラー通知メール（毎日9:30）、月次集計レポート（毎月1日）の3トリガーで運用を自動化。ダッシュボードに今月の処理件数（日別棒グラフ）、書類種別内訳（円グラフ）、処理成功率（ゲージ）、エラー種別分布（横棒グラフ）、月別処理件数推移（折れ線グラフ）、平均PDF生成時間（KPIカード）の6項目を可視化。CSV出力・フィルタ検索に対応。5タブSPA・5シート・3トリガー構成。',
+    tags: ['経理', 'PDF生成', 'メール配信', '書類管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwMDyew55EeX-NFLspOQRCDDN7DS55mHON1z33dP73DE9Z2BCrGtdcmusR-32eGo0DVZQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1jSMoJSGIz510-GNDg3URDbIuk32_9zsFuPK-bE7VNi4/edit',
+    manualUrl: '/manuals/pdf-batch-generator.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
