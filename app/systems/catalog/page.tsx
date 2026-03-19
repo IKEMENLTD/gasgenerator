@@ -1437,6 +1437,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1Xuf0Z3z8Dg3q-Ain9tTN_Zsg7kqZKU_5IEwjryS-gHw/edit',
     manualUrl: '/manuals/proposal-template-generator.txt',
   },
+  {
+    id: '130',
+    name: '社内ナレッジ検索',
+    tagline: 'キーワード一発で社内のマニュアル・FAQ・事例を横断検索',
+    description: '複数シートに散在するマニュアル・FAQ・営業事例などのナレッジをGASが自動巡回してインデックス化し、Webアプリからキーワード一発で横断検索できるシステム。タイトル×10+タグ×5+本文×1+閲覧数×0.1のスコアリングで関連度順に表示。ダッシュボードにインデックス総件数、カテゴリ別件数（円グラフ）、週間検索数推移（折れ線）、ゼロヒット率（当週）、閲覧数TOP10（横棒）の5項目を可視化。ゼロヒット週次レポートメール（月曜8時）でナレッジ不足領域を自動検出。日次ヘルスチェックメール（毎日9時）でインデックス状態を監視。ソース管理でシート・列を登録するだけで新しいナレッジを追加可能。毎日02:00に自動再構築、手動再構築ボタンも搭載。5シート・6トリガー・6タブSPA構成。',
+    tags: ['ナレッジ', '検索', 'FAQ', '情報共有'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyme1Fo61IGyU-hYFlVfDLWYLilXLu2wdKRlsIM6uaj1vYSa0c0pqAPLEbJi5u8qpNq/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1Bxf7Q-FmZilbobdFnUYebUYsxccwkPkkbwS8zH48WtE/edit',
+    manualUrl: '/manuals/knowledge-search-index.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
