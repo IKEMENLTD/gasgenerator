@@ -1448,6 +1448,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1Bxf7Q-FmZilbobdFnUYebUYsxccwkPkkbwS8zH48WtE/edit',
     manualUrl: '/manuals/knowledge-search-index.txt',
   },
+  {
+    id: '131',
+    name: 'パルスサーベイ（週次コンディション確認）',
+    tagline: '週次5問サーベイで離職・不調の兆候を早期発見',
+    description: 'メンバーのコンディション（体調・モチベーション・業務量・職場環境）を週次5問で数値化し、3段階アラート（緊急/警告/注意）で上長・人事に自動通知するシステム。単発低スコア・連続低スコア・急激悪化・SOSサインの4条件を複合判定し、見落としを最小化。ダッシュボードにチーム別平均スコア（棒）、週次トレンド（折れ線）、アラートレベル別メンバー数（ドーナツ）、週次アラート発生数（積み上げ棒）、未回答率（折れ線）、連続低スコア者一覧（テーブル）の6項目を可視化。回答入力画面から直接データ登録可能。CSV出力・フィルタ検索・設定画面でのFormsURL管理に対応。6タブSPA・5シート・4トリガー構成。',
+    tags: ['人事', 'サーベイ', 'アラート', 'コンディション管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzg_MonbxPOV87oInKD98dcs7y9aCeCwPAmQBRkZVPXTHviNtK32QMI3D6LlfHFezTS5g/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1r0JD44K-PyDMBOTt44UzZZou-K83RwUBwjPLKOjJmfw/edit',
+    manualUrl: '/manuals/pulse-survey-weekly.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
