@@ -26,7 +26,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git diff --quiet && echo "No changes to commit" && echo "changed=false" >> $GITHUB_OUTPUT && exit 0
-          git add lib/generated/system-count.ts public/lp-page.html netlify-tracking/frontend/index.html netlify-tracking/netlify/functions/admin-agencies.js
+          git add -f lib/generated/system-count.ts public/lp-page.html netlify-tracking/frontend/index.html netlify-tracking/netlify/functions/admin-agencies.js
           git commit -m "chore: sync system count to $(grep -o '[0-9]*' lib/generated/system-count.ts)"
           git push
           echo "changed=true" >> $GITHUB_OUTPUT
