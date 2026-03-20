@@ -1477,7 +1477,7 @@ const systems = [
     description: '代理店ごとにユニークな紹介リンクを発行し、LINE友だち追加を自動追跡。LIFF（LINE Front-end Framework）でユーザープロフィールを自動取得し、match_code（紹介コード）でスプレッドシートの案件データと突合。報酬はパーセンテージ（売上×率）または固定金額で自動計算。スプシの構造は横持ち（1行1人）と縦持ち（1行1案件）の両方に対応し、管理画面で切替可能。代理店の新規登録→承認フロー、リンク発行・無効化、案件・報酬ルール設定、手動突合、CSVエクスポート、監査ログまで管理画面で完結。毎時自動同期（pg_cron）、Webhook（follow/unfollow）によるLINE友だち状態の自動追跡。React + Supabase + Edge Functions構成。16画面SPA、11テーブル、6 Edge Functions。',
     tags: ['LINE連携', '代理店管理', '報酬計算', 'スプシ連携'],
     previewUrl: 'https://line-referral-tracker.netlify.app',
-    iframeAllowed: false,
+    iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1fAyXNE3KdDWObgbBaTjvS-QZhRTkpwyKGJhgVM5pqgc/edit',
     manualUrl: 'https://drive.google.com/file/d/1QYs3D1qIQ3NVokYNVmO8CttoVkK1yN8g/view?usp=drive_link',
   },
