@@ -32,7 +32,7 @@ jobs:
           echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: Deploy to Netlify
-        run: npx netlify-cli deploy --prod --dir=netlify-tracking/frontend --functions=netlify-tracking/netlify/functions
+        run: npx netlify-cli deploy --prod --no-build --dir=netlify-tracking/frontend --functions=netlify-tracking/netlify/functions
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
