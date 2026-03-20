@@ -23,6 +23,7 @@ import { supabaseAdmin } from '../../../lib/supabase/client'
 import { startDrip, stopDrip, checkAndStopDripOnUserAction } from '../../../lib/drip/drip-service'
 import { handleDiagnosis, isDiagnosisTrigger } from '../../../lib/line/diagnosis-handler'
 import { handleConsultation, isConsultationTrigger } from '../../../lib/line/consultation-handler'
+import { SYSTEM_COUNT } from '../../../lib/generated/system-count'
 
 // Node.jsランタイムを使用（AI処理のため）
 export const runtime = 'nodejs'
@@ -1271,7 +1272,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       const menuBookingUrl = process.env.CONSULTATION_BOOKING_URL || 'https://timerex.net/s/cz1917903_47c5/7caf7949'
       await lineClient.replyMessage(replyToken, [{
         type: 'text',
-        text: '📋 メニュー\n\n🔍 AI診断 … 30秒で最適なシステムを診断\n📦 システム一覧 … 119種類の自動化システム\n📅 無料相談 … 15分で導入プランをご提案\n🚀 コード生成 … AIがGASコードを自動作成\n💎 料金プラン … 無料/プレミアム/プロ',
+        text: `📋 メニュー\n\n🔍 AI診断 … 30秒で最適なシステムを診断\n📦 システム一覧 … ${SYSTEM_COUNT}種類の自動化システム\n📅 無料相談 … 15分で導入プランをご提案\n🚀 コード生成 … AIがGASコードを自動作成\n💎 料金プラン … 無料/プレミアム/プロ`,
         quickReply: {
           items: [
             { type: 'action', action: { type: 'message', label: '🔍 AI診断', text: 'AI診断' } },

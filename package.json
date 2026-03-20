@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/sync-system-count.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit || true"
+    "type-check": "tsc --noEmit || true",
+    "sync-count": "node scripts/sync-system-count.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",

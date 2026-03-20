@@ -1,4 +1,5 @@
 import React from 'react'
+import { SYSTEM_COUNT } from '@/lib/generated/system-count'
 
 export default function Urgency() {
     return (
@@ -58,7 +59,7 @@ export default function Urgency() {
                         <p>早く始めれば、新システムが追加されるたびに「これも使える」が増えます。</p>
                         <div style={{ background: 'rgba(0, 255, 119, 0.06)', border: '1px solid rgba(0, 255, 119, 0.15)', padding: '14px 16px', marginTop: '15px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ color: '#8a9a90', fontSize: '0.85rem' }}>現在</span>
-                            <span style={{ color: '#00ff77', fontSize: '1.4rem', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>40</span>
+                            <span style={{ color: '#00ff77', fontSize: '1.4rem', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{SYSTEM_COUNT}</span>
                             <svg fill="none" stroke="#00ff77" strokeWidth="2" viewBox="0 0 24 24" width="20" height="20" style={{ opacity: 0.6 }}><path d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             <span style={{ color: '#00ff77', fontSize: '1.4rem', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>300+</span>
                             <span style={{ color: '#8a9a90', fontSize: '0.85rem' }}>システム</span>

@@ -1,5 +1,6 @@
 'use client'
 import React, { useState } from 'react'
+import { SYSTEM_COUNT } from '@/lib/generated/system-count'
 
 const CatalogCategory = ({
     num,
@@ -38,7 +39,7 @@ export default function Catalog() {
             </h2>
             <div style={{ textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
                 <p className="lead-text" style={{ margin: '30px auto', textAlign: 'center' }}>
-                    現在<span className="text-force" style={{ fontWeight: 700, fontSize: '1.2em' }}>65</span>システム公開中。毎月追加で、300システム以上に拡大予定。<br />
+                    現在<span className="text-force" style={{ fontWeight: 700, fontSize: '1.2em' }}>{SYSTEM_COUNT}</span>システム公開中。毎月追加で、300システム以上に拡大予定。<br />
                     「こんなシステムが欲しかった」が、きっと見つかります。
                 </p>
             </div>
@@ -220,7 +221,7 @@ export default function Catalog() {
                 <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>
                         <span style={{ color: '#6e8274' }}>現在</span>
-                        <span style={{ color: 'var(--force)', fontSize: '1.5rem', fontWeight: 700, margin: '0 5px' }}>65</span>
+                        <span style={{ color: 'var(--force)', fontSize: '1.5rem', fontWeight: 700, margin: '0 5px' }}>{SYSTEM_COUNT}</span>
                         <span style={{ color: '#6e8274' }}>→</span>
                         <span style={{ color: 'var(--force)', fontSize: '1.5rem', fontWeight: 700, margin: '0 5px' }}>300+</span>
                         <span style={{ color: '#6e8274' }}>システムに拡大予定</span>
