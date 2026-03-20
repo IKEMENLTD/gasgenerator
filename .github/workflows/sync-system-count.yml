@@ -20,10 +20,19 @@ jobs:
         run: node scripts/sync-system-count.js
 
       - name: Commit and push if changed
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git diff --quiet && echo "No changes to commit" && exit 0
+          git diff --quiet && echo "No changes to commit" && echo "changed=false" >> $GITHUB_OUTPUT && exit 0
           git add lib/generated/system-count.ts public/lp-page.html netlify-tracking/frontend/index.html netlify-tracking/netlify/functions/admin-agencies.js
           git commit -m "chore: sync system count to $(grep -o '[0-9]*' lib/generated/system-count.ts)"
           git push
+          echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Netlify
+        if: steps.commit.outputs.changed == 'true'
+        run: npx netlify-cli deploy --prod --dir=netlify-tracking/frontend --functions=netlify-tracking/netlify/functions
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
