@@ -1389,7 +1389,7 @@ const systems = [
     description: 'Shopify・楽天・BASEの購買データをWebhookとポーリングで自動収集し、LINE CRMツール（Lステップ）と連携。ECの顧客とLINEユーザーをメールアドレス・注文番号・Lステップスプシ同期の3方式で自動突合。購買回数・LTV・最終購入日から5段階セグメント（初回購入/優良リピーター/休眠高LTV/休眠低LTV/補充タイミング）を自動判定し、Lステップへのタグ付け・シナリオ起動を自動実行。管理画面はダッシュボード（KPI4種+円グラフ+折れ線グラフ）、ユーザー管理、購買イベント一覧、配信ログ（再実行機能付き）、設定（Lステップ/楽天/Webhook署名）の5タブSPA構成。全画面フィルター・検索・CSV出力・ページネーション対応。6シート構成、4トリガー（楽天15分ポーリング/セグメントバッチ1時間/補充タイミング毎朝9時/セッション削除1時間）。Lステップ未接続時はモックモードで動作。',
     tags: ['EC連携', 'LINE CRM', 'セグメント自動判定', 'Lステップ連携'],
     previewUrl: 'https://script.google.com/macros/s/AKfycbybxwqss3k_vhW-0YhVoogINGp7Bk6jiq4no2mZHBQ4pwuLF23nbTRBOnGCO2Y42CW0/exec',
-    iframeAllowed: false,
+    iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1UUMo-oJSOxPUi6qwWewynU2M-gmTMZTFI7VWOML6OU0/edit',
     manualUrl: '/manuals/ec-line-crm-hub.txt',
   },
