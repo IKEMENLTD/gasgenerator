@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'app/systems/catalog/page.tsx'
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -31,7 +32,6 @@ jobs:
           echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: Deploy to Netlify
-        if: steps.commit.outputs.changed == 'true'
         run: npx netlify-cli deploy --prod --dir=netlify-tracking/frontend --functions=netlify-tracking/netlify/functions
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
