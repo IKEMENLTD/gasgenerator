@@ -72,6 +72,7 @@ const SPREADSHEET_URLS: Record<string, string> = {
   '88': 'https://docs.google.com/spreadsheets/d/1stwxLXus9bku6DmaAfS-T-yZAw6pB5JWbJ5fnLWpAWY/edit',
   '94': 'https://docs.google.com/spreadsheets/d/1I8p1-7QQsuWw7weOWQ0v4iHoReKgOBit9colGnB7GeQ/edit?gid=246119447#gid=246119447',
   '124': 'https://docs.google.com/spreadsheets/d/1uCl37elZddzL80Fnax4LdL8jwg6dz2i_7oyuBhLObOQ/edit',
+  '125': 'https://docs.google.com/spreadsheets/d/1fAyXNE3KdDWObgbBaTjvS-QZhRTkpwyKGJhgVM5pqgc/edit',
 }
 
 /** システムIDからスプレッドシートURLを取得 */
