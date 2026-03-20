@@ -72,7 +72,7 @@ const SPREADSHEET_URLS: Record<string, string> = {
   '88': 'https://docs.google.com/spreadsheets/d/1stwxLXus9bku6DmaAfS-T-yZAw6pB5JWbJ5fnLWpAWY/edit',
   '94': 'https://docs.google.com/spreadsheets/d/1I8p1-7QQsuWw7weOWQ0v4iHoReKgOBit9colGnB7GeQ/edit?gid=246119447#gid=246119447',
   '124': 'https://docs.google.com/spreadsheets/d/1uCl37elZddzL80Fnax4LdL8jwg6dz2i_7oyuBhLObOQ/edit',
-  '125': 'https://docs.google.com/spreadsheets/d/1fAyXNE3KdDWObgbBaTjvS-QZhRTkpwyKGJhgVM5pqgc/edit',
+  '133': 'https://docs.google.com/spreadsheets/d/1fAyXNE3KdDWObgbBaTjvS-QZhRTkpwyKGJhgVM5pqgc/edit',
 }
 
 /** システムIDからスプレッドシートURLを取得 */
@@ -203,6 +203,6 @@ export function getSystemsData(): SystemData[] {
     { id: '118', name: 'キャンセル待ち自動管理', tagline: 'キャンセル発生→待機者への自動通知→返答期限管理→繰り上げ充填を完全自動化', tags: ['キャンセル管理', '充填率KPI', '自動通知', '機会損失分析'] },
     { id: '119', name: 'AI冒頭文メーカー', tagline: 'ターゲット企業サイトからAIでコールドメールの冒頭文を自動生成', tags: ['営業支援', 'AI生成', 'コールドメール', 'パーソナライズ'] },
     { id: '124', name: '年末調整プロ', tagline: 'フォーム回収から控除計算・e-Tax CSV出力まで完結する年末調整システム', tags: ['年末調整', 'e-Tax CSV出力', '控除自動計算', '令和7年改正対応'] },
-    { id: '125', name: 'LINE流入トラッキング＆代理店報酬管理', tagline: '代理店別の紹介リンクからLINE友だち追加を自動追跡し、スプシ連携で報酬を自動計算', tags: ['LINE連携', '代理店管理', '報酬計算', 'スプシ連携'] },
+    { id: '133', name: 'LINE流入トラッキング＆代理店報酬管理', tagline: '代理店別の紹介リンクからLINE友だち追加を自動追跡し、スプシ連携で報酬を自動計算', tags: ['LINE連携', '代理店管理', '報酬計算', 'スプシ連携'] },
   ]
 }
