@@ -575,7 +575,7 @@ function buildApprovalEmailHtml(agency) {
 <tr><td style="font-size:20px;font-weight:700;color:#1a1a2e;line-height:1.4;padding-bottom:24px;">代理店パートナー承認のお知らせ</td></tr>
 <tr><td style="font-size:15px;color:#333333;line-height:1.8;padding-bottom:16px;">${agencyName} 御中</td></tr>
 <tr><td style="font-size:15px;color:#333333;line-height:1.8;padding-bottom:16px;">この度は、TaskMate AI 代理店パートナープログラムへお申し込みいただき、誠にありがとうございます。</td></tr>
-<tr><td style="font-size:15px;color:#333333;line-height:1.8;padding-bottom:16px;">厳正なる審査の結果、貴社を正式な代理店パートナーとして承認いたしましたことをお知らせいたします。本日より、132種類の業務自動化システムを貴社のお客様へご提案いただけます。</td></tr>
+<tr><td style="font-size:15px;color:#333333;line-height:1.8;padding-bottom:16px;">厳正なる審査の結果、貴社を正式な代理店パートナーとして承認いたしましたことをお知らせいたします。本日より、133種類の業務自動化システムを貴社のお客様へご提案いただけます。</td></tr>
 <tr><td style="font-size:15px;color:#333333;line-height:1.8;">貴社とのパートナーシップを通じて、より多くの企業様の業務効率化に貢献できることを心より楽しみにしております。</td></tr>
 </table>
 </td>
@@ -749,13 +749,13 @@ function buildApprovalEmailHtml(agency) {
 <p style="margin:0 0 20px;">{顧客名} 御中</p>
 <p style="margin:0 0 16px;">平素より大変お世話になっております。<br>{あなたの会社名}の{あなたの名前}でございます。</p>
 <p style="margin:0 0 16px;">本日は、貴社の業務効率化にお役立ていただけるサービスをご案内させていただきたく、ご連絡を差し上げました。</p>
-<p style="margin:0 0 16px;">「TaskMate AI」は、Google Apps Script（GAS）を活用した業務自動化プラットフォームです。日報作成、請求書発行、勤怠集計、顧客管理、契約更新リマインドなど、132種類の自動化システムを取り揃えており、貴社の業務課題に合わせて最適なシステムをご提案いたします。</p>
+<p style="margin:0 0 16px;">「TaskMate AI」は、Google Apps Script（GAS）を活用した業務自動化プラットフォームです。日報作成、請求書発行、勤怠集計、顧客管理、契約更新リマインドなど、133種類の自動化システムを取り揃えており、貴社の業務課題に合わせて最適なシステムをご提案いたします。</p>
 <p style="margin:0 0 16px;">導入企業様からは「月あたり40時間以上の工数削減につながった」というお声もいただいております。Google Workspace（Gmail、スプレッドシート、カレンダー等）との連携を前提に設計されているため、既存の業務環境をそのままお使いいただけます。</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;">
 <tr><td style="background-color:#f0f2ff;border-radius:6px;padding:20px;">
 <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1a1a2e;">詳細のご確認はこちら</p>
 <p style="margin:0 0 8px;font-size:13px;color:#333333;line-height:1.7;">サービス紹介ページ:<br><span style="color:#3b5bdb;">{あなたのトラッキングリンク}</span></p>
-<p style="margin:0;font-size:13px;color:#333333;line-height:1.7;">132種類のシステムカタログ:<br><a href="https://taskmate-system-catalog.netlify.app" style="color:#3b5bdb;text-decoration:underline;">https://taskmate-system-catalog.netlify.app</a></p>
+<p style="margin:0;font-size:13px;color:#333333;line-height:1.7;">133種類のシステムカタログ:<br><a href="https://taskmate-system-catalog.netlify.app" style="color:#3b5bdb;text-decoration:underline;">https://taskmate-system-catalog.netlify.app</a></p>
 </td></tr>
 </table>
 <p style="margin:0 0 16px;">ご興味をお持ちいただけましたら、オンラインでのデモンストレーションや個別のご相談も承っております。ご都合のよろしい日時をお知らせいただけましたら幸いです。</p>
@@ -781,7 +781,7 @@ function buildApprovalEmailHtml(agency) {
 <tr><td style="padding:3px 0;font-size:14px;color:#333333;line-height:1.7;">- 請求書の自動生成と送付</td></tr>
 <tr><td style="padding:3px 0;font-size:14px;color:#333333;line-height:1.7;">- 契約更新や期限のリマインド通知</td></tr>
 <tr><td style="padding:3px 0;font-size:14px;color:#333333;line-height:1.7;">- 勤怠データの集計から給与計算への連携</td></tr>
-<tr><td style="padding:3px 0;font-size:14px;color:#333333;line-height:1.7;">- その他、全132種類のシステムに対応</td></tr>
+<tr><td style="padding:3px 0;font-size:14px;color:#333333;line-height:1.7;">- その他、全133種類のシステムに対応</td></tr>
 </table>
 <p style="margin:0 0 16px;">今お使いのGmail・スプレッドシート・カレンダーをそのまま活かせるので、新しいツールの学習コストもかかりません。</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;">
@@ -803,7 +803,7 @@ function buildApprovalEmailHtml(agency) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fafafa;border:1px solid #e0e0e0;border-radius:0 6px 6px 6px;">
 <tr><td style="padding:28px;font-size:14px;color:#333333;line-height:1.85;">
 <p style="margin:0 0 16px;">{顧客名}さん、お疲れさまです。{あなたの名前}です。</p>
-<p style="margin:0 0 16px;">日報作成やデータ集計など、毎日の定型業務を自動化できるサービスがあります。GoogleスプレッドシートやGmailと連携して、132種類の業務を自動化できる「TaskMate AI」というサービスです。</p>
+<p style="margin:0 0 16px;">日報作成やデータ集計など、毎日の定型業務を自動化できるサービスがあります。GoogleスプレッドシートやGmailと連携して、133種類の業務を自動化できる「TaskMate AI」というサービスです。</p>
 <p style="margin:0 0 8px;">詳細はこちら:</p>
 <p style="margin:0 0 6px;"><span style="color:#3b5bdb;">{あなたのトラッキングリンク}</span></p>
 <p style="margin:0 0 16px;"><a href="https://taskmate-system-catalog.netlify.app" style="color:#3b5bdb;text-decoration:underline;">https://taskmate-system-catalog.netlify.app</a>（システム一覧）</p>
