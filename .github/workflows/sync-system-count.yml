@@ -33,23 +33,3 @@ jobs:
           git commit -m "chore: sync system count to $(grep -o '[0-9]*' lib/generated/system-count.ts)"
           git push
           echo "changed=true" >> $GITHUB_OUTPUT
-
-      - name: Deploy to Netlify
-        run: |
-          cd netlify-tracking/frontend
-          zip -r /tmp/deploy.zip .
-          DEPLOY_ID=$(curl -s -X POST \
-            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
-            -H "Content-Type: application/zip" \
-            --data-binary @/tmp/deploy.zip \
-            "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys" \
-            | jq -r '.id')
-          echo "Deploy ID: $DEPLOY_ID"
-          if [ "$DEPLOY_ID" = "null" ] || [ -z "$DEPLOY_ID" ]; then
-            echo "Deploy failed"
-            exit 1
-          fi
-          echo "Deploy successful"
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
