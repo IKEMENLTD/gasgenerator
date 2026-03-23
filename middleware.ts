@@ -5,7 +5,8 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
 
   // gasgenerator.onrender.com → taskmateai.net にリダイレクト
-  if (hostname === 'gasgenerator.onrender.com') {
+  // ただしNetlifyプロキシ経由のリクエストはリダイレクトしない（ループ防止）
+  if (hostname === 'gasgenerator.onrender.com' && !request.headers.get('x-nf-request-id')) {
     const url = new URL(request.nextUrl.pathname + request.nextUrl.search, 'https://taskmateai.net')
     return NextResponse.redirect(url, 301)
   }

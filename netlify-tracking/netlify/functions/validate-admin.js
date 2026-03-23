@@ -22,15 +22,18 @@ exports.handler = async (event, context) => {
     try {
         const { username, password } = JSON.parse(event.body);
 
-        // 環境変数から認証情報を取得（2アカウント対応）
+        // 環境変数から認証情報を取得（3アカウント対応）
         const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
         const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'TaskMate2026Admin';
         const ADMIN_USERNAME_2 = process.env.ADMIN_USERNAME_2 || 'admin';
         const ADMIN_PASSWORD_2 = process.env.ADMIN_PASSWORD_2 || 'TaskMate2026Admin';
+        const ADMIN_USERNAME_3 = process.env.ADMIN_USERNAME_3 || 'info@ikemen.ltd';
+        const ADMIN_PASSWORD_3 = process.env.ADMIN_PASSWORD_3 || 'akutu4256';
 
         const isValid =
             (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) ||
-            (username === ADMIN_USERNAME_2 && password === ADMIN_PASSWORD_2);
+            (username === ADMIN_USERNAME_2 && password === ADMIN_PASSWORD_2) ||
+            (username === ADMIN_USERNAME_3 && password === ADMIN_PASSWORD_3);
 
         if (isValid) {
             return {
