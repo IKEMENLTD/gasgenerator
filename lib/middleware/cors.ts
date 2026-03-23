@@ -322,9 +322,9 @@ export const corsPresets = {
   // 本番環境
   production: {
     origin: CorsMiddleware.createOriginMatcher([
-      'https://gasgenerator.onrender.com',
-      'https://www.gasgenerator.com',
-      'https://gasgenerator.com'
+      'https://taskmateai.net',
+      'https://www.taskmateai.net',
+      'https://gasgenerator.onrender.com'
     ]),
     credentials: true,
     maxAge: 86400

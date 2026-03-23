@@ -109,6 +109,55 @@
   to = "/agency/index.html"
   status = 200
 
+# ===== Render app proxy (Next.jsページをtaskmateai.net経由で表示) =====
+[[redirects]]
+  from = "/_next/*"
+  to = "https://gasgenerator.onrender.com/_next/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/systems/*"
+  to = "https://gasgenerator.onrender.com/systems/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/mypage"
+  to = "https://gasgenerator.onrender.com/mypage"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/terms"
+  to = "https://gasgenerator.onrender.com/terms"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/auth"
+  to = "https://gasgenerator.onrender.com/auth"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/liff"
+  to = "https://gasgenerator.onrender.com/liff"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/s/*"
+  to = "https://gasgenerator.onrender.com/s/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/demo"
+  to = "https://gasgenerator.onrender.com/demo"
+  status = 200
+  force = true
+
 # LP用 SPA routing - 上記ルールに該当しないパスはLP用index.htmlで処理
 [[redirects]]
   from = "/*"
@@ -126,7 +175,7 @@
     Cache-Control = "no-cache, no-store, must-revalidate"
     Pragma = "no-cache"
     Expires = "0"
-    Content-Security-Policy = "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://cdnjs.cloudflare.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://code.getmdl.io; img-src 'self' data: https:; connect-src 'self' https://gasgenerator.onrender.com https://api64.ipify.org https://api.ipify.org https://ipinfo.io https://*.supabase.co https://www.google-analytics.com https://www.facebook.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self' https://drive.google.com https://syoruitemplate.netlify.app https://www.facebook.com;"
+    Content-Security-Policy = "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://cdnjs.cloudflare.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://code.getmdl.io; img-src 'self' data: https:; connect-src 'self' https://gasgenerator.onrender.com https://taskmateai.net https://api64.ipify.org https://api.ipify.org https://ipinfo.io https://*.supabase.co https://www.google-analytics.com https://www.facebook.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self' https://drive.google.com https://syoruitemplate.netlify.app https://www.facebook.com;"
 
 # Function headers for CORS
 [[headers]]

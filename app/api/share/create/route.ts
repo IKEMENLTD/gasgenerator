@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     })
 
     // URLを生成
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://gasgenerator.onrender.com'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://taskmateai.net'
     const shareUrl = `${baseUrl}/s/${codeShare.short_id}`
 
     // QRコードを生成（オプション）

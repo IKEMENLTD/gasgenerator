@@ -422,7 +422,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
     // URLエンコードを確実に行う
     const encodedUserId = encodeURIComponent(userId)
     const encodedSignature = encodeURIComponent(signature)
-    const myPageUrl = `https://gasgenerator.onrender.com/mypage?uid=${encodedUserId}&sig=${encodedSignature}`
+    const myPageUrl = `https://taskmateai.net/mypage?uid=${encodedUserId}&sig=${encodedSignature}`
 
     if (messageText === 'マイページ' ||
       messageText === 'マイステータス' ||
@@ -617,7 +617,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
       const encodedUserId = btoa(userId)
       const timestamp = Date.now().toString()
       const sig = await generateUrlSignature(`${encodedUserId}:${timestamp}`)
-      const catalogUrl = `https://gasgenerator.onrender.com/systems/catalog?u=${encodeURIComponent(encodedUserId)}&t=${timestamp}&s=${sig}`
+      const catalogUrl = `https://taskmateai.net/systems/catalog?u=${encodeURIComponent(encodedUserId)}&t=${timestamp}&s=${sig}`
 
       // Flex Messageでカタログページへのリンクを表示
       await lineClient.replyMessage(replyToken, [{
@@ -780,7 +780,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
 
           if (catalogMatch) {
             const sheetUrl = getSpreadsheetUrl(catalogMatch.id)
-            const catalogUrl = `https://gasgenerator.onrender.com/systems/catalog?id=${catalogMatch.id}`
+            const catalogUrl = `https://taskmateai.net/systems/catalog?id=${catalogMatch.id}`
 
             // サブスクリプション判定（usersテーブルで統一）
             const { data: catUser } = await supabaseAdmin
@@ -1432,7 +1432,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
                 } : {
                   type: 'uri',
                   label: '詳細を見る',
-                  uri: `https://gasgenerator.onrender.com/terms?plan=premium&user_id=${userId}`
+                  uri: `https://taskmateai.net/terms?plan=premium&user_id=${userId}`
                 }]
               },
               {
@@ -1445,7 +1445,7 @@ async function processTextMessage(event: any, requestId: string): Promise<boolea
                 } : {
                   type: 'uri',
                   label: '詳細を見る',
-                  uri: `https://gasgenerator.onrender.com/terms?plan=professional&user_id=${userId}`
+                  uri: `https://taskmateai.net/terms?plan=professional&user_id=${userId}`
                 }]
               }
             ]
@@ -2045,8 +2045,8 @@ async function startCodeGeneration(
     if (!premiumStatus.canGenerate) {
       // 制限に達した場合 - カルーセルで両プランを表示
       // 利用規約ページ経由でStripeに誘導
-      const termsUrlPremium = `https://gasgenerator.onrender.com/terms?plan=premium&user_id=${userId}`
-      const termsUrlProfessional = `https://gasgenerator.onrender.com/terms?plan=professional&user_id=${userId}`
+      const termsUrlPremium = `https://taskmateai.net/terms?plan=premium&user_id=${userId}`
+      const termsUrlProfessional = `https://taskmateai.net/terms?plan=professional&user_id=${userId}`
 
       await lineClient.replyMessage(replyToken, [{
         type: 'template',

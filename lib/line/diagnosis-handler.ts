@@ -123,7 +123,7 @@ function buildResultCarousel(recommendations: Array<{
           action: {
             type: 'uri',
             label: 'カタログで見る',
-            uri: `https://gasgenerator.onrender.com/systems/catalog?id=${rec.systemId}&${catalogAuthParams}`,
+            uri: `https://taskmateai.net/systems/catalog?id=${rec.systemId}&${catalogAuthParams}`,
           },
           style: 'primary',
           color: headerColors[i] || '#06b6d4',

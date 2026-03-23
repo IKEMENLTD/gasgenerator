@@ -1,0 +1,33 @@
+# API Proxy to Render backend
+/api/*  https://gasgenerator.onrender.com/api/:splat  200!
+
+# Blog redirects
+/blog   https://blog.taskmateai.net  301!
+/blog/* https://blog.taskmateai.net/:splat  301!
+
+# Tracking link rewrite (SPA) - force to override Next.js plugin
+/t/*    /t/index.html   200!
+
+# Static pages (MUST be before SPA/catch-all, with force!)
+/shindan        /shindan.html        200!
+/agency/guide   /agency/guide.html   200!
+
+# Admin dashboard SPA (NO force - allows existing files like dashboard.js to be served)
+/admin    /admin/index.html   200!
+/admin/*  /admin/index.html   200
+
+# Agency dashboard SPA (NO force - allows existing files like dashboard.js to be served)
+/agency/*   /agency/index.html  200
+
+# Render app proxy (Next.js pages served via taskmateai.net)
+/_next/*      https://gasgenerator.onrender.com/_next/:splat      200!
+/systems/*    https://gasgenerator.onrender.com/systems/:splat    200!
+/mypage       https://gasgenerator.onrender.com/mypage            200!
+/terms        https://gasgenerator.onrender.com/terms             200!
+/auth         https://gasgenerator.onrender.com/auth              200!
+/liff         https://gasgenerator.onrender.com/liff              200!
+/s/*          https://gasgenerator.onrender.com/s/:splat          200!
+/demo         https://gasgenerator.onrender.com/demo              200!
+
+# LP SPA fallback (must be last)
+/*  /index.html  200

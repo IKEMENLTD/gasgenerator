@@ -310,7 +310,7 @@ export class QueueProcessor {
         })
 
         // URLを生成
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://gasgenerator.onrender.com'
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://taskmateai.net'
         codeShareUrl = `${baseUrl}/s/${codeShare.short_id}`
 
         logger.info('Code share URL created', {

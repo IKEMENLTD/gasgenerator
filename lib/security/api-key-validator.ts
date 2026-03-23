@@ -6,6 +6,7 @@ import { logger } from '../utils/logger'
  */
 export class ApiKeyValidator {
   private static readonly ALLOWED_DOMAINS = [
+    'taskmateai.net',
     'gasgenerator.onrender.com',
     'localhost:3000',
     'localhost:10000'

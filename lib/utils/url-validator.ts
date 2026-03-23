@@ -8,6 +8,7 @@ import { logger } from './logger'
 export class URLValidator {
   // 許可されたドメインのリスト
   private static readonly ALLOWED_DOMAINS = [
+    'taskmateai.net',
     'gasgenerator.onrender.com',
     'localhost:3000',
     'localhost:3001',
