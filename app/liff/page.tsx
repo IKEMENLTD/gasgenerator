@@ -105,11 +105,17 @@ export default function LiffBridgePage() {
           if (friendship.friendFlag) {
             setStatus('success')
             setMessage(`${profile.displayName}さん、連携が完了しました！`)
+            addLog(`isInClient: ${window.liff.isInClient()}`)
             setTimeout(() => {
               if (window.liff.isInClient()) {
                 window.liff.closeWindow()
+              } else {
+                // ブラウザからのアクセス → LINEトークに遷移
+                addLog('Not in LINE client, redirecting to LINE...')
+                const targetUrl = encodedLineUrl ? decodeURIComponent(encodedLineUrl) : 'https://lin.ee/4NLfSqH'
+                window.location.href = targetUrl
               }
-            }, 5000)
+            }, 3000)
           } else {
             setStatus('friend-prompt')
             setMessage('友だち追加して利用開始！')
@@ -119,6 +125,14 @@ export default function LiffBridgePage() {
           addLog(`getFriendship error (non-critical): ${friendError}`)
           setStatus('success')
           setMessage(`${profile.displayName}さん、連携が完了しました！`)
+          setTimeout(() => {
+            if (window.liff.isInClient()) {
+              window.liff.closeWindow()
+            } else {
+              const targetUrl = encodedLineUrl ? decodeURIComponent(encodedLineUrl) : 'https://lin.ee/4NLfSqH'
+              window.location.href = targetUrl
+            }
+          }, 3000)
         }
       } catch (error) {
         const errMsg = error instanceof Error ? error.message : String(error)
@@ -197,9 +211,27 @@ export default function LiffBridgePage() {
           )}
 
           {status === 'success' && (
-            <p style={{ color: '#06C755', fontSize: '14px', margin: 0, fontWeight: 'bold' }}>
-              まもなく画面が閉じます
-            </p>
+            <div>
+              <p style={{ color: '#06C755', fontSize: '14px', margin: '0 0 16px', fontWeight: 'bold' }}>
+                3秒後にLINEに移動します...
+              </p>
+              <button
+                onClick={handleAddFriend}
+                style={{
+                  background: '#06C755',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '14px 32px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+              >
+                LINEを開く
+              </button>
+            </div>
           )}
 
           {status === 'friend-prompt' && (
