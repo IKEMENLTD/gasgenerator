@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://gasgenerator.onrender.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://taskmateai.net'),
   title: 'GAS自動生成システム',
   description: 'LINEから自然言語でGoogle Apps Scriptを自動生成',
   icons: {

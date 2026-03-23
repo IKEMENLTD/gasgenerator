@@ -17,7 +17,7 @@ interface PageProps {
 // メタデータ生成（動的OGP対応）
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://gasgenerator.onrender.com'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://taskmateai.net'
     const response = await fetch(`${baseUrl}/api/share/${params.id}`, {
       cache: 'no-store'
     })
@@ -61,7 +61,7 @@ export default async function SharePage({ params }: PageProps) {
 
   // サーバーサイドでコードデータを取得
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://gasgenerator.onrender.com'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://taskmateai.net'
     const headersList = headers()
     const password = headersList.get('x-password')
 
