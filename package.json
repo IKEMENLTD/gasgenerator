@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/sync-system-count.js",
+    "prebuild": "node scripts/sync-system-count.js && (node scripts/generate_catalog_summary_node.js || true)",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
