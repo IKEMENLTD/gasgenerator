@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'app/systems/catalog/page.tsx'
+      - 'netlify-tracking/frontend/**'
+      - 'lib/data/systems-data.ts'
   workflow_dispatch:
 
 permissions:
@@ -33,3 +35,19 @@ jobs:
           git commit -m "chore: sync system count to $(grep -o '[0-9]*' lib/generated/system-count.ts)"
           git push
           echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          cd netlify-tracking/frontend
+          zip -r /tmp/deploy.zip .
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+            -H "Content-Type: application/zip" \
+            --data-binary @/tmp/deploy.zip \
+            "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys")
+          echo "Deploy response: $(echo $RESPONSE | head -c 200)"
+          DEPLOY_STATE=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin).get('state','unknown'))" 2>/dev/null || echo "unknown")
+          echo "Deploy state: $DEPLOY_STATE"
