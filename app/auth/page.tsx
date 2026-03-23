@@ -48,7 +48,7 @@ function AuthPageContent() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          window.location.href = process.env.NEXT_PUBLIC_LINE_FRIEND_URL || 'https://lin.ee/taskmate'
+          window.location.href = process.env.NEXT_PUBLIC_LINE_FRIEND_URL || 'https://lin.ee/4NLfSqH'
           return 0
         }
         return prev - 1
@@ -178,7 +178,7 @@ function AuthPageContent() {
             </div>
 
             <a
-              href={process.env.NEXT_PUBLIC_LINE_FRIEND_URL || 'https://lin.ee/taskmate'}
+              href={process.env.NEXT_PUBLIC_LINE_FRIEND_URL || 'https://lin.ee/4NLfSqH'}
               className="inline-block w-full px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               今すぐLINEに移動 →

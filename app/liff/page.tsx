@@ -146,10 +146,22 @@ export default function LiffBridgePage() {
     initLiff()
   }, [sdkLoaded])
 
+  // グローバルタイムアウト: 15秒以内にsuccess/friend-promptにならなければ強制フォールバック
+  useEffect(() => {
+    const globalTimeout = setTimeout(() => {
+      if (status === 'loading' || status === 'linking') {
+        addLog('GLOBAL TIMEOUT: 15s elapsed, forcing fallback')
+        setStatus('friend-prompt')
+        setMessage('LINE友だち追加で利用開始')
+        if (!lineUrl) setLineUrl('https://lin.ee/4NLfSqH')
+      }
+    }, 15000)
+    return () => clearTimeout(globalTimeout)
+  }, [status, lineUrl])
+
   const handleAddFriend = () => {
-    if (lineUrl) {
-      window.location.href = lineUrl
-    }
+    const url = lineUrl || 'https://lin.ee/4NLfSqH'
+    window.location.href = url
   }
 
   return (
