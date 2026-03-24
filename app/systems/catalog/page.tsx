@@ -1580,9 +1580,10 @@ export default function SystemCatalogPage() {
   // iframe状態リセット（システム切り替え時）
   useEffect(() => {
     setIframeLoadState('loading')
+    // GAS等の外部サイトは読み込みが遅いため15秒でタイムアウト
     const timer = setTimeout(() => {
       setIframeLoadState(prev => prev === 'loading' ? 'loaded' : prev)
-    }, 6000)
+    }, 15000)
     return () => clearTimeout(timer)
   }, [selectedSystemId])
 
