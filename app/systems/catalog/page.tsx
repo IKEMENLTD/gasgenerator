@@ -1503,8 +1503,30 @@ export default function SystemCatalogPage() {
     downloadsLimit: 0,
       })
 
+  // エラーフィードバック
+  const [errorMessage, setErrorMessage] = useState('')
+
+  // iframe読み込み状態
+  const [iframeLoadState, setIframeLoadState] = useState<'loading' | 'loaded' | 'error'>('loading')
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+
+    // ダウンロードAPIからのエラーパラメータをチェック
+    const errorParam = params.get('error')
+    if (errorParam) {
+      const errorMap: Record<string, string> = {
+        'missing_params': 'リクエストパラメータが不正です。LINEからアクセスしてください。',
+        'expired': 'リンクの有効期限が切れています。LINEからカタログに再アクセスしてください。',
+        'invalid': 'リンクが無効です。LINEから再度アクセスしてください。',
+        'paid_only': 'このシステムは有料プランのみダウンロード可能です。',
+        'not_ready': 'このシステムはまだダウンロード準備中です。',
+        'download_limit': 'ダウンロード回数の上限に達しました。翌月リセットされます。',
+        'server_error': 'サーバーエラーが発生しました。しばらくしてからお試しください。',
+      }
+      setErrorMessage(errorMap[errorParam] || 'エラーが発生しました。')
+      console.error('[Catalog Error]', errorParam)
+    }
 
     // URLの id パラメータでシステム初期選択
     const idParam = params.get('id')
@@ -1533,7 +1555,10 @@ export default function SystemCatalogPage() {
     const authParams = `u=${encodeURIComponent(u)}&t=${t}&s=${s}`
 
     fetch(`/api/systems/catalog-auth?${authParams}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`Auth API error: ${res.status}`)
+        return res.json()
+      })
       .then(data => {
         setAuth({
           loading: false,
@@ -1545,10 +1570,21 @@ export default function SystemCatalogPage() {
           downloadsLimit: data.downloadsLimit || 0,
                   })
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('[Catalog Auth Error]', error)
+        setErrorMessage('認証情報の確認に失敗しました。ページを再読み込みしてください。')
         setAuth({ loading: false, authenticated: false, isPaid: false, planName: '', authParams: '', downloadsRemaining: 0, downloadsLimit: 0, })
       })
   }, [])
+
+  // iframe状態リセット（システム切り替え時）
+  useEffect(() => {
+    setIframeLoadState('loading')
+    const timer = setTimeout(() => {
+      setIframeLoadState(prev => prev === 'loading' ? 'loaded' : prev)
+    }, 6000)
+    return () => clearTimeout(timer)
+  }, [selectedSystemId])
 
   // 検索フィルタ
   const filteredSystems = useMemo(() => {
@@ -1574,13 +1610,33 @@ export default function SystemCatalogPage() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-100">
+      {/* エラートースト */}
+      {errorMessage && (
+        <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-sm z-50 bg-red-50 border-l-4 border-red-400 rounded-lg p-4 shadow-lg">
+          <div className="flex gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-red-800">{errorMessage}</p>
+            </div>
+            <button
+              onClick={() => setErrorMessage('')}
+              className="flex-shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center text-red-400 hover:text-red-600"
+              aria-label="閉じる"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ヘッダー */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0 z-20">
         <div className="flex items-center gap-3">
           {/* モバイル用ハンバーガーボタン */}
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="lg:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+            className="lg:hidden min-w-[44px] min-h-[44px] p-1 -ml-2 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -1613,7 +1669,7 @@ export default function SystemCatalogPage() {
         <aside
           className={`
             fixed lg:static inset-y-0 left-0 z-40
-            w-80 bg-white border-r border-gray-200
+            w-[85vw] sm:w-80 bg-white border-r border-gray-200
             transform transition-transform duration-300 ease-in-out
             ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             flex flex-col
@@ -1624,7 +1680,7 @@ export default function SystemCatalogPage() {
             <span className="font-bold text-gray-900">システム一覧</span>
             <button
               onClick={() => setIsSidebarOpen(false)}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1661,8 +1717,24 @@ export default function SystemCatalogPage() {
           {/* システムリスト */}
           <nav className="flex-1 overflow-y-auto p-2">
             {filteredSystems.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 text-sm">
-                該当するシステムがありません
+              <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                <svg className="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <p className="text-sm text-gray-600 mb-1">該当するシステムがありません</p>
+                {searchQuery && (
+                  <p className="text-xs text-gray-400 mb-4">
+                    「<span className="font-semibold text-gray-500">{searchQuery}</span>」で検索中
+                  </p>
+                )}
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-cyan-500 text-white text-sm font-medium rounded-lg hover:bg-cyan-600 transition-colors min-h-[44px]"
+                  >
+                    すべて表示
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-1">
@@ -1756,13 +1828,29 @@ export default function SystemCatalogPage() {
                         </svg>
                       </a>
                     </div>
-                    {/* iframe */}
-                    <iframe
-                      src={selectedSystem.previewUrl}
-                      className="flex-1 w-full"
-                      title={`${selectedSystem.name} プレビュー`}
-                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                    />
+                    {/* iframe + ローディング状態 */}
+                    <div className="flex-1 relative overflow-hidden">
+                      {iframeLoadState === 'loading' && (
+                        <div className="absolute inset-0 bg-white flex items-center justify-center z-10">
+                          <div className="flex flex-col items-center gap-3">
+                            <svg className="w-8 h-8 animate-spin text-cyan-500" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                            <p className="text-sm text-gray-500">プレビューを読み込み中...</p>
+                          </div>
+                        </div>
+                      )}
+                      <iframe
+                        key={selectedSystemId}
+                        src={selectedSystem.previewUrl}
+                        className={`w-full h-full transition-opacity duration-300 ${iframeLoadState === 'loaded' ? 'opacity-100' : 'opacity-0'}`}
+                        title={`${selectedSystem.name} プレビュー`}
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                        onLoad={() => setIframeLoadState('loaded')}
+                        onError={() => setIframeLoadState('error')}
+                      />
+                    </div>
                   </div>
                 ) : (
                   /* iframe非対応の場合 */
@@ -1885,7 +1973,7 @@ export default function SystemCatalogPage() {
                             href="https://timerex.net/s/cz1917903_47c5/7caf7949"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg shadow-orange-500/30"
+                            className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-orange-700 rounded-xl border-2 border-orange-400 bg-white hover:bg-orange-50 transition-all"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -1958,7 +2046,7 @@ export default function SystemCatalogPage() {
                         href="https://taskmateai.net/shindan?utm_source=catalog&utm_medium=cta"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl transition-all shadow-lg shadow-violet-500/30"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-violet-700 border-2 border-violet-400 bg-white hover:bg-violet-50 rounded-xl transition-all"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -1977,7 +2065,7 @@ export default function SystemCatalogPage() {
                           href={selectedSystem.manualUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl transition-all shadow-lg shadow-blue-500/30"
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-blue-700 border-2 border-blue-400 bg-white hover:bg-blue-50 rounded-xl transition-all"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -2062,7 +2150,7 @@ export default function SystemCatalogPage() {
                             href="https://timerex.net/s/cz1917903_47c5/7caf7949"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg shadow-orange-500/30 text-sm"
+                            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-orange-700 rounded-xl border-2 border-orange-400 bg-white hover:bg-orange-50 transition-all text-sm"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -2138,7 +2226,7 @@ export default function SystemCatalogPage() {
                         href="https://taskmateai.net/shindan?utm_source=catalog&utm_medium=cta"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl transition-all shadow-lg shadow-violet-500/30 text-sm"
+                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-violet-700 border-2 border-violet-400 bg-white hover:bg-violet-50 rounded-xl transition-all text-sm"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -2157,7 +2245,7 @@ export default function SystemCatalogPage() {
                           href={selectedSystem.manualUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl transition-all shadow-lg shadow-blue-500/30 text-sm"
+                          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 font-bold text-blue-700 border-2 border-blue-400 bg-white hover:bg-blue-50 rounded-xl transition-all text-sm"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -2222,7 +2310,7 @@ export default function SystemCatalogPage() {
                       href="https://timerex.net/s/cz1917903_47c5/7caf7949"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 transition-all shadow-md shadow-orange-500/30 flex-shrink-0"
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-orange-700 rounded-lg border-2 border-orange-400 bg-white hover:bg-orange-50 transition-all flex-shrink-0"
                     >
                       相談
                     </a>
@@ -2238,7 +2326,7 @@ export default function SystemCatalogPage() {
                   {/* 右: 展開トグル */}
                   <button
                     onClick={() => setIsInfoExpanded(!isInfoExpanded)}
-                    className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                    className="flex-shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
                     aria-label={isInfoExpanded ? '情報パネルを閉じる' : '情報パネルを開く'}
                   >
                     <svg
