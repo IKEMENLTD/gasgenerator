@@ -1561,7 +1561,7 @@ const systems = [
 ]
 // catalog-version: 140
 export default function SystemCatalogPage() {
-  const [selectedSystemId, setSelectedSystemId] = useState<string | null>('01')
+  const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
   // モバイルでは最初からサイドバー（システム一覧）を開いた状態にする
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -1663,6 +1663,10 @@ export default function SystemCatalogPage() {
     }, 15000)
     return () => clearTimeout(timer)
   }, [selectedSystemId])
+
+  // おすすめシステム（Netlifyホスト=即表示 + ダッシュボード/可視化あり + 業種幅広い）
+  const featuredIds = useMemo(() => ['44', '114', '123', '120', '32', '39', '116', '67'], [])
+  const featuredSystems = useMemo(() => featuredIds.map(id => systems.find(s => s.id === id)).filter(Boolean) as typeof systems, [featuredIds])
 
   // 検索フィルタ
   const filteredSystems = useMemo(() => {
@@ -1794,6 +1798,56 @@ export default function SystemCatalogPage() {
 
           {/* システムリスト */}
           <nav className="flex-1 overflow-y-auto p-2">
+            {/* おすすめセクション（検索中は非表示） */}
+            {!searchQuery.trim() && (
+              <div className="mb-3">
+                <div className="flex items-center gap-1.5 px-2 py-1.5 mb-1">
+                  <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <span className="text-xs font-bold text-gray-700 tracking-wide">おすすめ</span>
+                </div>
+                <div className="space-y-1">
+                  {featuredSystems.map((system) => (
+                    <button
+                      key={`featured-${system.id}`}
+                      onClick={() => handleSelectSystem(system.id)}
+                      className={`
+                        w-full text-left p-3 rounded-xl transition-all duration-200
+                        ${selectedSystemId === system.id
+                          ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30'
+                          : 'bg-amber-50 hover:bg-amber-100 text-gray-700 border border-amber-200/60'
+                        }
+                      `}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span
+                          className={`
+                            text-xs font-bold px-2 py-1 rounded-md flex-shrink-0
+                            ${selectedSystemId === system.id ? 'bg-white/20 text-white' : 'bg-amber-200/60 text-amber-700'}
+                          `}
+                        >
+                          {system.id}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className={`font-medium text-sm truncate ${selectedSystemId === system.id ? 'text-white' : 'text-gray-900'}`}>
+                            {system.name}
+                          </div>
+                          <div className={`text-xs truncate mt-0.5 ${selectedSystemId === system.id ? 'text-white/80' : 'text-gray-500'}`}>
+                            {system.tagline}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <div className="border-b border-gray-200 mt-3 mb-1" />
+                <div className="flex items-center gap-1.5 px-2 py-1.5">
+                  <span className="text-xs font-bold text-gray-500 tracking-wide">すべてのシステム</span>
+                  <span className="text-xs text-gray-400">({systems.length})</span>
+                </div>
+              </div>
+            )}
             {filteredSystems.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
                 <svg className="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
