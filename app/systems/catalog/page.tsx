@@ -1503,6 +1503,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1_UXFEH6T9l2IGdWDRP8KctPmbd9jl94oHEWW-bgCE_U/edit?gid=0#gid=0',
     manualUrl: '/manuals/price-revision-checker.txt',
   },
+  {
+    id: '136',
+    name: '提出書類チェッカー',
+    tagline: '書類提出プロセスの標準化・チェック・進捗管理',
+    description: '書類テンプレートでチェックリストを標準化し、添付漏れ・不備を防止する提出書類管理システム。テンプレート作成→タスク割当→書類添付→提出→確認/差戻し→完了の一連のワークフローを管理。未添付書類の視覚的警告・提出ロック機能で不完全提出を物理的に防止。期限間近リマインダー・期限超過通知・差戻し通知・完了通知を自動送信。ダッシュボードでステータス分布・期限超過・完了率を可視化。月次/週次レポート自動生成。ユーザー・グループ・カテゴリ・ロール・通知テンプレート管理搭載。CSVエクスポート・操作ログ・バックアップ自動作成。Soft UIデザイン・完全レスポンシブ対応・ハンバーガーメニュー。10画面SPA・17シート・8トリガー構成。',
+    tags: ['書類管理', 'チェックリスト', 'ワークフロー', '自動通知'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzienqbMkrPeya1dyt2JLYmyLKePRWNeRB9yeuytiVYUHYA3AYJbHbuzPhyNs_o7l95Cg/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1s53MYVyH0ixHa8wi_qeyymXd2Ob7T2UYJGI16LXMJoM/edit?gid=0#gid=0',
+    manualUrl: '/manuals/document-submission-checker.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
