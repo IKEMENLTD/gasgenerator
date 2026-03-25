@@ -1536,8 +1536,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1KzDI9xdK8thSZPJsVw7wZfnbwxugBgpFCxA6Gy3h_98/edit?gid=0#gid=0',
     manualUrl: '/manuals/data-integrity-checker.txt',
   },
+  {
+    id: '139',
+    name: '法定労働時間アラート',
+    tagline: '残業時間管理・36協定遵守支援システム',
+    description: '従業員の残業時間をリアルタイムで集計し、36協定の上限値と自動比較してアラート通知を行うシステム。月次・週次の残業集計、複数月平均計算、残業ランキング、組織別ダッシュボードを搭載。CSVインポート対応、勤怠データ手動入力、通知テンプレートカスタマイズ、バッジ実績機能、レポートCSVエクスポート対応。8種の自動トリガー（月次集計、週次速報、日次サマリー、ランキング、バッジ判定、協定期限通知、ログクリーンアップ）。ユーザー/組織/雇用形態/36協定のマスタ管理、操作ログ、権限管理対応。テストデータ一括挿入機能搭載。Soft UIデザイン・完全レスポンシブ対応。14画面SPA・17シート・8トリガー構成。',
+    tags: ['残業管理', '36協定', 'アラート通知', '労務管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzkWp8qsbrclWSXM6FhbXZzlbHZP89lAmeyPJc_T7pIaejBr6xNtBHRkOtmXUHeMCvynA/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1FKD-Lvf2NDQmj6VmHLcsdbuQh-FB_FR6pKlF5dYHyiE/edit?gid=0#gid=0',
+    manualUrl: '/manuals/legal-overtime-alert.txt',
+  },
 ]
-// catalog-version: 138
+// catalog-version: 139
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('01')
   const [searchQuery, setSearchQuery] = useState('')
