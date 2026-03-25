@@ -56,8 +56,8 @@ export default function Comparison() {
                     </ul>
                     <h5>急ぎオプション</h5>
                     <ul>
-                        <li><strong style={{ color: 'var(--force)' }}>+¥50,000で納期半分に短縮</strong></li>
-                        <li>急ぎの案件も対応可能</li>
+                        <li><strong style={{ color: 'var(--force)' }}>通常納期の半分を目安に、+¥50,000で対応</strong></li>
+                        <li>要件・選択システムにより変動するため、ご要望をお聞きした上で個別見積もり</li>
                     </ul>
                     <h5>こんな方におすすめ</h5>
                     <ul>
