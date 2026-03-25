@@ -1481,6 +1481,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1fAyXNE3KdDWObgbBaTjvS-QZhRTkpwyKGJhgVM5pqgc/edit',
     manualUrl: 'https://drive.google.com/file/d/1QYs3D1qIQ3NVokYNVmO8CttoVkK1yN8g/view?usp=drive_link',
   },
+  {
+    id: '134',
+    name: '住所・郵便番号チェッカー',
+    tagline: '郵便番号と住所の整合性を自動チェックし誤送付を防止',
+    description: '住所データの登録・編集・一括インポート（CSVカラムマッピング対応）から、郵便番号辞書（zipcloud API連携）との自動整合性チェック、エラー箇所のハイライト表示・修正候補ワンクリック適用までを一気通貫で提供するシステム。チェックは郵便番号-住所不一致・必須項目欠落・都道府県不正・全角半角混在の4種を自動判定し、エラーなし/軽微エラー/重大エラーの3段階で評価。データクレンジング機能で全角半角統一・略称正式名称変換・不要スペース除去をプレビュー付きで一括適用。住所マスタ登録、CSVエクスポート、チェック履歴・修正履歴・インポート履歴の全記録、ユーザー・チーム・権限管理（管理者/編集者/閲覧者）、ダッシュボードでのステータス別分布・エラー種別棒グラフ可視化に対応。毎日04:00の自動チェック・毎週月曜の未修正リマインド通知・月次レポート生成・無効アカウント自動ロックの定期トリガー搭載。Soft UIデザイン・完全レスポンシブ対応・検索サジェスト付き。10画面SPA・16シート・5トリガー構成。',
+    tags: ['住所管理', 'データ品質', '郵便番号', 'チェック自動化'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzBBcNYqT1-z_JiF-H4yaRaqYRVnn_uzSAMi9Z1BicgxGXpRgP7I21flg0s-ZKzR9enNQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1xTy-FFqJVplWSH4S6LR6Au_NIH38S43s8oRSMc91j3s/edit?gid=0#gid=0',
+    manualUrl: '/manuals/address-postal-checker.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
