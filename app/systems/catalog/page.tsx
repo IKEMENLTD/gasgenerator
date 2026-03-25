@@ -1537,7 +1537,7 @@ const systems = [
     manualUrl: '/manuals/data-integrity-checker.txt',
   },
 ]
-
+// catalog-version: 138
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('01')
   const [searchQuery, setSearchQuery] = useState('')
