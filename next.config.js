@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  generateBuildId: async () => 'build-' + Date.now(),
   typescript: {
     // 常に型チェックを実施（セキュリティのため）
     ignoreBuildErrors: false,
