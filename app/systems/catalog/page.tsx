@@ -1,5 +1,5 @@
 'use client'
-// catalog-rebuild: 20260325-140
+// catalog-rebuild: 20260325-140b
 import { useState, useMemo, useEffect } from 'react'
 
 // 認証状態の型
