@@ -1525,6 +1525,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ym1t-W4gAc2ObRl9VJWsyisWft0Gat1pJN56MKESxjs/edit?gid=0#gid=0',
     manualUrl: '/manuals/allergy-management.txt',
   },
+  {
+    id: '138',
+    name: 'データ整合性チェッカー',
+    tagline: '複数シート間のデータ不整合を自動検出・管理',
+    description: '複数のスプレッドシート間でキー項目（社員番号、取引先コードなど）を自動照合し、不整合を検出・管理するシステム。完全一致・存在チェック・部分一致など多様な照合方式に対応。不整合データの担当者割当・修正進捗管理・コメント機能搭載。定期自動チェック（毎日/毎週/毎月）、メール通知（検出・リマインダー・エスカレーション）、ダッシュボード・日次/週次/月次レポートで全体状況を可視化。ユーザー/ロール管理、操作ログ、通知テンプレートカスタマイズ対応。テストデータ一括挿入機能搭載。Soft UIデザイン・完全レスポンシブ対応（カードビュー）。9画面SPA・19シート・8トリガー構成。',
+    tags: ['データ整合性', '自動チェック', '不整合管理', '品質管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzjtjCCj5uXd30LhePqbGqqXJ05ZMnwCYE75Znc7c_XLiZh8NFWg-FVrM1qDJnXsshmyA/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1KzDI9xdK8thSZPJsVw7wZfnbwxugBgpFCxA6Gy3h_98/edit?gid=0#gid=0',
+    manualUrl: '/manuals/data-integrity-checker.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
