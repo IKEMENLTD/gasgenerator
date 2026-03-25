@@ -64,7 +64,7 @@ export default function Pricing({ userId }: PricingProps = {}) {
                         <li>優先サポート対応</li>
                     </ul>
                     <p style={{ fontSize: '0.75rem', color: 'var(--force)', marginTop: '10px', padding: '8px 12px', background: 'rgba(45, 143, 94, 0.05)', borderRadius: '4px' }}>
-                        <strong>急ぎオプション：</strong>+¥50,000で納期半分
+                        <strong>急ぎオプション：</strong>通常納期の半分を目安に、+¥50,000で対応。要件・選択システムにより変動するため個別見積もり。
                     </p>
                     <a href={termsParams('professional')} className="btn-core">このプランで始める</a>
                 </div>
