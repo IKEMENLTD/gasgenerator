@@ -1492,6 +1492,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1xTy-FFqJVplWSH4S6LR6Au_NIH38S43s8oRSMc91j3s/edit?gid=0#gid=0',
     manualUrl: '/manuals/address-postal-checker.txt',
   },
+  {
+    id: '135',
+    name: '価格改定漏れチェック',
+    tagline: '価格改定計画と実売価格の不一致を自動検出・管理',
+    description: '価格改定計画を登録し、各販売チャネルの実際価格と照合して改定漏れ（不一致）を自動検出するシステム。手動チェック・自動日次チェック対応。不一致検出時にタスク自動作成・メール通知。商品マスタ・チャネルマスタ・ユーザー管理・カテゴリ管理・通知テンプレート管理を搭載。日次・週次・月次レポート自動生成。操作ログで全操作を記録。ダッシュボードで有効計画数・不一致件数・未完了タスク・登録商品数を可視化。テストデータ挿入・全データクリア機能付き。Soft UIデザイン・完全レスポンシブ対応（カード型テーブル）・ハンバーガーメニュー。12画面SPA・18シート・8トリガー構成。',
+    tags: ['価格管理', '不一致検出', 'タスク管理', '自動通知'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyiaFw97g6NWX_9eC4DNpp2T4qGLCFVFZusgR3SSQmqskWIhhLCJgV-lElXQC6b24H_/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1_UXFEH6T9l2IGdWDRP8KctPmbd9jl94oHEWW-bgCE_U/edit?gid=0#gid=0',
+    manualUrl: '/manuals/price-revision-checker.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
