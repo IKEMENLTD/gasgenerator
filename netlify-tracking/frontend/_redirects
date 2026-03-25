@@ -21,6 +21,7 @@
 
 # Render app proxy (Next.js pages served via taskmateai.net)
 /_next/*      https://gasgenerator.onrender.com/_next/:splat      200!
+/images/*     https://gasgenerator.onrender.com/images/:splat     200!
 /systems/*    https://gasgenerator.onrender.com/systems/:splat    200!
 /mypage       https://gasgenerator.onrender.com/mypage            200!
 /terms        https://gasgenerator.onrender.com/terms             200!

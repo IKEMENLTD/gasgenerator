@@ -44,6 +44,7 @@ export default function Pricing({ userId }: PricingProps = {}) {
                     <p style={{ fontSize: '0.8rem', color: 'var(--force)', marginTop: '5px' }}>2か月に1システムDL可能</p>
                     <ul className="features">
                         <li>カタログから選んでDL</li>
+                        <li>初回設置代行込み</li>
                         <li>現役エンジニアのチャットサポート</li>
                         <li>操作マニュアル付き</li>
                         <li>LINE即時サポート</li>

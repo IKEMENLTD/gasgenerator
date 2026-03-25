@@ -1,21 +1,14 @@
 [build]
-  publish = "frontend"
+  publish = "."
   functions = "netlify/functions"
-  command = "echo 'Build complete'"
+  # このディレクトリは純粋な静的ファイル。ビルド不要。
+  command = "echo 'Static site - no build required'"
 
 [build.environment]
   NODE_VERSION = "18"
-  # ⚠️ この設定はnetlify-tracking（代理店LP）専用。
-  # メインサイト（taskmateai.net）のNetlify環境変数には絶対に設定しないこと。
-  # メインサイトに設定すると@netlify/plugin-nextjsがスキップされ全ページ404になる。
+  # Next.jsプラグイン自動検出を無効化（恒久対策）
+  # package.jsonも削除済みだが、万が一復活した場合の多層防御
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
-
-# ===== API Proxy to Render backend =====
-[[redirects]]
-  from = "/api/*"
-  to = "https://gasgenerator.onrender.com/api/:splat"
-  status = 200
-  force = true
 
 # ===== ブログへのリダイレクト（サブドメイン） =====
 [[redirects]]
@@ -110,62 +103,7 @@
   to = "/agency/index.html"
   status = 200
 
-# ===== Render app proxy (Next.jsページをtaskmateai.net経由で表示) =====
-[[redirects]]
-  from = "/_next/*"
-  to = "https://gasgenerator.onrender.com/_next/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/images/*"
-  to = "https://gasgenerator.onrender.com/images/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/systems/*"
-  to = "https://gasgenerator.onrender.com/systems/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/mypage"
-  to = "https://gasgenerator.onrender.com/mypage"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/terms"
-  to = "https://gasgenerator.onrender.com/terms"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/auth"
-  to = "https://gasgenerator.onrender.com/auth"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/liff"
-  to = "https://gasgenerator.onrender.com/liff"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/s/*"
-  to = "https://gasgenerator.onrender.com/s/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/demo"
-  to = "https://gasgenerator.onrender.com/demo"
-  status = 200
-  force = true
-
-# LP用 SPA routing - 上記ルールに該当しないパスはLP用index.htmlで処理
+# LP SPA routing - serve index.html for all routes (最後に配置)
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -182,7 +120,7 @@
     Cache-Control = "no-cache, no-store, must-revalidate"
     Pragma = "no-cache"
     Expires = "0"
-    Content-Security-Policy = "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://cdnjs.cloudflare.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://code.getmdl.io; img-src 'self' data: https:; connect-src 'self' https://gasgenerator.onrender.com https://taskmateai.net https://api64.ipify.org https://api.ipify.org https://ipinfo.io https://*.supabase.co https://www.google-analytics.com https://www.facebook.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self' https://drive.google.com https://syoruitemplate.netlify.app https://www.facebook.com;"
+    Content-Security-Policy = "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://code.getmdl.io; img-src 'self' data: https:; connect-src 'self' https://api64.ipify.org https://api.ipify.org https://ipinfo.io https://*.supabase.co https://www.google-analytics.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;"
 
 # Function headers for CORS
 [[headers]]
@@ -210,7 +148,7 @@
   bundle = false
   minify = true
 [build.processing.html]
-  pretty_urls = true
+  pretty_urls = false
 
 # Function configuration
 [functions]
@@ -220,7 +158,7 @@
   external_node_modules = ["canvas", "sharp"]
 
 # 個別Function設定: webhook用
-[functions.webhook]
+[[functions.webhook]]
   # Node.jsにガベージコレクションフラグを追加
   node_args = ["--expose-gc", "--max-old-space-size=1024"]
 
@@ -230,4 +168,3 @@
 
 [context.branch-deploy]
   command = "echo 'Branch deploy'"
-
