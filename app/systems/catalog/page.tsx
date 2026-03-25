@@ -1514,6 +1514,17 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1s53MYVyH0ixHa8wi_qeyymXd2Ob7T2UYJGI16LXMJoM/edit?gid=0#gid=0',
     manualUrl: '/manuals/document-submission-checker.txt',
   },
+  {
+    id: '137',
+    name: 'アレルギー情報管理',
+    tagline: '顧客アレルギー情報の一元管理・事故防止',
+    description: '顧客ごとのアレルギー情報を一元管理し、来店予約と連動して事前にアレルギー対応を準備できるシステム。特定原材料28品目マスタ搭載。日次確認リスト自動生成、来店前日アラート通知、事故/ヒヤリハット記録、月次統計・スタッフ別実績レポートで安全性とサービス品質を向上。重篤度バッジ・警告アイコンで視覚的にリスクを把握。テストデータ一括挿入機能搭載。Soft UIデザイン・完全レスポンシブ対応。13画面SPA・20シート・8トリガー構成。',
+    tags: ['アレルギー管理', '顧客安全', '自動通知', 'リスク管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzl8P3oq0Muc2hqPlCFtraa9FFvDoKK65KUc_SxDp5z_kK-Ncsk3g3mdMCa-IRNWFlX/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1ym1t-W4gAc2ObRl9VJWsyisWft0Gat1pJN56MKESxjs/edit?gid=0#gid=0',
+    manualUrl: '/manuals/allergy-management.txt',
+  },
 ]
 
 export default function SystemCatalogPage() {
