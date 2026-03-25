@@ -1479,7 +1479,7 @@ const systems = [
     previewUrl: 'https://line-referral-tracker.netlify.app',
     iframeAllowed: true,
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1fAyXNE3KdDWObgbBaTjvS-QZhRTkpwyKGJhgVM5pqgc/edit',
-    manualUrl: 'https://drive.google.com/file/d/1QYs3D1qIQ3NVokYNVmO8CttoVkK1yN8g/view?usp=drive_link',
+    manualUrl: '/manuals/line-referral-tracker.txt',
   },
   {
     id: '134',
