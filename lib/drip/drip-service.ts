@@ -119,6 +119,32 @@ async function sendDripToUser(user: DripUser): Promise<boolean> {
     return false
   }
 
+  // 重複送信防止: 同じステップが既に送信済みかチェック
+  const { data: existingLog } = await (supabaseAdmin as any)
+    .from('drip_logs')
+    .select('id')
+    .eq('line_user_id', user.line_user_id)
+    .eq('step', nextStep)
+    .eq('success', true)
+    .limit(1)
+
+  if (existingLog && existingLog.length > 0) {
+    // 既に送信済み → drip_stepが更新されていない可能性があるので修復
+    logger.warn('Drip message already sent, fixing drip_step', {
+      lineUserId: user.line_user_id,
+      step: nextStep,
+    })
+    await (supabaseAdmin as any)
+      .from('users')
+      .update({
+        drip_step: nextStep,
+        drip_active: nextStep < DRIP_TOTAL_STEPS,
+        drip_stopped_reason: nextStep >= DRIP_TOTAL_STEPS ? 'completed' : null,
+      })
+      .eq('line_user_id', user.line_user_id)
+    return false
+  }
+
   const messages = getDripMessage(nextStep)
   if (!messages) {
     logger.error('No drip message found for step', { step: nextStep })
@@ -126,6 +152,25 @@ async function sendDripToUser(user: DripUser): Promise<boolean> {
   }
 
   try {
+    // 先にステップを更新（送信前に更新して重複を防止）
+    const { error: updateError } = await (supabaseAdmin as any)
+      .from('users')
+      .update({
+        drip_step: nextStep,
+        drip_active: nextStep < DRIP_TOTAL_STEPS,
+        drip_stopped_reason: nextStep >= DRIP_TOTAL_STEPS ? 'completed' : null,
+      })
+      .eq('line_user_id', user.line_user_id)
+
+    if (updateError) {
+      logger.error('Failed to update drip_step before sending', {
+        lineUserId: user.line_user_id,
+        step: nextStep,
+        error: updateError,
+      })
+      return false // DB更新失敗 → 送信しない（次回リトライ）
+    }
+
     // メッセージ送信
     for (const msg of messages) {
       const success = await lineClient.pushMessage(
@@ -136,16 +181,6 @@ async function sendDripToUser(user: DripUser): Promise<boolean> {
         throw new Error(`Failed to push drip message step ${nextStep}`)
       }
     }
-
-    // ステップを更新
-    await (supabaseAdmin as any)
-      .from('users')
-      .update({
-        drip_step: nextStep,
-        drip_active: nextStep < DRIP_TOTAL_STEPS,
-        drip_stopped_reason: nextStep >= DRIP_TOTAL_STEPS ? 'completed' : null,
-      })
-      .eq('line_user_id', user.line_user_id)
 
     // ログ記録
     await (supabaseAdmin as any)
