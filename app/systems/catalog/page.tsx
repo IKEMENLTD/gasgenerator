@@ -1,5 +1,5 @@
 'use client'
-// catalog-rebuild: 20260325-139
+// catalog-rebuild: 20260325-140
 import { useState, useMemo, useEffect } from 'react'
 
 // 認証状態の型
@@ -1547,8 +1547,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1FKD-Lvf2NDQmj6VmHLcsdbuQh-FB_FR6pKlF5dYHyiE/edit?gid=0#gid=0',
     manualUrl: '/manuals/legal-overtime-alert.txt',
   },
+  {
+    id: '140',
+    name: '請求金額ダブルチェック強制',
+    tagline: '請求書承認ワークフロー・金額ミス防止システム',
+    description: '請求書の金額ミスを防止するための承認ワークフローシステム。請求書の作成から承認、送付までのプロセスを一元管理し、複数承認者によるダブルチェックを強制。承認フロー（順序・条件）の柔軟な設定、承認履歴・操作ログの自動記録、メール通知リマインダー、ダッシュボードによる進捗可視化を搭載。クライアント・プロジェクト・ユーザー・部門・承認フローのマスタ管理対応。8種の自動トリガー（承認リマインダー、月次集計、未送付通知、ダッシュボード更新、ログクリーンアップ、承認フローチェック、入金確認、監査ログバックアップ）。Soft UIデザイン・完全レスポンシブ対応。9画面SPA・17シート・8トリガー構成。',
+    tags: ['請求書管理', '承認ワークフロー', 'ダブルチェック', '内部統制'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbw8oKYSfbwjllRaiVMFC-XNJj_-rIvoMRi2khD-FSfbgK8bU7PGrCxrCocIwCZEArRaFw/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/136zjjK9eQfyjEA237J1UwNRYr1lekljrd6dMg4Z3oPY/edit?gid=0#gid=0',
+    manualUrl: '/manuals/invoice-double-check.txt',
+  },
 ]
-// catalog-version: 139
+// catalog-version: 140
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('01')
   const [searchQuery, setSearchQuery] = useState('')
