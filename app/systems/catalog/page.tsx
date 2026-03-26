@@ -1635,8 +1635,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/17MOFFBBofbYWtgkF2hbBb87WIMPkg9V1YjILq_sgKD0/edit?gid=0#gid=0',
     manualUrl: '/manuals/project-budget-management.txt',
   },
+  {
+    id: '148',
+    name: 'クレーム対応スクリプト管理',
+    tagline: 'クレーム対応スクリプトの登録・検索・履歴管理を一元化',
+    description: 'カスタマーサポートチームのクレーム対応品質を標準化・向上させるためのシステム。対応スクリプト(話法)の登録・検索・承認フロー、クレーム対応履歴の記録・蓄積、顧客情報管理、FAQ・ナレッジベース、パフォーマンス分析・レポート(棒グラフ・プログレスバー・CSV出力)、ユーザー・ロール管理(4段階)、オペレーター目標設定・実績管理、バッジ・実績付与、通知・アラート、カテゴリ・クレーム事象・解決策のマスタ管理、操作ログ、テストデータ一括挿入/クリア機能搭載。日次/月次サマリー自動集計、未解決クレーム通知、バッジ自動付与、バックアップなど5種自動トリガー搭載。Soft UIデザイン・Nunito採用・完全レスポンシブ対応(320px-1920px)・モバイルカード表示・ハンバーガーメニュー・横スクロール完全排除。20シート構成。',
+    tags: ['クレーム管理', 'スクリプト管理', '顧客対応', 'ナレッジ管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyIvtNlDVVeioheVecPhNCGAbARtRO1LZnPmRHKPFOUS1EfF8-ogDldnpdKFcPjuEiA/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1aMYbf64eeg00WSGew16btv3cbuKMbdbsCpSRZtKbEH8/edit?gid=0#gid=0',
+    manualUrl: '/manuals/claim-script-management.txt',
+  },
 ]
-// catalog-version: 147-rebuild
+// catalog-version: 148-rebuild
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
