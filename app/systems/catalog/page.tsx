@@ -1624,8 +1624,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1H0s6XxD3zM9bH0nqBQpjLyEPK7mz4529J3DhKFz6fb4/edit?gid=0#gid=0',
     manualUrl: '/manuals/gaichuu-gyousha-hyouka.txt',
   },
+  {
+    id: '147',
+    name: 'プロジェクト予算管理',
+    tagline: 'プロジェクト予算の策定・実績入力・消化率可視化を一元管理',
+    description: 'プロジェクト単位での予算策定から実績入力、リアルタイムの進捗可視化、アラート通知までを一貫してサポートするシステム。プロジェクト管理、予算カテゴリ別設定、工数実績入力(人件費自動計算)、外注費実績入力、経費実績入力、承認ワークフロー(承認/差し戻し)、ダッシュボード(消化率プログレスバー・円グラフ・棒グラフ)、予算超過アラート(80%/100%閾値)、レポート生成(カテゴリ別・月次推移)、CSVインポート/エクスポート、ユーザー・権限管理(4段階)、マスタ管理(外注先・人件費単価・予算カテゴリ・経費タイプ)、通知機能、操作ログ、エラーログ、日次/週次/月次の8種自動トリガー搭載。Soft UIデザイン・Nunito採用・完全レスポンシブ対応(320px-1920px)・ハンバーガーメニュー・横スクロール完全排除。20シート構成。',
+    tags: ['予算管理', 'プロジェクト管理', '経費管理', '承認ワークフロー'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxZQNmcxwQNjfRSb0oADUSgyHvZvWwTlF6BZag6ZsU-Y_WfLlzdN7MXnYad35HglYgJ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/17MOFFBBofbYWtgkF2hbBb87WIMPkg9V1YjILq_sgKD0/edit?gid=0#gid=0',
+    manualUrl: '/manuals/project-budget-management.txt',
+  },
 ]
-// catalog-version: 146-rebuild
+// catalog-version: 147-rebuild
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
