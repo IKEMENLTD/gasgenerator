@@ -1668,8 +1668,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1fZuSm03UPgyHrwCsYaDq9QY7Hoi_NWAN6N0wedgCGLg/edit?gid=0#gid=0',
     manualUrl: '/manuals/newcomer-skill-progress.txt',
   },
+  {
+    id: '151',
+    name: '外注依頼テンプレート管理',
+    tagline: '外注依頼書のテンプレート化で認識齟齬を解消',
+    description: '外注依頼の仕様書を標準テンプレート化し、担当者による書き方のバラつきや認識齟齬を解消するシステム。ダッシュボード(ステータス別統計・承認待ち一覧・納期接近一覧・最近の依頼)、新規依頼作成(依頼種別選択で動的フォーム生成・下書き保存)、依頼一覧(検索・ステータス/種別フィルタ・タグ表示)、依頼詳細(ステータス変更・コメント・履歴・承認ログ)、承認管理(承認/却下・コメント必須)、依頼種別マスタ(カテゴリ・承認フロー紐付け・デフォルト納期)、依頼項目マスタ(8データ型対応・必須/任意・バリデーション)、テンプレート設計(種別と項目の紐付け・セクション分け・表示順序管理)、承認フローマスタ(多段階承認ステップ管理)、ユーザー管理(4ロール)、部署管理(階層構造対応)、通知テンプレート(5種別・変数埋め込み)、システム設定(テストデータ挿入/クリア/シート状態確認)、操作ログの全14画面。未承認リマインダー・納期接近リマインダー・月次サマリー・日次集計・下書き自動削除・担当者別パフォーマンス集計・通知キャッシュ更新・APIトークンチェックの8種自動トリガー搭載。Soft UIデザイン・Nunito採用・完全レスポンシブ対応(320px-1920px)・モバイルカード表示。19シート構成。',
+    tags: ['外注管理', 'テンプレート', '承認フロー', '依頼管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzY2219wMh8oiJCtGZoFwgMm0PN5mOWw_pZkyQXhnQ2y647SBTrX98OYHdRQUJ9CWHwjA/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1N5uul17eff4QyEtNd_j3_IFq_k3istKFtte1LZVpuIA/edit?gid=0#gid=0',
+    manualUrl: '/manuals/outsource-request-template.txt',
+  },
 ]
-// catalog-version: 150-rebuild-v2
+// catalog-version: 151-rebuild-v2
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
