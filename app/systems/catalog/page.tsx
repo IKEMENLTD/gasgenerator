@@ -1592,7 +1592,7 @@ const systems = [
     manualUrl: '/manuals/kojinjouhou-check.txt',
   },
 ]
-// catalog-version: 143
+// catalog-version: 143-rebuild
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
