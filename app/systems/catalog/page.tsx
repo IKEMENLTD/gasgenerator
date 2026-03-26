@@ -1657,8 +1657,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1vu9jdvJSMWruj2-Dx4uPQAmLowaiCNEBwHN2Q1O1rMY/edit?gid=0#gid=0',
     manualUrl: '/manuals/sales-performance-management.txt',
   },
+  {
+    id: '150',
+    name: '新人スキル習得進捗管理',
+    tagline: '新人育成の進捗をリアルタイムに可視化・管理',
+    description: '新人社員のスキル習得状況を一元管理するシステム。ダッシュボード(部署別習得率グラフ・遅延スキル分析・新人一覧)、個人進捗(カテゴリ別進捗・ステータス分布ドーナツ・詳細モーダル)、自己評価入力(4段階ステータス・コメント)、育成担当者評価(5段階評価・コメント)、アサイン管理(育成パス一括割当・チェックボックス複数選択)、ユーザー管理(5ロール)、組織管理、スキルカテゴリ管理、スキル項目管理(CSV一括登録対応)、育成パス管理、習得速度ランキング(金銀銅表示)、レポート生成(PDF出力・Google Drive保存)、通知管理(テンプレート・送信履歴)、システム設定(テストデータ挿入/クリア/シート状態確認)、操作ログの全15画面。日次サマリー・自己評価リマインダー・育成担当者リマインダー・週次レポート・月次レポート・ランキング更新・期日アラート・ログアーカイブの8種自動トリガー搭載。Soft UIデザイン・Nunito採用・完全レスポンシブ対応(320px-1920px)・モバイルカード表示。20シート構成。',
+    tags: ['新人育成', 'スキル管理', '進捗管理', 'ダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwrfUwmiJo0rUJc6A-j2OSMFrHhI5YyDyKxpyxFTT2Z1GpQlB3CWV5KdRSZ-stwtfQ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1fZuSm03UPgyHrwCsYaDq9QY7Hoi_NWAN6N0wedgCGLg/edit?gid=0#gid=0',
+    manualUrl: '/manuals/newcomer-skill-progress.txt',
+  },
 ]
-// catalog-version: 149-rebuild-v2
+// catalog-version: 150-rebuild-v2
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
