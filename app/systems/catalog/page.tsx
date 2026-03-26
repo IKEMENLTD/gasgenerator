@@ -1646,8 +1646,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1aMYbf64eeg00WSGew16btv3cbuKMbdbsCpSRZtKbEH8/edit?gid=0#gid=0',
     manualUrl: '/manuals/claim-script-management.txt',
   },
+  {
+    id: '149',
+    name: '営業担当別予実管理',
+    tagline: '営業目標と実績をリアルタイムに可視化・管理',
+    description: '営業担当者ごとの月次目標設定・実績入力・達成率管理を一元化するシステム。個人ダッシュボード(累計推移グラフ・KPIカード・バッジ)、チームダッシュボード(メンバー別進捗テーブル・ソート機能・製品別ドーナツチャート)、目標設定(重複確認・更新確認ダイアログ)、実績入力(新規顧客自動登録・インクリメンタルサーチ)、レポート生成(月次予実・チームトレンド・製品別貢献度、CSV出力対応)、マスタ管理(チーム・製品・顧客・目標カテゴリ・バッジ・通知テンプレート・KPI定義の7種CRUD)、ユーザー管理(3ロール)、コメント機能、テストデータ一括挿入/クリア機能搭載。日次集計・週次レポート・月次確定・アラート通知・バッジ付与・バックアップ・KPIリセット・クリーンアップの8種自動トリガー搭載。Soft UIデザイン・Nunito採用・完全レスポンシブ対応(320px-1920px)・プログレスバー付きローディング画面。18シート構成。',
+    tags: ['予実管理', '営業管理', 'ダッシュボード', 'KPI管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzvrRB1bnsMwYw_sGm8Oud9QKtXloUKnfD_A1FD7nzWRHKRas_hmyBY5jNPBiVscWSpqg/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1vu9jdvJSMWruj2-Dx4uPQAmLowaiCNEBwHN2Q1O1rMY/edit?gid=0#gid=0',
+    manualUrl: '/manuals/sales-performance-management.txt',
+  },
 ]
-// catalog-version: 148-rebuild
+// catalog-version: 149-rebuild
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
