@@ -1613,8 +1613,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/15fcYvhe6X9Ao0RKttqY9I_WILNZg33jdqqIhvfrFWlY/edit?gid=0#gid=0',
     manualUrl: '/manuals/teiki-gyomu-calendar.txt',
   },
+  {
+    id: '146',
+    name: '外注・業者評価台帳',
+    tagline: '外注業者の情報・評価を一元管理し最適な発注先選定を支援',
+    description: '外注業者の基本情報・案件・評価を一元管理するシステム。業者マスタ管理、案件マスタ管理、5段階評価入力（重み付け平均自動計算）、業者パフォーマンスレポート（レーダーチャート・棒グラフ）、複数業者比較、タスク管理、コメント履歴、マスタデータ管理（カテゴリ・評価項目・ステータス・バッジ・テンプレート）、ユーザー管理（権限制御）、CSVインポート/エクスポート、操作ログ、システム設定、日次リマインダー・週次レポート・月次アラート等8種の自動トリガー搭載。Soft UIデザイン・完全レスポンシブ対応(320px-1920px)。17シート構成。',
+    tags: ['業者管理', '評価管理', 'レポート', '外注管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbx8Wn8b8ppAVftG9nK-xUNocLn8YNlWyfjMJRtbMuOkes1ora8qpcn1iK2CXzt5v6j1/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1H0s6XxD3zM9bH0nqBQpjLyEPK7mz4529J3DhKFz6fb4/edit?gid=0#gid=0',
+    manualUrl: '/manuals/gaichuu-gyousha-hyouka.txt',
+  },
 ]
-// catalog-version: 145-rebuild
+// catalog-version: 146-rebuild
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
