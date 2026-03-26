@@ -1569,8 +1569,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1m8rwokwg4OVIBwmFn3qOITEyhMriXgam8fT2VEAnGdc/edit?gid=0#gid=0',
     manualUrl: '/manuals/order-quantity-validation.txt',
   },
+  {
+    id: '142',
+    name: '在庫マイナス防止',
+    tagline: '在庫のマイナス発生を未然に防ぐ在庫管理システム',
+    description: '在庫のマイナス発生を未然に防ぎ、正確な在庫管理を実現するシステム。出庫時のマイナス在庫警告・強制出庫機能、低在庫/マイナス在庫アラート自動通知、複数ロケーション対応、入出庫・在庫移動・棚卸し処理、商品/カテゴリ/仕入先/顧客/ロケーション/チーム/ユーザーの各種マスタ管理、在庫サマリーレポート、日次/週次/月次自動集計、操作ログ記録。KPIダッシュボードでリアルタイム在庫状況を可視化。テストデータ一括挿入機能搭載。Soft UIデザイン・完全レスポンシブ対応。13画面SPA・20シート・9トリガー構成。',
+    tags: ['在庫管理', 'マイナス在庫防止', 'アラート通知', '入出庫管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbyqbUypW4iWuCsn2tXSNj1O58WpHf-YYBIrXRKxom284SqXO0Tu2Ixb8hSDvBdmS4Jo/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/10y_A4CqH7dT9ni85LpBE1tq_7JWtUDfBTrEuWIvjkKY/edit?gid=0#gid=0',
+    manualUrl: '/manuals/zaiko-minus-boushi.txt',
+  },
 ]
-// catalog-version: 141
+// catalog-version: 142
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
