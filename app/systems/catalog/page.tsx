@@ -1558,8 +1558,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/136zjjK9eQfyjEA237J1UwNRYr1lekljrd6dMg4Z3oPY/edit?gid=0#gid=0',
     manualUrl: '/manuals/invoice-double-check.txt',
   },
+  {
+    id: '141',
+    name: '発注数量ミス防止バリデーション',
+    tagline: '発注数量の入力ミスをリアルタイム検知・承認ワークフロー連携',
+    description: '発注書の数量入力ミス（桁数・単位間違い）を防止するバリデーションシステム。品目ごとの上限/下限/倍数ルールによるリアルタイム検証、警告ポップアップ表示、承認ワークフロー連携を搭載。発注先・品目・カテゴリ・単位・バリデーションルールのマスタ管理、CSVインポート、発注履歴・ステータス管理、通知・リマインダー機能、日次/月次レポート・ダッシュボード、ユーザー別パフォーマンス集計、監査ログ、通知テンプレート管理対応。8種の自動トリガー（エラーリマインダー、未承認リマインダー、日次/月次集計、アーカイブ、設定バックアップ、自動既読、パフォーマンス更新）。Soft UIデザイン・完全レスポンシブ対応（モバイルカードレイアウト）。15画面SPA・18シート・8トリガー構成。',
+    tags: ['発注管理', 'バリデーション', '承認ワークフロー', '在庫管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxQkA3rR_1SgvhUo0yoFkB9NjorNLeEU04iDTKh4qNyl33CDpghpVkBDUl1PAa8od1G/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1m8rwokwg4OVIBwmFn3qOITEyhMriXgam8fT2VEAnGdc/edit?gid=0#gid=0',
+    manualUrl: '/manuals/order-quantity-validation.txt',
+  },
 ]
-// catalog-version: 140
+// catalog-version: 141
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
