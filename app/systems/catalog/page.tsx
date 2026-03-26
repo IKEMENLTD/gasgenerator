@@ -1580,8 +1580,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/10y_A4CqH7dT9ni85LpBE1tq_7JWtUDfBTrEuWIvjkKY/edit?gid=0#gid=0',
     manualUrl: '/manuals/zaiko-minus-boushi.txt',
   },
+  {
+    id: '143',
+    name: '個人情報送付前チェック',
+    tagline: 'ファイル送付前の個人情報自動検出・承認管理',
+    description: '顧客リスト等の個人情報を含むファイルを送付する前に、個人情報列を自動検出してリスク判定するシステム。氏名・住所・電話番号など20種のキーワードで自動スキャン。高リスク検出時は承認ワークフローで二重チェック。チェックテンプレート管理、キーワード管理、承認/却下ワークフロー、チェック履歴・監査ログ、日次/月次レポート、ユーザー・ロール管理、CSV/PDFエクスポート機能搭載。テストデータ一括挿入機能搭載。Soft UIデザイン・完全レスポンシブ対応（モバイルカードレイアウト）。10画面SPA・20シート・8トリガー構成。',
+    tags: ['個人情報保護', 'リスク検出', '承認ワークフロー', '監査ログ'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxZGpk2hfHBmfNqdUixQeezGGMNHdD7hhZ0QQFxBwYVF9OpS03WhAa7c4dQz1Uy7GWJ/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1dn8lJjfcFrX1_63-8TYMmYnnT0XAz6Y9GQMdHCQM2NM/edit?gid=0#gid=0',
+    manualUrl: '/manuals/kojinjouhou-check.txt',
+  },
 ]
-// catalog-version: 142
+// catalog-version: 143
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
