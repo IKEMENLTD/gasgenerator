@@ -1658,7 +1658,7 @@ const systems = [
     manualUrl: '/manuals/sales-performance-management.txt',
   },
 ]
-// catalog-version: 149-rebuild
+// catalog-version: 149-rebuild-v2
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
