@@ -1602,8 +1602,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1nGH3Gu-bGA5J27HkqKOM_Cacl0Z9rzf-D50DQty-39o/edit?gid=0#gid=0',
     manualUrl: '/manuals/seikou-jirei-database.txt',
   },
+  {
+    id: '145',
+    name: '定期業務カレンダー自動展開',
+    tagline: '月次・年次の定期業務を自動でタスク化しカレンダーに展開',
+    description: '月次・年次・毎週・毎日の定期業務をマスタ登録し、ルールに基づいてタスクを自動生成してGoogleカレンダーに展開するシステム。定期業務マスタ管理（繰返しルール・チェックリスト・優先度設定）、タスク自動生成・重複チェック、進捗管理（ステータス・チェックリスト・コメント）、担当者/チーム/カテゴリ管理、事前通知・期限超過通知メール自動送信、ダッシュボード（統計・カテゴリ別/優先度別グラフ）、週次/月次レポート自動集計、ランキング・バッジによるモチベーション向上、CSV/JSONエクスポート、テストデータ一括挿入/クリア、操作ログ・メールログ監査機能、8種の自動トリガー搭載。Soft UIデザイン・Noto Sans JP採用・完全レスポンシブ対応(320px-1920px)。20シート構成。',
+    tags: ['タスク管理', 'カレンダー連携', '定期業務', '自動化'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbw6wvsUHSZ4iFqAE4WEgN4sRv6yBnDf-giEJcz4_nPGi9V-WaQZfIXAPLFcqCXJlTsNMg/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/15fcYvhe6X9Ao0RKttqY9I_WILNZg33jdqqIhvfrFWlY/edit?gid=0#gid=0',
+    manualUrl: '/manuals/teiki-gyomu-calendar.txt',
+  },
 ]
-// catalog-version: 144-rebuild
+// catalog-version: 145-rebuild
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
