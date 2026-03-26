@@ -1591,8 +1591,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1dn8lJjfcFrX1_63-8TYMmYnnT0XAz6Y9GQMdHCQM2NM/edit?gid=0#gid=0',
     manualUrl: '/manuals/kojinjouhou-check.txt',
   },
+  {
+    id: '144',
+    name: '成功事例データベース',
+    tagline: '組織のノウハウを一元管理・共有する事例ナレッジベース',
+    description: '営業・マーケティング・コンサルタントの成功事例・失敗事例を一元管理し、組織全体のノウハウ共有と業務効率化を実現するシステム。事例登録（成功/失敗要因・アプローチ詳細・添付ファイル対応）、多条件検索・フィルタリング（キーワード・カテゴリ・業種・評価・期間）、5段階評価・コメント機能、ダッシュボード（月別推移・カテゴリ分布・閲覧数/評価ランキング）、日次/週次/月次自動レポート、CSV出力、ユーザー・権限管理（Admin/Manager/Member）、マスタ管理（カテゴリ・タグ・アプローチ種別・要因タイプ・チーム）、監査ログ・エラーログ、9種の自動トリガー搭載。Soft UIデザイン・完全レスポンシブ対応。20シート構成。',
+    tags: ['ナレッジ管理', '事例共有', 'ダッシュボード', '組織学習'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycby8vhhTGJAZwToOkWgIjkx6UF05oeKKAhxR8WOiC2HqEYp2ISrPDu68TtsCCYrAsYLbww/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1nGH3Gu-bGA5J27HkqKOM_Cacl0Z9rzf-D50DQty-39o/edit?gid=0#gid=0',
+    manualUrl: '/manuals/seikou-jirei-database.txt',
+  },
 ]
-// catalog-version: 143-rebuild
+// catalog-version: 144-rebuild
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
