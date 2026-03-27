@@ -1734,8 +1734,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1QZvdrlnJTQKr1GVgPumLf4PhGlhdqFGshsFsrLDWsak/edit?gid=0#gid=0',
     manualUrl: '/manuals/customer-satisfaction-trend.txt',
   },
+  {
+    id: '157',
+    name: 'プロジェクト進捗ガント',
+    tagline: 'ガントチャートでプロジェクトのタスク進捗を一元管理',
+    description: '複数プロジェクトのタスク進捗をガントチャートで可視化し、遅延リスクを早期に発見・対処するためのウェブアプリです。プロジェクト・タスクのCRUD、ガントチャート自動描画（日/週/月スケール切替）、遅延タスク自動検出・アラート通知、担当者別リソース負荷管理、進捗更新・コメント履歴、ダッシュボード、CSVエクスポート、権限管理（管理者/PM/一般ユーザー）など、プロジェクト管理に必要な機能を網羅しています。',
+    tags: ['ガントチャート', 'プロジェクト管理', '遅延タスク検出', 'リソース管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwC8TIYivjqqefxp3TxX6mgPdGCEGCa_i7QmLxwfrhjrTNU0_N2xc_TJeDg-QZprakH/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1bRtZpLqYTeqD8b6poFd_f-uXeEzDNri_OfWYh-llpho/edit?gid=0#gid=0',
+    manualUrl: '/manuals/project-gantt.txt',
+  },
 ]
-// catalog-version: 156-customer-satisfaction-trend
+// catalog-version: 157-project-gantt
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
