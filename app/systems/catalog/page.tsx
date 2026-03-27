@@ -1701,8 +1701,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1v6Uu90cetAtCyek1UZXsz_by9LczwF1HLhRs83D96EE/edit?gid=0#gid=0',
     manualUrl: '/manuals/customer-rule-management.txt',
   },
+  {
+    id: '154',
+    name: 'キャッシュフロー予測',
+    tagline: '中小企業の資金繰りを見える化し将来のキャッシュフローを自動予測',
+    description: '中小企業の経営者・財務担当者向けに、売上予測・費用予測から将来のキャッシュフローを自動計算し、資金ショートリスクを早期検知するウェブアプリケーション。ダッシュボード(現在残高・今月予測入出金・未解決アラート数・残高推移予測グラフ・月次入出金棒グラフ)、売上予測(取引先・案件名・契約金額・発生月・入金予定日・入金サイト・確度ステータス5段階・確度係数自動計算・入金スケジュール自動生成)、費用予測(固定費/変動費/その他・勘定科目連携・支払予定金額・支払サイト・出金スケジュール自動生成)、実績キャッシュフロー(入出金実績・差引残高自動計算・データソース3種)、予算管理(月次予算・売上予算/費用予算・勘定科目別)、予測シミュレーション(期間指定・売上増減%・費用増減%・シナリオ分析・最低残高/期末残高/期間合計表示・危険ライン判定)、レポート(日次/週次/月次/入出金スケジュール/実績対予測の5種・CSV/PDF出力・Googleドライブ保存)、アラート(資金ショート危険/注意・予測残高・解決管理)、取引先マスタ(顧客/仕入先/その他・入金サイト/支払サイトデフォルト設定)、勘定科目マスタ(5種別・予測対象フラグ)、固定費項目マスタ(4支払サイクル・翌月自動生成)、変動費項目マスタ(売上連動率・支払サイト)、ユーザー管理(3権限レベル・招待メール)、システム設定(会社情報・アラート閾値・トリガー管理・テストデータ挿入/全クリア/シート状態確認)、操作ログ/エラーログの全15画面。日次予測・週次サマリー・月次分析・マスタ同期・アラートアーカイブ・固定費自動生成・リマインダー・バックアップの8種自動トリガー搭載。Soft UIデザイン・Nunito採用・完全レスポンシブ対応(320px-1920px)・全画面カードレイアウト(横スクロール完全排除)。20シート構成。',
+    tags: ['キャッシュフロー', '資金繰り', '予測分析', '経営管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbx_TBry6D7zZLH3-aFBiAi6KWa9agSKuhlxphA3dz5UbvCGRXfnk56cMNG6BVAlgKn9fg/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1wqHB2_P0t1ArQQ5Ao7fRMW98GoAguorSUavL8zeT5gg/edit?gid=0#gid=0',
+    manualUrl: '/manuals/cashflow-forecast.txt',
+  },
 ]
-// catalog-version: 153-rebuild-v2
+// catalog-version: 154-rebuild-v2
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
