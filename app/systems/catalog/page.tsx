@@ -1756,8 +1756,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/13UZbjlEDL7Zy7PZ0R9x7QSzP4_QWiUDGylPIAW1_6z8/edit?gid=0#gid=0',
     manualUrl: '/manuals/overtime-trend-analysis.txt',
   },
+  {
+    id: '159',
+    name: '部門別損益管理',
+    tagline: '部門ごとの損益を可視化し、経営判断を迅速化',
+    description: '部門別の売上・費用・利益をリアルタイムに集計・可視化し、経営判断の迅速化と資源配分の最適化を支援するウェブアプリです。部門マスタ・勘定科目マスタ管理、実績データのCSVインポート・手動入力、予算設定・承認フロー、費用配賦ルール管理、月次損益自動集計、予算対比分析、KPIダッシュボード、赤字部門アラート通知、部門別詳細レポート出力(CSV/PDF)、ユーザー権限管理、監査ログなど、部門別損益管理に必要な機能を網羅しています。Soft UIデザインでモバイル完全対応。',
+    tags: ['損益管理', '部門別分析', '予算管理', 'ダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxPHZs5nBI0res7XZkxyAj_14stH4mU_w9HvmHNFQrrFk0pxWmpnJKrwjupqKs4-8dr/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1iy7rVO8dYMcmN_wmP-CN2V-Vzszi6n0_i5Bm0zf1up8/edit?gid=0#gid=0',
+    manualUrl: '/manuals/department-pl-management.txt',
+  },
 ]
-// catalog-version: 158-overtime-trend-analysis
+// catalog-version: 159-department-pl-management
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
