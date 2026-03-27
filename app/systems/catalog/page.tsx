@@ -1723,8 +1723,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/10I1nbKnAJebtqEwqEPgLtOHg_L5BwzoUTUWKff-_7kI/edit?gid=0#gid=0',
     manualUrl: '/manuals/kpi-dashboard.txt',
   },
+  {
+    id: '156',
+    name: '顧客満足度トレンド',
+    tagline: '顧客満足度スコアの推移を可視化し改善アクションを管理',
+    description: '複数店舗の顧客満足度(NPS/CSAT)をダッシュボードで一元管理するウェブアプリです。日次/週次/月次のスコア推移をグラフで可視化し、閾値を下回った際にアラートを自動通知します。改善アクションの登録・進捗管理・リマインダー、キーワード分析、定期レポート自動生成、CSVアップロード/エクスポートなど、顧客体験向上に必要な機能を網羅しています。',
+    tags: ['顧客満足度', 'NPS/CSAT分析', 'アラート通知', '改善アクション管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwcBS-4KbKh9nAJnBrix-7ZaVi4ARJ1xq0Bve0dk5TGE2B3iJC4oXfu8KEP1E9zeGcrYw/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1QZvdrlnJTQKr1GVgPumLf4PhGlhdqFGshsFsrLDWsak/edit?gid=0#gid=0',
+    manualUrl: '/manuals/customer-satisfaction-trend.txt',
+  },
 ]
-// catalog-version: 155-rebuild-v4-force-20260327
+// catalog-version: 156-customer-satisfaction-trend
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
