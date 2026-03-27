@@ -1690,8 +1690,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/181yifgosxDLXPPOKELd36DEIc1XEGTImU5x5q8V0r8Q/edit?gid=0#gid=0',
     manualUrl: '/manuals/standard-work-time-db.txt',
   },
+  {
+    id: '153',
+    name: '顧客別対応ルール管理',
+    tagline: '顧客ごとの対応ルール・NG事項・VIP対応を一元管理',
+    description: '顧客ごとの特別対応ルール、NG事項、VIP対応内容、過去トラブル、好みなどを一元管理し、チーム全体で共有するウェブアプリケーション。ダッシュボード(顧客数・有効ルール数・期限切れ間近・本日追加ルール・トラブル件数・未読通知・カテゴリ別/タイプ別ルール数グラフ・最近更新ルール・閲覧数トップ5)、顧客マスタ(10項目管理・VIPフラグ・優先度・契約ステータス・検索/フィルタ)、対応ルール(タイトル・詳細・カテゴリ・タイプ・適用範囲・適用期間・添付URL・関連リンク・閲覧数カウント・変更履歴・コメント機能・5条件フィルタ)、対応履歴(対応種別5種・問題発生フラグ・フォローアップ管理)、ユーザー管理(3ロール・チーム紐付け・招待メール)、チーム管理(マネージャー設定)、カテゴリ・タイプマスタ(4カテゴリ・5タイプ・重要度設定)、定型文管理(カテゴリ別テンプレート)、レポート(月次レポート生成・CSVエクスポート)、操作ログ(最新200件)、通知(ルール更新・期限・コメント・システム通知)、システム設定(6項目・テストデータ挿入/全クリア/シート状態確認)の全12画面。月次レポート・ログアーカイブ・メールキュー処理・ルール有効期限チェック・未参照ルールリマインダー・データ整合性チェック・バックアップ・閲覧数集計の8種自動トリガー搭載。Soft UIデザイン・Nunito採用・完全レスポンシブ対応(320px-1920px)・全画面カードレイアウト(横スクロール完全排除)。18シート構成。',
+    tags: ['顧客管理', '対応ルール', 'NG事項', 'VIP対応'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxvGJXtC3T4uJhq-2J_hl3TpVbnQz7IXPl4v9AvYJX4bKkVxLIF2ou7XP8PoGxjH10pGg/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1v6Uu90cetAtCyek1UZXsz_by9LczwF1HLhRs83D96EE/edit?gid=0#gid=0',
+    manualUrl: '/manuals/customer-rule-management.txt',
+  },
 ]
-// catalog-version: 152-rebuild-v2
+// catalog-version: 153-rebuild-v2
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
