@@ -1724,7 +1724,7 @@ const systems = [
     manualUrl: '/manuals/kpi-dashboard.txt',
   },
 ]
-// catalog-version: 155-rebuild-v3-force
+// catalog-version: 155-rebuild-v4-force-20260327
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
