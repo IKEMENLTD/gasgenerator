@@ -1767,8 +1767,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1iy7rVO8dYMcmN_wmP-CN2V-Vzszi6n0_i5Bm0zf1up8/edit?gid=0#gid=0',
     manualUrl: '/manuals/department-pl-management.txt',
   },
+  {
+    id: '160',
+    name: '仕入コスト変動アラート',
+    tagline: '仕入単価の変動を自動検知し利益率を守る',
+    description: '仕入単価の変動を自動検知してアラート通知する仕入コスト管理システム。品目・サプライヤー・カテゴリのマスタ管理、仕入データ登録・CSVインポート、閾値ベースの変動検知、利益率シミュレーション、対応履歴記録、日次・月次レポート生成を搭載。アラート設定で閾値・参照期間・通知方法を柔軟にカスタマイズ可能。Soft UIデザインでモバイル完全対応。',
+    tags: ['仕入管理', 'コスト変動検知', '利益率分析', 'アラート通知'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwETVO4eHnoBq1vwMCEZ2mpQjSW-H3Sa69jpoIAXb8Mwkv4M5N4Y0E90rjee_JyQMXaww/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1BozvXs_D0uHzqYPVV0Qbfq2eE926YkwzldUxJXdOm0A/edit?gid=0#gid=0',
+    manualUrl: '/manuals/purchase-cost-alert.txt',
+  },
 ]
-// catalog-version: 159-department-pl-management
+// catalog-version: 160-purchase-cost-alert
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
