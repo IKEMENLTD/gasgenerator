@@ -1895,9 +1895,19 @@ export default function SystemCatalogPage() {
   // システム選択ハンドラー
   const handleSelectSystem = (id: string) => {
     setSelectedSystemId(id)
+    setIframeLoadState('loading') // iframe読み込み状態をリセット
     setIsSidebarOpen(false) // モバイルではサイドバーを閉じる
     setIsInfoExpanded(false) // 情報パネルを閉じる
   }
+
+  // iframe読み込みタイムアウト（15秒）
+  useEffect(() => {
+    if (iframeLoadState !== 'loading') return
+    const timer = setTimeout(() => {
+      setIframeLoadState((prev) => prev === 'loading' ? 'error' : prev)
+    }, 15000)
+    return () => clearTimeout(timer)
+  }, [iframeLoadState, selectedSystemId])
 
   return (
     <div className="h-screen flex flex-col bg-gray-100">
