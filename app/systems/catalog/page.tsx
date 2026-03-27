@@ -1713,7 +1713,7 @@ const systems = [
     manualUrl: '/manuals/cashflow-forecast.txt',
   },
 ]
-// catalog-version: 154-rebuild-v2
+// catalog-version: 154-rebuild-v3-force
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
