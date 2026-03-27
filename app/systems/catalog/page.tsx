@@ -1712,8 +1712,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1wqHB2_P0t1ArQQ5Ao7fRMW98GoAguorSUavL8zeT5gg/edit?gid=0#gid=0',
     manualUrl: '/manuals/cashflow-forecast.txt',
   },
+  {
+    id: '155',
+    name: 'KPI達成率ダッシュボード',
+    tagline: '組織のKPI進捗をリアルタイムで可視化し目標達成を支援',
+    description: '組織のKPI（重要業績評価指標）を一元管理し、目標に対する進捗をリアルタイムで可視化するウェブアプリケーション。ダッシュボード(期間切替・部門/カテゴリフィルタ・達成率カード表示・棒グラフ・色分けステータス・トレンド表示)、KPI項目管理(KPI名・カテゴリ・単位・計算方法5種SUM/AVG/MAX/MIN/RATE・最適化方向)、目標設定(月次/週次/四半期/年次・期間指定・部門別/ユーザー別・良好/危険閾値設定・重複チェック)、日次実績入力(手動入力・関連数値・担当者/部門紐付け・重複チェック)、一括インポート(CSV貼り付け・バリデーション・成功/失敗件数表示)、KPI詳細画面(日次推移折れ線グラフ・メンバー別貢献度横棒グラフ・コメント投稿)、達成率シミュレーション(仮定値入力・予測累計/達成率/必要日次実績を算出)、レポート出力(画面表示/Google Sheet形式・期間/部門/カテゴリ指定)、通知アラート(週次進捗通知・月末予測通知・Email送信)、ユーザー管理(3権限・メールアドレス重複チェック)、部門管理(階層構造・部門長設定)、カテゴリ管理(表示順設定)、システム設定(通知時刻・閾値・テストデータ挿入/全クリア/シート状態確認)、操作ログ/エラーログの全14画面。日次集計・週次通知・月次集計・整合性チェック・月末予測通知・クリーンアップの6種自動トリガー搭載。Soft UIデザイン・Nunito採用・完全レスポンシブ対応(320px-1920px)・モバイルカードレイアウト(横スクロール完全排除)・Chart.jsグラフ。17シート構成。',
+    tags: ['KPI管理', '達成率分析', 'ダッシュボード', '目標管理'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbwuRGVUGsFOCzYB2M_1eMtQ-zYX-XYlRwEBWpuTeI4ROj630DeN3_NzanmZhqnDie5d/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/10I1nbKnAJebtqEwqEPgLtOHg_L5BwzoUTUWKff-_7kI/edit?gid=0#gid=0',
+    manualUrl: '/manuals/kpi-dashboard.txt',
+  },
 ]
-// catalog-version: 154-rebuild-v3-force
+// catalog-version: 155-rebuild-v3-force
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
