@@ -1679,8 +1679,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1N5uul17eff4QyEtNd_j3_IFq_k3istKFtte1LZVpuIA/edit?gid=0#gid=0',
     manualUrl: '/manuals/outsource-request-template.txt',
   },
+  {
+    id: '152',
+    name: '標準作業時間データベース',
+    tagline: '作業時間の記録・分析・標準時間算出で見積精度を向上',
+    description: '業務ごとの作業時間を記録・蓄積し、標準作業時間を自動算出するウェブアプリケーション。ダッシュボード(今日/今週の作業時間・作業件数・進行中PJ数・未読通知)、作業実績(手動登録・フィルタリング・重複チェック)、タイマー(リアルタイム計測・開始/終了ボタン)、ユーザー管理(6名・ロール別・時間単価設定)、チーム管理(3部署・リーダー設定)、クライアント管理(企業情報・担当者・業種)、プロジェクト管理(5ステータス・計画工数・予算管理)、業務カテゴリ管理(カテゴリ/サブカテゴリ階層・デフォルト標準時間)、標準作業時間管理(自動再計算・手動承認・有効期間管理)、見積シミュレーション(標準時間ベース工数/費用算出・履歴保存)、レポート(日次/週次/月次/PJ別/カテゴリ別5タブ)、通知(アラート/リマインダー/レポート3種)、設定(テストデータ挿入/全クリア/シート状態確認)、エクスポート(7種CSV出力)の全14画面。日次集計・週次集計・月次集計メール・未入力リマインダー・PJ超過アラート・標準時間自動再計算・データバックアップ・長時間作業アラートの8種自動トリガー搭載。Soft UIデザイン・Nunito採用・完全レスポンシブ対応(320px-1920px)・モバイルカード表示。19シート構成。',
+    tags: ['工数管理', '標準時間', '見積支援', 'タイマー'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbzTuhy1hUuXiRmbTZiJxB8rSPwhCe-o8xbTmqZTtPcgQt9uayApazxWC7VFC2FbghAn/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/181yifgosxDLXPPOKELd36DEIc1XEGTImU5x5q8V0r8Q/edit?gid=0#gid=0',
+    manualUrl: '/manuals/standard-work-time-db.txt',
+  },
 ]
-// catalog-version: 151-rebuild-v2
+// catalog-version: 152-rebuild-v2
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
