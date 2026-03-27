@@ -1745,8 +1745,19 @@ const systems = [
     spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1bRtZpLqYTeqD8b6poFd_f-uXeEzDNri_OfWYh-llpho/edit?gid=0#gid=0',
     manualUrl: '/manuals/project-gantt.txt',
   },
+  {
+    id: '158',
+    name: '残業時間トレンド分析',
+    tagline: '残業時間の可視化・トレンド分析・超過アラート通知',
+    description: '企業の残業時間を可視化・分析し、従業員の健康管理と労働環境の改善を支援するウェブアプリです。日次残業記録、週次/月次/年間自動集計、部門別トレンドグラフ、残業超過アラート通知、介入記録管理、個人別/部門別レポート生成、CSVエクスポート、操作ログ、テストデータ一括生成など、残業時間管理に必要な機能を網羅しています。Soft UIデザインでモバイル完全対応。',
+    tags: ['残業管理', 'トレンド分析', 'アラート通知', 'ダッシュボード'],
+    previewUrl: 'https://script.google.com/macros/s/AKfycbxHJ_MOYrDMQmxK9KsW3pKBbfWa9o24LlZKwwZnIkd4KvRSIM82QRj7tjDaPsYJZysD/exec',
+    iframeAllowed: true,
+    spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/13UZbjlEDL7Zy7PZ0R9x7QSzP4_QWiUDGylPIAW1_6z8/edit?gid=0#gid=0',
+    manualUrl: '/manuals/overtime-trend-analysis.txt',
+  },
 ]
-// catalog-version: 157-project-gantt
+// catalog-version: 158-overtime-trend-analysis
 export default function SystemCatalogPage() {
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>('44')
   const [searchQuery, setSearchQuery] = useState('')
